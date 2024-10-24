@@ -7,8 +7,16 @@ This is a test
 ## Test 1-a
 Let go to [Congratulations!](/congratulations).
 ## Test 1-b
-:::danger Test
+```md
+:::tip This is a Tip
 
-This is a test warning. 
+This is a warning
 
 :::
+
+:::danger Danger
+
+Be careful
+
+:::
+```
