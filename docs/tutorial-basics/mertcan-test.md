@@ -7,16 +7,4 @@ This is a test
 ## Test 1-a
 Let go to [Congratulations!](/congratulations).
 ## Test 1-b
-```md
-:::tip This is a Tip
-
-This is a warning
-
-:::
-
-:::danger Danger
-
-Be careful
-
-:::
-```
+This is Mertcan Test
