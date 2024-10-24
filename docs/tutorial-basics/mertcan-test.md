@@ -5,6 +5,6 @@ sidebar_position: 7
 # Test 1 
 This is a test 
 ## Test 1-a
-Let go to [Congratulations!](/congratulations).
+Let go to [Congratulations!](./congratulations.md).
 ## Test 1-b
 This is Mertcan Test
