@@ -73,10 +73,16 @@ const config: Config = {
       },
       items: [
         {
-          type: "docSidebar",
-          sidebarId: "tutorialSidebar",
+          type: "doc",
+          docId: "intro",
           position: "left",
           label: "Docs",
+        },
+        {
+          type: "docSidebar",
+          sidebarId: "tutorialExtra",
+          position: "left",
+          label: "DocsExtra",
         },
         {
           type: "docsVersionDropdown",
@@ -107,6 +113,10 @@ const config: Config = {
           items: [
             {
               label: "Twitter",
+              href: "https://x.com/virtualmetric",
+            },
+            {
+              label: "Github",
               href: "https://x.com/virtualmetric",
             },
           ],
