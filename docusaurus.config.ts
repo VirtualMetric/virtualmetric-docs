@@ -85,6 +85,35 @@ const config: Config = {
           label: "DocsExtra",
         },
         {
+          type: "search",
+          position: "left",
+        },
+        {
+          type: "dropdown",
+          position: "right",
+          label: "Websites",
+          items: [
+            {
+              href: 'https://virtualmetric.com/',
+              label: 'VirtualMetric Website',
+            },
+            {
+              href: 'https://docs.virtualmetric.com/',
+              label: 'VirtualMetric User Documentation',
+            },
+            {
+              type: 'doc',
+              label: 'Tutorial Sidebar',
+              docId: 'tutorial-basics/congratulations',
+            },
+            {
+              type: "docSidebar",
+              sidebarId: "tutorialExtra",
+              label: "DocsExtra",
+            },
+          ],
+        },
+        {
           type: "docsVersionDropdown",
           position: "right",
           dropdownActiveClassDisabled: true,
