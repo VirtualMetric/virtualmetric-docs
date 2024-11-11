@@ -82,7 +82,7 @@ const config: Config = {
 					type: "docSidebar",
 					sidebarId: "tutorialExtra",
 					position: "left",
-					label: "DocsExtra",
+					label: "Extras",
 				},
 				{
 					type: "search",
@@ -109,7 +109,7 @@ const config: Config = {
 						{
 							type: "docSidebar",
 							sidebarId: "tutorialExtra",
-							label: "DocsExtra",
+							label: "Extras",
 						},
 					],
 				},
@@ -151,7 +151,7 @@ const config: Config = {
 					],
 				},
 			],
-			copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V. Built with Docusaurus.`,
+			copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V. Built with Docusaurus`,
 		},
 		prism: {
 			theme: prismThemes.github,
