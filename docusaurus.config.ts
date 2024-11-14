@@ -3,12 +3,12 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
-	title: "VirtualMetric B.V.",
+	title: "VirtualMetric",
 	tagline: "Transform data overload into actionable security insights",
 	favicon: "img/favicon/favicon.ico",
 
 	// Set the production url of your site here
-	url: "https://your-docusaurus-site.example.com",
+	url: "https://virtualmetric-docs.pages.dev",
 	// Set the /<baseUrl>/ pathname under which your site is served
 	// For GitHub pages deployment, it is often '/<projectName>/'
 	baseUrl: "/",
@@ -66,7 +66,7 @@ const config: Config = {
 		// Replace with your project's social card
 		image: "img/docusaurus-social-card.jpg",
 		navbar: {
-			title: "VirtualMetric Docs",
+			title: "Documentation",
 			logo: {
 				alt: "VirtualMetric B.V. Logo",
 				src: "img/logo.svg",
@@ -76,7 +76,7 @@ const config: Config = {
 					type: "docSidebar",
 					sidebarId: "tutorialSidebar",
 					position: "left",
-					label: "Docs",
+					label: "Basics",
 				},
 				{
 					type: "docSidebar",
@@ -99,11 +99,11 @@ const config: Config = {
 						},
 						{
 							href: 'https://docs.virtualmetric.com/',
-							label: 'VirtualMetric User Documentation',
+							label: 'User Documentation',
 						},
 						{
 							type: 'doc',
-							label: 'Tutorial Sidebar',
+							label: 'Basics',
 							docId: 'tutorial-basics/congratulations',
 						},
 						{
@@ -118,18 +118,18 @@ const config: Config = {
 					position: "right",
 					dropdownActiveClassDisabled: true,
 				},
-				{
-					href: "https://github.com/VirtualMetric/virtualmetric-docs",
-					label: "GitHub",
-					position: "right",
-				},
+				// {
+				// 	href: "https://github.com/VirtualMetric/virtualmetric-docs",
+				// 	label: "GitHub",
+				// 	position: "right",
+				// },
 			],
 		},
 		footer: {
 			style: "dark",
 			links: [
 				{
-					title: "Docs",
+					title: "Basics",
 					items: [
 						{
 							label: "Tutorial",
