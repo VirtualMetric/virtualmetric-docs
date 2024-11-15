@@ -73,18 +73,6 @@ const config: Config = {
 			},
 			items: [
 				{
-					type: "docSidebar",
-					sidebarId: "tutorialSidebar",
-					position: "left",
-					label: "Basics",
-				},
-				{
-					type: "docSidebar",
-					sidebarId: "tutorialExtra",
-					position: "left",
-					label: "Extras",
-				},
-				{
 					type: "search",
 					position: "right",
 				},
@@ -100,16 +88,6 @@ const config: Config = {
 						{
 							href: 'https://docs.virtualmetric.com/',
 							label: 'User Documentation',
-						},
-						{
-							type: 'doc',
-							label: 'Basics',
-							docId: 'tutorial-basics/congratulations',
-						},
-						{
-							type: "docSidebar",
-							sidebarId: "tutorialExtra",
-							label: "Extras",
 						},
 					],
 				},
@@ -128,28 +106,6 @@ const config: Config = {
 		footer: {
 			style: "dark",
 			links: [
-				{
-					title: "Basics",
-					items: [
-						{
-							label: "Tutorial",
-							to: "/docs/intro",
-						},
-					],
-				},
-				{
-					title: "Community",
-					items: [
-						{
-							label: "Twitter",
-							href: "https://x.com/virtualmetric",
-						},
-						{
-							label: "Github",
-							href: "https://x.com/virtualmetric",
-						},
-					],
-				},
 			],
 			copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V. Built with Docusaurus`,
 		},
