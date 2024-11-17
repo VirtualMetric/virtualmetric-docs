@@ -1,7 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 4
 ---
 
 # Installation
-
-How to install the product.
