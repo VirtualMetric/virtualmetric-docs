@@ -66,12 +66,18 @@ const config: Config = {
 		// Replace with your project's social card
 		image: "img/docusaurus-social-card.jpg",
 		navbar: {
-			title: "Documentation",
+			title: "Home",
 			logo: {
 				alt: "VirtualMetric B.V. Logo",
 				src: "img/logo.svg",
 			},
 			items: [
+				{
+					type: 'docSidebar',
+					sidebarId: 'documentation',
+					position: 'left',
+					label: 'Documentation',
+				},
 				{
 					type: "search",
 					position: "right",
@@ -96,11 +102,6 @@ const config: Config = {
 					position: "right",
 					dropdownActiveClassDisabled: true,
 				},
-				// {
-				// 	href: "https://github.com/VirtualMetric/virtualmetric-docs",
-				// 	label: "GitHub",
-				// 	position: "right",
-				// },
 			],
 		},
 		footer: {
