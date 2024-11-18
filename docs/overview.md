@@ -4,4 +4,4 @@ sidebar_position: 1
 
 # Overview
 
-General information about VirtualMetric.
+General information about the product.
