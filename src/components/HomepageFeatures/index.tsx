@@ -14,7 +14,7 @@ const FeatureList: FeatureItem[] = [
 		Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
 		description: (
 			<>
-				<b>VirtualMetric</b> was designed from the ground up to be easily installed and to be used to get your telemetry operation up and running quickly.
+				<b>VirtualMetric</b> was designed from the ground up to be easily installed and to get your telemetry operation up and running quickly.
 			</>
 		),
 	},
