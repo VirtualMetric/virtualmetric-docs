@@ -14,8 +14,7 @@ const FeatureList: FeatureItem[] = [
 		Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
 		description: (
 			<>
-				<b>VirtualMetric</b> was designed from the ground up to be easily installed and
-				used to get your telemetry operation up and running quickly.
+				<b>VirtualMetric</b> was designed from the ground up to be easily installed and to be used to get your telemetry operation up and running quickly.
 			</>
 		),
 	},
@@ -24,7 +23,7 @@ const FeatureList: FeatureItem[] = [
 		Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
 		description: (
 			<>
-				<b>VirtualMetric</b> lets you focus on your data, while doing the chores for you. Go ahead and start streaming your telemetry data.
+				<b>VirtualMetric</b> lets you focus on processing your data, doing the chores for you in the background. Go ahead and start enriching your data.
 			</>
 		),
 	},
@@ -33,7 +32,7 @@ const FeatureList: FeatureItem[] = [
 		Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
 		description: (
 			<>
-				Extend the functionality of your telemetry operation. <b>VirtualMetric</b> can be fully customized to fit your needs.
+				Extend the functionality of your telemetry operations. <b>VirtualMetric</b> can be fully customized to fit your needs.
 			</>
 		),
 	},
