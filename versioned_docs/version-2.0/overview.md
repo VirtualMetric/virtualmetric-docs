@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
+# Deprecated
 
-# Overview
-
-General information about the product.
+This version has been deprecated.
