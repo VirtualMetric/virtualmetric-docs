@@ -4,4 +4,4 @@ sidebar_position: 3
 
 # Licensing
 
-Licensing types and policies for the product.
+Licensing policies for the product.

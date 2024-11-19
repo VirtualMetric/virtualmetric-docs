@@ -6,6 +6,6 @@ tags: [rocks]
 ---
 
 :::warning
-If you're not buying the product, you are missing out.
+If you're not buying the product, you are missing out on it.
 
 <!-- truncate -->

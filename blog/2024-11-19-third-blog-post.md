@@ -5,10 +5,10 @@ authors: erkan
 tags: [rocks]
 ---
 
-This blog post that refers to a [great product](https://www.virtualmetric.com).
+This blog post refers to a [great product](https://www.virtualmetric.com).
 
 :::tip
-You should go and see the product.
+You should go and see it.
 :::
 
 <!-- truncate -->

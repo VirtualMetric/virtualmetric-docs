@@ -7,4 +7,4 @@ sidebar_position: 1
 General information about the product.
 
 :::tip
-This is a tip.
+This is a great product.

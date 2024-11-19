@@ -7,4 +7,4 @@ sidebar_position: 7
 The modules of VirtualMetric and their purpose of use.
 
 :::info
-This is a bit of information.
+This product has very powerful modules.
