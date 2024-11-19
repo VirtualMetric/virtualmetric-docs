@@ -23,7 +23,7 @@ const FeatureList: FeatureItem[] = [
 		Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
 		description: (
 			<>
-				<b>VirtualMetric</b> lets you focus on processing your data, doing the chores for you in the background. Go ahead and start enriching your data.
+				<b>VirtualMetric</b> lets you focus on your data, doing the chores for you in the background. Go ahead and start enriching your data.
 			</>
 		),
 	},

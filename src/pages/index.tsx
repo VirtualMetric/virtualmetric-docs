@@ -25,8 +25,8 @@ export default function Home(): JSX.Element {
 	const { siteConfig } = useDocusaurusContext();
 	return (
 		<Layout
-			title={`${siteConfig.title} Documentation`}
-			description=""
+			title={`Welcome to ${siteConfig.title} Documentation`}
+			description="Best telemetry solution on the market"
 		>
 			<HomepageHeader />
 			<main>
