@@ -1,7 +1,8 @@
 ---
+displayed_sidebar: documents
 sidebar_position: 9
 ---
 
-# For Security
+# Security
 
 Security API functionality.

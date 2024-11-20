@@ -1,7 +1,8 @@
 ---
+displayed_sidebar: documents
 sidebar_position: 10
 ---
 
-# For Storage
+# Storage
 
 Storage API functionality.

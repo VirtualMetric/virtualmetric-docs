@@ -3,7 +3,7 @@ displayed_sidebar: tutorials
 sidebar_position: 2
 ---
 
-# How To Use
+# Using Filters
 
 :::note
-Not very easily.
+Very easily.
