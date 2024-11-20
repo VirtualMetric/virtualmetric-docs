@@ -3,6 +3,6 @@ displayed_sidebar: documents
 sidebar_position: 1
 ---
 
-# Getting Started
+# Overview
 
 General information about the product.
