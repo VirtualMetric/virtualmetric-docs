@@ -3,20 +3,14 @@ displayed_sidebar: tutorials
 sidebar_position: 2
 ---
 
-# Direct Device Data To CLI
+# Read Device Data To CLI
 
 **VirtualMetric Director&trade;** offers the ability to define the _source_ and the _target_ of your data stream by using simple YAML files. In this tutorial, we will show you the basics of this configuration.
 
-Open a terminal and first navigate to the root directory where **Director** was installed, and then to the `config` directory under the root:
+Open a terminal and first navigate to the root directory where **Director** was installed, and then to the `config` directory under the root. If you list the directory contents, you will see three subdirectories: `devices`, `routes`, and `targets`.
 
 ```CLI
-C:\>cd vm-install
-C:\>vm-install\cd config
-```
-
-If you list the directory contents, you will see three subdirectories: `devices`, `routes`, and `targets`.
-
-```CLI
+C:\>vm-install\config\Get-ChildItem
 
     Directory: C:\vm-install\config
 
@@ -60,6 +54,8 @@ devices:
 :::note
 Some of the parameters here can be modified, some are **required**, some are **optional**. Check with the team for the specifics.
 :::
+
+For a chart enlisting the properties in the YAML file, see the [syslog file](../docu/tables/syslog-file.md) section.
 
 :::tip
 Multiple devices can be entered into the same YAML file, or multiple YAML files can be created to define device groups based on your needs.

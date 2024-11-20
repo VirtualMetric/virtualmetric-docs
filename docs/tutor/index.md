@@ -3,9 +3,9 @@ displayed_sidebar: tutorials
 sidebar_position: 1
 ---
 
-# Quick-Start Guide
+# Overview
 
-In this guide, you can find tutorials for getting things done quickly with _VirtualMetric_.
+In this section, you will find tutorials for getting things done quickly with _VirtualMetric Director_.
 
 :::info
 The chapter names should offer cues where to find what you're looking for.

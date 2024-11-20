@@ -5,4 +5,4 @@ sidebar_position: 1
 
 # Overview
 
-General information about the product.
+General information about _VirtualMetric Director_.
