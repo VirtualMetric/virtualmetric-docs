@@ -5,7 +5,8 @@ sidebar_position: 1
 
 # Quick-Start Guide
 
-In this section you will learn how to get things done quickly.
+In this guide, you can find tutorials for getting things done quickly with _VirtualMetric_.
 
 :::info
-It will be a breeze.
+The chapter names should offer cues where to find what you're looking for.
+:::
