@@ -1,5 +1,6 @@
 ---
 displayed_sidebar: tutorials
+sidebar_position: 1
 ---
 
 # Tutorials
