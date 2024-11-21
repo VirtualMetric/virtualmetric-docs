@@ -62,6 +62,6 @@ devices:
       port: 14514
 ```
 
-For the details of these fields, see the [syslog file](../../docu/tables/syslog-file.md) section.
+For the details of these fields, see the [syslog file](../../docu/charts/syslog-file.md) section.
 
 We will monitor a laptop, so we will assign an identifier to it in the `id` field.
