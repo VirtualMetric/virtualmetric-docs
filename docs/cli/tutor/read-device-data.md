@@ -10,7 +10,7 @@ In this tutorial, we will show you the basics of a simple routing configuration.
 Open a terminal.
 
 :::tip
-For Windows, a **PowerShell** terminal is best suited for this.
+For Windows, a **PowerShell** terminal is well-suited for this.
 :::
 
 

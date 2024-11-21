@@ -8,35 +8,7 @@ type FeatureItem = {
 	description: JSX.Element;
 };
 
-const FeatureList: FeatureItem[] = [
-	{
-		title: 'Easy to Use',
-		Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
-		description: (
-			<>
-				<b>VirtualMetric</b> was designed from the ground up to be easily installed and to get your telemetry operation up and running quickly.
-			</>
-		),
-	},
-	{
-		title: 'Focus on What Matters',
-		Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
-		description: (
-			<>
-				<b>VirtualMetric</b> lets you focus on your data, doing the chores for you in the background. Go ahead and start enriching your data.
-			</>
-		),
-	},
-	{
-		title: 'Powerful Telemetry',
-		Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
-		description: (
-			<>
-				Extend the functionality of your telemetry operations. <b>VirtualMetric</b> can be fully customized to fit your needs.
-			</>
-		),
-	},
-];
+const FeatureList: FeatureItem[] = [];
 
 function Feature({ title, Svg, description }: FeatureItem) {
 	return (
