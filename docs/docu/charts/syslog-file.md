@@ -5,7 +5,7 @@ sidebar_position: 9
 
 # Syslog File
 
-Properties of the `syslog` file, and their data types and valid ranges.
+The `syslog` file may contain the following properties:
 
 |Property|Data Type|Required|Use|
 |---|---|---|---|
