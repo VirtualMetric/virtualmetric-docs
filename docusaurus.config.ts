@@ -47,8 +47,7 @@ const config: Config = {
 	],
 	plugins: [require.resolve('docusaurus-lunr-search')],
 	themeConfig: {
-		// Replace with your project's social card
-		image: "img/docusaurus-social-card.jpg",
+		image: "blank.png",
 		navbar: {
 			title: "",
 			logo: {
@@ -84,11 +83,7 @@ const config: Config = {
 					items: [
 						{
 							href: 'https://virtualmetric.com/',
-							label: 'VirtualMetric Website',
-						},
-						{
-							href: 'https://docs.virtualmetric.com/',
-							label: 'User Documentation',
+							label: 'VirtualMetric',
 						},
 					],
 				},
@@ -103,7 +98,7 @@ const config: Config = {
 			style: "dark",
 			links: [
 			],
-			copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V. Built with Docusaurus`,
+			copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V.`,
 		},
 		prism: {
 			theme: prismThemes.github,
