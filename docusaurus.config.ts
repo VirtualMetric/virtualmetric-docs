@@ -83,7 +83,7 @@ const config: Config = {
 					items: [
 						{
 							href: 'https://virtualmetric.com/',
-							label: 'VirtualMetric',
+							label: 'VirtualMetric Home',
 						},
 					],
 				},

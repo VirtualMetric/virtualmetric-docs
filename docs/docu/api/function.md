@@ -9,3 +9,4 @@ Some API function.
 
 :::tip
 The function will be thoroughly documented.
+:::
