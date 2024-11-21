@@ -48,8 +48,9 @@ Note the file named `syslog.yaml`. Open it with the default text editor of Windo
 Multiple devices can be entered into the same YAML file, or multiple YAML files can be created to define device groups based on your needs.
 :::
 
-By default, the file comes with the following fields:
+By default, the file comes with a number of fields&mdash;see the [Syslog File](../../docu/charts/syslog-file.md) section for the data types and allowed values.
 
+<details>
 ```Text
 devices:
   - id: 324235346
@@ -61,7 +62,6 @@ devices:
       address: "0.0.0.0"
       port: 14514
 ```
+</details>
 
-For the details of these fields, see the [syslog file](../../docu/charts/syslog-file.md) section.
-
-We will monitor a laptop, so we will assign an identifier to it in the `id` field.
+In this tutorial we will monitor a laptop, so we will assign an identifier to it in the `id` field.

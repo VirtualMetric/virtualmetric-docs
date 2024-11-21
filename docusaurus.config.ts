@@ -48,6 +48,11 @@ const config: Config = {
 	plugins: [require.resolve('docusaurus-lunr-search')],
 	themeConfig: {
 		image: "blank.png",
+		docs: {
+			sidebar: {
+				hideable: true,
+			},
+		},
 		navbar: {
 			title: "",
 			logo: {
@@ -96,8 +101,7 @@ const config: Config = {
 		},
 		footer: {
 			style: "dark",
-			links: [
-			],
+			links: [],
 			copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V.`,
 		},
 		prism: {
