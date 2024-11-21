@@ -5,7 +5,7 @@ sidebar_position: 9
 
 # Syslog File
 
-Properties of the `syslog` file and their valid values.
+Properties used by the `syslog` file, and their data types and valid ranges.
 
 :::note
 Get the list from the team

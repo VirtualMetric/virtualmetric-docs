@@ -80,9 +80,9 @@ const config: Config = {
 				},
 				{
 					type: 'docSidebar',
-					sidebarId: 'tutorials',
+					sidebarId: 'commandLine',
 					position: 'left',
-					label: 'Tutorials',
+					label: 'CLI',
 				},
 				{
 					to: '/blog',
