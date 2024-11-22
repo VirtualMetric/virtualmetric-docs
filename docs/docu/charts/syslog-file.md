@@ -5,12 +5,12 @@ sidebar_position: 9
 
 # Syslog File
 
-The `syslog` file may contain the following properties:
+The `syslog` file is a **YAML** configuration file used to describe the _source_ and the _target_ of a pipeline, along with other parameters to be used while routing the data. The file may contain the following fields:
 
-|Property|Data Type|Required|Use|
+|Field|Data Type|Required|Typical Use|
 |---|---|---|---|
-|`id`|string|Y||
-|`name`|string|Y||
-|`description`|string|||
-|`type`|string|N||
-|`status`|boolean|Y||
+|`id`|alphanumeric|Y||
+|`name`|alphanumeric|Y||
+|`description`|alphanumeric|||
+|`type`|alphanumeric|N||
+|`status`|logical|Y||

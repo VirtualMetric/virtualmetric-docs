@@ -1,0 +1,17 @@
+---
+displayed_sidebar: documents
+sidebar_position: 10
+---
+
+# PEM File
+
+A **PEM** (Privacy Enhanced Mail) file is a container format often used to store cryptographic keys, certificates, and other data. It is a Base64-encoded file that starts with a header and ends with a footer, such as:
+
+```encoding
+-----BEGIN CERTIFICATE-----
+// Base64-encoded data
+...
+-----END CERTIFICATE--
+```
+
+etc.

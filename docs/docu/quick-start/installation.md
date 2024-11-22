@@ -5,4 +5,9 @@ sidebar_position: 4
 
 # Installation
 
-Installation procedure of VirtualMetric&mdash;system requirements included.
+VirtualMetric is installed under `C:\>vm-install`.
+
+# System Requirements
+
+* Hardware
+* Software
