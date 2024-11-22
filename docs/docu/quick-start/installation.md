@@ -5,9 +5,9 @@ sidebar_position: 4
 
 # Installation
 
-VirtualMetric is installed under `C:\>vm-install`.
+The **Director** and **Generator** executables can be placed in any directory you wish. No installation procedure is required.
 
 # System Requirements
 
-* Hardware
-* Software
+* Memory: **128MB**
+* OS: Works on all current **Windows** and **Linux** versions

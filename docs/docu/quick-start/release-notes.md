@@ -5,4 +5,4 @@ sidebar_position: 5
 
 # Release Notes
 
-Bugfixes, improvements, UI changes, etc.
+The current release of both programs is **10.0.0**.

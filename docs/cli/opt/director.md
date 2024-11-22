@@ -1,11 +1,11 @@
 ---
 displayed_sidebar: commandLine
-sidebar_position: 2
+sidebar_position: 1
 ---
 
-# Command Line Options
+# Director
 
-**VirtualMetric Director** command line interface offers the following options:
+The **VirtualMetric Director** command line interface offers the following options:
 
 |Switch|Data Type|Required|Default Value|Use/Purpose|
 |---|---|---|---|---|
