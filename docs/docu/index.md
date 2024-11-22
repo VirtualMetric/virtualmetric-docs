@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # Overview
 
-**VirtualMetric Director** is a tool for creating **pipelines** to monitor telemetry data streams.
+**VirtualMetric**'s **Director** and **Generator** are tools for creating _pipelines_ to monitor telemetry data streams.
 
 The pipelines are created to route incoming data streams from the _source_ to a _targeted_ outgoing stream or a final destination.
 
