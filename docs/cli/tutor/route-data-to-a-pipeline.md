@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: commandLine
-sidebar_position: 4
+displayed_sidebar: commandLineDocs
+sidebar_position: 34
 ---
 
 # Route Data To A Pipeline

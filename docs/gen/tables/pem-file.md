@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: documents
-sidebar_position: 10
+displayed_sidebar: adminDocs
+sidebar_position: 41
 ---
 
 # PEM File

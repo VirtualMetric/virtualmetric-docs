@@ -1,5 +1,5 @@
 ---
-displayed_sidebar: publicAPI
+displayed_sidebar: publicAPIDocs
 sidebar_position: 2
 ---
 

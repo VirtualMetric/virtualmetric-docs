@@ -1,5 +1,5 @@
 ---
-displayed_sidebar: commandLine
+displayed_sidebar: commandLineDocs
 sidebar_position: 1
 ---
 

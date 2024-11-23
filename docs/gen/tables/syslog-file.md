@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: documents
-sidebar_position: 9
+displayed_sidebar: adminDocs
+sidebar_position: 42
 ---
 
 # Syslog File

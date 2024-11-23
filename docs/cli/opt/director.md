@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: commandLine
-sidebar_position: 1
+displayed_sidebar: commandLineDocs
+sidebar_position: 21
 ---
 
 # Director

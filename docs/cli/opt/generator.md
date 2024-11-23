@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: commandLine
-sidebar_position: 2
+displayed_sidebar: commandLineDocs
+sidebar_position: 22
 ---
 
 # Generator

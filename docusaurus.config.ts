@@ -70,21 +70,21 @@ const config: Config = {
 			items: [
 				{
 					type: 'docSidebar',
-					sidebarId: 'documents',
+					sidebarId: 'adminDocs',
 					position: 'left',
 					label: 'Docs',
 				},
 
 				{
 					type: 'docSidebar',
-					sidebarId: 'commandLine',
+					sidebarId: 'commandLineDocs',
 					position: 'left',
 					label: 'CLI',
 				},
 
 				{
 					type: 'docSidebar',
-					sidebarId: 'publicAPI',
+					sidebarId: 'publicAPIDocs',
 					position: 'left',
 					label: 'API',
 				},

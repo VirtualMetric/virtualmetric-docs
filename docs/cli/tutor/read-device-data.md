@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: commandLine
-sidebar_position: 2
+displayed_sidebar: commandLineDocs
+sidebar_position: 32
 ---
 
 # Read Device Data
@@ -51,7 +51,7 @@ devices:
 ```
 </details>
 
-By default, the file comes with certain fields&mdash;see the [Syslog File](../../docu/tables/syslog-file.md) section for the data types and allowable values.
+By default, the file comes with certain fields&mdash;see the [Syslog File](../../gen/tables/syslog-file.md) section for the data types and allowable values.
 
 :::note
 Multiple devices can be entered into the same YAML file, or multiple YAML files can be created to define device groups based on your choices.

@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: commandLine
-sidebar_position: 5
+displayed_sidebar: commandLineDocs
+sidebar_position: 35
 ---
 
 # Query Source Data
