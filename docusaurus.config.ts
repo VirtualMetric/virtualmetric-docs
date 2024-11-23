@@ -94,6 +94,7 @@ const config: Config = {
 					position: 'left',
 					label: 'Blog'
 				},
+
 				{
 					type: "search",
 					position: "right",
