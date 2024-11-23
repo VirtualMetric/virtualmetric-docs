@@ -12,8 +12,8 @@ We assume that the executables of **Director** and **Generator** are under the `
 :::
 
 * Download the following sample data and place them in &lt;_some-directory_&gt;:
-  * [sample-data-1](link)
-  * [sample-data-2](link)
+  * sample-data-1
+  * sample-data-2
   * etc.
 
 * Make sure that the `<vm_root>\package\definitions\pipelines\checkpoint.yaml` file contains the following entries:
