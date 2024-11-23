@@ -29,6 +29,7 @@ const config: Config = {
 					sidebarPath: "./sidebars.ts",
 					routeBasePath: "/",
 				},
+
 				blog: {
 					showReadingTime: true,
 					feedOptions: {
@@ -39,26 +40,33 @@ const config: Config = {
 					onInlineAuthors: "warn",
 					onUntruncatedBlogPosts: "warn",
 				},
+
 				theme: {
 					customCss: "./src/css/custom.css",
 				},
 			} satisfies Preset.Options,
 		],
 	],
+
 	plugins: [require.resolve('docusaurus-lunr-search')],
+
 	themeConfig: {
 		image: "blank.png",
+
 		docs: {
 			sidebar: {
 				hideable: true,
 			},
 		},
+
 		navbar: {
 			title: "",
+
 			logo: {
 				alt: "VirtualMetric B.V. Logo",
 				src: "img/logo.svg",
 			},
+
 			items: [
 				{
 					type: 'docSidebar',
@@ -66,12 +74,21 @@ const config: Config = {
 					position: 'left',
 					label: 'Docs',
 				},
+
 				{
 					type: 'docSidebar',
 					sidebarId: 'commandLine',
 					position: 'left',
 					label: 'CLI',
 				},
+
+				{
+					type: 'docSidebar',
+					sidebarId: 'publicAPI',
+					position: 'left',
+					label: 'API',
+				},
+
 				{
 					to: '/blog',
 					position: 'left',
@@ -81,29 +98,33 @@ const config: Config = {
 					type: "search",
 					position: "right",
 				},
-				{
-					type: "dropdown",
-					position: "right",
-					label: "Websites",
-					items: [
-						{
-							href: 'https://virtualmetric.com/',
-							label: 'VirtualMetric Home',
-						},
-					],
-				},
-				{
-					type: "docsVersionDropdown",
-					position: "right",
-					dropdownActiveClassDisabled: true,
-				},
+
+				// {
+				// 	type: "dropdown",
+				// 	position: "right",
+				// 	label: "Websites",
+				// 	items: [
+				// 		{
+				// 			href: 'https://virtualmetric.com/',
+				// 			label: 'VirtualMetric Home',
+				// 		},
+				// 	],
+				// },
+
+				// {
+				// 	type: "docsVersionDropdown",
+				// 	position: "right",
+				// 	dropdownActiveClassDisabled: true,
+				// },
 			],
 		},
+
 		footer: {
 			style: "dark",
 			links: [],
 			copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V.`,
 		},
+
 		prism: {
 			theme: prismThemes.github,
 			darkTheme: prismThemes.dracula,

@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: documents
-sidebar_position: 7
+displayed_sidebar: publicAPI
+sidebar_position: 2
 ---
 
 # Function

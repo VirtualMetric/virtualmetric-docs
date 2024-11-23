@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # Overview
 
-**VirtualMetric**'s **Director** and **Generator** are tools for creating _pipelines_ to monitor telemetry data streams.
+**VirtualMetric**'s **Director**, **Generator**, and **Agent** are tools for creating _pipelines_ to monitor telemetry data streams for various purposes.
 
 The pipelines are created to route incoming data streams from the _source_ to a _targeted_ outgoing stream or a final destination.
 
