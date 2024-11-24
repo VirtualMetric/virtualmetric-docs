@@ -1,15 +1,15 @@
 ---
 displayed_sidebar: commandLineDocs
-sidebar_position: 21
+sidebar_position: 22
 ---
 
 # Director
 
-The **VirtualMetric Director** command line interface offers the following options:
+The **Director** command line interface offers the following options:
 
-|Switch|Data Type|Required|Default Value|Use/Purpose|
+|Switch|Data Type|Required|Default|Description|
 |---|---|---|---|---|
-|`mode`|enumerated|Y|_N/A_|Selects a _mode_. Valid options are ...?|
+|`mode`|enumerated|Y|_N/A_|Selects a mode. Valid options are ...?|
 |`version`|logical|N|**false**|Shows the version|
 |`path`|alphanumeric|||Sets the installation path. This is the same path as ...?|
 |`pfx2pem`|alphanumeric|||Converts the certificate PFX to PEM files. (explain PFX and PEM)|
