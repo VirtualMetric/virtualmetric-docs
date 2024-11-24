@@ -7,6 +7,7 @@ sidebar_position: 42
 
 :::note
 * Bu formatın tarifi?
+* Kullanım şekli?
 * Bu dosyanın parametrelerini hangi source dosyaya bakarak açıklayabilirim?
 :::
 
