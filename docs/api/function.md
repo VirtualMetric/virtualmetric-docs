@@ -7,6 +7,6 @@ sidebar_position: 2
 
 Some API function.
 
-:::tip
+:::note
 The function will be thoroughly documented.
 :::

@@ -5,8 +5,9 @@ sidebar_position: 21
 
 # Configuration
 
-By default, both **Generator** and **Director** require very little configuration to get up and running. A few simple command line switch can be used to specify the _source_ and the _destination_ of the data stream.
+By default, both **Generator** and **Director** require very little configuration. A few simple command line switch can be used to specify the _source_ and the _destination_ of the data stream.
 
 :::note
-Is there any configuration required? If not, what is the most basic way these programs can be used via the CLI?
+* What is the most basic set of parameters/switches these programs can be used with via the CLI?
+* What are the default values of these parameters?
 :::

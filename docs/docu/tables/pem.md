@@ -3,7 +3,12 @@ displayed_sidebar: adminDocs
 sidebar_position: 41
 ---
 
-# PEM File
+# PEM
+
+:::note
+* Bu formatın tarifi?
+* Bu formatın kullanıldığı source dosya hangisi?
+:::
 
 A **PEM** (Privacy Enhanced Mail) file is a container format often used to store cryptographic keys, certificates, and other data. It is a Base64-encoded file that starts with a header and ends with a footer, such as:
 

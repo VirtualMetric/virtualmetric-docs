@@ -5,7 +5,17 @@ sidebar_position: 32
 
 # Read Device Data
 
-In this tutorial, we will show you the basics of a simple routing configuration.
+In this tutorial, we will show you the basics of a simple telemetry data reading operation.
+
+:::note
+* Bu programın kaynak kodu hangi dosyada?
+* Eren'in gösterdiği işlemi yapamadım. Nasıl yapılacak?
+* `vmetric-generator`'ın çalışma tarzı:
+  * Komut satırına en az hangi parametrelerin girilmesi gerekiyor?
+  * Sonucu komut satırına print etmek için ne yapılacak?
+  * Default parametreler hangi dosyalardan alınıyor?
+* Örnek veriler?
+:::
 
 Open a terminal and navigate to the `config` directory under the root. If you list the directory contents, you will see three subdirectories: `devices`, `routes`, and `targets`.
 
@@ -57,7 +67,7 @@ By default, the file comes with certain fields&mdash;see the [Syslog File](../..
 Multiple devices can be entered into the same YAML file, or multiple YAML files can be created to define device groups based on your choices.
 :::
 
-Here, we will monitor a laptop, so we assign an identifier to it using the `id` field.
+Here, we will monitor the local computer, so we assign the identifier `LAPTOP` to it using the `id` field. (Replace this with the name of your computer.)
 
 ```cli
 .\vmetric-generator -now -count 10 -mode syslog -address 127.0.0.1:14514 -duration 1

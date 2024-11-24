@@ -21,12 +21,17 @@ In this guide, we will explain various features: the types of devices, data file
 ## System Requirements
 
 * Memory: **64MB**
-* OS: All currently supported **Windows** and **Linux** versions
+* OS: All currently supported **Windows** and **Linux** versions (specify?)
+* Any other ?
 
 ## Installation
 
 The executables can be placed in any directory you wish.
 
+:::warning
+Make sure you allow the program to run in **Windows Firewall**.
+:::
+
 ## Release
 
-The current release is **10.0.0**.
+The current release of both programs is **10.0.0**.
