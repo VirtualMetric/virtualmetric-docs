@@ -1,6 +1,6 @@
 ---
 displayed_sidebar: adminDocs
-sidebar_position: 31
+sidebar_position: 34
 ---
 
 # Disk Persistency

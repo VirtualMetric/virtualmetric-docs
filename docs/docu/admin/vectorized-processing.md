@@ -1,6 +1,6 @@
 ---
 displayed_sidebar: adminDocs
-sidebar_position: 33
+sidebar_position: 35
 ---
 
 # Vectorized Processing

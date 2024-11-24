@@ -1,6 +1,6 @@
 ---
 displayed_sidebar: adminDocs
-sidebar_position: 32
+sidebar_position: 36
 ---
 
 # Batching Support

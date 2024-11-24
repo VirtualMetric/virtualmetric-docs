@@ -14,7 +14,7 @@ The sources can be devices, networks, or pipelines, and the targets can be the *
 
 Each incoming stream can be queried with criteria specific to the properties of the data, and each outgoing stream can be enriched with inferences made from the data for further processing on the target side.
 
-In this administration guide, we will explain various processing features of these programs; the types of devices, pipelines, and data streams they can handle, and the enrichment capabilities they offer in detail.
+In this guide, we will explain various features: the types of devices, data files, and pipelines that can be specified; the types of data streams that can be handled; and the enrichment capabilities available in detail.
 
 ---
 
