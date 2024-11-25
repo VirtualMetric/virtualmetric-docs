@@ -4,3 +4,8 @@ sidebar_position: 35
 ---
 
 # Vectorized Processing
+
+:::info
+* Describe
+* Illustrate
+:::

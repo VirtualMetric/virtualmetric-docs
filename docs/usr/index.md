@@ -24,6 +24,8 @@ In this guide, we will explain various features: the types of devices, data file
 * OS: All currently supported **Windows** and **Linux** versions (specify?)
 * Any other ?
 
+---
+
 ## Installation
 
 The executables can be placed in any directory you wish.
@@ -32,6 +34,20 @@ The executables can be placed in any directory you wish.
 Make sure you allow the program to run in **Windows Firewall**.
 :::
 
+---
+
 ## Release
 
 The current release of both programs is **10.0.0**.
+
+---
+
+## Disclaimer
+
+NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, IS MADE IN RELATION TO THE CONTENTS OF THIS DOCUMENT REGARDING ITS USE, INCLUDING BUT NOT LIMITED TO AVAILABILITY, ACCURACY, RELIABILITY, NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PURPOSE. IN NO EVENT SHALL **VirtualMetric B.V.** BE LIABLE FOR ANY DAMAGES, INCLUDING BUT NOT LIMITED TO DIRECT, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, OR DUE TO BUSINESS INTERRUPTION, OR ANY LOSS OF PROFIT, REVENUE, BUSINESS OPPORTUNITY, OR DATA THAT MAY ARISE FROM THE USE OF THE INFORMATION HEREIN.
+
+---
+
+**VirtualMetic Generator** and **VirtualMetric Director** are registered trademarks of **VirtualMetric B.V.** Other products mentioned in this document may be trademarks of their respective owners.
+
+This document is subject to change without prior notice.

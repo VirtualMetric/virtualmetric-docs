@@ -4,3 +4,8 @@ sidebar_position: 34
 ---
 
 # Disk Persistency
+
+:::info
+* Describe
+* Illustrate
+:::
