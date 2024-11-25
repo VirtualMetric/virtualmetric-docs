@@ -1,5 +1,5 @@
 ---
-displayed_sidebar: commandLineDocs
+displayed_sidebar: cmdlnDocs
 sidebar_position: 31
 ---
 

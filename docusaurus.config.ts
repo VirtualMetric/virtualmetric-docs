@@ -77,7 +77,7 @@ const config: Config = {
 
 				{
 					type: 'docSidebar',
-					sidebarId: 'commandLineDocs',
+					sidebarId: 'cmdlnDocs',
 					position: 'left',
 					label: 'CLI',
 				},
