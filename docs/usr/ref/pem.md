@@ -6,7 +6,7 @@ sidebar_position: 43
 # PEM
 
 :::note
-* Bu formatın tarifi?
+* Tarifi?
 * Kullanım şekli?
 * Ayar olarak kullanıldığı source dosya hangisi?
 :::

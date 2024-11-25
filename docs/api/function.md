@@ -1,12 +1,8 @@
 ---
-displayed_sidebar: publicAPIDocs
+displayed_sidebar: apiDocs
 sidebar_position: 2
 ---
 
 # Function
 
 Some API function.
-
-:::note
-The function will be thoroughly documented.
-:::

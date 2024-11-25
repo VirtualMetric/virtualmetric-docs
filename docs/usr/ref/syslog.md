@@ -6,7 +6,7 @@ sidebar_position: 42
 # Syslog
 
 :::note
-* Bu formatın tarifi?
+* Tarifi?
 * Kullanım şekli?
 * Ayar olarak kullanıldığı source dosya hangisi?
 :::

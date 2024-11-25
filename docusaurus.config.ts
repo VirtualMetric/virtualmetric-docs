@@ -84,7 +84,7 @@ const config: Config = {
 
 				{
 					type: 'docSidebar',
-					sidebarId: 'publicAPIDocs',
+					sidebarId: 'apiDocs',
 					position: 'left',
 					label: 'API',
 				},
