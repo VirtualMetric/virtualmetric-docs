@@ -10,6 +10,6 @@ sidebar_position: 371
 * What is their purpose of use?
 * How many are there (enumerate)?
 * How are they used?
-::
+:::
 
-VirtualMetric offers templates to get your automation up and running quickly.
+VirtualMetric offers templates you can use to get your automation processes up and running quickly.
