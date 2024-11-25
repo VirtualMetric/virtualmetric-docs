@@ -5,18 +5,18 @@ sidebar_position: 31
 
 # Setup
 
-The chapters of the tutorial require the following basic setup, tools, and sample data.
-
 :::note
 * Bu chapterlardaki işlemler için gereken en basit setup (yani ayarlar/parametreler) neler?
 * Bu işlemler için downloadable örnek veriler koymamız doğru olmaz mı?
 :::
 
+The chapters of the tutorial require the following basic setup, tools, and sample data.
+
 :::info
-We assume that the executables of **Director** and **Generator** are under the `C:\>VirtualMetric` directory which we will sometimes refer to as `<vm_root>`. Also, on **Windows** we assume you are using a **PowerShell** terminal.
+We will assume that the executables of **Director** and **Generator** were placed under the `C:\>VirtualMetric` directory, which we may refer to as `<vm_root>`.
 :::
 
-* Download the following sample data and place them in &lt;_some-directory_&gt;:
+* Download the following sample data and place them in &lt;_any-directory_&gt;:
   * sample-data-1
   * sample-data-2
   * etc.
@@ -29,3 +29,8 @@ We assume that the executables of **Director** and **Generator** are under the `
 	...
 	etc.
 ```
+* Open a terminal to enter the commands in the chapters
+
+:::info
+On **Windows**, any terminal compatible with **.NET** and **PowerShell** can be used.
+:::
