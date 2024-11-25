@@ -12,4 +12,4 @@ sidebar_position: 371
 * How are they used?
 :::
 
-VirtualMetric offers templates you can use to get your automation processes up and running quickly.
+**VirtualMetric** offers _templates_ you can use to get your automation processes up and running quickly.
