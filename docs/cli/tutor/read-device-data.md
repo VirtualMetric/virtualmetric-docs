@@ -69,6 +69,8 @@ Multiple devices can be entered into the same YAML file, or multiple YAML files 
 
 Here, we will monitor the local computer, so we assign the identifier `LAPTOP` to it using the `id` field. (Replace this with the name of your computer.)
 
+Copy the following line to the terminal and press <kb-short>Enter</kb-short>:
+
 ```cli
 .\vmetric-generator -now -count 10 -mode syslog -address 127.0.0.1:14514 -duration 1
 ```
