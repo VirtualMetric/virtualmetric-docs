@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: adminDocs
-sidebar_position: 41
+displayed_sidebar: userDocs
+sidebar_position: 43
 ---
 
 # PEM
@@ -8,7 +8,7 @@ sidebar_position: 41
 :::note
 * Bu formatın tarifi?
 * Kullanım şekli?
-* Bu formatın kullanıldığı source dosya hangisi?
+* Ayar olarak kullanıldığı source dosya hangisi?
 :::
 
 A **PEM** (Privacy Enhanced Mail) file is a container format often used to store cryptographic keys, certificates, and other data. It is a Base64-encoded file that starts with a header and ends with a footer, such as:

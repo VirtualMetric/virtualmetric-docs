@@ -70,7 +70,7 @@ const config: Config = {
 			items: [
 				{
 					type: 'docSidebar',
-					sidebarId: 'adminDocs',
+					sidebarId: 'userDocs',
 					position: 'left',
 					label: 'Docs',
 				},

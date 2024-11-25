@@ -1,6 +1,6 @@
 ---
 slug: /
-displayed_sidebar: adminDocs
+displayed_sidebar: userDocs
 sidebar_position: 1
 ---
 

@@ -1,5 +1,5 @@
 ---
-displayed_sidebar: adminDocs
+displayed_sidebar: userDocs
 sidebar_position: 42
 ---
 
@@ -8,7 +8,7 @@ sidebar_position: 42
 :::note
 * Bu formatın tarifi?
 * Kullanım şekli?
-* Bu dosyanın parametrelerini hangi source dosyaya bakarak açıklayabilirim?
+* Ayar olarak kullanıldığı source dosya hangisi?
 :::
 
 A **SYSLOG** (System Logging) file is a **YAML** configuration file used to describe the _source_ and the _target_ of a pipeline, along with other parameters to be used while routing the data. The file may contain the following fields:
