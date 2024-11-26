@@ -5,8 +5,18 @@ sidebar_position: 5
 
 # Glossary
 
-## A
+## I
 
-## B
+**Ingestion**
 
-## C
+## N
+
+**Normalization**
+
+## R
+
+**Routing**
+
+## V
+
+**Vectorized Processing**

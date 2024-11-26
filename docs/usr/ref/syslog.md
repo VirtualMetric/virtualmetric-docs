@@ -3,7 +3,7 @@ displayed_sidebar: userDocs
 sidebar_position: 42
 ---
 
-# Syslog
+# Syslog Files
 
 :::note
 * Tarifi?
