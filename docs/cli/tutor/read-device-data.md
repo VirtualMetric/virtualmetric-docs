@@ -9,15 +9,13 @@ In this tutorial, we will show you the basics of a simple telemetry data reading
 
 :::note
 * Bu programın kaynak kodu hangi dosyada?
-* Eren'in gösterdiği işlemi yapamadım. Nasıl yapılacak?
-* `vmetric-generator`'ın çalışma tarzı:
-  * Komut satırına en az hangi parametrelerin girilmesi gerekiyor?
-  * Sonucu komut satırına print etmek için ne yapılacak?
-  * Default parametreler hangi dosyalardan alınıyor?
+* Komut satırına en az hangi parametrelerin girilmesi gerekiyor?
+* Sonucu komut satırına print etmek için ne yapılacak?
+* Default parametreler hangi dosyalardan alınıyor?
 * Örnek veriler?
 :::
 
-Open a terminal and navigate to the `config` directory under the root. If you list the directory contents, you will see three subdirectories: `devices`, `routes`, and `targets`.
+On the terminal, navigate to the `config` directory under the root. If you list the directory contents, you will see three subdirectories: `devices`, `routes`, and `targets`.
 
 ```CLI
 C:\>VirtualMetric\config\Get-ChildItem
