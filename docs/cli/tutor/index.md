@@ -3,7 +3,7 @@ displayed_sidebar: cmdlnDocs
 sidebar_position: 31
 ---
 
-# Setup
+# Prerequisites
 
 :::note
 * Bu chapterlardaki işlemler için gereken en basit setup (yani ayarlar/parametreler) neler?

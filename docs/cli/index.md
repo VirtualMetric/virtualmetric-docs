@@ -11,4 +11,4 @@ For simple illustrations of how they work, we recommend reading the **Tutorials*
 
 ---
 
-See an example of [snippets](./inline-snippet-user.mdx).
+See examples of [snippets and imports](./snippets-and-imports.mdx).
