@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: cmdlnDocs
 sidebar_position: 32
+displayed_sidebar: cmdlnDocs
 ---
 
 # Read Device Data

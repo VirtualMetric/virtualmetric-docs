@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: cmdlnDocs
 sidebar_position: 1
+displayed_sidebar: cmdlnDocs
 ---
 
 # Overview

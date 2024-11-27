@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: cmdlnDocs
 sidebar_position: 34
+displayed_sidebar: cmdlnDocs
 ---
 
 # Route Data To A Pipeline

@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: cmdlnDocs
 sidebar_position: 21
+displayed_sidebar: cmdlnDocs
 ---
 
 # Generator

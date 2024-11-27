@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: cmdlnDocs
 sidebar_position: 31
+displayed_sidebar: cmdlnDocs
 ---
 
 # Prerequisites

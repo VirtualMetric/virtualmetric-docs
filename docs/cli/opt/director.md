@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: cmdlnDocs
 sidebar_position: 22
+displayed_sidebar: cmdlnDocs
 ---
 
 # Director

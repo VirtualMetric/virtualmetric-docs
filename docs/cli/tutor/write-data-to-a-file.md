@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: cmdlnDocs
 sidebar_position: 33
+displayed_sidebar: cmdlnDocs
 ---
 
 # Write Data To A File

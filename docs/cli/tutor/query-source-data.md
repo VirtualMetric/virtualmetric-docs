@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: cmdlnDocs
 sidebar_position: 35
+displayed_sidebar: cmdlnDocs
 ---
 
 # Query Source Data
