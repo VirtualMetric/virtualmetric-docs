@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: userDocs
 sidebar_position: 36
+displayed_sidebar: userDocs
 ---
 
 # Disk Persistency

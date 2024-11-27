@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: userDocs
 sidebar_position: 21
+displayed_sidebar: userDocs
 ---
 
 # Configuration

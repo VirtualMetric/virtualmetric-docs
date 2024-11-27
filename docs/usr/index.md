@@ -1,7 +1,7 @@
 ---
 slug: /
-displayed_sidebar: userDocs
 sidebar_position: 1
+displayed_sidebar: userDocs
 ---
 
 # Overview

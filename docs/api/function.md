@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: apiDocs
 sidebar_position: 2
+displayed_sidebar: apiDocs
 ---
 
 # Function

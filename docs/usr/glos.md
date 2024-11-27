@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: userDocs
 sidebar_position: 5
+displayed_sidebar: userDocs
 ---
 
 # Glossary

@@ -43,9 +43,10 @@ Mode                 LastWriteTime         Length Name
 -a----        19/11/2024     17:18            173 syslog.yaml
 ```
 
-You can see a file named `syslog.yaml`. Open it with a text editor or print its contents to the terminal with `Get-Content`.
+You can see a YAML file listed. Open it with a text editor or print its contents to the terminal with `Get-Content`.
 
 <details>
+<summary>syslog.yaml</summary>
 ```Text
 devices:
   - id: 324235346
@@ -59,7 +60,7 @@ devices:
 ```
 </details>
 
-By default, the file comes with certain fields&mdash;see the [Syslog File](../../usr/ref/syslog.md) section for the data types and allowable values.
+By default, the file comes with certain fields&mdash;see the [Syslog Files](../../usr/ref/syslog.md) section for the data types and allowable values.
 
 :::note
 Multiple devices can be entered into the same YAML file, or multiple YAML files can be created to define device groups based on your choices.

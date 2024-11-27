@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: userDocs
 sidebar_position: 37
+displayed_sidebar: userDocs
 ---
 
 # Batching Support

@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: userDocs
 sidebar_position: 23
+displayed_sidebar: userDocs
 ---
 
 # Director

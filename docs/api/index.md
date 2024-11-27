@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: apiDocs
 sidebar_position: 1
+displayed_sidebar: apiDocs
 ---
 
 # Overview

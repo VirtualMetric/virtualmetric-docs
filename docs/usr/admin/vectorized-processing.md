@@ -1,6 +1,6 @@
 ---
-displayed_sidebar: userDocs
 sidebar_position: 35
+displayed_sidebar: userDocs
 ---
 
 # Vectorized Processing
