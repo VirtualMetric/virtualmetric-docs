@@ -5,18 +5,22 @@ sidebar_position: 43
 
 # PEM Files
 
-A **PEM** (Privacy Enhanced Mail) file is a container format often used to store cryptographic keys, certificates, and other data. It is a Base64-encoded file that starts with a header and ends with a footer, e.g.:
+A **PEM** (Privacy Enhanced Mail) file is a container format often used to store cryptographic keys, certificates, and other data. It is a base64-encoded file that starts with a header and ends with a footer, e.g.:
 
 ```encoding
------BEGIN <TYPE>-----
-// Base64-encoded data
+-----BEGIN CERTIFICATE-----
+MIIH/TCCBeWgAwIBAgIQaBYE3/M08XHYCnNVmcFBcjANBgkqhkiG9w0BAQsFADBy
+MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMxEDAOBgNVBAcMB0hvdXN0b24x
+ETAPBgNVBAoMCFNTTCBDb3JwMS4wLAYDVQQDDCVTU0wuY29tIEVWIFNTTCBJbnRl
+cm1lZGlhdGUgQ0EgUlNBIFIzMB4XDTIwMDQwMTAwNTgzM1oXDTIxMDcxNjAwNTgz
+M1owgb0xCzAJBgNVBAYTAlVTMQ4wDAYDVQQIDAVUZXhhczEQMA4GA1UEBwwHSG91
 ...
------END <TYPE>--
+-----END CERTIFICATE--
 ```
 
-etc. where `<TYPE>` can be, for instance, `CERTIFICATE`. These blocks communicate what is encoded in the file.
+where `CERTIFICATE` can also be `PRIVATE KEY` or `RSA KEY`. These blocks communicate what is encoded in the file.
 
-This is a text-based format, and the Base64-encoded data can be uppercase and lowercase letters, digits, '+', and '/'.
+This is a text-based format, and the base64-encoded data can be uppercase and lowercase letters, digits, '+', and '/'.
 
 A **PEM** file can contain multiple blocks of such data. These are generally used to encode for example **RSA** keys for **SSH** connections, certificates used for **SSL** encryption and the keys associated with them, etc.
 
@@ -28,8 +32,10 @@ A **PEM** file for certificates can specify
 
 These are generally issued by the **SSL** provider to be used in a web service.
 
-**PEM** files are also used for **SSH**. A typical use on the command line with the server is:
+**PEM** files are also used for **SSH**. Typical use on the command line is:
 
 ```CLI-linux
 ssh -i keyfile.pem root@host
 ```
+
+where the `-i` parameter specifies the PEM file to use to create a secure **SSH** connection `host`.

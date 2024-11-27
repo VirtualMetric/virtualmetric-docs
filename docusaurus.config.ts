@@ -50,7 +50,9 @@ const config: Config = {
 		],
 	],
 
-	plugins: [require.resolve('docusaurus-lunr-search')],
+	plugins: [
+		require.resolve('docusaurus-lunr-search')
+	],
 
 	themeConfig: {
 		image: "blank.png",
