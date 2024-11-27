@@ -46,7 +46,7 @@ Mode                 LastWriteTime         Length Name
 You can see a YAML file listed. Open it with a text editor or print its contents to the terminal with `Get-Content`.
 
 <details>
-<summary>syslog.yaml</summary>
+<summary>Contents of `syslog.yaml`</summary>
 ```Text
 devices:
   - id: 324235346

@@ -31,7 +31,7 @@ displayed_sidebar: userDocs
 
 ## T
 
-**Template**
+**Template** Object containing selection and/or processing logic for an incoming data stream
 
 ## V
 
