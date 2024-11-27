@@ -9,17 +9,17 @@ sidebar_position: 21
 
 Entering the command without any flags starts an infinite message stream with the default values in **50** seconds, e.g.
 
-> CLI
-> Netflow generator will start at 2024-11-27 13:10:00 +0300 +03.
-> Waiting for 49.4803857 seconds..
->
-> 1000 flows sent successfully in 29 ms with 0 error(s) at 2024-11-27 13:10:01.0404548 +0300 +03 m=+52.628205001
-> 1000 flows sent successfully since 2024-11-27 13:10:00 +0300 +03
->
-> 1000 flows sent successfully in 3 ms with 0 error(s) at 2024-11-27 13:10:02.0450593 +0300 +03 m=+53.632809501
-> 2000 flows sent successfully since 2024-11-27 13:10:00 +0300 +03
->
-> ...
+```CLI
+Netflow generator will start at 2024-11-27 13:10:00 +0300 +03.
+Waiting for 49.4803857 seconds..
+
+1000 flows sent successfully in 29 ms with 0 error(s) at 2024-11-27 13:10:01.0404548 +0300 +03 m=+52.628205001
+1000 flows sent successfully since 2024-11-27 13:10:00 +0300 +03
+
+1000 flows sent successfully in 3 ms with 0 error(s) at 2024-11-27 13:10:02.0450593 +0300 +03 m=+53.632809501
+2000 flows sent successfully since 2024-11-27 13:10:00 +0300 +03
+...
+```
 
 The command line interface offers the following options:
 

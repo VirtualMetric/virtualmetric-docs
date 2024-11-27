@@ -1,6 +1,6 @@
 ---
 displayed_sidebar: userDocs
-sidebar_position: 371
+sidebar_position: 331
 ---
 
 # Overview
@@ -14,4 +14,4 @@ sidebar_position: 371
 
 **VirtualMetric** offers pipeline _templates_ you can use to get your automation processes up and running quickly.
 
-A template is a definition of how a log line is to be processed. They contain conditions of when they should be run, and they can be visualized and edited per tenant.
+A template is a _regular expression_-based definition of how a log line is to be processed. They contain conditions of when they should be run, and they can be visualized and edited per tenant.

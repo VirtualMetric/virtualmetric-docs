@@ -6,8 +6,8 @@ sidebar_position: 31
 # Prerequisites
 
 :::note
-* Bu chapterlardaki işlemler için gereken en basit setup (yani ayarlar/parametreler) neler?
-* Bu işlemler için downloadable örnek veriler koymamız doğru olmaz mı?
+* Yapılacak şeyler için gereken en basit setup (yani ayarlar/parametreler)?
+* Downloadable örnek veriler
 :::
 
 The chapters of the tutorial require the following basic setup, tools, and sample data.
