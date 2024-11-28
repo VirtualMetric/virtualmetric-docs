@@ -1,5 +1,4 @@
 ---
-sidebar_position: 43
 displayed_sidebar: userDocs
 ---
 
