@@ -51,7 +51,7 @@ const config: Config = {
 	],
 
 	plugins: [
-		require.resolve('docusaurus-lunr-search')
+		require.resolve('docusaurus-lunr-search'),
 	],
 
 	themeConfig: {
