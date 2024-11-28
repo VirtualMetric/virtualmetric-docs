@@ -1,7 +1,3 @@
----
-displayed_sidebar: userDocs
----
-
 # Syslog Files
 
 :::note
