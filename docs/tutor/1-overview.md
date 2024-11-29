@@ -13,11 +13,6 @@ The chapters of the tutorial require the following basic setup, tools, and sampl
 We will assume that the executables of **Director** and **Generator** were placed under the `C:\>VirtualMetric` directory, which we may refer to as `<vm_root>`.
 :::
 
-* Download the following sample data and place them in &lt;_any-directory_&gt;:
-  * sample-data-1
-  * sample-data-2
-  * etc.
-
 * Make sure that the `<vm_root>\package\definitions\pipelines\checkpoint.yaml` file contains the following entries:
 
 ```yaml
@@ -31,3 +26,11 @@ We will assume that the executables of **Director** and **Generator** were place
 :::info
 On **Windows**, any terminal compatible with **.NET** and **PowerShell** can be used.
 :::
+
+## Sample Data
+
+Download the following sample data and place them in &lt;_any-directory_&gt;:
+
+  * sample-data-1
+  * sample-data-2
+  * etc.

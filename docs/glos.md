@@ -1,8 +1,12 @@
 # Glossary
 
-##
+## A
 
-**Batch Processing**
+**Audit** Review of logs for the purpose of verifying that IT policies are correctly implemented
+
+## B
+
+**Batch Processing** Collective sequential processing of a large number of records that require the same operation
 
 ## I
 
@@ -10,7 +14,7 @@
 
 ## M
 
-**Management**
+**Management** The policy implemented to handle log lines after they have been processed
 
 ## N
 
@@ -26,7 +30,7 @@
 
 ## T
 
-**Template** Object containing selection and/or processing logic for an incoming data stream
+**Template** Container object with selection and/or processing logic for an incoming data stream
 
 ## V
 
