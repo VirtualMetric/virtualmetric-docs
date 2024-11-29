@@ -77,7 +77,7 @@ devices:
 ```
 </details>
 
-By default, the file comes with the fields enlisted here&mdash;see the [Syslog Files](../../usr/ref/2-syslog.md) section for the data types and allowable values.
+By default, the file comes with the fields enlisted here&mdash;see the [Syslog Files](../usr/ref/2-syslog.md) section for the data types and allowable values.
 
 :::note
 Multiple devices can be entered into the same YAML file, or multiple YAML files can be created to define device groups based on your choices.

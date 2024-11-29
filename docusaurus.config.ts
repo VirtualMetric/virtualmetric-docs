@@ -87,9 +87,9 @@ const config: Config = {
 
 				{
 					type: 'docSidebar',
-					sidebarId: 'cmdlnDocs',
+					sidebarId: 'tutorDocs',
 					position: 'left',
-					label: 'CLI',
+					label: 'Tutorials',
 				},
 
 				{

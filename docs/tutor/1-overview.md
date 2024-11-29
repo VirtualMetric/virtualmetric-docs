@@ -1,4 +1,4 @@
-# Prerequisites
+# Overview
 
 :::note
 * Yapılacak şeyler için gereken en basit setup (yani ayarlar/parametreler)?
@@ -6,6 +6,8 @@
 :::
 
 The chapters of the tutorial require the following basic setup, tools, and sample data.
+
+## Prerequisites
 
 :::info
 We will assume that the executables of **Director** and **Generator** were placed under the `C:\>VirtualMetric` directory, which we may refer to as `<vm_root>`.
