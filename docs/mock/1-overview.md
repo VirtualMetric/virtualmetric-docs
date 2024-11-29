@@ -7,3 +7,4 @@ These mocks were created to illustrate some of the features of **Docusaurus** su
 * [Tags](./4-custom-tags.mdx)
 * [Images](./5-custom-images.mdx)
 * [Cards](./6-custom-cards.mdx)
+* [Diagrams](./7-diagrams.mdx)

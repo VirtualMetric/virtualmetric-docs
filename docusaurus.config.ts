@@ -63,6 +63,11 @@ const config: Config = {
 			},
 		},
 
+		mermaid: {
+			theme: {light: 'neutral', dark: 'forest'},
+			options: {maxTextSize: 50},
+		},
+
 		navbar: {
 			title: "",
 
