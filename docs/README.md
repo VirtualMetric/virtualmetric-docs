@@ -61,6 +61,6 @@ NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, IS MADE IN RELATION TO THE CONTENTS
 
 ---
 
-**VirtualMetic Generator** and **VirtualMetric Director** are registered trademarks of **VirtualMetric B.V.** Other products mentioned in this document may be trademarks of their respective owners.
+**VirtualMetric Director** and **VirtualMetic Generator** are registered trademarks of **VirtualMetric B.V.** Other products mentioned in this document may be trademarks of their respective owners.
 
 This document is subject to change without prior notice.
