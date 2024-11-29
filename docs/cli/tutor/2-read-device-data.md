@@ -85,10 +85,8 @@ Multiple devices can be entered into the same YAML file, or multiple YAML files 
 
 In this tutorial, we will monitor our local computer&mdash;which is named `LAPTOP`&mdash;so we assign that identifier to the `device: id:` field. (Replace this with the name of your computer.)
 
-Now open a separate terminal and, again, navigate to `<vm_root>`. On this terminal, enter the command `\vmetric-director` on the command line and press <kb-short>Enter</kb-short>. The command line will be suspended since **Director** has started listening.
-
-Copy the following line to the previous terminal and press <kb-short>Enter</kb-short>:
+Copy the following line to the terminal and press <kb-short>Enter</kb-short>:
 
 ```CLI
-.\vmetric-generator -now -count 10 -mode syslog -address 127.0.0.1:14514 -duration 1
+.\vmetric-director -now -count 10 -mode syslog -address 127.0.0.1:14514 -duration 1
 ```

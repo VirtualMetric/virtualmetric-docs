@@ -4,13 +4,13 @@
 
 ## The Sender Queue
 
-TODO: Explain
+TODO: Describe
 
 ## The Router Queue
 
-The router queue uses the following objects:
+TODO: Describe
 
-TODO: Explain
+The **router queue**, in turn, uses the following objects:
 
 ### applicationlog
 

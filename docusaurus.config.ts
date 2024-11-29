@@ -55,7 +55,7 @@ const config: Config = {
 	],
 
 	themeConfig: {
-		image: "blank.png",
+		image: "telemetry-color.jpg",
 
 		docs: {
 			sidebar: {
@@ -72,8 +72,9 @@ const config: Config = {
 			title: "",
 
 			logo: {
-				alt: "VirtualMetric B.V. Logo",
-				src: "img/logo.svg",
+				alt: "VirtualMetric Logo",
+				src: "img/telemetry-color.jpg",
+				srcDark: "img/logo.svg",
 			},
 
 			items: [
