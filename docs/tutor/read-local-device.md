@@ -1,4 +1,4 @@
-# Read Device Data
+# Read Local Device
 
 In this tutorial, we will show you the basic device data reading operation.
 
