@@ -8,7 +8,7 @@ This document describes the features and functionality of **VirtualMetric**'s **
 
 ## Introduction
 
-**Director** is a tool designed for creating and managing _pipelines_ in tandem to monitor telemetry data streams for various purposes, whereas **Generator** is a utility program intended to generate realistic telemetry data to help configure **Director** for production.
+**Director** is a tool designed for creating and managing _pipelines_ in tandem to monitor telemetry data streams for various purposes, and **Generator** is a utility program intended to generate realistic telemetry data to help configure **Director** for production.
 
 The pipelines are created to route incoming data streams from _sources_ to _targeted_ outgoing streams or some final destination.
 

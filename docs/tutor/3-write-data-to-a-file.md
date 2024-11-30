@@ -1,8 +1,7 @@
 # Write Data To A File
 
 :::note
-* Bu işlem için hangi ayarlar ve parametreler gerekiyor?
-* Bunları bulabileceğim source dosya hangisi?
+Aşağıda verdiğim işlem tabii ki bu değil. Director ingest edilen telemetry verilerini belirli bir formatta bir dosyaya yazıyor olmalı. O dosya nasıl belirtiliyor?
 :::
 
 In this tutorial, we will direct the stream that **Director** is ingesting from a device to an output file.

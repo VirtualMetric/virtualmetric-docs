@@ -77,7 +77,7 @@ devices:
 ```
 </details>
 
-By default, the file comes with the fields quoted above. For the data types and allowable values, see the [Syslog Files](../ref/2-syslog.md) section.
+By default, the file comes with the fields quoted above. For the data types and allowable values, see the [Syslog Files](../ref/syslog.md) section.
 
 :::note
 Multiple devices can be entered into the same YAML file, or multiple YAML files can be created to define device groups based on your requirements.
@@ -106,7 +106,7 @@ Type the executable name of **Director** (i.e. `vmetric-director`) without speci
 As you can see from the first message, **Director** started listening to our local computer.
 
 :::info
-There will be a number of warning messages about certain _log_ files that have not yet been configured. We will see how these are handled in other tutorials, so you can safely disregard them here.
+There will be a number of warning messages about certain _log_ files that have not yet been configured. We will see how these are handled in later tutorials, so you can safely disregard them here.
 :::
 
 You can interrupt the stream by pressing <kb-short>Crtl+C</kb-short>.
