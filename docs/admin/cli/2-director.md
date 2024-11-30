@@ -11,7 +11,7 @@ The command line interface offers the following options:
 |`mode`|Enumerated|_N/A_|Selects a _mode_ (valid options are ...?)|
 |`version`|Logical|**false**|Shows the version|
 |`path`|Alphanumeric||Sets the installation path (of what ...?)|
-|`pfx2pem`|Alphanumeric||Converts the certificate PFX to [PEM](../../ref/3-pem.md) files|
+|`pfx2pem`|Alphanumeric||Converts the certificate PFX to [PEM](../../ref/pem.md) files|
 |`validate`|Logical|**false**|Validates the YAML configuration|
 |`example`|Logical|**false**|Shows configuration examples|
 |`compare-version`|Alphanumeric||Compares versions (of what?)|
