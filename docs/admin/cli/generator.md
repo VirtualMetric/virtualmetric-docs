@@ -1,3 +1,7 @@
+---
+pagination_next: null
+---
+
 # Generator
 
 **Command**: `vmetric-generator <flags>`

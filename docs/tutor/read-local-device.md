@@ -2,6 +2,8 @@
 
 In this tutorial, we will show you the basic device data reading operation.
 
+## Configure Console
+
 On the terminal, navigate to `<vm_root>`, i.e. where you have placed the **VirtualMetric** executables. Then, query for YAML files:
 
 ```PowerShell
@@ -31,6 +33,8 @@ debug:
 </details>
 
 Open the file with a text editor, and set the property `console: status:` to `true`.
+
+## Check Device Id
 
 Now `cd` to the `config` directory under the root. If you query for the subdirectories, you will see that there are three.
 
@@ -88,6 +92,8 @@ Here, we will monitor our local computer&mdash;which is named `LAPTOP`&mdash;so 
 :::info
 If the default `id` value is not modified, **Director** assigns it to the local computer.
 :::
+
+## Run Director
 
 Type the executable name of **Director** (i.e. `vmetric-director`) without specifying any parameters, and press <kb-short>Enter</kb-short>. After suspending for a few seconds, it will start sending a stream of messages to the console:
 

@@ -4,9 +4,9 @@
 Aşağıda verdiğim işlem tabii ki bu değil. Director ingest edilen telemetry verilerini belirli bir formatta bir dosyaya yazıyor olmalı. O dosya nasıl belirtiliyor?
 :::
 
-In this tutorial, we will direct the stream that **Director** is ingesting from a device to an output file.
+In this tutorial, we will direct the data stream that **Director** is ingesting from a device to an output file.
 
-On your terminal, navigate to `<vm_root>`. As in the previous tutorial, we will not be modifying any of the values in `config\syslog.yaml`. But this time we will dump the output of **Director** to a file. To do this, we have to specify a filename. We will name our dump file as, you guessed it, `dump_data.txt`, and we will direct the output using standard syntax terminals use.
+On your terminal, navigate to `<vm_root>`. As in the previous tutorial, we will not be modifying any of the values in `config\syslog.yaml`. But this time we will dump the output of **Director** to a file. To do this, we have to specify a filename. We will name our dump file as, you guessed it, `dump_data.txt`, and we will direct the output using standard syntax that terminals use.
 
 Copy the following line to your terminal and press <kb-short>Enter</kb-short>:
 
@@ -14,7 +14,9 @@ Copy the following line to your terminal and press <kb-short>Enter</kb-short>:
 <vm_root>\vmetric-director > dump_data.txt
 ```
 
-As **Director** is sending all its messages to our dump file, we will get any feedback from the terminal. Again, you can interrupt the stream by pressing <kb-short>Ctrl+C</kb-short>. Since we did not specify any path for our file, it was created in the current directory. We can get its content through our terminal as:
+As **Director** is sending all its messages to our dump file, we will _not_ get any feedback from the terminal. Again, you can interrupt the stream by pressing <kb-short>Ctrl+C</kb-short>.
+
+Since we did not specify any path for our file, it was created in the current directory, so we can get its contents through our terminal easily:
 
 ```PowerShell
 <vm_root>\Get-Content dump_data.txt
@@ -26,4 +28,4 @@ As **Director** is sending all its messages to our dump file, we will get any fe
 ...
 ```
 
-We have recorded the device data in text format in a file.
+We have recorded the device data in text format to a file.
