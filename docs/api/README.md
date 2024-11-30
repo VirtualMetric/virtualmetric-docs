@@ -1,3 +1,3 @@
 # Overview
 
-**Director** offers rich sets of API functions that you can use to access the system programmatically and automate your processes.
+**Director** offers a rich set of API functions that you can use to access the system programmatically and automate your processes using modern programming languages like **Golang** or **TypeScript**.

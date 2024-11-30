@@ -58,7 +58,9 @@ const sidebars: SidebarsConfig = {
 		'tutor/write-data-to-a-file',
 		'tutor/read-network-device',
 		'tutor/query-source-data',
+		'tutor/create-a-pipeline',
 		'tutor/route-data-to-a-pipeline',
+		'tutor/use-templates',
 	],
 
 	apiDocs: [

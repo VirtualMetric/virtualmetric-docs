@@ -6,7 +6,7 @@ This component collects all the data, either directly or via **Agents**. It then
 
 The command line interface offers the following options:
 
-|Flas|Data Type|Default|Description|
+|Flag|Data Type|Default|Description|
 |---|---|---|---|
 |`mode`|Enumerated|_N/A_|Selects a _mode_ (valid options are ...?)|
 |`version`|Logical|**false**|Shows the version|

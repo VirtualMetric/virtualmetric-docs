@@ -4,7 +4,7 @@ slug: /
 
 # Overview
 
-This document describes the features and functionality of **VirtualMetric**'s **Director** and its companion **Generator**.
+This document describes the features and functionality of **VirtualMetric**'s **Director** and its companion **Generator**. It is intended to be as thorough as possible. However, in the event that you spot any detail you believe is missing, please feel free to [contact us](mailto:tech-writer@virtualmetric.com).
 
 ## Introduction
 
@@ -30,7 +30,7 @@ In this guide, we will explain various features: the types of devices, data file
 
 ## Installation
 
-The executables can be placed in any directory you wish.
+No installation procedure is required. The executables can be placed in any directory you wish manually.
 
 ---
 
