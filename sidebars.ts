@@ -15,6 +15,7 @@ const sidebars: SidebarsConfig = {
 
 				{type: "category", label: "Routing",
 					items: [
+						'admin/route/README',
 						'admin/route/sources',
 						'admin/route/destinations',
 						'admin/route/pipelines',
@@ -49,15 +50,12 @@ const sidebars: SidebarsConfig = {
 	],
 
 	tutorDocs: [
-		{type: "category", label: "Tutorials",
-			items: [
-				'tutor/read-local-device',
-				'tutor/write-data-to-a-file',
-				'tutor/read-network-device',
-				'tutor/query-source-data',
-				'tutor/route-data-to-a-pipeline',
-			],
-		},
+		'tutor/README',
+		'tutor/read-local-device',
+		'tutor/write-data-to-a-file',
+		'tutor/read-network-device',
+		'tutor/query-source-data',
+		'tutor/route-data-to-a-pipeline',
 	],
 
 	apiDocs: [

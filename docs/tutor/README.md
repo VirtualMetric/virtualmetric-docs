@@ -21,10 +21,10 @@ We will refer to the installation directory as `<vm_root>`.
 Make sure that the `<vm_root>\package\definitions\<whatever>.yaml` file contains the following entries:
 
 ```yaml
-	entry 1
-	entry 2
-	...
-	etc.
+     entry 1
+     entry 2
+     ...
+     etc.
 ```
 
 ## Sample Data

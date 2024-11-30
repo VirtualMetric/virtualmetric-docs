@@ -35,7 +35,7 @@ Open the file with a text editor, and set the property `console: status:` to `tr
 Now `cd` to the `config` directory under the root. If you query for the subdirectories, you will see that there are three.
 
 ```PowerShell
-C:\>VirtualMetric\config\Get-ChildItem -Attributes Directory
+<vm_root>\config\Get-ChildItem -Attributes Directory
 
     Directory: C:\VirtualMetric\config
 
@@ -50,7 +50,7 @@ d-----        20/11/2024     14:08                targets
 **Director** uses a basic **YAML** configuration file for devices. Navigate to the `devices` directory and list its contents:
 
 ```PowerShell
-C:\>VirtualMetric\config\devices\Get-ChildItem
+<vm_root>\config\devices\Get-ChildItem
 
     Directory: C:\VirtualMetric\config\devices
 
@@ -92,7 +92,7 @@ If the default `id` value is not modified, **Director** assigns it to the local 
 Type the executable name of **Director** (i.e. `vmetric-director`) without specifying any parameters, and press <kb-short>Enter</kb-short>. After suspending for a few seconds, it will start sending a stream of messages to the console:
 
 ```PowerShell
-.\vmetric-director
+<vm_root>\vmetric-director
 [2024-11-30 13:19:49] [Information] [vmetric-director] VirtualMetric Main Service {LAPTOP} is getting started... Process ID: 19904
 [2024-11-30 13:19:49] [Information] [vmetric-director] System Date: 2024-11-30 13:19:49.6392555 +0300 +03 m=+1.976707401, Director Version: 10.0.0
 [2024-11-30 13:19:49] [Information] [vmetric-director] Configuration changes have been published to the key-value store on vmetric-director.
