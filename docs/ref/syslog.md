@@ -21,15 +21,3 @@
 |5|Notice|Significant condition|
 |6|Info|Info messages|
 |7|Debug|Debug messages|
-
-## Syslog YAML
-
-The YAML file for syslog that **Director** uses contains the following fields:
-
-|Field|Data Type|Required|Use|
-|---|---|---|---|
-|`id`|Numeric|Y||
-|`name`|Alphanumeric|Y||
-|`description`|Alphanumeric|||
-|`type`|Alphanumeric|N||
-|`status`|Logical|Y||

@@ -1,0 +1,5 @@
+# Overview
+
+:::note
+Multiple devices can be entered into the same YAML file, or multiple YAML files can be created to define device groups based on your requirements.
+:::

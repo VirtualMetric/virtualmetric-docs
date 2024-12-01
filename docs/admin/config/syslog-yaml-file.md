@@ -1,0 +1,32 @@
+# Syslog.yaml File
+
+By default, this file is under `<vm_root>\config\devices`.
+
+<details>
+<summary>Contents of `syslog.yaml`</summary>
+```YAML
+devices:
+  - id: 324235346
+    name: 127.0.0.1
+    description: syslog
+    type: syslog
+    status: true
+    properties:
+      address: "0.0.0.0"
+      port: 14514
+```
+</details>
+
+The file contains the following fields:
+
+|Field|Data Type|Required|Use|
+|---|---|---|---|
+|`id`|Numeric|Y||
+|`name`|Alphanumeric|Y||
+|`description`|Alphanumeric|||
+|`type`|Alphanumeric|N||
+|`status`|Logical|Y||
+
+:::info
+If the default `id` value is not modified, **Director** assigns it to the local computer.
+:::

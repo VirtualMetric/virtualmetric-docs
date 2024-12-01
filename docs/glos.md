@@ -30,7 +30,7 @@
 
 ## S
 
-**Supervisor** Checks the health of the processes. Restarts stopped services, cleans up `temp` folder, etc.
+**Supervisor** The component that checks the health of the processes. It restarts stopped services, cleans up the `temp` folder, etc.
 
 ## T
 
