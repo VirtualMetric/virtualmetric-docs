@@ -24,6 +24,8 @@
 
 **Pipeline** Pre-configured processing logic for a data stream
 
+**Parquet File** An open source, columnar storage file format
+
 ## R
 
 **Routing** Sending or directing a data stream to a destination for further processing or analysis
