@@ -2,6 +2,9 @@ import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+
 const config: Config = {
 	title: "VirtualMetric",
 	tagline: "Transform data overload into actionable security insights",
@@ -21,6 +24,21 @@ const config: Config = {
 		locales: ["en"],
 	},
 
+	markdown: {
+		mermaid: true,
+	},
+
+	themes: ['@docusaurus/theme-mermaid'],
+
+	stylesheets: [
+		{
+			href: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css',
+			type: 'text/css',
+			integrity: 'sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+',
+			crossorigin: 'anonymous',
+		},
+	],
+
 	presets: [
 		[
 			"classic",
@@ -28,6 +46,9 @@ const config: Config = {
 				docs: {
 					sidebarPath: "./sidebars.ts",
 					routeBasePath: "/",
+
+					remarkPlugins: [remarkMath],
+					rehypePlugins: [rehypeKatex],
 				},
 
 				blog: {
@@ -64,8 +85,8 @@ const config: Config = {
 		},
 
 		mermaid: {
-			theme: {light: 'neutral', dark: 'forest'},
-			options: {maxTextSize: 50},
+			// theme: {light: 'neutral', dark: 'forest'},
+			// options: {maxTextSize: 50},
 		},
 
 		navbar: {
