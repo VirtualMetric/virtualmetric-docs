@@ -1,4 +1,4 @@
-# How To Accept Syslog Messages And Write To A Parquet File
+# How To Write Syslog Messages To A Parquet File
 
 :::note
 Stub

@@ -1,4 +1,4 @@
-# How To Accept Syslog Messages and Write To The Console
+# How To Write Syslog Messages To The Console
 
 :::note
 Stub
