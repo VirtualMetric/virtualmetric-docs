@@ -4,4 +4,6 @@ pagination_next: null
 
 # Introduction
 
-Here is how to do the administration of **Director**.
+The following chapters are intended to document the administration features of **Director**.
+
+The program was desingned to be simple to keep its administration streamlined. Most of the tasks can be carried out through the command line parameters.

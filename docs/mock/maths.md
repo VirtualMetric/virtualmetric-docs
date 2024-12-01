@@ -56,12 +56,12 @@ Here is the solution in **Go**.
 
 ```Go
 func linear(X float, N int) (s float) {
-	var n = N
+	var n = 0
 	var t = 1.0
-	for n > 0 {
-		s = s + t
+	for n < N {
+		s = s + n * t
 		t = t * X
-		n --
+		n ++
 	}
 	return
 }
