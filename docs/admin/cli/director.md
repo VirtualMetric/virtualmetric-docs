@@ -8,7 +8,7 @@ The command line interface offers the following options:
 
 |Flag|Data Type|Default|Description|
 |---|---|---|---|
-|`mode`|Enumerated|_N/A_|Selects a _mode_ (valid options are ...?)|
+|`mode`|Enumerated|_N/A_|Selects a _mode_. This is an alias for pipelines (valid options are ... _pfx2pem_, _read_, _pipelines_, etc.?)|
 |`version`|Logical|**false**|Shows the version|
 |`path`|Alphanumeric||Sets the installation path (of what ...?)|
 |`pfx2pem`|Alphanumeric||Converts the certificate PFX to [PEM](../../ref/pem.md) files|

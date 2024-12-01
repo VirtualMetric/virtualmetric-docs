@@ -28,6 +28,10 @@
 
 **Routing** Sending or directing a data stream to a destination for further processing or analysis
 
+## S
+
+**Supervisor** Checks the health of the processes. Restarts stopped services, cleans up `temp` folder, etc.
+
 ## T
 
 **Template** Container object with selection and/or processing logic for an incoming data stream
