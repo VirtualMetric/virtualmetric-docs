@@ -17,7 +17,7 @@ $$
 \end{align*}
 $$
 
-## Reformulation
+## The Reformulation
 
 We will start by first redefining the sum as
 
@@ -34,11 +34,11 @@ $$
 S_{n-1}
 =&\sum_{n-1\le i<N}{(i-(n-1))\cdot X^{i-(n-1)}}\\
 =&\sum_{n-1\le i<N}{(i-n+1)\cdot X^{i-n+1}}\\
-=&\Bigg(\sum_{n-1\le i<N}{(i-n)\cdot X^{i-n}+X^{i-n}}\Bigg)\cdot X\\
-=&\Bigg(\sum_{n-1\le i<N}{(i-n)\cdot X^{i-n}}+\sum_{n-1\le i<N}{X^{i-n}}\Bigg)\cdot X\\
-=&\Bigg(-\frac{1}{X}+\sum_{n\le i<N}{(i-n)\cdot X^{i-n}}+\frac{1}{X}+\sum_{n\le i<N}{X^{i-n}}\Bigg)\cdot X\\
-=&\Bigg(S_n+\sum_{n\le i<N}{X^{i-n}}\Bigg)\cdot X\\
-=&\Bigg(S_n+T_n\Bigg)\cdot X
+=&\sum_{n-1\le i<N}{(i-n)\cdot X^{i-(n-1)}+X^{i-(n-1)}}\\
+=&\sum_{n-1\le i<N}{(i-n)\cdot X^{i-(n-1)}}+\sum_{n-1\le i<N}{X^{i-(n-1)}}\\
+=&\sum_{n-1\le i<N}{(i-n)\cdot X^{i-n+1}}+T_{n-1}\\
+=&\Bigg(\sum_{n\le i<N}{(i-n)\cdot X^{i-n}}-\frac{1}{X}\Bigg)\cdot X+T_{n-1}\\
+=&S_n\cdot X-1+T_{n-1}\\
 \end{align*}
 $$
 
@@ -50,7 +50,19 @@ $$
 \end{align*}
 $$
 
-## Solution
+In turn, $T_{n-1}$ will be
+
+$$
+\begin{align*}
+T_{n-1}
+=&\sum_{n-1\le i<N}{X^{i-(n-1)}}\\
+=&\sum_{n-1\le i<N}{X^{i-n+1}}\\
+=&\Bigg(\sum_{n\le i<N}{X^{i-n}}+\frac{1}{X}\Bigg)\cdot X\\
+=&T_n\cdot X+1
+\end{align*}
+$$
+
+## The Solution
 
 Since $T_n$ is a geometric series, the solution is:
 
