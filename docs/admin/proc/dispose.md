@@ -1,1 +1,3 @@
 # Dispose
+
+Disposes pipeline configurations.

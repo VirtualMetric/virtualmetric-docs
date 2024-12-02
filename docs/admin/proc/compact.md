@@ -2,9 +2,9 @@
 
 |Field|Type|Required|Use|Description|
 |---|---|---|---|---|
-|`Description`|Text||||
-|`If`|Text||||
-|`Tag`|Text||||
-|`OnSuccess`|Processors||||
-|`OnFailure`|Processors||||
-|`IgnoreFailure`|Logical||||
+|`description`|String|N|||
+|`if`|String|N|||
+|`tag`|String|N|||
+|`on_success`|Processors|N|||
+|`on_failure`|Processors|N|||
+|`ignore_failure`|Logical|N|||
