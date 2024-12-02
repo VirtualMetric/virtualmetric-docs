@@ -50,19 +50,12 @@ $$
 \end{align*}
 $$
 
-## Algorithm
+## Solution
 
-Here is the solution in **Go**.
+Since $T_n$ is a geometric series, the solution is:
 
-```Go
-func linear(X float, N int) (s float) {
-	var n = 0
-	var t = 1.0
-	for n < N {
-		s = s + n * t
-		t = t * X
-		n ++
-	}
-	return
-}
-```
+$$
+\begin{align*}
+	S_{n-1}=S_n+\frac{1-X^N}{1-X}
+\end{align*}
+$$
