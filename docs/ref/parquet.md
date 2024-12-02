@@ -1,4 +1,4 @@
-# Parquet File
+# Parquet Files
 
 The parquet file was designed by Apache as a column-based format. Unlike row-based formats like **CSV**, it stores the records in columns.
 
