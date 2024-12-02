@@ -30,7 +30,7 @@ In this guide, we will explain various features: the types of devices, data file
 
 ## Installation
 
-No installation procedure is required. The executables can be placed in any directory you wish manually.
+No installation procedure is required. The executables can be manually placed in any directory you wish.
 
 ---
 
