@@ -4,7 +4,7 @@
 |---|---|---|---|---|
 |`description`|String|N|||
 |`if`|String|N|||
-|`tag`|String|N|||
-|`on_success`|Processors|N|||
-|`on_failure`|Processors|N|||
 |`ignore_failure`|Logical|N|||
+|`on_failure`|Processors|N|||
+|`on_success`|Processors|N|||
+|`tag`|String|N|||

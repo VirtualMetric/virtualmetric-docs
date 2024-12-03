@@ -2,16 +2,16 @@
 
 |Field|Type|Required|Use|Description|
 |---|---|---|---|---|
-|`empty_value`|String|N|||
+|`field`|String|Y|||
 |`target_fields`|Strings|Y|||
 |`description`|String|N|||
+|`empty_value`|String|N|||
 |`if`|String|N|||
-|`tag`|String|N|||
+|`ignore_failure`|Logical|N|||
+|`ignore_missing`|Logical|N|||
+|`on_failure`|Processors|N|||
+|`on_success`|Processors|N|||
 |`quote`|String|N|||
 |`separator`|String|N|||
-|`field`|String|Y|||
-|`on_success`|Processors|N|||
-|`on_failure`|Processors|N|||
+|`tag`|String|N|||
 |`trim`|Logical|N|||
-|`ignore_missing`|Logical|N|||
-|`ignore_failure`|Logical|N|||

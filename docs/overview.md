@@ -39,7 +39,7 @@ No installation procedure is required. The executables can be manually placed in
 By default, both **Director** and **Generator** require no configuration to start running.
 
 :::warning
-Make sure you allow the program to run in **Windows Firewall**.
+Make sure **Windows Firewall** allows the program to run.
 :::
 
 ---

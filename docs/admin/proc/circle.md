@@ -2,14 +2,14 @@
 
 |Field|Type|Required|Use|Description|
 |---|---|---|---|---|
-|`description`|String|N|||
-|`if`|String|N|||
-|`tag`|String|N|||
+|`error_distance`|Real|Y|||
 |`field`|String|Y|||
 |`shape_type`|Shape|Y|||
-|`target_field`|String||||
-|`on_success`|Processors|N|||
-|`on_failure`|Processors|N|||
-|`error_distance`|Real|Y|||
+|`description`|String|N|||
+|`if`|String|N|||
 |`ignore_failure`|Logical|N|||
 |`ignore_missing`|Logical|N|||
+|`on_failure`|Processors|N|||
+|`on_success`|Processors|N|||
+|`tag`|String|N|||
+|`target_field`|String||||
