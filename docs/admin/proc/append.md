@@ -6,12 +6,21 @@ Appends one or more values to an existing array if the field exists and is an ar
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`field`|Alphanumeric|Y|N/A||
-|`value`|Any|Y|N/A||
-|`allow_duplicates`|Logical|N|true||
-|`description`|String|N|-||
-|`if`|Alphanumeric|N|-||
-|`ignore_failure`|Logical|N|false||
-|`on_failure`|Logical|N|-||
-|`on_success`|Logical|N|-||
-|`tag`|Alphanumeric|N|-||
+|`field`|Alphanumeric|Y|N/A|The field to append the value to|
+|`value`|Any|Y|N/A|The value to be appended|
+|`allow_duplicates`|Logical|N|true|If `false`, only distinct values are appended|
+|`description`|String|N|-|Explanatory notes|
+|`if`|Alphanumeric|N|-|Condition to be met to execute the processor|
+|`ignore_failure`|Logical|N|false|See [Handling Failures](../misc/handling-failures.md)|
+|`on_failure`|Logical|N|-|See [Handling Failures](../misc/handling-failures.md)|
+|`on_success`|Logical|N|-|Notification text|
+|`tag`|Alphanumeric|N|-|Identifier|
+
+```json
+{
+	"append": {
+		"field": "tickets",
+		"value": ["support", "{{{ticket_id}}}"]
+  	}
+}
+```
