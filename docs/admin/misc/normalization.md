@@ -1,6 +1,5 @@
 # Normalization
 
 :::info
-* Describe
-* Illustrate
+Stub
 :::

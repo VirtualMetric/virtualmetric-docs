@@ -40,6 +40,7 @@ const sidebars: SidebarsConfig = {
 
 				{type: "category", label: "Miscellaneous",
 					items: [
+						'admin/misc/handling-failures',
 						'admin/misc/normalization',
 						'admin/misc/disk-persistency',
 						'admin/misc/vectorized-processing',

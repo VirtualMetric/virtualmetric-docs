@@ -1,6 +1,5 @@
 # Disk Persistency
 
 :::info
-* Describe
-* Illustrate
+Stub
 :::

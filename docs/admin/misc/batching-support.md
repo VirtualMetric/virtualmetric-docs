@@ -1,6 +1,5 @@
 # Batching Support
 
 :::info
-* Describe
-* Illustrate
+Stub
 :::

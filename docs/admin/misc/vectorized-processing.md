@@ -1,6 +1,5 @@
 # Vectorized Processing
 
 :::info
-* Describe
-* Illustrate
+Stub
 :::

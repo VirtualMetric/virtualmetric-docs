@@ -8,10 +8,10 @@ Appends one or more values to an existing array if the field exists and is an ar
 |---|---|---|---|---|
 |`field`|Alphanumeric|Y|N/A|The field to append the value to|
 |`value`|Any|Y|N/A|The value to be appended|
-|`allow_duplicates`|Logical|N|true|If `false`, only distinct values are appended|
+|`allow_duplicates`|Logical|N|`true`|If `false`, only distinct values are appended|
 |`description`|String|N|-|Explanatory notes|
 |`if`|Alphanumeric|N|-|Condition to be met to execute the processor|
-|`ignore_failure`|Logical|N|false|See [Handling Failures](../misc/handling-failures.md)|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../misc/handling-failures.md)|
 |`on_failure`|Logical|N|-|See [Handling Failures](../misc/handling-failures.md)|
 |`on_success`|Logical|N|-|Notification text|
 |`tag`|Alphanumeric|N|-|Identifier|
