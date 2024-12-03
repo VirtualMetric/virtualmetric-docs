@@ -1,4 +1,4 @@
-# Geoip
+# Geo IP
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|

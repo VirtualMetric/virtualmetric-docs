@@ -1,4 +1,4 @@
-# Html Strip
+# HTML Strip
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|

@@ -1,4 +1,4 @@
-# Foreach
+# For Each
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
