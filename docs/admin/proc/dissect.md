@@ -1,6 +1,6 @@
 # Dissect
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`field`|String|Y|||
 |`pattern`|String|Y|||

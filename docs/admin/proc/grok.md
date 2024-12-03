@@ -1,6 +1,6 @@
 # Grok
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`field`|String|Y|||
 |`patterns`|Strings|Y|||

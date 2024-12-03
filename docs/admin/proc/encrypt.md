@@ -1,6 +1,6 @@
 # Encrypt
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`algorithm`|String|Y|||
 |`encryption_key`|String|Y|||

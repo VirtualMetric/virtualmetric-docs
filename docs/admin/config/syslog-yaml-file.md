@@ -19,7 +19,7 @@ devices:
 
 The file contains the following fields:
 
-|Field|Data Type|Required|Use|
+|Field|Data Type|Required|Default|
 |---|---|---|---|
 |`id`|Numeric|Y||
 |`name`|Alphanumeric|Y||

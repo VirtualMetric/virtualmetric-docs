@@ -1,6 +1,6 @@
 # Community Id
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`description`|String|N|||
 |`destination_ip`|String|N|||

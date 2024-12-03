@@ -1,6 +1,6 @@
 # Append
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`field`|Alphanumeric|Y|||
 |`value`|Any|Y|||

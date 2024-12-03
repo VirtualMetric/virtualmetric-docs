@@ -1,6 +1,6 @@
 # Date Index
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`date_rounding`|String|Y|||
 |`field`|String|Y|||

@@ -1,6 +1,6 @@
 # Fingerprint
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`fields`|Strings|Y|||
 |`description`|String|N|||

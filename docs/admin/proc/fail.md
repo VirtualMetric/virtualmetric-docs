@@ -1,6 +1,6 @@
 # Fail
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`message`|String|Y|||
 |`description`|String|N|||

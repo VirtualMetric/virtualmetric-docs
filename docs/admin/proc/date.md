@@ -1,6 +1,6 @@
 # Date
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`field`|String|Y|||
 |`formats`|Strings|Y|||

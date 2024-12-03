@@ -1,6 +1,6 @@
 # Html Strip
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`field`|String|Y|||
 |`description`|String|N|||

@@ -1,6 +1,6 @@
 # Circle
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`error_distance`|Real|Y|||
 |`field`|String|Y|||

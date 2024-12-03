@@ -1,6 +1,6 @@
 # Enrich
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`dataset_name`|Strings|Y|||
 |`lookup_table`|Strings|Y|||

@@ -1,6 +1,6 @@
 # Geoip
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`field`|String|Y|||
 |`database_file`|String|N|||

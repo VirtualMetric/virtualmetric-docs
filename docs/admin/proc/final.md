@@ -1,6 +1,6 @@
 # Final
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`description`|String|N|||
 |`if`|String|N|||

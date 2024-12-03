@@ -1,6 +1,6 @@
 # Convert
 
-|Field|Type|Required|Use|Description|
+|Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`precision`|Numeric|Y||
 |`description`|String|N||
