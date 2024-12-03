@@ -1,7 +1,7 @@
 # Append
 
 :::info[synopsis]
-Appends one or more values to an existing array if the field exists and is an array. If the field exists and is a scalar, converts a scalar to an array and appends one or more values to it. If the field doesn't exist, creates an array containing the provided values.
+Appends one or more values to an existing array if the field exists and is an array. If the field exists and is a scalar, converts it to an array and appends one or more values to it. If the field doesn't exist, creates an array containing the provided values.
 :::
 
 |Field|Type|Required|Default|Description|
