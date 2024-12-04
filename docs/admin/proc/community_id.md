@@ -27,9 +27,8 @@ Computes the **Community ID** for network flow data, as defined in the [Communit
 :::note[examples]
 ```json
 {
-   "processors" : [
+   "processors": [
       {
-         ...
          "community_id": { ... }
       }
    ]

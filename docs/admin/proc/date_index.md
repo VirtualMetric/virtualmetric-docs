@@ -1,18 +1,55 @@
 # Date Index
 
+:::info[synopsis]
+Points documents to the right time-based index according to the date or timestamp field in a document. The `_index` metadata value is set with a date index expression based on the specified index prefix, a date or timestamp field in the document being processed, and the specified date rounding.
+
+A date formatting can be configured to specify how the field's value should be parsed. Based on this, the specified index prefix and date rounding get formatted into an date index expression.
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`date_rounding`|String|Y|||
-|`field`|String|Y|||
-|`date_formats`|Strings|N|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`ignore_failure`|Logical|N|||
+|`date_rounding`|String|Y|N/A|Rounding logic. Valid values: `y`, `M`, `w`, `d`, `h`, `m`, `s` (year, month, week, day, hour, minute, second)|
+|`field`|String|Y|N/A|The field to get the date or timestamp from|
+|`date_formats`|Strings|N|`yyyy-MM-dd'T'HH:mm:ss.SSSXX`|Expected date format for parsing dates/timestamps. Valid formats: Java time pattern, ISO8601, UNIX, UNIX_MS, or TAI64N|
+|`description`|String|N|-|Explanatory note|
+|`if`|String|N|-|Condition to be met to execute the processor|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
 |`ignore_missing`|Logical|N|||
-|`index_name_format`|String|N|||
-|`index_name_prefix`|String|N|||
-|`locale`|String|N|||
-|`on_failure`|Processors|N|||
+|`index_name_format`|String|N|`yyyy-MM-dd`|Format to use to print the parsed date. Expects a valid Java pattern.|
+|`index_name_prefix`|String|N|-|Prefix of the index to be prepended to the printed date|
+|`locale`|String|N|`ENGLISH`|Locale to use to parse the date|
+|`on_failure`|Processors|N|-|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Processors|N|||
-|`tag`|String|N|||
-|`time_zone`|String|N|||
+|`tag`|String|N|-|Identifier|
+|`time_zone`|String|N|`UTC`|Timezone to use to parse the date|
+
+:::note[examples]
+Points documents to a monthly index that starts with a `co-index-` prefix based on a date in the `co-date` field:
+
+```json
+PUT _ingest/pipeline/monthlyindex
+{
+   "processors": [
+      {
+         "date_index_name": {
+            "field": "co-date",
+            "index_name_prefix": "co-index-",
+            "date_rounding": "M"
+         }
+      }
+   ]
+}
+```
+
+An index request from the same pipeline:
+
+```json
+PUT /co-index/_doc/1?pipeline=monthlyindex
+{
+   "co-date": "2024-06-55T09:05:11.3346"
+}
+
+TODO: Fill in the other examples after adapting them
+
+```
+:::

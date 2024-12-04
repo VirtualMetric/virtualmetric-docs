@@ -20,11 +20,15 @@ Extracts a CSV line embedded in a document, skipping empty fields.
 |`tag`|String|N|-|Identifier|
 |`trim`|Logical|N|`false`|Trim unquoted whitespace|
 
+:::note[examples]
+In **JSON**:
+
 ```json
 {
-	"csv": {
-		"field": "tickets",
-		"target_fields": ["ticket_id", "time", "employee_id"]
-	}
+   "csv": {
+      "field": "tickets",
+      "target_fields": ["ticket_id", "time", "employee_id"]
+   }
 }
 ```
+:::

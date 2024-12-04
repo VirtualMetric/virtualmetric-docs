@@ -16,11 +16,15 @@ Appends one or more values to an existing array if the field exists and is an ar
 |`on_success`|Logical|N|-|Notification text|
 |`tag`|Alphanumeric|N|-|Identifier|
 
+:::note[examples]
+In **JSON**:
+
 ```json
 {
-	"append": {
-		"field": "tickets",
-		"value": ["support", "{{{ticket_id}}}"]
-  	}
+   "append": {
+      "field": "tickets",
+      "value": ["support", "{{{ticket_id}}}"]
+   }
 }
 ```
+:::

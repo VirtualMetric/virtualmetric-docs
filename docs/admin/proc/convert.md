@@ -27,16 +27,15 @@ If the value cannot be converted to a matching type, the process still completes
 |`type`|Conversion|Y|-|The type to convert the `field` value to|
 
 :::note[examples]
-In **WKT**:
+In **JSON**:
 
-```wkt
+```json
 PUT _ingest/pipeline/my-pipeline-id
 {
-   "description": "Converts the id field to an integer",
-   "processors" : [
+   "processors": [
       {
-         "convert" : {
-            "field" : "id",
+         "convert": {
+            "field": "id",
             "type": "integer"
          }
       }
