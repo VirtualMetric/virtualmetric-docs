@@ -1,14 +1,76 @@
 # Dissect
 
+:::info[synopsis]
+Matches a text field against a pre-defined pattern, but without using regular expressions.
+
+For example, pattern:
+
+```code
+%{clientip} %{ident} %{auth} [%{@timestamp}] %{size}
+```
+
+will match the following log line:
+
+```code
+127.0.0.1 5578 JD [25/May/2024:15:12:40 +0000] 512
+```
+
+and create a document with the following fields:
+
+```code
+"doc": {
+   "_index": "_index",
+   "_type": "_type",
+   "_id": "_id",
+   "_source": {
+      "clientip": "127.0.0.1",
+      "ident": "5578",
+      "auth": "JD",
+      "@timestamp": "25/May/2024:15:12:40 +0000",
+      "size": "512",
+   }
+}
+```
+
+Dissection patterns are lexed by the parts of the strings that will be discarded, which can be spaces, separators, parentheses, etc.
+
+In order for `dissect` to succeed, all {`keyname`} parts in the pattern must exist, i.e. have a value. Otherwise an exception is raised. All matches are represented as strings.
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`field`|String|Y|||
-|`pattern`|String|Y|||
-|`append_separator`|String|N|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`ignore_failure`|Logical|N|||
-|`ignore_missing`|Logical|N|||
-|`on_failure`|Processors|N|||
+|`field`|String|Y|N/A|The field to dissect|
+|`pattern`|String|Y|N/A|The pattern to apply|
+|`append_separator`|String|N|`""`|The characters that separate the fields to parse|
+|`description`|String|N|-|Explanatory note|
+|`if`|String|N|-|Condition to be met to execute the processor|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
+|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` doesn't exist or is `null`, exit quietly without modifying the document|
+|`on_failure`|Processors|N|-|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Processors|N|||
-|`tag`|String|N|||
+|`tag`|String|N|-|Identifier|
+
+## Key modifiers
+
+The default behavior of `dissect` can be changed with key modifiers like `%{+keyname->}`.
+
+|Modifier|Position|Action|Example|Description|
+|---|---|---|---|---|
+|`->`|RHS|Skip right padding|`%{keyname->}`|Skips repeated characters on the RHS|
+|`+`|LHS|Append|`%{+keyname} %{+keyname}`|Appends two or more fields|
+|`+` with `<number>/`|LHS and RHS|Append in order|`%{+keyname/2} %{+keyname/1}`|Appends the fields using `<number>` for ordering|
+|`?`|LHS|Skip field|`%{?keyname}`|Skips the field|
+|`*` `&`|LHS|Key value pairing|`%{?keyname}`|Uses the `*` field as key and the `&` as value|
+
+The first of the above, i.e. right padding modifier, can be especifally useful to avoid unnecessary errors since dissect uses a verbatim matching. That is, if the pattern specifies, for example, one space between two fields but the fields are separated by multiple spaces, the match will fail. The right padding modifier can be used to alleviate this issue. It can even be used without a keyname.
+
+:::note[examples]
+:::
+
+|Pattern|Input|Output|
+|---|---|---|
+|`[%{foo}]%{->}[%{bar}]`|[A]    [B]|`{foo: A, bar: B}`|
+|`%{foo/1} %{baz/3} %{bar/2}`|A C B|`{foo: A, bar: B, baz: C}`|
+|`%{+foo} %{+foo} %{foo}`|A B C|`{foo: A B C}`|
+|`%{foo} %{?baz} %{bar}`|A C B|`{foo: A, bar: B}`|
+|`%{*foo} %{&bar} %{*buz} %{&qux}`|A B C D|`{A: B, C: D}`|

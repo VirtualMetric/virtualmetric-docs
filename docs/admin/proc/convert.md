@@ -19,7 +19,7 @@ If the value cannot be converted to a matching type, the process still completes
 |`description`|String|N|-|Explanatory note|
 |`if`|String|N|-|Condition to be met to execute the processor|
 |`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
-|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` doesn't exists, exit quietly without modifying the document|
+|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` does not exist, exit quietly without modifying the document|
 |`on_failure`|Processors|N|-|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Processors|N|-||
 |`tag`|String|N|-|Identifier|

@@ -9,7 +9,7 @@ Converts a string expressing size written in byte units to its value in bytes, e
 |`field`|String|Y|N/A|The filed containing the unit values|
 |`description`|String|N|-|Explanatory note|
 |`if`|String|N|-|Condition to be met to execute the processor|
-|`ignore_missing`|Logical|N|`false``|If set to `true` and `field` doesn't exists or contains no value, exit quietly without modifying the document|
+|`ignore_missing`|Logical|N|`false``|If set to `true` and `field` does not exist or contains no value, exit quietly without modifying the document|
 |`ignore_failure`|Logical|N|-||
 |`on_failure`|Processors|N|-|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Processors|N|||

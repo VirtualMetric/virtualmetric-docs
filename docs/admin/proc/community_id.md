@@ -13,7 +13,7 @@ Computes the **Community ID** for network flow data, as defined in the [Communit
 |`icmp_code`|String|N|`icmp.code`|Field containing the **ICMP** code|
 |`icmp_type`|String|N|`icmp.type`|Field containing the **ICMP** type|
 |`if`|String|N|-|Condition to be met to execute the processor|
-|`ignore_missing`|Logical|N|`true`|If set to `true` and `field` doesn't exists, exit quietly without modifying the document|
+|`ignore_missing`|Logical|N|`true`|If set to `true` and `field` does not exist, exit quietly without modifying the document|
 |`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_failure`|Processors|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Processors|N|||

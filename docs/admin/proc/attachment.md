@@ -14,7 +14,7 @@ The source field must point to a base64-encoded binary file which will be conver
 |`indexed_chars_field`|String|N|`null`|???|
 |`indexed_chars`|Numeric|N|100000|Number of chars used for extraction to avoid oversized fields. To specify no limits, use `-1`|
 |`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
-|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` doesn't exists, exit quietly without modifying the document|
+|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` does not exist, exit quietly without modifying the document|
 |`on_failure`|Processors|N||See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Strings|N|-|???|
 |`properties`|Strings|N|all|Array of properties to be stored. Available options: `author`, `content_type`, `content_length`, `date`, `name`, `keywords`, `language`, and `title`|
