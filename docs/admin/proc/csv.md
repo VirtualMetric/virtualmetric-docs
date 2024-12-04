@@ -11,9 +11,9 @@ Extracts a CSV line embedded in a document, skipping empty fields.
 |`description`|String|N|-|Explanatory notes|
 |`empty_value`|String|N|-|Value to fill empty fields. If not provided, empty fields are skipped|
 |`if`|String|N|-|Condition to be met to execute the processor|
-|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../misc/handling-failures.md)|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
 |`ignore_missing`|Logical|N|`false`|If set to `true` and `field` doesn't exists, exit quietly without modifying the document|
-|`on_failure`|Processors|N|-|See [Handling Failures](../misc/handling-failures.md)|
+|`on_failure`|Processors|N|-|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Processors|N|-||
 |`quote`|String|N|`"`|Quote character. Must be a single character|
 |`separator`|String|N|`,`|Field separator. Must be a single character|

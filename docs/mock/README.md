@@ -7,6 +7,7 @@ pagination_next: null
 
 These mocks were created to illustrate some of the features of **Docusaurus** such as
 
+* [Admonitions](./admonitions.mdx)
 * [Cards](./cards.mdx)
 * [Diagrams](./diagrams.mdx)
 * [Images](./images.mdx)

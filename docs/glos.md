@@ -8,6 +8,12 @@
 
 **Batch Processing** Collective sequential processing of a large number of records that require the same operation
 
+## G
+
+**ECS** See _Elastic Common Schema_
+
+**Elastic Common Schema** TODO:
+
 ## I
 
 **Ingestion** Collection of data from a source for specific purpose of use
@@ -41,3 +47,9 @@
 ## V
 
 **Vectorized Processing**
+
+## W
+
+**WKT** See _Well Known Text_
+
+**Well Known Text** A text-based format for describing data

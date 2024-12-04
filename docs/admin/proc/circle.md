@@ -1,15 +1,68 @@
 # Circle
 
+:::info[synopsis]
+Converts shapes defined as circles to approximate polygons.
+:::
+
+:::warning[attention]
+Circles containing poles cannot be converted.
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`error_distance`|Real|Y|||
-|`field`|String|Y|||
-|`shape_type`|Shape|Y|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`ignore_failure`|Logical|N|||
+|`error_distance`|Real|Y|-|The difference between the polygon's center to the sides and the circle's radius. This is measured in meters with `geo_shape`, but unitless for `shape`|
+|`field`|String|Y|-|The field containing the circle to be converted. A **WKT** string or a **GeoJSON** map|
+|`shape_type`|Shape|Y|-|The field mapping type to use for conversion: `geo_shape` or `shape`|
+|`description`|String|N|-|Explanatory text|
+|`if`|String|N|-|Condition to be met to execute the processor|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
 |`ignore_missing`|Logical|N|||
-|`on_failure`|Processors|N|||
-|`on_success`|Processors|N|||
-|`tag`|String|N|||
-|`target_field`|String||||
+|`on_failure`|Processors|N|-|See [Handling Failures](../pipes/handling-failures.md)|
+|`on_success`|Processors|N|-||
+|`tag`|String|N|-|Identifier|
+|`target_field`|String|N|-|The field to assign the converted shape to. If omitted, the circle is converted in place|
+
+:::note[example]
+
+In **JSON**:
+
+```json
+{
+   "mappings": {
+      "properties": {
+         "circle": {
+            "type": "geo_shape"
+         }
+      }
+   }
+}
+
+PUT data/conversions/polygonize_circles
+{
+   "description": "Convert circle to polygon",
+   "processors": [
+      {
+         "circle": {
+            "field": "circle",
+            "error_distance": 14.0,
+            "shape_type": "geo_shape"
+         }
+      }
+   ]
+}
+```
+
+In **WKT**:
+
+```wkt
+PUT data/conversions/1?pipeline=polygonize_circles
+{
+   "circle": "CIRCLE (20 5 25)"
+}
+
+GET data/conversions/1
+```
+
+
+With this pipeline, a document containing a circle, represented in either **WKT** or **GeoJSON**, can be assigned to the `circles` index and tranformed into a polygon in the source format.
+:::

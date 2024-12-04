@@ -1,18 +1,34 @@
 # Attachment
 
+:::info[synopsis]
+Allows **Elasticsearch** to extract widely used file formats like **DOC**, **XLS**, **PDF**, etc. by using **Apache**'s **Tika** library.
+
+The source field must point to a base64-encoded binary file which will be converted to JSON. To avoid the overhead of back and forth conversions, use CBOR and specify the field as a byte array.
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`field`|String|Y|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`indexed_chars_field`|String|N|||
-|`indexed_chars`|Numeric|N|||
-|`ignore_failure`|Logical|N|||
-|`ignore_missing`|Logical|N|||
-|`on_failure`|Processors|N|||
-|`on_success`|Strings|N|||
-|`properties`|Strings|N|||
-|`remove_binary`|Logical|N|||
-|`resource_name`|String|N|||
-|`tag`|String|N|||
-|`target_field`|String|N|||
+|`field`|String|Y|N/A|The field to get the base64-encoded data from|
+|`description`|String|N|-|Explanatory text|
+|`if`|String|N|-|Condition to be met to execute the processor|
+|`indexed_chars_field`|String|N|`null`|???|
+|`indexed_chars`|Numeric|N|100000|Number of chars used for extraction to avoid oversized fields. To specify no limits, use `-1`|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
+|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` doesn't exists, exit quietly without modifying the document|
+|`on_failure`|Processors|N||See [Handling Failures](../pipes/handling-failures.md)|
+|`on_success`|Strings|N|-|???|
+|`properties`|Strings|N|all|Array of properties to be stored. Available options: `author`, `content_type`, `content_length`, `date`, `name`, `keywords`, `language`, and `title`|
+|`remove_binary`|Logical|N||If set to `true`, the binary field will be removed from the document|
+|`resource_name`|String|N|-|Name of the resource to decode. When specified, this is passed to the **Tika** library|
+|`tag`|String|N|-|Identifier|
+|`target_field`|String|N|attachment|Field containing the attachment|
+
+## Exported Fields
+
+The following fields can be extracted from a document:
+
+> altitude author comments content content_length content_type contributor coverage creator_tool date description format identifier keywords language latitude longitude metadata_date modified modifier print_date publisher rating relation rights source title type
+
+:::not[examples]
+TODO
+:::

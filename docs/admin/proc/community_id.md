@@ -1,21 +1,38 @@
-# Community Id
+# Community ID
+
+:::info[synopsis]
+Computes the **Community ID** for network flow data, as defined in the [Community ID Specification]. The community ID can be used to correlate network events related to a single flow. By default, reads network flow data from related **ECS**.
+:::
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`description`|String|N|||
-|`destination_ip`|String|N|||
-|`destination_port`|String|N|||
-|`iana_number`|String|N|||
-|`icmp_code`|String|N|||
-|`icmp_type`|String|N|||
-|`if`|String|N|||
-|`ignore_missing`|Logical|N|||
-|`ignore_failure`|Logical|N|||
-|`on_failure`|Processors|N|||
+|`description`|String|N|-|Explanatory text|
+|`destination_ip`|String|N|`destination.ip`|Field containing the destination IP|
+|`destination_port`|String|N|`destionation.port`|Field containing the destination port|
+|`iana_number`|String|N|`network.iana_number`|Field containing the **IANA** number|
+|`icmp_code`|String|N|`icmp.code`|Field containing the **ICMP** code|
+|`icmp_type`|String|N|`icmp.type`|Field containing the **ICMP** type|
+|`if`|String|N|-|Condition to be met to execute the processor|
+|`ignore_missing`|Logical|N|`true`|If set to `true` and `field` doesn't exists, exit quietly without modifying the document|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
+|`on_failure`|Processors|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Processors|N|||
-|`source_ip`|String|N|||
-|`source_port`|String|N|||
-|`seed`|Numeric|N|||
-|`tag`|String|N|||
-|`target_field`|String|N|||
-|`transport`|String|N|||
+|`source_ip`|String|N|`source.ip`|Field containing the source IP|
+|`source_port`|String|N|`source.port`|Field containing the source port|
+|`seed`|Numeric|N|0|Seed for the hash to be generated for the ID. Must be in `0..65535`. Can prevent hash collisions between network domains that use the same scheme|
+|`tag`|String|N|-|Identifier|
+|`target_field`|String|N|`network.community_id`|Output field|
+|`transport`|String|N|`network.transport`|Field containing the transport protocol name or number. Used only when `iana_number` is not defined. Supported protocol names: `EIGRP, `GRE, `ICMP, `ICMP IPv6, `IGMP, `OSPF, `PIM, `SCTP, `TCP, and `UDP|
+
+:::note[examples]
+```json
+{
+   "processors" : [
+      {
+         ...
+         "community_id": { ... }
+      }
+   ]
+}
+```
+:::
