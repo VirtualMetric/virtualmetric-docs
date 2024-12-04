@@ -29,6 +29,6 @@ The following fields can be extracted from a document:
 
 > altitude author comments content content_length content_type contributor coverage creator_tool date description format identifier keywords language latitude longitude metadata_date modified modifier print_date publisher rating relation rights source title type
 
-:::not[examples]
+:::note[examples]
 TODO
 :::
