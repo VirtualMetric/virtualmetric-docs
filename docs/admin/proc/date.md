@@ -1,5 +1,11 @@
 # Date
 
+:::info[synopsis]
+Parses the fields for dates and uses them as timestamp for the document. By default, the parsed date is added as a new field called `@timestamp`. A different field can be set with `target_field`.
+
+Multiple date formats can be specified which will be used sequentially to parse the date.
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`field`|String|Y|N/A|The field containing the date|
@@ -33,6 +39,17 @@ Adding the parsed date to the `timestamp` field based on the `initial_date` fiel
 }
 ```
 
-TODO: Complete the examples
+The `timezone` and `locale` parameters can be extracted from fields in the document if templated. The following spec show how to extract them from the existing fields `co_timezone` and `co_locale`.
 
+```json
+{
+   "date" : {
+      "field": "initial_date",
+      "target_field": "timestamp",
+      "formats": ["ISO8601"],
+      "timezone": "{{{co_timezone}}}",
+      "locale": "{{{co_locale}}}"
+   }
+}
+```
 :::

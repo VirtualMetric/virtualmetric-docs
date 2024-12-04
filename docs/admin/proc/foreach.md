@@ -1,13 +1,203 @@
 # For Each
 
+:::info[synopsis]
+Runs a processor on each element of an array or object when the number of elements is unknown.
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`field`|String|Y|||
-|`processor`|String|Y|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`ignore_failure`|Logical|N|||
-|`ignore_missing`|Logical|N|||
-|`on_failure`|Processors|N|||
+|`field`|String|Y|N/A|The field containing the array or object with two or more elements|
+|`processor`|String|Y|N/A|The processor to run on each element|
+|`description`|String|N|-|Explanatory note|
+|`if`|String|N|-|Condition to be met to execute the processor|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
+|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` does not exist or is `null`, exit quietly without modifying the document|
+|`on_failure`|Processors|N|-|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Processors|N|||
-|`tag`|String|N|||
+|`tag`|String|N|-|Identifier|
+
+## Accessors
+
+During iteration over an array, the current element's value is stored in the `_ingest._value` metadata field which contains the element along with its child fields, if any. These can be accessed using dot notation on this metadata field.
+
+During iteration over an object, the current element's key is also stored as a string in `_ingest._key`.
+
+Both of these can be accessed and modified during iteration.
+
+## Failure Handling
+
+If an element cannot be processed and no `on_failure` processor is specified, `foreach` exits silently leaving the entire array or object unmodified.
+
+:::note[examples]
+
+### Arrays
+
+**Input**:
+
+```json
+{
+   "values" : ["foo", "bar", "baz"]
+}
+```
+
+**Spec**:
+
+```json
+{
+   "foreach" : {
+      "field" : "values",
+      "processor" : {
+         "uppercase" : {
+            "field" : "_ingest._value"
+         }
+      }
+   }
+}
+```
+
+**Output**:
+
+```json
+{
+   "values" : ["FOO", "BAR", "BAZ"]
+}
+```
+
+### Array of Objects
+
+**Input**:
+
+```json
+{
+   "things": [
+      {
+         "id": "1",
+         "name": "foo"
+      },
+      {
+         "id": "2",
+         "name": "bar"
+      }
+   ]
+}
+```
+
+**Spec**:
+
+```json
+{
+   "foreach": {
+      "field": "things",
+         "processor": {
+            "remove": {
+            "field": "_ingest._value.id"
+         }
+      }
+   }
+}
+```
+
+**Output**:
+
+```json
+{
+   "things": [
+      {
+         "name": "foo"
+      },
+      {
+         "name": "bar"
+      }
+   ]
+}
+```
+
+### Objects
+
+**Input**:
+
+```json
+{
+   "things" : {
+      "foos" : {
+         "size": 10,
+         "display_name": "Foos"
+      },
+      "bars" : {
+         "size": 20,
+         "display_name": "Bars"
+      },
+      "quus" : {
+         "size": 50,
+         "display_name": ""
+      }
+   }
+}
+```
+
+**Spec**:
+
+```json
+{
+   "foreach": {
+      "field": "things",
+         "processor": {
+         "uppercase": {
+            "field": "_ingest._value.display_name"
+         }
+      }
+   }
+}
+```
+
+**Output**:
+
+```json
+{
+   "things" : {
+      "foos" : {
+         "size" : 10,
+         "display_name" : "FOOS"
+      },
+      "bars" : {
+         "size" : 20,
+         "display_name" : "BARS"
+      },
+      "quus" : {
+         "size" : 50,
+         "display_name" : ""
+      }
+   }
+}
+```
+
+### Failures
+
+The contained processor can have an `on_failure` definition which can be used to send the document to the failure queue for review.
+
+**Spec**:
+
+```json
+{
+   "foreach" : {
+      "field" : "things",
+      "processor": {
+         "remove": {
+            "field" : "_value.id",
+            "on_failure" : [
+               {
+                  "set" : {
+                     "field": "_index",
+                     "value": "failure_index"
+                  }
+               }
+            ]
+         }
+      }
+   }
+}
+```
+
+In the even of a failure, the array elements that have been processed thus far will be updated.
+
+:::
