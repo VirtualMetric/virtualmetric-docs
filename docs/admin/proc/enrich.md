@@ -1,5 +1,8 @@
 # Enrich
 
+:::info[synopsis]
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`dataset_name`|Strings|Y|||

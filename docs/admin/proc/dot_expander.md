@@ -1,12 +1,228 @@
 # Dot Expander
 
+:::info[synopsis]
+Expands a field containing dots into an object field. Makes fields with dots in their names accessible to other processors.
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`field`|String|Y|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`ignore_failure`|Logical|N|||
-|`on_failure`|Processors|N|||
+|`field`|String|Y|N/A|The field to be expanded. If set to `*`, all top-level fields will be expanded|
+|`description`|String|N|-|Explanatory note|
+|`if`|String|N|-|Condition to be met to execute the processor|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../pipes/handling-failures.md)|
+|`on_failure`|Processors|N|-|See [Handling Failures](../pipes/handling-failures.md)|
 |`on_success`|Processors|N|||
-|`path`|String|N|||
-|`tag`|String|N|||
+|`path`|String|N|-|The field containing the field to expand. Only required when `field` is part of another object field since only leaf level fields can be processed|
+|`tag`|String|N|-|Identifier|
+
+:::note[examples]
+:::
+* If the expanded name is distinct, the part after the dot becomes nested:
+
+**Input**:
+
+```code
+{
+   "A.B": "v"
+}
+```
+
+**Spec**:
+
+```code
+{
+   "dot_expander": {
+      "field": "A.B"
+   }
+}
+```
+
+**Output**:
+
+```code
+{
+   "A": {
+      "B": "v"
+   }
+}
+```
+
+* If the dotted field clashes with a nested one, it is merged with it:
+
+**Input**:
+
+```code
+{
+   "A.B": "v1",
+   "A": {
+      "B": "v2"
+   }
+}
+```
+
+**Spec**:
+
+```code
+{
+   "dot_expander": {
+      "field": "A.B"
+   }
+}
+```
+
+**Output**:
+
+```code
+{
+   "A": {
+      "B": ["v1", "v2"]
+   }
+}
+```
+
+* Using `override` causes the expanded field to be overridden by the nested one
+
+**Input**:
+
+```code
+{
+   "A.B": "v1",
+   "A": {
+      "B": "v2"
+   }
+}
+```
+
+**Spec**:
+
+```code
+{
+   "dot_expander": {
+      "field": "A.B",
+      "override": true
+   }
+}
+```
+
+**Output**:
+
+```code
+{
+   "A": {
+      "B": "v2"
+   }
+}
+```
+
+* Using `*` expands all top-level fields
+
+**Input**:
+
+```code
+{
+   "A.B": "v1",
+   "C.D": "v2"
+}
+```
+
+**Spec**:
+
+```code
+{
+   "dot_expander": {
+      "field": "*"
+   }
+}
+```
+
+**Output**:
+
+```code
+{
+   "A": {
+      "B": "v1"
+   },
+   "C": {
+      "D": "v2"
+   }
+}
+```
+
+* If the dotted field is nested within a field, use `path` to navigate down
+
+**Input**:
+
+```code
+{
+   "A": {
+      "B.C": "v1",
+      "B.D": "v2"
+   }
+}
+```
+
+**Spec**:
+
+```code
+{
+   "dot_expander": {
+      "path": "A",
+      "field": "*"
+   }
+}
+```
+
+**Output**:
+
+```code
+{
+   "A": {
+      "B": {
+         "C": "v1",
+         "D": "v2"
+      }
+   }
+}
+```
+
+* If there is a potential for a clash between an expanded field and another one at the same level, use `rename` first
+
+**Input**:
+
+```code
+{
+   "A": "v1",
+   "A.B": "v2"
+}
+```
+
+**Spec**:
+
+```code
+{
+   "processors": [
+      {
+         "rename": {
+            "field": "A",
+            "target_field": "A.B"
+         }
+      },
+      {
+         "dot_expander": {
+            "path": "A",
+            "field": "*"
+         }
+      }
+   ]
+}
+```
+
+**Output**:
+
+```code
+{
+   "A": {
+      "B": ["v1", "v2"]
+   }
+}
+```
