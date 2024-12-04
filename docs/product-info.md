@@ -1,0 +1,43 @@
+# Product Info
+
+The following is the basic information related to the product.
+
+## System Requirements
+
+* Memory: **64MB**
+* OS: All currently supported **Windows** and **Linux** versions (specify?)
+* Any other ?
+
+---
+
+## Installation
+
+No installation procedure is required. The executables can be manually placed in any directory you wish.
+
+---
+
+## Configuration
+
+By default, both **Director** and **Generator** require no configuration to start running.
+
+:::warning
+Make sure **Windows Firewall** allows the program to run.
+:::
+
+---
+
+## Version
+
+The current release of both programs is **10.0.0**.
+
+---
+
+## Disclaimer
+
+NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, IS MADE IN RELATION TO THE CONTENTS OF THIS DOCUMENT REGARDING ITS USE, INCLUDING BUT NOT LIMITED TO AVAILABILITY, ACCURACY, RELIABILITY, NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PURPOSE. IN NO EVENT SHALL **VirtualMetric B.V.** BE LIABLE FOR ANY DAMAGES, INCLUDING BUT NOT LIMITED TO DIRECT, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, OR DUE TO BUSINESS INTERRUPTION, OR ANY LOSS OF PROFIT, REVENUE, BUSINESS OPPORTUNITY, OR DATA THAT MAY ARISE FROM THE USE OF THE INFORMATION HEREIN.
+
+---
+
+**VirtualMetric Director** and **VirtualMetic Generator** are registered trademarks of **VirtualMetric B.V.** Other products mentioned in this document may be trademarks of their respective owners.
+
+This document is subject to change without prior notice.

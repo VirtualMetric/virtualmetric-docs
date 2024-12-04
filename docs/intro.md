@@ -1,0 +1,7 @@
+---
+slug: /
+---
+
+# User Documentation
+
+This document describes the features and functionality of **VirtualMetric**'s **Director** and its companion **Generator**. It is intended to be as thorough as possible. However, in the event that you spot any detail you believe is missing, please feel free to [contact us](mailto:tech-writer@virtualmetric.com).

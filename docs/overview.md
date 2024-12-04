@@ -1,12 +1,4 @@
----
-slug: /
----
-
 # Overview
-
-This document describes the features and functionality of **VirtualMetric**'s **Director** and its companion **Generator**. It is intended to be as thorough as possible. However, in the event that you spot any detail you believe is missing, please feel free to [contact us](mailto:tech-writer@virtualmetric.com).
-
-## Introduction
 
 **Director** is a tool designed for creating and managing _pipelines_ in tandem to monitor telemetry data streams for various purposes, and **Generator** is a utility program intended to generate realistic telemetry data to help configure **Director** for production.
 
@@ -17,45 +9,3 @@ The sources can be devices, networks, or pipelines, and the targets can be the *
 Each incoming stream can be queried with criteria specific to the properties of the data, and each outgoing stream can be enriched with inferences made from the data for further processing on the target side.
 
 In this guide, we will explain various features: the types of devices, data files, and pipelines that can be specified; the types of data streams that can be handled; and the enrichment capabilities available in detail.
-
----
-
-## System Requirements
-
-* Memory: **64MB**
-* OS: All currently supported **Windows** and **Linux** versions (specify?)
-* Any other ?
-
----
-
-## Installation
-
-No installation procedure is required. The executables can be manually placed in any directory you wish.
-
----
-
-## Configuration
-
-By default, both **Director** and **Generator** require no configuration to start running.
-
-:::warning
-Make sure **Windows Firewall** allows the program to run.
-:::
-
----
-
-## Version
-
-The current release of both programs is **10.0.0**.
-
----
-
-## Disclaimer
-
-NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, IS MADE IN RELATION TO THE CONTENTS OF THIS DOCUMENT REGARDING ITS USE, INCLUDING BUT NOT LIMITED TO AVAILABILITY, ACCURACY, RELIABILITY, NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PURPOSE. IN NO EVENT SHALL **VirtualMetric B.V.** BE LIABLE FOR ANY DAMAGES, INCLUDING BUT NOT LIMITED TO DIRECT, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, OR DUE TO BUSINESS INTERRUPTION, OR ANY LOSS OF PROFIT, REVENUE, BUSINESS OPPORTUNITY, OR DATA THAT MAY ARISE FROM THE USE OF THE INFORMATION HEREIN.
-
----
-
-**VirtualMetric Director** and **VirtualMetic Generator** are registered trademarks of **VirtualMetric B.V.** Other products mentioned in this document may be trademarks of their respective owners.
-
-This document is subject to change without prior notice.
