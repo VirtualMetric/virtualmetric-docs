@@ -2,14 +2,50 @@ import Synopsis from "@site/src/components/Synopsis";
 
 # Remove
 
+<Synopsis>
+Removes existing fields. If a field doesn’t exist, an exception is raised.
+</Synopsis>
+
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Any|Y|N/A||
+|`field`|Any|Y|N/A|List of fields to remove|
 |`description`|N|-|Explanatory note|
-|`if`|N|-|Execute on this condition|
+|`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`tag`|N|-|Identifier|
+
+## Examples
+
+**Input**:
+
+```js
+{
+   "remove": {
+      "field": ["foo", "bar"]
+   }
+}
+```
+
+**Spec**:
+
+```js
+{
+   "remove": {
+      "field": "foo"
+   }
+}
+```
+
+**Output**:
+
+```js
+{
+   "remove": {
+      "field": ["bar"]
+   }
+}
+```
