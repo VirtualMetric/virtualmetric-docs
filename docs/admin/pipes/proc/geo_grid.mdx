@@ -1,25 +1,76 @@
 # Geo Grid
 
 :::info[synopsis]
-Transforms geo-grid definitions of tiles or cells into standard bounding boxes or polygons that represent their shapes. This is particularly useful for enabling spatial indexing and operations on the tile shapes. For instance, a geotile field value like "4/8/3" could be stored as a string, but that format doesn't support spatial operations. Instead, converting it into a representation like "POLYGON ((0.0 40.979898069620134, 22.5 40.979898069620134, 22.5 55.77657301866769, 0.0 55.77657301866769, 0.0 40.979898069620134))" allows it to be indexed as a geo_shape field, making spatial interactions possible.
+Transforms geo-grid definitions of tiles or cells into standard bounding boxes or polygons that represent their shapes.
 
-TODO: Rewrite
+This is particularly useful for enabling spatial indexing and operations on the tile shapes. For instance, a geotile field value like "4/8/3" could be stored as a string, but that format doesn't support spatial operations. Instead, converting it into a representation like "POLYGON ((0.0 40.979898069620134, 22.5 40.979898069620134, 22.5 55.77657301866769, 0.0 55.77657301866769, 0.0 40.979898069620134))" allows it to be indexed as a `geo_shape` field, making spatial interactions possible.
 :::
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`field`|String|Y|N/A|The field containing the geo-tile definition. The format is determined by `tile_type`|
 |`tile_type`|String|Y|N/A|Valid formats: `geohash`, `geotile`, `geohex`|
-|`children_field`|String|N|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`ignore_failure`|Logical|N|||
-|`ignore_missing`|Logical|N|||
-|`non_children_field`|String|N|||
-|`on_failure`|Processors|N|||
+|`children_field`|String|N|-|If children tiles exist, save those tiles' addresses to this field as a string array|
+|`description`|String|N|-|Explanatory note|
+|`if`|String|N|-|Execute on this condition|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`non_children_field`|String|N|-|
+If intersecting non-child tiles exist, save their addresses to this field as a string array|
+|`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|Processors|N|||
 |`parent_field`|String|N|-|If a parent tile exists, save its address to this field|
-|`precision_field`|String|N|||
-|`tag`|String|N|||
+|`precision_field`|String|N|-|Save the tile zoom rate as an integer to this field|
+|`tag`|String|N|-|Identifier|
 |`target_field`|String|N|`field`|The field to assign the polygon shape to|
-|`target_format`|String|N|||
+|`target_format`|String|N|-|Valid options: `WKT` or `GeoJSON`|
+
+:::note[examples]
+Consider an index called `geocells` with a mapping for a field `geocell` of type `geo_shape`. In order to populate that index using `geotile` and `geohex` fields, define two ingest processors:
+
+```json
+PUT geocells
+{
+  "mappings": {
+    "properties": {
+      "geocell": {
+        "type": "geo_shape"
+      }
+    }
+  }
+}
+
+PUT _ingest/pipeline/geotile2shape
+{
+   "description": "Translate rectangular z/x/y geotile to a bounding box",
+   "processors": [
+      {
+         "geo_grid": {
+            "field": "geocell",
+            "tile_type": "geotile"
+         }
+      }
+   ]
+}
+
+PUT _ingest/pipeline/geohex2shape
+{
+   "description": "Translate H3 cell to a polygon",
+   "processors": [
+      {
+         "geo_grid": {
+            "field": "geocell",
+            "tile_type": "geohex",
+            "target_format": "wkt"
+         }
+      }
+   ]
+}
+```
+
+These two pipelines can be used to index documents into the `geocells` index. The `geocell` field will be the string version of either a rectangular tile with format `z/x/y` or an H3 cell address, depending on which ingest processor we use when indexing the document. The resulting geometry will be represented and indexed as a `geo_shape` field in either **GeoJSON** or the **Well-Known Text** format.
+
+TODO: Paraphrase
+
+
+:::
