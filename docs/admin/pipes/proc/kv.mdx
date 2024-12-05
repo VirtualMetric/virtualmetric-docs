@@ -3,29 +3,41 @@ import Synopsis from "@site/src/components/Synopsis";
 # KV
 
 <Synopsis>
-Helps automatically parse messages (or specific event fields) that occur as `key=value` pairs.
+Helps automatically parse messages (or specific event fields) that occur as `key-value` pairs.
 </Synopsis>
 
 ## Parameters
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`field`|String|Y|||
-|`field_split`|String|Y|||
-|`value_split`|String|Y|||
+|`field`|String|Y|N/A|Field to be parsed|
+|`field_split`|String|Y|N/A|Regular expression for splitting key-value pairs|
+|`value_split`|String|Y|N/A|Regular expression for splitting the key from the value|
 |`description`|String|N|-|Explanatory note|
-|`exclude_keys`|Strings|N|||
-|`if`|String|N|-||
-|`ignore_casting`|Logical|N|||
+|`exclude_keys`|Strings|N|`null`|List of keys to exclude from the document|
+|`if`|String|N|-|Execute on this condition|
+|`ignore_casting`|Logical|N|`false`|???|
 |`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`ignore_missing`|Logical|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`include_keys`|Strings|N|||
-|`lowercase_keys`|Logical|N|||
+|`include_keys`|Strings|N|`null`|List of keys to include in the document|
+|`lowercase_keys`|Logical|N|`false`|Convert keys to lowercase|
 |`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|Processors|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
-|`prefix`|String|N|||
-|`strip_brackets`|Logical|N|||
+|`prefix`|String|N|`null`|Prefix to prepend to the extracted keys|
+|`strip_brackets`|Logical|N|`false`|If `true`, bracket pairs `()`, `<>`, and `[]` as well as the `'` and `"` quote characters are stripped from the values|
 |`tag`|String|N|-|Identifier|
-|`target_field`|String|N|||
-|`trim_key`|String|N|||
-|`trim_value`|String|N|||
+|`target_field`|String|N|`null`|The field to assign keys to. Default is the root of the document|
+|`trim_key`|String|N|`null`|List of characters to trim from the keys|
+|`trim_value`|String|N|`null`|List of characters to trim from the values|
+
+:::note[examples]
+```json
+{
+   "kv": {
+      "field": "definitions",
+      "field_split": ",",
+      "value_split": ":"
+  }
+}
+```
+:::

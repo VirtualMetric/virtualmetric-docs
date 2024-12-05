@@ -2,19 +2,37 @@ import Synopsis from "@site/src/components/Synopsis";
 
 # Network Direction
 
+<Synopsis>
+Computes the network direction given a source IP address, a destination IP address, and a list of internal networks.
+</Synopsis>
+
 ## Parameters
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
 |`description`|String|N|-|Explanatory note|
-|`destination_ip`|String|N|||
+|`destination_ip`|String|N|`destination.ip`|Field containing the destination address|
 |`if`|String|N|-|Execute on this condition|
 |`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`ignore_missing`|Logical|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`internal_networks`|Strings|N|||
-|`internal_networks_field`|String|N|||
+|`internal_networks`|Strings|N|`*`|List of internal networks. Supports IPv4 and IPv6 addresses and ranges in CIDR notation, as well as the named ranges listed below. Only `internal_networks` or `internal_networks_field` must be specified. If the latter, then follows the behavior of `ignore_missing`|
+|`internal_networks_field`|String|N|-|The field containing the internal networks|
 |`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|Processors|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
-|`source_ip`|String|N|||
+|`source_ip`|String|N|`source.ip`|Field containing the source address|
 |`tag`|String|N|-|Identifier|
-|`target_field`|String|N|||
+|`target_field`|String|N|`network.direction`|The field to assign the network direction|
+
+## Named Network Ranges
+
+The named network ranges supported for `internal_networks` are:
+
+* `global_unicast` or `unicast`: Global unicast addresses defined in RFC 1122, RFC 4632, and RFC 4291 with the exception of the IPv4 broadcast address (255.255.255.255). Includes private address ranges
+* `interface_local_multicast`: IPv6 interface-local multicast addresses
+* `link_local_unicast`: Link-local unicast addresses
+* `link_local_multicast`: Link-local multicast addresses
+* `loopback`: Addresses in the range of `127.0.0.0/8` or `::1/128`
+* `multicast`: Multicast addresses
+* `private`: Private address ranges defined in RFC 1918 (IPv4) and RFC 4193 (IPv6).
+* `public`: Addresses not include in the above
+* `unspecified`: Unspecified addresses (either the IPv4 address "`0.0.0.0`" or the IPv6 address "`::`").
