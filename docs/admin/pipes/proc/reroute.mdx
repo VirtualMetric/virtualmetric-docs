@@ -2,6 +2,30 @@ import Synopsis from "@site/src/components/Synopsis";
 
 # Reroute
 
+<Synopsis>
+Allows routing a document to another target index or data stream.
+</Synopsis>
+
+It has two main modes:
+
+* If the `destination` option is to be set, the target is explicitly specified, and the `dataset` and `namespace` options cannot be set.
+
+* If the `destination` option is not set, the processor is in a data stream mode. In this mode, `reroute` can only be used on data streams that follow the data stream naming scheme. Trying to use it on a data stream with a non-compliant name will raise an exception.
+
+The processor can use both literal values and reference fields from the document to determine the `dataset` and `namespace` of the new target.
+
+:::warning
+It is not possible to change the type of the data stream with `reroute`.
+:::
+
+After a `reroute` processor has been executed, all the other processors in the current pipeline are skipped. If the current pipeline is executed in the context of a _Pipeline_, the calling pipeline will be skipped as well. This means that at most one `reroute` processor is ever executed within a pipeline, allowing to define mutually exclusive routing conditions.
+
+The `reroute` processor ensures that the `data_stream.<type|dataset|namespace>` fields are set according to the new target. If the document contains an `event.dataset` value, it will be updated to reflect the same value as `data_stream.dataset`.
+
+:::note
+The client needs to have execute permissions on the final target. Otherwise, the document will be rejected with a security exception.
+:::
+
 ## Parameters
 
 |Field|Required|Default|Description|
