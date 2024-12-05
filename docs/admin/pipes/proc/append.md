@@ -17,8 +17,6 @@ Appends one or more values to an existing array if the field exists and is an ar
 |`tag`|Alphanumeric|N|-|Identifier|
 
 :::note[examples]
-In **JSON**:
-
 ```json
 {
    "append": {
