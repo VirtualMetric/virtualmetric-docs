@@ -2,16 +2,70 @@ import Synopsis from "@site/src/components/Synopsis";
 
 # Registered Domain
 
+<Synopsis>
+Extracts the registered domain (a.k.a. the effective top-level domain or **eTLD**), sub-domain, and top-level domain from a **Fully Qualified Domain Name** (FQDN).
+</Synopsis>
+
+Uses the registered domains defined in the **Mozilla Public Suffix List**.
+
 ## Parameters
 
-|Field|Type|Required|Default|Description|
-|---|---|---|---|---|
-|`field`|String|Y|N/A||
-|`description`|String|N|-|Explanatory note|
-|`if`|String|N|-|Execute on this condition|
-|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|Logical|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|Processors|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
-|`tag`|String|N|-|Identifier|
-|`target_field`|String|N|||
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|N/A|Field containing the source **FQDN**|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Execute on this condition|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
+|`tag`|N|-|Identifier|
+|`target_field`|N|-|Field to assign the extracted domain components. If blank, components are added to the document's root|
+
+## Exampples
+
+**Spec**:
+
+```js
+{
+   "pipeline": {
+      "processors": [
+         {
+            "registered_domain": {
+               "field": "fqdn",
+               "target_field": "url"
+            }
+         }
+      ]
+   },
+   "docs": [
+      {
+         "_source": {
+            "fqdn": "www.example.co.uk"
+         }
+      }
+   ]
+}
+```
+
+**Output**:
+
+```js
+{
+   "docs": [
+      {
+         "doc": {
+            "_source": {
+               "fqdn": "www.example.co.uk",
+               "url": {
+                  "domain": "www.example.co.uk",
+                  "registered_domain": "example.co.uk",
+                  "top_level_domain": "co.uk",
+                  "subdomain": "www"
+               }
+            }
+         }
+      }
+   ]
+}
+```

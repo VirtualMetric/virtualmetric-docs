@@ -41,25 +41,25 @@ In order for `dissect` to succeed, all {`keyname`} parts in the pattern must exi
 
 ## Parameters
 
-|Field|Type|Required|Default|Description|
-|---|---|---|---|---|
-|`field`|String|Y|N/A|The field to dissect|
-|`pattern`|String|Y|N/A|The pattern to apply|
-|`append_separator`|String|N|`""`|The characters that separate the fields to parse|
-|`description`|String|N|-|Explanatory note|
-|`if`|String|N|-|Execute on this condition|
-|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|Logical|N|`false`|If `true` and `field` doesn't exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|Processors|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
-|`tag`|String|N|-|Identifier|
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|N/A|The field to dissect|
+|`pattern`|Y|N/A|The pattern to apply|
+|`append_separator`|N|`""`|The characters that separate the fields to parse|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Execute on this condition|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|N|`false`|If `true` and `field` doesn't exist or is `null`, exit quietly without making any modifications|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
+|`tag`|N|-|Identifier|
 
 ## Key Modifiers
 
 The default behavior of `dissect` can be changed with key modifiers like `%{+keyname->}`.
 
 |Modifier|Position|Action|Example|Description|
-|---|---|---|---|---|
+|---|---|---|---|
 |`->`|RHS|Skip right padding|`%{keyname->}`|Skips repeated characters on the RHS|
 |`+`|LHS|Append|`%{+keyname} %{+keyname}`|Appends two or more fields|
 |`+` with `<number>/`|LHS and RHS|Append in order|`%{+keyname/2} %{+keyname/1}`|Appends the fields using `<number>` for ordering|

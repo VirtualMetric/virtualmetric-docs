@@ -6,28 +6,30 @@ import Synopsis from "@site/src/components/Synopsis";
 Transforms geo-grid definitions of tiles or cells into standard bounding boxes or polygons that represent their shapes.
 </Synopsis>
 
+TODO: Come up with different values
+
 This is particularly useful for enabling spatial indexing and operations on the tile shapes. For instance, a geotile field value like "4/8/3" could be stored as a string, but that format doesn't support spatial operations. Instead, converting it into a representation like "POLYGON ((0.0 40.979898069620134, 22.5 40.979898069620134, 22.5 55.77657301866769, 0.0 55.77657301866769, 0.0 40.979898069620134))" allows it to be indexed as a `geo_shape` field, making spatial interactions possible.
 
 ## Parameters
 
-|Field|Type|Required|Default|Description|
-|---|---|---|---|---|
-|`field`|String|Y|N/A|The field containing the geo-tile definition. The format is determined by `tile_type`|
-|`tile_type`|String|Y|N/A|Valid formats: `geohash`, `geotile`, `geohex`|
-|`children_field`|String|N|-|If children tiles exist, save those tiles' addresses to this field as a string array|
-|`description`|String|N|-|Explanatory note|
-|`if`|String|N|-|Execute on this condition|
-|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|Logical|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`non_children_field`|String|N|-|
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|N/A|The field containing the geo-tile definition. The format is determined by `tile_type`|
+|`tile_type`|Y|N/A|Valid formats: `geohash`, `geotile`, `geohex`|
+|`children_field`|N|-|If children tiles exist, save those tiles' addresses to this field as a string array|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Execute on this condition|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`non_children_field`|N|-|
 If intersecting non-child tiles exist, save their addresses to this field as a string array|
-|`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|Processors|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
-|`parent_field`|String|N|-|If a parent tile exists, save its address to this field|
-|`precision_field`|String|N|-|Save the tile zoom rate as an integer to this field|
-|`tag`|String|N|-|Identifier|
-|`target_field`|String|N|`field`|The field to assign the polygon shape to|
-|`target_format`|String|N|-|Valid options: `WKT` or `GeoJSON`|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
+|`parent_field`|N|-|If a parent tile exists, save its address to this field|
+|`precision_field`|N|-|Save the tile zoom rate as an integer to this field|
+|`tag`|N|-|Identifier|
+|`target_field`|N|`field`|The field to assign the polygon shape to|
+|`target_format`|N|-|Valid options: `WKT` or `GeoJSON`|
 
 ## Examples
 
