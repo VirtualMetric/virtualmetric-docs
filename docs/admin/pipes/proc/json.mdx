@@ -1,15 +1,52 @@
-# Json
+# JSON
+
+:::info[synopsis]
+Converts a **JSON** string to a structured **JSON** object.
+:::
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`field`|String|Y|||
-|`add_to_root`|Logical|N|||
-|`allow_duplicate_keys`|Logical|N|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`ignore_failure`|Logical|N|||
-|`ignore_missing`|Logical|N|||
-|`on_failure`|Processors|N|||
-|`on_success`|Processors|N|||
-|`tag`|String|N|||
-|`target_field`|String|N|||
+|`field`|String|Y|N/A|Field to parse|
+|`add_to_root`|Logical|N|`false`|Forces the parsed JSON to be added at the top level of the document. If this option is used, `target_field` must not be set|
+|`allow_duplicate_keys`|Logical|N|`false`|If `true`, the parser does not fail at duplicate keys. Instead, the last encountered instance overrides the previous ones.|
+|`description`|String|N|-|Explanatory note|
+|`if`|String|N|-|Execute on this condition|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|Processors|N|-|Can be used to inform the user that no errors were raised or to specify the next processor to run|
+|`tag`|String|N|-|Identifier|
+|`target_field`|String|N|`field`|Field to assign the converted object to. If not explicitly provided, existing values in the source field will be overwritten|
+
+:::note[examples]
+**Input**:
+
+```json
+{
+   "text_data": "{\"foo\": 500}"
+}
+```
+
+**Spec**:
+
+```json
+{
+   "json": {
+      "field": "text_data",
+      "target_field": "numeric_data"
+   }
+}
+```
+
+**Output**:
+
+```json
+{
+   "text_data": "{\"foo\": 500}",
+   "numeric_data": {
+      "foo": 500
+   }
+}
+```
+
+:::
