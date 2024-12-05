@@ -1,3 +1,9 @@
+import Table from '@site/src/components/Table';
+import TableBody from '@site/src/components/Table/TableBody';
+import TableHeader from '@site/src/components/Table/TableHeader';
+import TableRow from '@site/src/components/Table/TableRow';
+import TableCell from '@site/src/components/Table/TableCell';
+
 # For Each
 
 :::info[synopsis]
@@ -201,3 +207,93 @@ The contained processor can have an `on_failure` definition that can be used to 
 In the event of a failure, elements processed so far will be updated.
 
 :::
+
+<Table>
+   <TableHeader columnNames={['input', 'spec', 'output']} />
+   <TableBody>
+      <TableRow>
+         <TableCell>
+            ```json
+            {
+               "values" : ["foo", "bar", "baz"]
+            }
+            ```
+         </TableCell>
+         <TableCell>
+            ```json
+            {
+               "foreach" : {
+                  "field" : "values",
+                  "processor" : {
+                     "uppercase" : {
+                        "field" : "_ingest._value"
+                     }
+                  }
+               }
+            }
+            ```
+         </TableCell>
+         <TableCell>
+            ```json
+            {
+               "values" : ["FOO", "BAR", "BAZ"]
+            }
+            ```
+         </TableCell>
+      </TableRow>
+      <TableRow>
+         <TableCell>
+           ```json
+            {
+               "things": [
+                  {
+                     "id": "1",
+                     "name": "foo"
+                  },
+                  {
+                     "id": "2",
+                     "name": "bar"
+                  }
+               ]
+            }
+            ```
+         </TableCell>
+         <TableCell>
+            ```json
+            {
+               "foreach": {
+                  "field": "things",
+                     "processor": {
+                     "uppercase": {
+                        "field": "_ingest._value.display_name"
+                     }
+                  }
+               }
+            }
+            ```
+         </TableCell>
+         <TableCell>
+            ```json
+            {
+               "things" : {
+                  "foos" : {
+                     "size" : 10,
+                     "display_name" : "FOOS"
+                  },
+                  "bars" : {
+                     "size" : 20,
+                     "display_name" : "BARS"
+                  },
+                  "quus" : {
+                     "size" : 50,
+                     "display_name" : ""
+                  }
+               }
+            }
+            ```
+         </TableCell>
+      </TableRow>
+   </TableBody>
+</Table>
+
+
