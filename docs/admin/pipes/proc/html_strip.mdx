@@ -1,13 +1,32 @@
 # HTML Strip
 
+:::info[synopsis]
+Removes **HTML** tags from a field, if the field is a string containing tags.
+:::
+:::note
+Each tag is replaced with a linebreak character.
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`field`|String|Y|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`ignore_failure`|Logical|N|||
-|`ignore_missing`|Logical|N|||
-|`on_failure`|Processors|N|||
-|`on_success`|Processors|N|||
-|`tag`|String|N|||
-|`target_field`|String|N|||
+|`field`|String|Y|N/A|The field with the string containing **HTML** tags|
+|`description`|String|N|-|Explanatory note|
+|`if`|String|N|-|Execute on this condition|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|Processors|N|-||
+|`tag`|String|N|-|Identifier|
+|`target_field`|String|N|`field`|The field to assign the string stripped off **HTML** tags|
+
+:::note[examples]
+**Spec**:
+
+```json
+{
+   "html_strip": {
+      "field": "foo"
+   }
+}
+```
+:::
