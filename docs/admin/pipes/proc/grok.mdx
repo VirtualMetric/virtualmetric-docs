@@ -1,15 +1,48 @@
 # Grok
 
+:::info[synopsis]
+Extracts structured fields out of a single text field within a document. You choose which field to extract matched fields from, as well as the grok pattern you expect will match. A grok pattern is like a regular expression that supports aliased expressions that can be reused.
+
+Comes with reusable patterns.
+:::
+
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`field`|String|Y|||
-|`patterns`|Strings|Y|||
-|`description`|String|N|||
-|`if`|String|N|||
-|`ignore_failure`|Logical|N|||
-|`ignore_missing`|Logical|N|||
-|`on_failure`|Processors|N|||
+|`field`|String|Y|N/A|The field containing the grok expression to be parsed|
+|`patterns`|Strings|Y|N/A|Ordered list of grok expressions to match with named captures. Returns the first match|
+|`description`|String|N|-|Explanatory note|
+|`if`|String|N|-|Execute on this condition|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|Logical|N|`false`|If set to `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|Processors|N|||
-|`pattern_definitions`|String$\rightarrow$String|N|||
-|`tag`|String|N|||
-|`trace_match`|Logical|N|||
+|`pattern_definitions`|String$\rightarrow$String|N|-|A map of _name_$\rightarrow$_pattern_ tuples. Patterns matching existing names override the pre-existing ones|
+|`tag`|String|N|-|Identifier|
+|`trace_match`|Logical|N|`false`|Inserts `_ingest._grok_match_index` into the matched document's metadata, along with the index of the pattern that matched|
+
+:::note[examples]
+
+```js
+POST _ingest/pipeline/_simulate
+{
+   "pipeline": {
+      "processors": [
+         {
+            "grok": {
+              "field": "message",
+               "patterns": ["%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes:int} %{NUMBER:duration:double}"]
+            }
+         }
+      ]
+  },
+  "docs":[
+      {
+         "_source": {
+            "message": "55.3.244.1 GET /index.html 15824 0.043"
+         }
+      }
+   ]
+}
+```
+
+:::
