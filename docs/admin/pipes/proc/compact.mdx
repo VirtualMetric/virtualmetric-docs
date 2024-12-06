@@ -1,5 +1,10 @@
 import Synopsis from "@site/src/components/Synopsis";
 
+import Table from '@site/src/components/Table';
+import TableBody from '@site/src/components/Table/TableBody';
+import TableRow from '@site/src/components/Table/TableRow';
+import TableCell from '@site/src/components/Table/TableCell';
+
 # Compact
 
 <Synopsis>
@@ -12,34 +17,47 @@ Removes all nested fields containing empty arrays or objects from a specified fi
 |---|---|---|---|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
+|`ignore_failure`|N|`false`|See [Handling Failure](../handling-failure.mdx)|
+|`on_failure`|N|-|See [Handling Failure](../handling-failure.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
 ## Examples
 
-The following field
-
-```js
-{
-   "foo": "bar",
-   "bar": [],
-   "baz": {
-      "this": {},
-      "that": 1
-   },
-   "qux": {}
-}
-```
-
-is compacted as
-
-```js
-{
-   "foo": "bar",
-   "baz": {
-      "that": 1
-   },
-}
-```
+<Table>
+   <TableBody>
+      <TableRow>
+         <TableCell>
+            This field...
+         </TableCell>
+         <TableCell>
+            ```js
+            {
+               "foo": "bar",
+               "bar": [],
+               "baz": {
+                  "this": {},
+                  "that": 1
+               },
+               "qux": {}
+            }
+            ```
+         </TableCell>
+      </TableRow>
+      <TableRow>
+         <TableCell>
+            ...is compacted as
+         </TableCell>
+         <TableCell>
+            ```js
+            {
+               "foo": "bar",
+               "baz": {
+                  "that": 1
+               },
+            }
+            ```
+         </TableCell>
+      </TableRow>
+   </TableBody>
+</Table>

@@ -1,7 +1,6 @@
 import Synopsis from "@site/src/components/Synopsis";
 
 import Table from '@site/src/components/Table';
-import TableBody from '@site/src/components/Table/TableBody';
 import TableRow from '@site/src/components/Table/TableRow';
 import TableCell from '@site/src/components/Table/TableCell';
 
@@ -19,9 +18,9 @@ Runs a processor on each element of an array or object when the number of elemen
 |`processor`|String|Y|N/A|The processor to run on each element|
 |`description`|String|N|-|Explanatory note|
 |`if`|String|N|-|Execute on this condition|
-|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failure](../handling-failure.mdx)|
 |`ignore_missing`|Logical|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_failure`|Processors|N|-|See [Handling Failure](../handling-failure.mdx)|
 |`on_success`|Processors|N|||
 |`tag`|String|N|-|Identifier|
 
@@ -44,49 +43,49 @@ If an element cannot be processed and no `on_failure` processor is specified, `f
 Multiple elements can be applied the same operation.
 
 <Table>
-      <TableRow>
-         <TableCell>
-         The array has three strings:
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "values" : ["foo", "bar", "baz"]
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-         With this configuration...
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "foreach" : {
-                  "field" : "values",
-                  "processor" : {
-                     "uppercase" : {
-                        "field" : "_ingest._value"
-                     }
+   <TableRow>
+      <TableCell>
+      The array has three strings:
+      </TableCell>
+      <TableCell>
+         ```js
+         {
+            "values" : ["foo", "bar", "baz"]
+         }
+         ```
+      </TableCell>
+   </TableRow>
+   <TableRow>
+      <TableCell>
+      With this configuration...
+      </TableCell>
+      <TableCell>
+         ```js
+         {
+            "foreach" : {
+               "field" : "values",
+               "processor" : {
+                  "uppercase" : {
+                     "field" : "_ingest._value"
                   }
                }
             }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-         ...they are converted to uppercase
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "values" : ["FOO", "BAR", "BAZ"]
-            }
-            ```
-         </TableCell>
-      </TableRow>
+         }
+         ```
+      </TableCell>
+   </TableRow>
+   <TableRow>
+      <TableCell>
+      ...they are converted to uppercase
+      </TableCell>
+      <TableCell>
+         ```js
+         {
+            "values" : ["FOO", "BAR", "BAZ"]
+         }
+         ```
+      </TableCell>
+   </TableRow>
 </Table>
 
 ### Arrays of Objects
@@ -94,7 +93,6 @@ Multiple elements can be applied the same operation.
  Multiple objects with multiple fields can be applied multiple operations.
 
 <Table>
-   <TableBody>
    <TableRow>
       <TableCell>
       The objects in the array have an `id` field
@@ -154,7 +152,6 @@ Multiple elements can be applied the same operation.
          ```
       </TableCell>
    </TableRow>
-   </TableBody>
 </Table>
 
 ### Objects
@@ -162,75 +159,73 @@ Multiple elements can be applied the same operation.
 Object with multiple fields can be applied an operation.
 
 <Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            We have **3** objects with **2** fields each:
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "things" : {
-                  "foos" : {
-                     "size": 10,
-                     "display_name": "Foos"
-                  },
-                  "bars" : {
-                     "size": 20,
-                     "display_name": "Bars"
-                  },
-                  "quxs" : {
-                     "size": 50,
-                     "display_name": ""
+   <TableRow>
+      <TableCell>
+         We have **3** objects with **2** fields each:
+      </TableCell>
+      <TableCell>
+         ```js
+         {
+            "things" : {
+               "foos" : {
+                  "size": 10,
+                  "display_name": "Foos"
+               },
+               "bars" : {
+                  "size": 20,
+                  "display_name": "Bars"
+               },
+               "quxs" : {
+                  "size": 50,
+                  "display_name": ""
+               }
+            }
+         }
+         ```
+      </TableCell>
+   </TableRow>
+      <TableCell>
+         This configuration tells the processor to convert their **display names** to **uppercase**:
+      </TableCell>
+      <TableCell>
+         ```js
+         {
+            "foreach": {
+               "field": "things",
+                  "processor": {
+                  "uppercase": {
+                     "field": "_ingest._value.display_name"
                   }
                }
             }
-            ```
-         </TableCell>
-      </TableRow>
-         <TableCell>
-            This configuration tells the processor to convert their **display names** to **uppercase**:
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "foreach": {
-                  "field": "things",
-                     "processor": {
-                     "uppercase": {
-                        "field": "_ingest._value.display_name"
-                     }
-                  }
+         }
+         ```
+      </TableCell>
+   <TableRow>
+   </TableRow>
+      <TableCell>
+         Done.
+      </TableCell>
+      <TableCell>
+         ```js
+         {
+            "things" : {
+               "foos" : {
+                  "size" : 10,
+                  "display_name" : "FOOS"
+               },
+               "bars" : {
+                  "size" : 20,
+                  "display_name" : "BARS"
+               },
+               "quxs" : {
+                  "size" : 50,
+                  "display_name" : ""
                }
             }
-            ```
-         </TableCell>
-      <TableRow>
-      </TableRow>
-         <TableCell>
-            Done.
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "things" : {
-                  "foos" : {
-                     "size" : 10,
-                     "display_name" : "FOOS"
-                  },
-                  "bars" : {
-                     "size" : 20,
-                     "display_name" : "BARS"
-                  },
-                  "quxs" : {
-                     "size" : 50,
-                     "display_name" : ""
-                  }
-               }
-            }
-            ```
-         </TableCell>
-   </TableBody>
+         }
+         ```
+      </TableCell>
 </Table>
 
 ### Failures
