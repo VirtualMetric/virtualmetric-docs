@@ -3,8 +3,19 @@ import Synopsis from "@site/src/components/Synopsis";
 # Enrich
 
 <Synopsis>
-Enriches documents with data from another index.
+Enriches data with data from another source.
 </Synopsis>
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}} }%%
+flowchart LR
+	docBox["`Source`"]
+    	procBox["`<code>dissect</code>
+    		<code>grok</code>`"]
+	indexBox["`Target`"]
+	docBox --> procBox --> indexBox
+```
+
 
 ## Parameters
 
@@ -15,11 +26,11 @@ Enriches documents with data from another index.
 |`query`|Y|N/A||
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failure](../handling-failure.mdx)|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|N|-|See [Handling Failure](../handling-failure.mdx)|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`override`|N|`true`|Update fields with pre-existing defined values. If set to `false`, such fields are not touched|
+|`override`|N|`true`|Update fields with pre-existing values. If `false`, those fields are not touched|
 |`tag`|N|-|Identifier|
 
 ## Examples
