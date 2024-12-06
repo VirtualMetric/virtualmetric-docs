@@ -31,37 +31,53 @@ If the field already exists, its value will be replaced with the provided one.
 
 ## Examples
 
+* Copying scalar values is straightforward:
+
 <Table>
    <TableBody>
       <TableRow>
          <TableCell>
-         Set value of a field
+            Set value of the `foo` field to **1**:
          </TableCell>
          <TableCell>
             ```js
             {
-               "description" : "sets the value of count to 1",
                "set": {
-                  "field": "count",
+                  "field": "foo",
                   "value": 1
                }
             }
             ```
          </TableCell>
       </TableRow>
+   </TableBody>
+</Table>
+
+<Table>
+   <TableBody>
       <TableRow>
          <TableCell>
-            Copy one field to another: grab `os` from `hostname` and...
+            Grab `foo` from `foo.bar` and...
          </TableCell>
          <TableCell>
             ```js
             {
-               "description": "sets the value of host.os.name from the field os",
                "processors": [
                   {
                      "set": {
-                        "field": "host.os.name",
-                        "value": "{{{os}}}"
+                        "field": "foo.bar",
+                        "value": "{{{bar}}}"
+                     }
+                  }
+               ]
+            }
+
+            POST _ingest/pipeline/set_os/_simulate
+            {
+               "docs": [
+                  {
+                     "_source": {
+                        "foo.bar": "BAR"
                      }
                   }
                ]
@@ -71,21 +87,149 @@ If the field already exists, its value will be replaced with the provided one.
       </TableRow>
       <TableRow>
          <TableCell>
-         ...copy it to `os`
+         ...copy it into `bar`
          </TableCell>
          <TableCell>
             ```js
             {
                "docs": [
                   {
-                     "_source": {
-                        "os": "Ubuntu"
+                     "doc": {
+                        "_source": {
+                           "foo": {
+                              "bar": {
+                                 "value": "BAR"
+                              }
+                           }
+                        },
                      }
                   }
                ]
             }
             ```
          </TableCell>
+      </TableRow>
+   </TableBody>
+</Table>
+
+* It is possible to access array fields with the dot notation.
+
+<Table>
+   <TableBody>
+      <TableRow>
+         <TableCell>
+            The `foo` field contains `bar` with 3 elements:
+         </TableCell>
+         <TableCell>
+            ```js
+            POST /_ingest/pipeline/_simulate
+            {
+               "pipeline": {
+                  "processors": [
+                     {
+                        "set": {
+                           "field": "foo",
+                           "value": "{{{bar.1}}}"
+                        }
+                     }
+                  ]
+               },
+               "docs": [
+                  {
+                     "_source": {
+                        "foo": [
+                           "A",
+                           "B",
+                           "C"
+                        ]
+                     }
+                  }
+               ]
+            }
+            ```
+         </TableCell>
+      </TableRow>
+      <TableRow>
+         <TableCell>
+            We grabbed the **1st** one:
+         </TableCell>
+         <TableCell>
+            ```js
+            {
+               "docs": [
+                  {
+                     "doc": {
+                        "_source": {
+                           "input_field": [
+                              "A",
+                              "B",
+                              "C"
+                           ],
+                           "bar": "A"
+                        },
+                     }
+                  }
+               ]
+            }
+            ```
+         </TableCell>
+      </TableRow>
+   </TableBody>
+</Table>
+
+* The contents of a field including complex values such as arrays or objects can be copied to another field using `copy_from`:
+
+<Table>
+   <TableBody>
+      <TableRow>
+         <TableCell>
+            We will copy the valus in `foo`...
+         </TableCell>
+         <TableCell>
+            ```js
+            PUT _ingest/pipeline/set_bar
+            {
+               "processors": [
+                  {
+                     "set": {
+                        "field": "bar",
+                        "copy_from": "foo"
+                     }
+                  }
+               ]
+            }
+
+            POST _ingest/pipeline/set_bar/_simulate
+            {
+               "docs": [
+                  {
+                     "_source": {
+                        "foo": ["A", "B"]
+                     }
+                  }
+               ]
+            }
+            ```
+         </TableCell>
+      </TableRow>
+      <TableRow>
+         <TableCell>
+            ...into `bar`
+         </TableCell>
+            ```js
+            {
+               "docs": [
+                  {
+                     "doc": {
+                        "_source": {
+                           "foo": ["A", "B"],
+                           "bar": ["A", "B"]
+                        },
+                     }
+                  }
+               ]
+            }
+            ```
       </TableRow>
    </TableBody>
 </Table>
