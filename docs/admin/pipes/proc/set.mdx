@@ -1,23 +1,91 @@
 import Synopsis from "@site/src/components/Synopsis";
 
+import Table from '@site/src/components/Table';
+import TableRow from '@site/src/components/Table/TableRow';
+import TableCell from '@site/src/components/Table/TableCell';
+
 # Set
 
 <Synopsis>
+Sets a field and associates it with a specified value.
 </Synopsis>
+
+If the field already exists, its value will be replaced with the provided one.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|N/A||
-|`copy_from`|N|||
+|`field`|Y|N/A|Field to update|
+|`copy_from`|N|-|The field whose value will copied to `field`. Cannot be used if `value` is specified. Valid options: `array`, `date`, `boolean`, `number`, `object`, `string`, etc.|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
-|`ignore_empty_value`|N|||
+|`ignore_empty_value`|N|`false`|If `true` and `value`/`copy_from` is not `null`, quietly exit if specified field does not exist or its value evaluates to `null` or `empty`|
 |`ignore_failure`|N|`false`|See [Handling Failure](../handling-failure.mdx)|
-|`media_type`|N|||
+|`media_type`|N|`application/json`|For encoding `value`. Valid options: `application/json`, `text/plain`, or `application/x-www-form-urlencoded`.|
 |`on_failure`|N|-|See [Handling Failure](../handling-failure.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`override`|N|||
+|`override`|N|`true`|Update non-null fields with `field`. If `false`, do not touch those fields|
 |`tag`|N|-|Identifier|
-|`value`|Any|N|||
+|`value`|N|-|The value to be set. Cannot be used if `copy_from` is specified|
+
+## Examples
+
+<Table>
+   <TableBody>
+      <TableRow>
+         <TableCell>
+         Set value of a field
+         </TableCell>
+         <TableCell>
+            ```js
+            {
+               "description" : "sets the value of count to 1",
+               "set": {
+                  "field": "count",
+                  "value": 1
+               }
+            }
+            ```
+         </TableCell>
+      </TableRow>
+      <TableRow>
+         <TableCell>
+            Copy one field to another: grab `os` from `hostname` and...
+         </TableCell>
+         <TableCell>
+            ```js
+            {
+               "description": "sets the value of host.os.name from the field os",
+               "processors": [
+                  {
+                     "set": {
+                        "field": "host.os.name",
+                        "value": "{{{os}}}"
+                     }
+                  }
+               ]
+            }
+            ```
+         </TableCell>
+      </TableRow>
+      <TableRow>
+         <TableCell>
+         ...copy it to `os`
+         </TableCell>
+         <TableCell>
+            ```js
+            {
+               "docs": [
+                  {
+                     "_source": {
+                        "os": "Ubuntu"
+                     }
+                  }
+               ]
+            }
+            ```
+         </TableCell>
+      </TableRow>
+   </TableBody>
+</Table>
