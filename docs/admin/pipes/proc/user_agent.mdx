@@ -1,19 +1,90 @@
 import Synopsis from "@site/src/components/Synopsis";
 
+import Table from '@site/src/components/Table';
+import TableRow from '@site/src/components/Table/TableRow';
+import TableCell from '@site/src/components/Table/TableCell';
+
 # User Agent
+
+<Synopsis>
+Extracts details from the user agent string a browser sends with its web requests.
+</Synopsis>
+
+Adds this information by default to the `user_agent` field.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|N/A||
+|`field`|Y|N/A|Field containing the user agent info|
 |`description`|N|-|Explanatory note|
-|`extract_device_type`|N|||
+|`extract_device_type`|N|`false`|Extract device type, if possible|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failure](../handling-failure.mdx)|
 |`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
 |`on_failure`|N|-|See [Handling Failure](../handling-failure.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`properties`|N|||
+|`properties`|N|[`build`, `device`, `major`, `minor`, `name`, `os`, `os_major`, `os_minor`, `os_name`, `patch`]|Controls the properties to be added to the `target_field`|
 |`tag`|N|-|Identifier|
-|`target_field`|N|||
+|`target_field`|N|-|Field to be filled with the user agent details|
+
+## Examples
+
+<Table>
+	<TableBody>
+		<TableRow>
+			<TableCell>
+            This spec:
+			</TableCell>
+			<TableCell>
+            ```js
+            "processors" : [
+               {
+                  "user_agent": {
+                     "field": "agent"
+                  }
+               }
+            ],
+            {
+               "agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+            }
+            ```
+			</TableCell>
+		</TableRow>
+		<TableRow>
+			<TableCell>
+            ...adds the user agent details to the `user_agent` field based on the `agent` field:
+			</TableCell>
+			<TableCell>
+            ```js
+            {
+               "_source": {
+                  "agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+                  "user_agent": {
+                     "name": "Chrome",
+                     "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+                     "version": "51.0.2704.103",
+                     "os": {
+                        "name": "Mac OS X",
+                        "version": "10.10.5",
+                        "full": "Mac OS X 10.10.5"
+                     },
+                     "device": {
+                        "name": "Mac"
+                     }
+                  }
+               }
+            }
+            ```
+			</TableCell>
+		</TableRow>
+	</TableBody>
+</Table>
+
+TODO: Customize
+
+## Node Configuration
+
+The processor has a `ingest.user_agent.cache_size` setting which is the maximum number of results to be cached. The default is `1000`.
+
+Also, the node settings apply to all `user_agent` processors.
