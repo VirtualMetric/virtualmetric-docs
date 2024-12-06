@@ -14,17 +14,17 @@ Runs a processor on each element of an array or object when the number of elemen
 
 ## Parameters
 
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`field`|Y|N/A|The field containing the array or object with two or more elements|
-|`processor`|Y|N/A|The processor to run on each element|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|||
-|`tag`|N|-|Identifier|
+|Field|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`field`|String|Y|N/A|The field containing the array or object with two or more elements|
+|`processor`|String|Y|N/A|The processor to run on each element|
+|`description`|String|N|-|Explanatory note|
+|`if`|String|N|-|Execute on this condition|
+|`ignore_failure`|Logical|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|Logical|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`on_failure`|Processors|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|Processors|N|||
+|`tag`|String|N|-|Identifier|
 
 ## Accessors
 
@@ -42,189 +42,27 @@ If an element cannot be processed and no `on_failure` processor is specified, `f
 
 ### Arrays
 
-**Input**:
-
-```js
-{
-   "values" : ["foo", "bar", "baz"]
-}
-```
-
-**Spec**:
-
-```js
-{
-   "foreach" : {
-      "field" : "values",
-      "processor" : {
-         "uppercase" : {
-            "field" : "_ingest._value"
-         }
-      }
-   }
-}
-```
-
-**Output**:
-
-```js
-{
-   "values" : ["FOO", "BAR", "BAZ"]
-}
-```
-
-### Array of Objects
-
-**Input**:
-
-```js
-{
-   "things": [
-      {
-         "id": "1",
-         "name": "foo"
-      },
-      {
-         "id": "2",
-         "name": "bar"
-      }
-   ]
-}
-```
-
-**Spec**:
-
-```js
-{
-   "foreach": {
-      "field": "things",
-         "processor": {
-            "remove": {
-            "field": "_ingest._value.id"
-         }
-      }
-   }
-}
-```
-
-**Output**:
-
-```js
-{
-   "things": [
-      {
-         "name": "foo"
-      },
-      {
-         "name": "bar"
-      }
-   ]
-}
-```
-
-### Objects
-
-**Input**:
-
-```js
-{
-   "things" : {
-      "foos" : {
-         "size": 10,
-         "display_name": "Foos"
-      },
-      "bars" : {
-         "size": 20,
-         "display_name": "Bars"
-      },
-      "quus" : {
-         "size": 50,
-         "display_name": ""
-      }
-   }
-}
-```
-
-**Spec**:
-
-```js
-{
-   "foreach": {
-      "field": "things",
-         "processor": {
-         "uppercase": {
-            "field": "_ingest._value.display_name"
-         }
-      }
-   }
-}
-```
-
-**Output**:
-
-```js
-{
-   "things" : {
-      "foos" : {
-         "size" : 10,
-         "display_name" : "FOOS"
-      },
-      "bars" : {
-         "size" : 20,
-         "display_name" : "BARS"
-      },
-      "quus" : {
-         "size" : 50,
-         "display_name" : ""
-      }
-   }
-}
-```
-
-### Failures
-
-The contained processor can have an `on_failure` definition that Use to send the document to the failure queue for review.
-
-**Spec**:
-
-```js
-{
-   "foreach" : {
-      "field" : "things",
-      "processor": {
-         "remove": {
-            "field" : "_value.id",
-            "on_failure" : [
-               {
-                  "set" : {
-                     "field": "_index",
-                     "value": "failure_index"
-                  }
-               }
-            ]
-         }
-      }
-   }
-}
-```
-
-In the event of a failure, elements processed so far will be updated.
-
----
+Multiple elements can be applied the same operation.
 
 <Table>
-   <TableHeader columnNames={['Input', 'Spec', 'Output']} />
-   <TableBody>
       <TableRow>
          <TableCell>
-            ```json
+         The array has three strings:
+         </TableCell>
+         <TableCell>
+            ```js
             {
                "values" : ["foo", "bar", "baz"]
             }
             ```
          </TableCell>
+      </TableRow>
+      <TableRow>
          <TableCell>
-            ```json
+         With this configuration...
+         </TableCell>
+         <TableCell>
+            ```js
             {
                "foreach" : {
                   "field" : "values",
@@ -237,33 +75,125 @@ In the event of a failure, elements processed so far will be updated.
             }
             ```
          </TableCell>
+      </TableRow>
+      <TableRow>
          <TableCell>
-            ```json
+         ...they are converted to uppercase
+         </TableCell>
+         <TableCell>
+            ```js
             {
                "values" : ["FOO", "BAR", "BAZ"]
             }
             ```
          </TableCell>
       </TableRow>
+</Table>
+
+### Arrays of Objects
+
+ Multiple objects with multiple fields can be applied multiple operations.
+
+<Table>
+   <TableBody>
+   <TableRow>
+      <TableCell>
+      The objects in the array have an `id` field
+      </TableCell>
+      <TableCell>
+         ```js
+         {
+            "things": [
+               {
+                  "id": "1",
+                  "name": "foo"
+               },
+               {
+                  "id": "2",
+                  "name": "bar"
+               }
+            ]
+         }
+         ```
+      </TableCell>
+   </TableRow>
+   <TableRow>
+      <TableCell>
+         The processor is configured to remove that field...
+      </TableCell>
+      <TableCell>
+         ```js
+         {
+            "foreach": {
+               "field": "things",
+                  "processor": {
+                     "remove": {
+                     "field": "_ingest._value.id"
+                  }
+               }
+            }
+         }
+         ```
+      </TableCell>
+   </TableRow>
+   <TableRow>
+      <TableCell>
+         ...resulting in this document:
+      </TableCell>
+      <TableCell>
+         ```js
+         {
+            "things": [
+               {
+                  "name": "foo"
+               },
+               {
+                  "name": "bar"
+               }
+            ]
+         }
+         ```
+      </TableCell>
+   </TableRow>
+   </TableBody>
+</Table>
+
+### Objects
+
+Object with multiple fields can be applied an operation.
+
+<Table>
+   <TableBody>
       <TableRow>
          <TableCell>
-           ```json
+            We have **3** objects with **2** fields each:
+         </TableCell>
+         <TableCell>
+            ```js
             {
-               "things": [
-                  {
-                     "id": "1",
-                     "name": "foo"
+               "things" : {
+                  "foos" : {
+                     "size": 10,
+                     "display_name": "Foos"
                   },
-                  {
-                     "id": "2",
-                     "name": "bar"
+                  "bars" : {
+                     "size": 20,
+                     "display_name": "Bars"
+                  },
+                  "quxs" : {
+                     "size": 50,
+                     "display_name": ""
                   }
-               ]
+               }
             }
             ```
          </TableCell>
+      </TableRow>
          <TableCell>
-            ```json
+            This configuration tells the processor to convert their **display names** to **uppercase**:
+         </TableCell>
+         <TableCell>
+            ```js
             {
                "foreach": {
                   "field": "things",
@@ -276,8 +206,13 @@ In the event of a failure, elements processed so far will be updated.
             }
             ```
          </TableCell>
+      <TableRow>
+      </TableRow>
          <TableCell>
-            ```json
+            Done.
+         </TableCell>
+         <TableCell>
+            ```js
             {
                "things" : {
                   "foos" : {
@@ -288,7 +223,7 @@ In the event of a failure, elements processed so far will be updated.
                      "size" : 20,
                      "display_name" : "BARS"
                   },
-                  "quus" : {
+                  "quxs" : {
                      "size" : 50,
                      "display_name" : ""
                   }
@@ -296,6 +231,32 @@ In the event of a failure, elements processed so far will be updated.
             }
             ```
          </TableCell>
-      </TableRow>
    </TableBody>
 </Table>
+
+### Failures
+
+The nested processor can have an `on_failure` definition that can be used to send the document to the failure queue for review.
+
+```js
+{
+   "foreach" : {
+      "field" : "things",
+      "processor": {
+         "remove": {
+            "field" : "_value.id",
+            "on_failure" : [
+               {
+                  "set" : {
+                     "field": "_index",
+                     "value": "failure_queue"
+                  }
+               }
+            ]
+         }
+      }
+   }
+}
+```
+
+In the event of a failure, elements processed so far will be updated.
