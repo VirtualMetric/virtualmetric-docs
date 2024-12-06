@@ -21,7 +21,7 @@ If provided, the processor only runs when the stated condition is met. The condi
 If regular expressions are enabled in the cluster setting, they can be used in the `if` condition scripts.
 
 :::warning
-Note, however, that as regular expressions can slow down indexing operations, it is better to avoid them whenever possible.
+As regular expressions can slow down indexing operations, it is better to avoid them whenever possible.
 :::
 
 ```js
@@ -40,8 +40,8 @@ Note, however, that as regular expressions can slow down indexing operations, it
 
 Normally, the `if` condition must specified as a single valid JSON line. However, the console's triple quote syntax can be used to write and debug longer scripts.
 
-:::note
-Again, it is better to avoid using complex condition scripts as they may slow down the process.
+:::warning
+It is better to avoid using complex scripts as they may slow down the process.
 :::
 
 ```js
@@ -52,7 +52,7 @@ Again, it is better to avoid using complex condition scripts as they may slow do
             Collection tags = ctx.tags;
             if (tags != null) {
                for (String tag : tags) {
-                  if (tag.toLowerCase().contains('prod')) {
+                  if (tag.toLowerCase().contains('foo')) {
                      return false;
                   }
                }

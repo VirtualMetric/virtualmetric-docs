@@ -31,16 +31,15 @@ A date formatting can be configured to specify how the field's value should be p
 
 ## Examples
 
-Points documents to a monthly index that starts with a `co-index-` prefix based on a date in the `co-date` field:
+Points documents to a monthly index that starts with a `the_index-` prefix based on a date in the `the_date` field:
 
 ```js
-PUT _ingest/pipeline/monthlyindex
 {
    "processors": [
       {
          "date_index_name": {
-            "field": "co-date",
-            "index_name_prefix": "co-index-",
+            "field": "the_date",
+            "index_name_prefix": "the_index-",
             "date_rounding": "M"
          }
       }
@@ -51,9 +50,8 @@ PUT _ingest/pipeline/monthlyindex
 An index request from the same pipeline:
 
 ```js
-PUT /co-index/_doc/1?pipeline=monthlyindex
 {
-   "co-date": "2024-06-55T09:05:11.3346"
+   "the_date": "2024-06-55T09:05:11.3346"
 }
 
 TODO: Fill in the other examples after adapting them
