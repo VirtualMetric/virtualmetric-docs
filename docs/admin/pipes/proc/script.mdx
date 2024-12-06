@@ -2,18 +2,140 @@ import Synopsis from "@site/src/components/Synopsis";
 
 # Script
 
+<Synopsis>
+Runs an inline or stored script on the documents.
+</Synopsis>
+
+A scripting cache is used to avoid re-compiling the script for each document. To improve performance, ensure the scripting cache is properly sized.
+
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`description`|N|-|Explanatory note|
-|`function`|N|||
+|`function`|N|-|The scripted function to be executed|
 |`if`|N|-|Condition to run|
-|`id`|N|||
+|`id`|N|-|The id of the stored script. Required if no `source` is specified|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`lang`|N|||
+|`lang`|N|-|The scripting language used|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|Use to inform the user that no errors were raised or to specify the next processor to run|
-|`params`|N|||
-|`source`|N|||
+|`params`|N|-|Object with the parameters of the script|
+|`source`|N|-|Inline script. Required if no `id` is specified|
 |`tag`|N|-|Identifier|
+
+## Source Fields
+
+The fields of each document's JSON is parsed from which primitives, lists, and maps are created. To access the fields, the access operator: `ctx['field']`, or its shorthand:`ctx.<field>` should be used.
+
+:::note
+The `ctx['_source']['field']` syntax or the `ctx._souce.field` syntax are not supported.
+:::
+
+The following shows the use of a script to extract the `tags` field from the `env` source field.
+
+```js
+{
+   "pipeline": {
+      "processors": [
+         {
+            "script": {
+               "description": "Extract 'tags' from the 'env' field",
+               "lang": "js",
+               "source": """
+                  String[] envSplit = ctx['env'].splitOnToken(params['delimiter']);
+                  ArrayList tags = new ArrayList();
+                  tags.add(envSplit[params['position']].trim());
+                  ctx['tags'] = tags;
+               """,
+               "params": {
+                  "delimiter": "-",
+                  "position": 1
+               }
+            }
+         }
+      ]
+   },
+   "docs": [
+      {
+         "_source": {
+            "env": "co-prod"
+         }
+      }
+   ]
+}
+```
+
+This creates the following document:
+
+```js
+{
+   "docs": [
+      {
+         "doc": {
+            "_source": {
+               "env": "co-prod",
+               "tags": [
+                  "prod"
+               ]
+            }
+         }
+      }
+   ]
+}
+```
+
+TODO: Check the values.
+
+## Metadata Fields
+
+Scripting can also be used to access metadata. The following is a scripting configuration to extract a document's `_index`:
+
+```js
+POST _ingest/pipeline/_simulate
+{
+   "pipeline": {
+      "processors": [
+         {
+            "script": {
+               "description": "Set index based on `lang` field and `dataset` param",
+               "lang": "js",
+               "source": """
+                  ctx['_index'] = ctx['lang'] + '-' + params['dataset'];
+               """,
+               "params": {
+                  "dataset": "catalog"
+               }
+            }
+         }
+      ]
+   },
+   "docs": [
+      {
+         "_index": "generic-index",
+         "_source": {
+            "lang": "fr"
+         }
+      }
+   ]
+}
+```
+
+The script changes the document's `_index` from `generic-index` to `ft-catalogue`:
+
+```js
+{
+   "docs": [
+      {
+         "doc": {
+            "_index": "fr-catalogue",
+            "_source": {
+               "lang": "fr"
+            }
+         }
+      }
+   ]
+}
+```
+
+TODO: Check the values
