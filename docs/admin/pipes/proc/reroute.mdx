@@ -1,8 +1,5 @@
 import Synopsis from "@site/src/components/Synopsis";
-
-import Table from '@site/src/components/Table';
-import TableRow from '@site/src/components/Table/TableRow';
-import TableCell from '@site/src/components/Table/TableCell';
+import { Example, Description, SampleCode } from '@site/src/components/CustomFeatures';
 
 # Reroute
 
@@ -44,42 +41,28 @@ The client needs to have execute permissions on the final target. Otherwise, the
 
 ## Examples
 
-<Table>
-	<TableRow>
-		<TableCell>
-		With the `if` option, the document can be rerouted to a new target:
-		</TableCell>
-		<TableCell>
-         ```js
-         {
-            "reroute": {
-               "tag": "review-routing",
-               "if" : "log?.file?.path?.contains('review')",
-               "dataset": "review"
-            }
-         }
-         ```
-		</TableCell>
-	</TableRow>
-</Table>
+Using the `if` option, the document can be rerouted to a new target:
 
-<Table>
-   <TableRow>
-      <TableCell>
-         The processor first tries to resolve the `service.name` to determine the dataset. If that field contains `null`, does not exist, or is not a string, it tries the next element in the list. Here, this is the literal "`generic`". The `namespace` is configured with a single literal value:
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "reroute": {
-               "dataset": [
-                  "{{service.name}}",
-                  "generic"
-               ],
-               "namespace": "default"
-            }
-         }
-         ```
-      </TableCell>
-   </TableRow>
-</Table>
+```js
+{
+   "reroute": {
+      "tag": "review-routing",
+      "if" : "log?.file?.path?.contains('review')",
+      "dataset": "review"
+   }
+}
+```
+
+The processor first tries to resolve the `service.name` to determine the dataset. If that field contains `null`, does not exist, or is not a string, it tries the next element in the list. Here, this is the literal "`generic`". The `namespace` is configured with a single literal value:
+
+```js
+{
+   "reroute": {
+      "dataset": [
+         "{{service.name}}",
+         "generic"
+      ],
+      "namespace": "default"
+   }
+}
+```

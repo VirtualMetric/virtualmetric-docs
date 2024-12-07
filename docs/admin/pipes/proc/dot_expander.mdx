@@ -1,9 +1,5 @@
 import Synopsis from "@site/src/components/Synopsis";
-
-import Table from '@site/src/components/Table';
-import TableBody from '@site/src/components/Table/TableBody';
-import TableRow from '@site/src/components/Table/TableRow';
-import TableCell from '@site/src/components/Table/TableCell';
+import { Example, Description, SampleCode } from '@site/src/components/CustomFeatures';
 
 # Dot Expander
 
@@ -28,312 +24,264 @@ Expands a field containing dots into an object field. Makes fields with dots in 
 
 * If the expanded name is distinct, the part after the dot becomes nested:
 
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            **Input**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A.B": "v"
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Spec**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "dot_expander": {
-                  "field": "A.B"
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Output**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A": {
-                  "B": "v"
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-   </TableBody>
-</Table>
+<Example>
+   <Description>
+      **Input**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A.B": "v"
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Spec**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "dot_expander": {
+            "field": "A.B"
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Output**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A": {
+            "B": "v"
+         }
+      }
+      ```
+   </SampleCode>
+</Example>
 
 * If the dotted field clashes with a nested one, it is merged with it:
 
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            **Input**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A.B": "v1",
-               "A": {
-                  "B": "v2"
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Spec**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "dot_expander": {
-                  "field": "A.B"
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Output**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A": {
-                  "B": ["v1", "v2"]
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-   </TableBody>
-</Table>
+<Example>
+   <Description>
+      **Input**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A.B": "v1",
+         "A": {
+            "B": "v2"
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Spec**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "dot_expander": {
+            "field": "A.B"
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Output**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A": {
+            "B": ["v1", "v2"]
+         }
+      }
+      ```
+   </SampleCode>
+</Example>
 
 * Using `override` causes the expanded field to be overridden by the nested one
 
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            **Input**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A.B": "v1",
-               "A": {
-                  "B": "v2"
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Spec**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "dot_expander": {
-                  "field": "A.B",
-                  "override": true
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Output**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A": {
-                  "B": "v2"
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-   </TableBody>
-</Table>
+<Example>
+   <Description>
+      **Input**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A.B": "v1",
+         "A": {
+            "B": "v2"
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Spec**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "dot_expander": {
+            "field": "A.B",
+            "override": true
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Output**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A": {
+            "B": "v2"
+         }
+      }
+      ```
+   </SampleCode>
+</Example>
 
 * Using `*` expands all top-level fields
 
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            **Input**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A.B": "v1",
-               "C.D": "v2"
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Spec**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "dot_expander": {
-                  "field": "*"
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Output**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A": {
-                  "B": "v1"
-               },
-               "C": {
-                  "D": "v2"
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-   </TableBody>
-</Table>
+<Example>
+   <Description>
+      **Input**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A.B": "v1",
+         "C.D": "v2"
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Spec**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "dot_expander": {
+            "field": "*"
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Output**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A": {
+            "B": "v1"
+         },
+         "C": {
+            "D": "v2"
+         }
+      }
+      ```
+   </SampleCode>
+</Example>
 
 * If the dotted field is nested within a field, use `path` to navigate down
 
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            **Input**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A": {
-                  "B.C": "v1",
-                  "B.D": "v2"
-               }
+<Example>
+   <Description>
+      **Input**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A": {
+            "B.C": "v1",
+            "B.D": "v2"
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Spec**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "dot_expander": {
+            "path": "A",
+            "field": "*"
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Output**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A": {
+            "B": {
+               "C": "v1",
+               "D": "v2"
             }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Spec**
-         </TableCell>
-         <TableCell>
-            ```js
+         }
+      }
+      ```
+   </SampleCode>
+</Example>
+
+* If there is a potential for a clash between an expanded field and another one at the same level, use `rename` first
+
+<Example>
+   <Description>
+      **Input**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "A": "v1",
+         "A.B": "v2"
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Spec**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "processors": [
+            {
+               "rename": {
+                  "field": "A",
+                  "target_field": "A.B"
+               }
+            },
             {
                "dot_expander": {
                   "path": "A",
                   "field": "*"
                }
             }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Output**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A": {
-                  "B": {
-                     "C": "v1",
-                     "D": "v2"
-                  }
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-   </TableBody>
-</Table>
-
-* If there is a potential for a clash between an expanded field and another one at the same level, use `rename` first
-
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            **Input**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "A": "v1",
-               "A.B": "v2"
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Spec**
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "processors": [
-                  {
-                     "rename": {
-                        "field": "A",
-                        "target_field": "A.B"
-                     }
-                  },
-                  {
-                     "dot_expander": {
-                        "path": "A",
-                        "field": "*"
-                     }
-                  }
-               ]
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            **Output**
-         </TableCell>
-         <TableCell>
-            ```code
-            {
-               "A": {
-                  "B": ["v1", "v2"]
-               }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-   </TableBody>
-</Table>
+         ]
+      }
+      ```
+   </SampleCode>
+   <Description>
+      **Output**
+   </Description>
+   <SampleCode>
+      ```code
+      {
+         "A": {
+            "B": ["v1", "v2"]
+         }
+      }
+      ```
+   </SampleCode>
+</Example>

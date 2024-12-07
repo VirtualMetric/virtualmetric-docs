@@ -1,8 +1,5 @@
 import Synopsis from "@site/src/components/Synopsis";
-
-import Table from '@site/src/components/Table';
-import TableRow from '@site/src/components/Table/TableRow';
-import TableCell from '@site/src/components/Table/TableCell';
+import { Example, Description, SampleCode } from '@site/src/components/CustomFeatures';
 
 # Set
 
@@ -33,203 +30,181 @@ If the field already exists, its value will be replaced with the provided one.
 
 * Copying scalar values is straightforward:
 
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            Set value of the `foo` field to **1**:
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "set": {
-                  "field": "foo",
-                  "value": 1
+<Example>
+      <Description>
+         Set value of the `foo` field to **1**:
+      </Description>
+      <SampleCode>
+         ```js
+         {
+            "set": {
+               "field": "foo",
+               "value": 1
+            }
+         }
+         ```
+      </SampleCode>
+</Example>
+
+<Example>
+      <Description>
+         Grab `foo` from `foo.bar` and...
+      </Description>
+      <SampleCode>
+         ```js
+         {
+            "processors": [
+               {
+                  "set": {
+                     "field": "foo.bar",
+                     "value": "{{{bar}}}"
+                  }
                }
-            }
-            ```
-         </TableCell>
-      </TableRow>
-   </TableBody>
-</Table>
+            ]
+         }
 
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            Grab `foo` from `foo.bar` and...
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "processors": [
-                  {
-                     "set": {
-                        "field": "foo.bar",
-                        "value": "{{{bar}}}"
-                     }
+         POST _ingest/pipeline/set_os/_simulate
+         {
+            "docs": [
+               {
+                  "_source": {
+                     "foo.bar": "BAR"
                   }
-               ]
-            }
-
-            POST _ingest/pipeline/set_os/_simulate
-            {
-               "docs": [
-                  {
+               }
+            ]
+         }
+         ```
+      </SampleCode>
+      <Description>
+      ...copy it into `bar`
+      </Description>
+      <SampleCode>
+         ```js
+         {
+            "docs": [
+               {
+                  "doc": {
                      "_source": {
-                        "foo.bar": "BAR"
-                     }
-                  }
-               ]
-            }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-         ...copy it into `bar`
-         </TableCell>
-         <TableCell>
-            ```js
-            {
-               "docs": [
-                  {
-                     "doc": {
-                        "_source": {
-                           "foo": {
-                              "bar": {
-                                 "value": "BAR"
-                              }
+                        "foo": {
+                           "bar": {
+                              "value": "BAR"
                            }
-                        },
-                     }
+                        }
+                     },
                   }
-               ]
-            }
-            ```
-         </TableCell>
-      </TableRow>
-   </TableBody>
-</Table>
+               }
+            ]
+         }
+         ```
+      </SampleCode>
+</Example>
 
 * It is possible to access array fields with the dot notation.
 
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            The `foo` field contains `bar` with 3 elements:
-         </TableCell>
-         <TableCell>
-            ```js
-            POST /_ingest/pipeline/_simulate
+<Example>
+   <Description>
+      The `foo` field contains `bar` with 3 elements:
+   </Description>
+   <SampleCode>
+      ```js
+      POST /_ingest/pipeline/_simulate
+      {
+         "pipeline": {
+            "processors": [
+               {
+                  "set": {
+                     "field": "foo",
+                     "value": "{{{bar.1}}}"
+                  }
+               }
+            ]
+         },
+         "docs": [
             {
-               "pipeline": {
-                  "processors": [
-                     {
-                        "set": {
-                           "field": "foo",
-                           "value": "{{{bar.1}}}"
-                        }
-                     }
+               "_source": {
+                  "foo": [
+                     "A",
+                     "B",
+                     "C"
                   ]
-               },
-               "docs": [
-                  {
-                     "_source": {
-                        "foo": [
-                           "A",
-                           "B",
-                           "C"
-                        ]
-                     }
-                  }
-               ]
+               }
             }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            We grabbed the **1st** one:
-         </TableCell>
-         <TableCell>
-            ```js
+         ]
+      }
+      ```
+   </SampleCode>
+   <Description>
+      We grabbed the **1st** one:
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "docs": [
             {
-               "docs": [
-                  {
-                     "doc": {
-                        "_source": {
-                           "input_field": [
-                              "A",
-                              "B",
-                              "C"
-                           ],
-                           "bar": "A"
-                        },
-                     }
-                  }
-               ]
+               "doc": {
+                  "_source": {
+                     "input_field": [
+                        "A",
+                        "B",
+                        "C"
+                     ],
+                     "bar": "A"
+                  },
+               }
             }
-            ```
-         </TableCell>
-      </TableRow>
-   </TableBody>
-</Table>
+         ]
+      }
+      ```
+   </SampleCode>
+</Example>
 
 * The contents of a field including complex values such as arrays or objects can be copied to another field using `copy_from`:
 
-<Table>
-   <TableBody>
-      <TableRow>
-         <TableCell>
-            We will copy the valus in `foo`...
-         </TableCell>
-         <TableCell>
-            ```js
-            PUT _ingest/pipeline/set_bar
+<Example>
+   <Description>
+      We will copy the valus in `foo`...
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "processors": [
             {
-               "processors": [
-                  {
-                     "set": {
-                        "field": "bar",
-                        "copy_from": "foo"
-                     }
-                  }
-               ]
+               "set": {
+                  "field": "bar",
+                  "copy_from": "foo"
+               }
             }
-
-            POST _ingest/pipeline/set_bar/_simulate
+         ]
+      }
+      ...
+      {
+         "docs": [
             {
-               "docs": [
-                  {
-                     "_source": {
-                        "foo": ["A", "B"]
-                     }
-                  }
-               ]
+               "_source": {
+                  "foo": ["A", "B"]
+               }
             }
-            ```
-         </TableCell>
-      </TableRow>
-      <TableRow>
-         <TableCell>
-            ...into `bar`
-         </TableCell>
-            ```js
+         ]
+      }
+      ```
+   </SampleCode>
+   <Description>
+      ...into `bar`
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "docs": [
             {
-               "docs": [
-                  {
-                     "doc": {
-                        "_source": {
-                           "foo": ["A", "B"],
-                           "bar": ["A", "B"]
-                        },
-                     }
-                  }
-               ]
+               "doc": {
+                  "_source": {
+                     "foo": ["A", "B"],
+                     "bar": ["A", "B"]
+                  },
+               }
             }
-            ```
-      </TableRow>
-   </TableBody>
-</Table>
+         ]
+      }
+      ```
+   </SampleCode>
+</Example>

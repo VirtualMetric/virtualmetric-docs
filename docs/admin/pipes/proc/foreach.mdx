@@ -1,8 +1,5 @@
 import Synopsis from "@site/src/components/Synopsis";
-
-import Table from '@site/src/components/Table';
-import TableRow from '@site/src/components/Table/TableRow';
-import TableCell from '@site/src/components/Table/TableCell';
+import { Example, Description, SampleCode } from '@site/src/components/CustomFeatures';
 
 # For Each
 
@@ -42,191 +39,175 @@ If an element cannot be processed and no `on_failure` processor is specified, `f
 
 Multiple elements can be applied the same operation.
 
-<Table>
-   <TableRow>
-      <TableCell>
-      The array has three strings:
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "values" : ["foo", "bar", "baz"]
-         }
-         ```
-      </TableCell>
-   </TableRow>
-   <TableRow>
-      <TableCell>
+<Example lang="js">
+   <Description>
+      The array has three strings.
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "values" : ["foo", "bar", "baz"]
+      }
+      ```
+   </SampleCode>
+   <Description>
       With this configuration...
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "foreach" : {
-               "field" : "values",
-               "processor" : {
-                  "uppercase" : {
-                     "field" : "_ingest._value"
-                  }
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "foreach" : {
+            "field" : "values",
+            "processor" : {
+               "uppercase" : {
+                  "field" : "_ingest._value"
                }
             }
          }
-         ```
-      </TableCell>
-   </TableRow>
-   <TableRow>
-      <TableCell>
-      ...they are converted to uppercase
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "values" : ["FOO", "BAR", "BAZ"]
-         }
-         ```
-      </TableCell>
-   </TableRow>
-</Table>
+      }
+      ```
+   </SampleCode>
+   <Description>
+      ...they are converted to uppercase.
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "values" : ["FOO", "BAR", "BAZ"]
+      }
+      ```
+   </SampleCode>
+</Example>
 
 ### Arrays of Objects
 
  Multiple objects with multiple fields can be applied multiple operations.
 
-<Table>
-   <TableRow>
-      <TableCell>
+<Example lang="js">
+   <Description>
       The objects in the array have an `id` field
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "things": [
-               {
-                  "id": "1",
-                  "name": "foo"
-               },
-               {
-                  "id": "2",
-                  "name": "bar"
-               }
-            ]
-         }
-         ```
-      </TableCell>
-   </TableRow>
-   <TableRow>
-      <TableCell>
-         The processor is configured to remove that field...
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "foreach": {
-               "field": "things",
-                  "processor": {
-                     "remove": {
-                     "field": "_ingest._value.id"
-                  }
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "things": [
+            {
+               "id": "1",
+               "name": "foo"
+            },
+            {
+               "id": "2",
+               "name": "bar"
+            }
+         ]
+      }
+      ```
+   </SampleCode>
+   <Description>
+      The processor is configured to remove that field...
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "foreach": {
+            "field": "things",
+               "processor": {
+                  "remove": {
+                  "field": "_ingest._value.id"
                }
             }
          }
-         ```
-      </TableCell>
-   </TableRow>
-   <TableRow>
-      <TableCell>
-         ...resulting in this document:
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "things": [
-               {
-                  "name": "foo"
-               },
-               {
-                  "name": "bar"
-               }
-            ]
-         }
-         ```
-      </TableCell>
-   </TableRow>
-</Table>
+      }
+      ```
+   </SampleCode>
+   <Description>
+      ...resulting in this document:
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "things": [
+            {
+               "name": "foo"
+            },
+            {
+               "name": "bar"
+            }
+         ]
+      }
+      ```
+   </SampleCode>
+</Example>
 
 ### Objects
 
 Object with multiple fields can be applied an operation.
 
-<Table>
-   <TableRow>
-      <TableCell>
-         We have **3** objects with **2** fields each:
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "things" : {
-               "foos" : {
-                  "size": 10,
-                  "display_name": "Foos"
-               },
-               "bars" : {
-                  "size": 20,
-                  "display_name": "Bars"
-               },
-               "quxs" : {
-                  "size": 50,
-                  "display_name": ""
+<Example>
+   <Description>
+      We have **3** objects with **2** fields each:
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "things" : {
+            "foos" : {
+               "size": 10,
+               "display_name": "Foos"
+            },
+            "bars" : {
+               "size": 20,
+               "display_name": "Bars"
+            },
+            "quxs" : {
+               "size": 50,
+               "display_name": ""
+            }
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      This configuration tells the processor to convert their **display names** to **uppercase**:
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "foreach": {
+            "field": "things",
+               "processor": {
+               "uppercase": {
+                  "field": "_ingest._value.display_name"
                }
             }
          }
-         ```
-      </TableCell>
-   </TableRow>
-      <TableCell>
-         This configuration tells the processor to convert their **display names** to **uppercase**:
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "foreach": {
-               "field": "things",
-                  "processor": {
-                  "uppercase": {
-                     "field": "_ingest._value.display_name"
-                  }
-               }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      Done.
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "things" : {
+            "foos" : {
+               "size" : 10,
+               "display_name" : "FOOS"
+            },
+            "bars" : {
+               "size" : 20,
+               "display_name" : "BARS"
+            },
+            "quxs" : {
+               "size" : 50,
+               "display_name" : ""
             }
          }
-         ```
-      </TableCell>
-   <TableRow>
-   </TableRow>
-      <TableCell>
-         Done.
-      </TableCell>
-      <TableCell>
-         ```js
-         {
-            "things" : {
-               "foos" : {
-                  "size" : 10,
-                  "display_name" : "FOOS"
-               },
-               "bars" : {
-                  "size" : 20,
-                  "display_name" : "BARS"
-               },
-               "quxs" : {
-                  "size" : 50,
-                  "display_name" : ""
-               }
-            }
-         }
-         ```
-      </TableCell>
-</Table>
+      }
+      ```
+   </SampleCode>
+</Example>
 
 ### Failures
 

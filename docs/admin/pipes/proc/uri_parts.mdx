@@ -1,9 +1,5 @@
 import Synopsis from "@site/src/components/Synopsis";
-
-import Table from '@site/src/components/Table';
-import TableBody from '@site/src/components/Table/TableBody';
-import TableRow from '@site/src/components/Table/TableRow';
-import TableCell from '@site/src/components/Table/TableCell';
+import { Example, Description, SampleCode } from '@site/src/components/CustomFeatures';
 
 # URI Parts
 
@@ -31,63 +27,55 @@ The URI object includes properties of the URI's domain, path, port, fragment, qu
 
 ## Examples
 
-<Table>
-	<TableBody>
-		<TableRow>
-			<TableCell>
-				Input
-			</TableCell>
-			<TableCell>
-			```js
-         "_source": {
-               "foo": "http://some-user:some-password@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment"
+<Example>
+   <Description>
+      Input
+   </Description>
+   <SampleCode>
+   ```js
+   "_source": {
+         "foo": "http://some-user:some-password@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment"
+   }
+   ```
+   </SampleCode>
+   <Description>
+      Spec
+   </Description>
+   <SampleCode>
+   ```js
+   "processors" : [
+      {
+         "uri_parts": {
+            "field": "input_field",
+            "target_field": "url",
+            "keep_original": true,
+            "remove_if_successful": false
          }
-			```
-			</TableCell>
-		</TableRow>
-		<TableRow>
-			<TableCell>
-            Spec
-			</TableCell>
-			<TableCell>
-         ```js
-         "processors" : [
-            {
-               "uri_parts": {
-                  "field": "input_field",
-                  "target_field": "url",
-                  "keep_original": true,
-                  "remove_if_successful": false
-               }
-            }
-         ]
-         ```
-			</TableCell>
-		</TableRow>
-		<TableRow>
-			<TableCell>
-            Output
-			</TableCell>
-			<TableCell>
-         ```js
-         "_source" : {
-            "input_field": "http://some-user:some-password@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment",
-            "url": {
-               "path": "/foo.gif",
-               "fragment": "fragment",
-               "extension": "gif",
-               "password": "some-password",
-               "original": "http://some-username:some-password@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment",
-               "scheme": "http",
-               "port": 80,
-               "user_info" : "some-user:some-password",
-               "domain" : "www.example.com",
-               "query" : "key1=val1&key2=val2",
-               "username" : "some-username"
-            }
-         }
-         ```
-			</TableCell>
-		</TableRow>
-	</TableBody>
-</Table>
+      }
+   ]
+   ```
+   </SampleCode>
+   <Description>
+      Output
+   </Description>
+   <SampleCode>
+   ```js
+   "_source" : {
+      "input_field": "http://some-user:some-password@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment",
+      "url": {
+         "path": "/foo.gif",
+         "fragment": "fragment",
+         "extension": "gif",
+         "password": "some-password",
+         "original": "http://some-username:some-password@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment",
+         "scheme": "http",
+         "port": 80,
+         "user_info" : "some-user:some-password",
+         "domain" : "www.example.com",
+         "query" : "key1=val1&key2=val2",
+         "username" : "some-username"
+      }
+   }
+   ```
+   </SampleCode>
+</Example>
