@@ -65,10 +65,10 @@ export const Example = ({ children }: ExampleProps) => {
 			<tbody>
 				{pairs.map((pair, index) => (
 					<tr key={index} style={{ border: '0px' }}>
-						<td style={{ verticalAlign: 'top' }}>
+						<td style={{ verticalAlign: 'top', border: 'none' }}>
 							{pair.description && <div>{pair.description}</div>}
 						</td>
-						<td style={{ verticalAlign: 'top' }}>
+						<td style={{ verticalAlign: 'top', border: 'none' }}>
 							{pair.code && (
 								<div>{pair.code}</div>
 							)}
