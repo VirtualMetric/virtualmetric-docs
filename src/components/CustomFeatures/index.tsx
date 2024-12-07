@@ -1,6 +1,8 @@
 import React from 'react';
 import Admonition from '@theme/Admonition';
 
+// import styles from './styles.module.css';
+
 export const Synopsis = (props: React.PropsWithChildren<{}>) => {
 	return (
 		<Admonition type="info" title="Synopsis">
@@ -9,7 +11,7 @@ export const Synopsis = (props: React.PropsWithChildren<{}>) => {
 	);
 };
 
-export const ImageFrame = (props, color: any) => {
+export const ImageFrame = (props: any) => {
 	return (
 		<figure>
 			<img src={props.img} alt={props.tooltip}/>
@@ -17,8 +19,6 @@ export const ImageFrame = (props, color: any) => {
 		</figure>
 	);
 }
-
-type RGB = [number, number, number];
 
 export const Highlight = ({children, color}: any) => {
 	return (
@@ -69,9 +69,7 @@ export const Example = ({ children }: ExampleProps) => {
 							{pair.description && <div>{pair.description}</div>}
 						</td>
 						<td style={{ verticalAlign: 'top', border: 'none' }}>
-							{pair.code && (
-								<div>{pair.code}</div>
-							)}
+							{pair.code && <div>{pair.code}</div>}
 						</td>
 					</tr>
 				))}
