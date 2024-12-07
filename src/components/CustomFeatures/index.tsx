@@ -56,7 +56,7 @@ export const Example = ({ children }: ExampleProps) => {
 		}
 	});
 
-	if (currentDescription) {
+	if (currentDescription != null) {
 		pairs.push({ description: currentDescription, code: null });
 	}
 

@@ -114,25 +114,25 @@ const config: Config = {
 					label: 'Tutorials',
 				},
 
-				{
-					type: 'docSidebar',
-					sidebarId: 'apiDocs',
-					position: 'left',
-					label: 'API',
-				},
+				// {
+				// 	type: 'docSidebar',
+				// 	sidebarId: 'apiDocs',
+				// 	position: 'left',
+				// 	label: 'API',
+				// },
 
-				{
-					type: 'docSidebar',
-					sidebarId: 'mockDocs',
-					position: 'left',
-					label: 'Mocks',
-				},
+				// {
+				// 	type: 'docSidebar',
+				// 	sidebarId: 'mockDocs',
+				// 	position: 'left',
+				// 	label: 'Mocks',
+				// },
 
-				{
-					to: '/blog',
-					position: 'left',
-					label: 'Blog'
-				},
+				// {
+				// 	to: '/blog',
+				// 	position: 'left',
+				// 	label: 'Blog'
+				// },
 
 				{
 					type: "search",
