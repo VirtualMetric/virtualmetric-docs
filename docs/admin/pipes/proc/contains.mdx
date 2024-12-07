@@ -3,25 +3,52 @@ import {Synopsis} from "@site/src/components/CustomFeatures";
 # Contains
 
 <Synopsis>
-Checks the existence of a specified value against a list of values.
+Checks the existence of a value against a list of values.
 </Synopsis>
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|N/A|The field that contains the value to check|
+|`field`|Y|N/A|Field that contains the value to check|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`list`|N|-|List of values to check against `field`|
-|`list_field`|N|-|Field containing the list of values to check against `field`|
+|`list`|N|-|List of values to check|
+|`list_field`|N|-|Field containing the list of values to check|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
 ## Examples
 
-TODO:
+TODO: Provide examples
 
+* What happens when all values exist
+
+```js
+{
+   "contains": {
+      "field": "data",
+      "list": ["foo", "baz"]
+   }
+   {
+      "data": ["foo", "bar", "baz", "qux"]
+   }
+}
+```
+
+* What happens when some values don't exist
+
+```js
+{
+   "contains": {
+      "field": "data",
+      "list": "qux"
+   }
+   {
+      "data": ["foo", "bar", "baz"]
+   }
+}
+```

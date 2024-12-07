@@ -1,4 +1,4 @@
-import {Synopsis} from "@site/src/components/CustomFeatures";
+import {Synopsis, Example, Description, SampleCode} from "@site/src/components/CustomFeatures";
 
 # Circle
 
@@ -28,39 +28,47 @@ Circles containing poles cannot be converted.
 
 ## Examples
 
-In **JSON**:
-
-```js
-{
-   "mappings": {
-      "properties": {
-         "circle": {
-            "type": "geo_shape"
-         }
-      }
-   }
-}
-
-{
-   "description": "Convert circle to polygon",
-   "processors": [
+<Example>
+   <Description>
+      In **JSON**
+   </Description>
+   <SampleCode>
+      ```js
       {
-         "circle": {
-            "field": "circle",
-            "error_distance": 14.0,
-            "shape_type": "geo_shape"
+         "mappings": {
+            "properties": {
+               "circle": {
+                  "type": "geo_shape"
+               }
+            }
          }
       }
-   ]
-}
-```
 
-In **WKT**:
+      {
+         "processors": [
+            {
+               "circle": {
+                  "field": "circle",
+                  "error_distance": 14.0,
+                  "shape_type": "geo_shape"
+               }
+            }
+         ]
+      }
+      ```
+   </SampleCode>
+   <Description>
+      In **WKT**
+   </Description>
+   <SampleCode>
+      ```wkt
+      {
+         "circle": "CIRCLE (20 5 25)"
+      }
+      ```
+   </SampleCode>
+</Example>
 
-```wkt
-{
-   "circle": "CIRCLE (20 5 25)"
-}
-```
+TODO: Check the examples
 
 With this pipeline, a document containing a circle, represented in either **WKT** or **GeoJSON**, can be assigned to the `circles` index and tranformed into a polygon in the source format.

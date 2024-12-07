@@ -1,9 +1,9 @@
-import {Synopsis} from "@site/src/components/CustomFeatures";
+import {Synopsis, Example, Description, SampleCode} from "@site/src/components/CustomFeatures";
 
 # Attachment
 
 <Synopsis>
-Allows **Elasticsearch** to extract widely used file formats like **DOC**, **XLS**, **PDF**, etc. by using **Apache**'s **Tika** library.
+Allows **Elasticsearch** to extract widely used file formats like **DOC**, **XLS**, **PDF**, etc. using **Apache**'s **Tika** library.
 </Synopsis>
 
 The source field must point to a base64-encoded binary file which will be converted to JSON. To avoid the overhead of back and forth conversions, use CBOR and specify the field as a byte array.
@@ -15,8 +15,8 @@ The source field must point to a base64-encoded binary file which will be conver
 |`field`|Y|N/A|The field to get the base64-encoded data from|
 |`description`|N|-|Explanatory text|
 |`if`|N|-|Condition to run|
-|`indexed_chars_field`|N|`null`|???|
-|`indexed_chars`|N|100000|Number of chars used for extraction to avoid oversized fields. To specify no limits, use `-1`|
+|`indexed_chars_field`|N|`null`|Field to override the value in the `indexed_chars` field|
+|`indexed_chars`|N|100000|Number of characters that can be used for extraction. This is to avoid oversized fields. To specify no limits, use `-1`|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`ignore_missing`|N|`false`|If set to `true` and `field` does not exist, exit quietly without making any modifications|
 |`on_failure`|N||See [Handling Failures](../handling-failures.mdx)|
@@ -35,5 +35,107 @@ The following fields can be extracted from a document:
 
 ## Examples
 
-TODO:
+* **Encoding data** The files to be attached to the JSON documents must first be encoded as `base64` strings. Then, to decode the string the processor can be used:
 
+<Example>
+	<Description>
+		Properties to extract from the file
+	</Description>
+	<SampleCode>
+		```js
+         {
+            "attachment": {
+               "field": "data",
+               "remove_binary": false
+            }
+         }
+         {
+            "data": "Zm9vIGJhciBiYXogcXV4"
+         }
+		```
+	</SampleCode>
+	<Description>
+      The `attachment` object contains the extracted properties
+	</Description>
+	<SampleCode>
+      ```js
+      {
+         "found": true,
+         "_source": {
+            "data": "Zm9vIGJhciBiYXogcXV4",
+            "attachment": {
+               "content_type": "application/txt",
+               "content": "foo bar baz qux",
+               "content_length": 15
+            }
+         }
+      }
+      ```
+	</SampleCode>
+</Example>
+
+With the `properties` array, specific fields can be extracted:
+
+<Example>
+	<Description>
+      Extract **content** and **title**
+	</Description>
+	<SampleCode>
+      ```js
+         {
+            "attachment": {
+               "field": "data",
+               "properties": [ "content", "title" ],
+               "remove_binary": false
+            }
+         }
+      ```
+	</SampleCode>
+</Example>
+
+* **COBR** (Do we support this?) TODO: Explain
+
+* **Character limits** In order not to overload the _node cache_, the number of characters that can be extracted is limited to `100,000`. The value can be set with the `indexed_chars` field. For no limits, `-1` can be specified, although this should not be used without verifying that there is enough memory to extract very large documents.
+
+To override the default limit, `indexed_chars_field` can be used to set limits per document.
+
+<Example>
+   <Description>
+      Specifying:
+   </Description>
+   <SampleCode>
+      ```js
+         {
+            "attachment": {
+               "field": "data",
+               "indexed_chars" : 15,
+               "indexed_chars_field": "max_size",
+               "remove_binary": false
+            }
+         }
+         {
+            "data": "Zm9vIGJhciBiYXogcXV4"
+         }
+      ```
+   </SampleCode>
+   <Description>
+   ...returns:
+   </Description>
+   <SampleCode>
+      ```js
+         {
+            "found": true,
+            "_source": {
+               "data": "Zm9vIGJhciBiYXogcXV4",
+               "attachment": {
+                  "content_type": "application/rtf",
+                  "content": "foo bar baz qux",
+                  "content_length": 15
+               }
+            }
+         }
+      ```
+   </SampleCode>
+</Example>
+
+* **Arrays** Using the processor with multiple attachments requires using [`foreach`](foreach.mdx).
