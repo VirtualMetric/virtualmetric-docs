@@ -10,7 +10,7 @@ Expands a field containing dots into an object field. Makes fields with dots in 
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|N/A|The field to be expanded. If set to `*`, all top-level fields will be expanded|
+|`field`|Y|N/foo|The field to be expanded. If set to `*`, all top-level fields will be expanded|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
@@ -30,7 +30,7 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A.B": "v"
+         "foo.bar": "v"
       }
       ```
    </SampleCode>
@@ -41,7 +41,7 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       ```js
       {
          "dot_expander": {
-            "field": "A.B"
+            "field": "foo.bar"
          }
       }
       ```
@@ -52,8 +52,8 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A": {
-            "B": "v"
+         "foo": {
+            "bar": "v"
          }
       }
       ```
@@ -69,9 +69,9 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A.B": "v1",
-         "A": {
-            "B": "v2"
+         "foo.bar": "v1",
+         "foo": {
+            "bar": "v2"
          }
       }
       ```
@@ -83,7 +83,7 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       ```js
       {
          "dot_expander": {
-            "field": "A.B"
+            "field": "foo.bar"
          }
       }
       ```
@@ -94,8 +94,8 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A": {
-            "B": ["v1", "v2"]
+         "foo": {
+            "bar": ["v1", "v2"]
          }
       }
       ```
@@ -111,9 +111,9 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A.B": "v1",
-         "A": {
-            "B": "v2"
+         "foo.bar": "v1",
+         "foo": {
+            "bar": "v2"
          }
       }
       ```
@@ -125,7 +125,7 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       ```js
       {
          "dot_expander": {
-            "field": "A.B",
+            "field": "foo.bar",
             "override": true
          }
       }
@@ -137,8 +137,8 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A": {
-            "B": "v2"
+         "foo": {
+            "bar": "v2"
          }
       }
       ```
@@ -154,8 +154,8 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A.B": "v1",
-         "C.D": "v2"
+         "foo.bar": "v1",
+         "baz.qux": "v2"
       }
       ```
    </SampleCode>
@@ -177,11 +177,11 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A": {
-            "B": "v1"
+         "foo": {
+            "bar": "v1"
          },
-         "C": {
-            "D": "v2"
+         "baz": {
+            "qux": "v2"
          }
       }
       ```
@@ -197,9 +197,9 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A": {
-            "B.C": "v1",
-            "B.D": "v2"
+         "foo": {
+            "bar.baz": "v1",
+            "bar.qux": "v2"
          }
       }
       ```
@@ -211,7 +211,7 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       ```js
       {
          "dot_expander": {
-            "path": "A",
+            "path": "foo",
             "field": "*"
          }
       }
@@ -223,10 +223,10 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A": {
-            "B": {
-               "C": "v1",
-               "D": "v2"
+         "foo": {
+            "bar": {
+               "baz": "v1",
+               "qux": "v2"
             }
          }
       }
@@ -243,8 +243,8 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```js
       {
-         "A": "v1",
-         "A.B": "v2"
+         "foo": "v1",
+         "foo.bar": "v2"
       }
       ```
    </SampleCode>
@@ -257,13 +257,13 @@ Expands a field containing dots into an object field. Makes fields with dots in 
          "processors": [
             {
                "rename": {
-                  "field": "A",
-                  "target_field": "A.B"
+                  "field": "foo",
+                  "target_field": "foo.bar"
                }
             },
             {
                "dot_expander": {
-                  "path": "A",
+                  "path": "foo",
                   "field": "*"
                }
             }
@@ -277,8 +277,8 @@ Expands a field containing dots into an object field. Makes fields with dots in 
    <SampleCode>
       ```code
       {
-         "A": {
-            "B": ["v1", "v2"]
+         "foo": {
+            "bar": ["v1", "v2"]
          }
       }
       ```
