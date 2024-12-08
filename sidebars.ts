@@ -75,10 +75,10 @@ const sidebars: SidebarsConfig = {
 
 				// {type: "category", label: "Miscellaneous",
 				// 	items: [
-				// 		'admin/misc/norm',
-				// 		'admin/misc/disk-persist',
-				// 		'admin/misc/vect-proc',
-				// 		'admin/misc/batching',
+				// 		'admin/misc/normalization',
+				// 		'admin/misc/disk-persistency',
+				// 		'admin/misc/vectorized-processing',
+				// 		'admin/misc/batching-support',
 				// 	],
 				// },
 			],
