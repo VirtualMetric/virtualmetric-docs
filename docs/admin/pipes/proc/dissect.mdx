@@ -40,7 +40,7 @@ In order for `dissect` to succeed, all {`keyname`} parts in the pattern must exi
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|N/A|The field to dissect|
+|`field`|Y|N/A|Field to dissect|
 |`pattern`|Y|N/A|The pattern to apply|
 |`append_separator`|N|`""`|The characters that separate the fields to parse|
 |`description`|N|-|Explanatory note|
@@ -63,14 +63,14 @@ The default behavior of `dissect` can be changed with key modifiers like `%{+key
 |`?`|LHS|Skip field|`%{?keyname}`|Skips the field|
 |`*` `&`|LHS|Key value pairing|`%{?keyname}`|Uses the `*` field as key and the `&` as value|
 
-The first of the above, i.e. right padding modifier, can be especifally useful to avoid unnecessary errors since dissect uses a verbatim matching. That is, if the pattern specifies, for example, one space between two fields but the fields are separated by multiple spaces, the match will fail. The right padding modifier Use to alleviate this issue. It can even be used without a keyname.
+The first of the above, i.e. right padding modifier, can be especifally useful to avoid unnecessary errors since dissect uses a verbatim matching. That is, if the pattern specifies, for example, one space between two fields but the fields are separated by multiple spaces, the match will fail. The right padding modifier can be used to alleviate this issue. It can even be used without a keyname.
 
 ## Examples
 
 |Input|Dissect Pattern|Output|
 |---|---|---|
-|[A]&blank;&blank;&blank;[B]|`[%{foo}]%{->}[%{bar}]`|`{foo: A, bar: B}`|
-|A C B|`%{foo/1} %{baz/3} %{bar/2}`|`{foo: A, bar: B, baz: C}`|
-|A C B|`%{foo} %{?baz} %{bar}`|`{foo: A, bar: B}`|
-|A B C|`%{+foo} %{+foo} %{foo}`|`{foo: A B C}`|
-|A B C D|`%{*foo} %{&bar} %{*baz} %{&qux}`|`{A: B, C: D}`|
+|A&blank;&blank;&blank;B|`%{foo}%{->}%{bar}`|`foo: A, bar: B`|
+|A C B|`%{foo/1} %{baz/3} %{bar/2}`|`foo: A, bar: B, baz: C`|
+|A C B|`%{foo} %{?baz} %{bar}`|`foo: A, bar: B`|
+|A B C|`%{+foo} %{+foo} %{foo}`|`foo: A B C`|
+|A B C D|`%{*foo} %{&bar} %{*baz} %{&qux}`|`A: B, C: D`|
