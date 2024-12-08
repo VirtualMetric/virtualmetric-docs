@@ -14,21 +14,54 @@ Splits a field into an array using a separator character.
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`ignore_missing`|N|`false`|If set to `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|N-|See [Handling Failures](../handling-failures.mdx)|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`preserve_trailing`|N|`false`|Preserves trailing spaces|
 |`tag`|N|-|Identifier|
-|`target_field`|N|||
+|`target_field`|N|`feield`|Field to assign the array of split values to|
 
 ## Examples
 
-Split the values in _foo_ using space boundaries.
+<Example>
+   <Description>
+      The field **foo** contains multiple values.
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "docs": {
+            "id": "data",
+            "foo": "A B C"
+         }
+      }
+      ```
+   </SampleCode>
 
-```js
-{
-   "split": {
-      "field": "foo",
-      "separator": "\\s+"
-   }
-}
-```
+   <Description>
+      Split those values using space boundaries.
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "split": {
+            "field": "foo",
+            "separator": "\\s+",
+            "target_field": "foos"
+         }
+      }
+      ```
+   </SampleCode>
+   <Description>
+      Done.
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "docs": {
+            "id": "data",
+            "foos": ["A", "B", "C"]
+         }
+      }
+      ```
+   </SampleCode>
+</Example>
