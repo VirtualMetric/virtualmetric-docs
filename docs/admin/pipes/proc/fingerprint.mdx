@@ -1,4 +1,4 @@
-import {Synopsis} from "@site/src/components/CustomFeatures";
+import {Synopsis, Example, Description, SampleCode} from "@site/src/components/CustomFeatures";
 
 # Fingerprint
 
@@ -17,45 +17,56 @@ Computes a hash of the document which can be used for content fingerprinting.
 |`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
 |`method`|N|`SHA-1`|Hash method used. Valid options: `MD5, `SHA-1, `SHA-256, `SHA-512, or `MurmurHash3`|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|||
+|`on_success`|N|*|See [Handling Success](../handling-success.mdx)|
 |`salt`|N|-|Salt value for the hash|
 |`tag`|N|-|Identifier|
 |`target_field`|N|`fingerprint`|Field to write the hash|
 
 ## Examples
 
-**Input**:
+<Example>
+   <Description>
+      **Input**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "user": {
+            "first_name": "Joe",
+            "last_name": "Schmoe",
+            "date_of_birth": "1965-05-15",
+         }
+      }
+      ```
+   </SampleCode>
 
-```js
-{
-   "user": {
-      "first_name": "Jane",
-      "last_name": "Doe",
-      "date_of_birth": "1965-05-15",
-   }
-}
-```
+   <Description>
+      **Spec**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "fingerprint": {
+            "fields": ["user"],
+            "method": "SHA-1"
+         }
+      }
+      ```
+   </SampleCode>
 
-**Spec**:
-
-```js
-{
-   "fingerprint": {
-      "fields": ["user"],
-      "method": "SHA-1"
-   }
-}
-```
-
-**Output**:
-
-```js
-{
-   "fingerprint" : "TODO: Generate a valid hash",
-   "user": {
-      "first_name": "Jane",
-      "last_name": "Doe",
-      "date_of_birth": "1965-05-15",
-   }
-}
-```
+   <Description>
+      **Output**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "fingerprint" : "TODO: Generate a valid hash",
+         "user": {
+            "first_name": "Joe",
+            "last_name": "Schmoe",
+            "date_of_birth": "1965-05-15",
+         }
+      }
+      ```
+   </SampleCode>
+</Example>
