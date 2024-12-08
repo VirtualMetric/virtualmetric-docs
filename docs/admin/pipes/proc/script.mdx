@@ -1,4 +1,4 @@
-import {Synopsis} from "@site/src/components/CustomFeatures";
+import {Synopsis, Example, Description, SampleCode} from "@site/src/components/CustomFeatures";
 
 # Script
 
@@ -89,52 +89,69 @@ TODO: Check the values.
 
 ## Metadata Fields
 
-Scripting can also be used to access metadata. The following is a scripting configuration to extract a document's `_index`:
+Scripting can also be used to access metadata. The following is a configuration to extract a document's `_index` and rename it using an inline double-quoted script:
 
-```js
-POST _ingest/pipeline/_simulate
-{
-   "pipeline": {
-      "processors": [
-         {
-            "script": {
-               "lang": "js",
-               "source": """
-                  ctx['_index'] = ctx['lang'] + '-' + params['dataset'];
-               """,
-               "params": {
-                  "dataset": "catalog"
+<Example>
+   <Description>
+      The document is classified under a generic index
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "docs": [
+            {
+               "_index": "generic-index",
+               "_source": {
+                  "lang": "fr"
                }
             }
-         }
-      ]
-   },
-   "docs": [
-      {
-         "_index": "generic-index",
-         "_source": {
-            "lang": "fr"
-         }
+         ]
       }
-   ]
-}
-```
+      ```
+   </SampleCode>
 
-The script changes the document's `_index` from `generic-index` to `ft-catalogue`:
-
-```js
-{
-   "docs": [
+   <Description>
+      Concatenate the _language_ and the _dataset name_ to create an index
+   </Description>
+   <SampleCode>
+      ```js
       {
-         "doc": {
-            "_index": "fr-catalogue",
-            "_source": {
-               "lang": "fr"
+         "processors": [
+            {
+               "script": {
+                  "lang": "fr",
+                  "source": """
+                     ctx['_index'] = ctx['lang'] + '-' + params['dataset'];
+                  """,
+                  "params": {
+                     "dataset": "catalogue"
+                  }
+               }
             }
-         }
+         ]
       }
-   ]
-}
-```
+      ```
+   </SampleCode>
+
+   <Description>
+      The document's index name changes
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "docs": [
+            {
+               "doc": {
+                  "_index": "fr-catalogue",
+                  "_source": {
+                     "lang": "fr"
+                  }
+               }
+            }
+         ]
+      }
+      ```
+   </SampleCode>
+</Example>
 
 TODO: Check the values

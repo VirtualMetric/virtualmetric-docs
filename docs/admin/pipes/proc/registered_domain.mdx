@@ -1,4 +1,4 @@
-import {Synopsis} from "@site/src/components/CustomFeatures";
+import {Synopsis, Example, Description, SampleCode} from "@site/src/components/CustomFeatures";
 
 # Registered Domain
 
@@ -22,50 +22,70 @@ Uses the registered domains defined in the **Mozilla Public Suffix List**.
 |`tag`|N|-|Identifier|
 |`target_field`|N|-|Field to assign the extracted domain components. If blank, components are added to the document's root|
 
-## Exampples
+## Examples
 
-**Spec**:
+Parse the various level domains for `www.example.com`:
 
-```js
-{
-   "pipeline": {
-      "processors": [
-         {
-            "registered_domain": {
-               "field": "fqdn",
-               "target_field": "url"
-            }
-         }
-      ]
-   },
-   "docs": [
+<Example>
+   <Description>
+      **Input**
+   </Description>
+   <SampleCode>
+      ```js
       {
-         "_source": {
-            "fqdn": "www.example.co.uk"
-         }
-      }
-   ]
-}
-```
-
-**Output**:
-
-```js
-{
-   "docs": [
-      {
-         "doc": {
-            "_source": {
-               "fqdn": "www.example.co.uk",
-               "url": {
-                  "domain": "www.example.co.uk",
-                  "registered_domain": "example.co.uk",
-                  "top_level_domain": "co.uk",
-                  "subdomain": "www"
+         "docs": [
+            {
+               "_source": {
+                  "fqdn": "www.example.com"
                }
             }
+         ]
+      }
+      ```
+   </SampleCode>
+
+   <Description>
+      **Spec**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "pipeline": {
+            "processors": [
+               {
+                  "registered_domain": {
+                     "field": "fqdn",
+                     "target_field": "url"
+                  }
+               }
+            ]
          }
       }
-   ]
-}
-```
+      ```
+   </SampleCode>
+
+   <Description>
+      **Output**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "docs": [
+            {
+               "doc": {
+                  "_source": {
+                     "fqdn": "www.example.com",
+                     "url": {
+                        "domain": "www.example.com",
+                        "registered_domain": "example.com",
+                        "top_level_domain": "com",
+                        "subdomain": "www"
+                     }
+                  }
+               }
+            }
+         ]
+      }
+      ```
+   </SampleCode>
+</Example>

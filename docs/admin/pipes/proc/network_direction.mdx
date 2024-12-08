@@ -1,4 +1,4 @@
-import {Synopsis} from "@site/src/components/CustomFeatures";
+import {Synopsis, Example, Description, SampleCode} from "@site/src/components/CustomFeatures";
 
 # Network Direction
 
@@ -39,54 +39,70 @@ The named network ranges supported for `internal_networks` are:
 
 ## Examples
 
-**Spec**:
+Collect a _private_ connection and place it under _inbound_.
 
-```js
-{
-   "pipeline": {
-      "processors": [
+<Example>
+   <Description>
+      **Input**
+   </Description>
+   <SampleCode>
+      ```js
+      {
+         "docs": [
+            {
+               "_source": {
+                  "source": {
+                     "ip": "127.15.15.20"
+                  },
+                  "destination": {
+                     "ip": "192.168.1.10"
+                  }
+               }
+            }
+         ]
+      }
+      ```
+   </SampleCode>
+
+   <Description>
+      **Spec**
+   </Description>
+   <SampleCode>
+      ```js
+      {
          {
             "network_direction": {
                "internal_networks": ["private"]
             }
          }
-      ]
-   },
-   "docs": [
-      {
-         "_source": {
-            "source": {
-               "ip": "127.15.15.20"
-            },
-            "destination": {
-               "ip": "192.168.1.10"
-            }
-         }
       }
-   ]
-}
-```
+      ```
+   </SampleCode>
 
-**Output**:
-
-```js
-{
-   "docs": [
+   <Description>
+      **Output**
+   </Description>
+   <SampleCode>
+      ```js
       {
-         "doc": {
-            "_source": {
-               "destination": {
-                  "ip": "192.168.1.10"
-               },
-               "source": {
-                  "ip": "127.15.15.20"
-               },
-               "network": {
-                  "direction": "inbound"
+         "docs": [
+            {
+               "doc": {
+                  "_source": {
+                     "network": {
+                        "direction": "inbound"
+                     },
+                     "source": {
+                        "ip": "127.15.15.20"
+                     },
+                     "destination": {
+                        "ip": "192.168.1.10"
+                     }
+                  }
                }
             }
-         }
+         ]
       }
-   ]
-}
-```
+      ```
+   </SampleCode>
+</Example>
