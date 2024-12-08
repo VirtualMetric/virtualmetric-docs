@@ -121,12 +121,12 @@ const config: Config = {
 				// 	label: 'API',
 				// },
 
-				// {
-				// 	type: 'docSidebar',
-				// 	sidebarId: 'mockDocs',
-				// 	position: 'left',
-				// 	label: 'Mocks',
-				// },
+				{
+					type: 'docSidebar',
+					sidebarId: 'mockDocs',
+					position: 'left',
+					label: 'Mocks',
+				},
 
 				// {
 				// 	to: '/blog',
