@@ -86,4 +86,11 @@ export const SampleCode = ({ children }: { children: React.ReactNode }) => {
 	return <div>{children}</div>;
 };
 
-export default { Example, Description, SampleCode, Synopsis, ImageFrame };
+export default {
+	Synopsis,
+	ImageFrame,
+	Highlight,
+	Example,
+	Description,
+	SampleCode,
+};
