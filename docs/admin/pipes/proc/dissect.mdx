@@ -4,7 +4,7 @@
 Matches a text field against a pre-defined pattern, but without using regular expressions.
 </Synopsis>
 
-For example, the pattern:
+As an example, the pattern:
 
 ```code
 %{clientip} %{ident} %{auth} [%{@timestamp}] %{size}
@@ -30,7 +30,7 @@ and create a document with the following fields:
 }
 ```
 
-Dissection patterns are lexed by the parts of the strings that will be discarded, which can be spaces, separators, parentheses, etc.
+Dissection patterns are lexed using the parts of the strings that will be discarded, and these can be spaces, separators, parentheses, etc.
 
 In order for `dissect` to succeed, all {`keyname`} parts in the pattern must exist, i.e. have a value. Otherwise an exception is raised. All matches are represented as strings.
 
@@ -61,7 +61,7 @@ The default behavior of `dissect` can be changed with key modifiers like `%{+key
 |`?`|LHS|Skip field|`%{?keyname}`|Skips the field|
 |`*` and `&`|LHS|Key value pairing|`%{?keyname}`|Uses the `*` field as key and the `&` as value|
 
-The first of the above, i.e. right padding modifier, can be especifally useful to avoid unnecessary errors since dissect uses a verbatim matching. That is, if the pattern specifies, for example, one space between two fields but the fields are separated by multiple spaces, the match will fail. The right padding modifier can be used to alleviate this issue. It can even be used without a keyname.
+The first of the above, i.e. right padding modifier, can be especifally useful to avoid unnecessary errors since dissect uses a verbatim match. That is, if the pattern specifies, for example, one space between two fields but the fields are separated by multiple spaces, the match will fail. The right padding modifier can be used to alleviate this issue. It can even be used without a keyname to skip certain fields.
 
 ## Examples
 
