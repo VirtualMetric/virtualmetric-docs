@@ -13,7 +13,7 @@ For example, the pattern:
 will match the following log line:
 
 ```code
-127.0.0.1 55 JD [25/May/2024:15:12:40 +0000] 512
+127.0.0.1 50 JD [25/05/2024:15:12:40 +0000] 512
 ```
 
 and create a document with the following fields:
@@ -22,9 +22,9 @@ and create a document with the following fields:
 "doc": {
    "_source": {
       "clientip": "127.0.0.1",
-      "ident": "55",
+      "ident": "50",
       "auth": "JD",
-      "@timestamp": "25/May/2024:15:12:40 +0000",
+      "@timestamp": "25/05/2024:15:12:40 +0000",
       "size": "512",
    }
 }
@@ -57,9 +57,9 @@ The default behavior of `dissect` can be changed with key modifiers like `%{+key
 |---|---|---|---|---|
 |`->`|RHS|Skip right padding|`%{keyname->}`|Skips repeated characters on the RHS|
 |`+`|LHS|Append|`%{+keyname} %{+keyname}`|Appends two or more fields|
-|`+` with `<number>/`|LHS and RHS|Append in order|`%{+keyname/2} %{+keyname/1}`|Appends the fields using `<number>` for ordering|
+|`+...<number>/`|LHS and RHS|Append in order|`%{+keyname/2} %{+keyname/1}`|Appends the fields using `<number>` for ordering|
 |`?`|LHS|Skip field|`%{?keyname}`|Skips the field|
-|`*` `&`|LHS|Key value pairing|`%{?keyname}`|Uses the `*` field as key and the `&` as value|
+|`*` and `&`|LHS|Key value pairing|`%{?keyname}`|Uses the `*` field as key and the `&` as value|
 
 The first of the above, i.e. right padding modifier, can be especifally useful to avoid unnecessary errors since dissect uses a verbatim matching. That is, if the pattern specifies, for example, one space between two fields but the fields are separated by multiple spaces, the match will fail. The right padding modifier can be used to alleviate this issue. It can even be used without a keyname.
 
