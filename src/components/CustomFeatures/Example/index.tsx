@@ -1,38 +1,5 @@
 import React from 'react';
-import Admonition from '@theme/Admonition';
-
-// import styles from './styles.module.css';
-
-export const Synopsis = (props: React.PropsWithChildren<{}>) => {
-	return (
-		<Admonition type="info" title="Synopsis">
-			{props.children}
-		</Admonition>
-	);
-};
-
-export const ImageFrame = (props: any) => {
-	return (
-		<figure>
-			<img src={props.img} alt={props.tooltip}/>
-			<figcaption>{props.caption}</figcaption>
-		</figure>
-	);
-}
-
-export const Highlight = ({children, color}: any) => {
-	return (
-		<span
-			style={{
-				backgroundColor: color,
-				borderRadius: '2px',
-				color: '#fff',
-				padding: '0.2rem',
-			}}>
-			{children}
-		</span>
-	);
-}
+// import styles from '../styles.module.css';
 
 interface ExampleProps {
 	children: React.ReactNode;
@@ -87,9 +54,6 @@ export const SampleCode = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default {
-	Synopsis,
-	ImageFrame,
-	Highlight,
 	Example,
 	Description,
 	SampleCode,
