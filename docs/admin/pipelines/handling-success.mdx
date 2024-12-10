@@ -1,3 +1,78 @@
 # Handling Success
 
-TODO: Provide explanation and examples
+**Director** provides a unique feature in pipeline management with the processor field `on_success`.
+
+Frequently, a pipeline will terminate in a valid state and not a failed one. (In any case, **Director** provides mechanisms for dealing with failures.) However, the termination of a processor will equally frequently require that it be followed by a further operation. The mechanism provided allows the pipeline designer to specify what to do next.
+
+## Notify
+
+In its simplest form, the mechanism can be used to notify the user that it exited its execution gracefully.
+
+```json
+{
+   "processors" : [
+      {
+         "processor-1": {
+            // ...
+            "on_success": {
+               "user-message": "Pipeline completed successfully"
+            }
+         }
+      }
+   ]
+}
+```
+
+## Continue
+
+Furthermore, a pipeline can be configured to continue to the next processor by using the termination state of the previous one. Unlike other solutions on the market, this does not require any meta-level error information to be accessed. Before its termination, a processor can start the next one in the same pipeline.
+
+```json
+{
+   "pipeline": "foo" {
+      "processors" : [
+         {
+            "processor-1": {
+               "on_success": "processor-2"
+            },
+
+            "processor-2": {
+               "on_success": // etc.
+            }
+         }
+      ]
+   }
+}
+```
+
+Using this technique, the execution of processors can be _nested_.
+
+## Trigger
+
+Finally, it can be used to trigger the execution of a processor in another pipeline by invoking it.
+
+```json
+{
+   "pipeline": "foo" {
+      "processors" : [
+         {
+            "processor-1": {
+               "on_success": "bar.processor-1"
+            }
+         }
+      ]
+   },
+
+   "pipeline": "bar" {
+      "processors" : [
+         {
+            "processor-1": {
+               "on_success": // etc.
+            }
+         }
+      ]
+   }
+}
+```
+
+Using this technique, the execution of processors can be _daisy-chained_.
