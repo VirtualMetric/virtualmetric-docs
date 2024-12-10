@@ -20,6 +20,7 @@ const sidebars: SidebarsConfig = {
 
 				{type: "category", label: "Devices",
 					items: [
+						'admin/devices/overview',
 						'admin/devices/http',
 						'admin/devices/syslog',
 						'admin/devices/tcp',
