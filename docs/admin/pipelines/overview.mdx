@@ -5,26 +5,29 @@ pagination_prev: null
 
 # Pipeline Overview
 
-**Director** pipelines were designed to automate your processes dealing with data ingestion and transformation. They can be used to extract values, transform or convert them, enrich them by correlating them with other available information, and design the overall workflow of your telemetry data processing scheme.
+**Director** pipelines were designed to automate your processes dealing with data ingestion and data transformation. They can be used to extract values, transform or convert them, enrich them by correlating them with other available information, and to design the overall workflow of your telemetry data processing scheme.
 
 ## Definitions
 
-Pipelines are chains of [processors](./processors) that run sequentially, operating on the incoming data streamed from [sources](source.mdx), and roting their output to [targets](target.mdx) for consumption or further processing.
+Pipelines are chains of [processors](./processors) that run sequentially, operating on the incoming data streamed from [sources](source.mdx), and routing their output to [targets](target.mdx) for consumption or further processing.
 
 Schematically, this looks like so:
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
+%%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
 	sourceBox["`**Source**
-         <code>data</code>`"]
-    	pipelineBox["`**Pipeline**
-			<code>processor-1</code>
-    		<code>processor-2</code>
-    		<code>...</code>
-    		<code>processor-n</code>`"]
+    data
+  `"]
+  pipelineBox["`**Pipeline**
+	  processor-1
+    processor-2
+    ...
+    processor-n
+  `"]
 	targetBox["`**Target**
-      <code>data</code>`"]
+    data
+  `"]
 	sourceBox --> pipelineBox --> targetBox
 ```
 
@@ -35,17 +38,20 @@ As can be expected, in real life scenarious the configurations connecting source
 A pipeline can consume data from multiple sources, and once it's done processing them, can direct some of the processed data items to a specific target in a _one-to-one_ scheme:
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
+%%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
 	source1Box["`**Source 1**
-    <code>A</code>
-    <code>B</code>`"]
+    A
+    B
+  `"]
 	source2Box["`**Source 2**
-    <code>C</code>`"]
+    C
+  `"]
  	pipelineBox["`**Pipeline**`"]
 	targetBox["`**Target**
-    <code>B</code>
-    <code>C</code>`"]
+    B
+    C
+  `"]
 	source1Box --> pipelineBox;
 	source2Box --> pipelineBox;
   pipelineBox --> targetBox
@@ -54,20 +60,20 @@ flowchart LR
 It can also consume data from a single source and deliver the processed results to multiple targets:
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
+%%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
 	sourceBox["`**Source**
-    <code>A</code>
-    <code>B</code>
-    <code>C</code>
+    A
+    B
+    C
   `"]
  	pipelineBox["`**Pipeline**`"]
 	target1Box["`**Target 1**
-    <code>A</code>
-    <code>C</code>
+    A
+    C
   `"]
 	target2Box["`**Target 2**
-    <code>B</code>
+    B
   `"]
 	sourceBox --> pipelineBox;
   pipelineBox --> target1Box;
@@ -78,23 +84,28 @@ flowchart LR
 Finally, and in most real-life situations, we will have multiple sources and multiple targets routed to each other in complex arrangements:
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
+%%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
 	source1Box["`**Source 1**
-    <code>A</code>
-    <code>B</code>`"]
+    A
+    B
+  `"]
 	source2Box["`**Source 2**
-    <code>C</code>`"]
+    C
+  `"]
 	source3Box["`**Source 3**
-    <code>D</code>`"]
+    D
+  `"]
  	pipelineBox["`**Pipeline**`"]
 	target1Box["`**Target 1**
-    <code>A</code>
-    <code>C</code>`"]
+    A
+    C
+  `"]
 	target2Box["`**Target 2**
-    <code>A</code>
-    <code>B</code>
-    <code>D</code>`"]
+    A
+    B
+    D
+  `"]
 	source1Box --> pipelineBox;
 	source2Box --> pipelineBox;
 	source3Box --> pipelineBox;
@@ -120,72 +131,53 @@ A pipeline is essentially based on the principle of _divide-and-rule_: divide th
 The basic layout of the configuration for a typical pipeline looks like so:
 
 ```yaml
-{
-  "description": "Explanatory note for the pipeline",
-  "processors": [
-    {
-      "processor-1": {
-        "field": "foo",
-        "value": "A"
-      }
-    },
-    {
-      "processor-2": {
-        "description": "Explanatory note for processor-2",
-        "field": "bar",
-        "value": true
-      }
-    },
-    {
-      "processor-3": {
-        "field": "baz",
-        "value": 10
-      }
-    }
-  ]
-}
+pipeline:
+  description: "Pipeline description"
+  processors:
+    - processor-1:
+        field: foo
+        value: "A"
+    - processor-2:
+        description: "Explanatory note for processor-2"
+        field: bar
+        value: true
+    - processor-3:
+        field: baz
+        value: 10
 ```
 
 This pipeline is created based on the assumption that the incoming data stream will have the following structure:
 
 ```yaml
-{
-   "data": [
-      "foo": ["A", "B", "C", ...],
-      "baz": [5, 10, 1, ...],
-      "bar": true,
-   ]
-}
+data:
+  - foo: ["A", "B", "C", ...]
+  - baz: [5, 10, 1, ...]
+  - bar: true
 ```
 
-Note that the pipeline definition contains a mixture of _required_ and _optional_ fields, and that&mdash;in this form&mdash;it disregards the order of fields in the source data. All that it cares about is
+Note that the pipeline definition contains a mixture of _required_ and _optional_ fields, and that&mdash;in this form&mdash;it disregards the order of fields in the source data. All that it cares about is that
 
-* that the enumerated fields exist, and
-* that they contain the expected types of data
+* the enumerated fields exist, and
+* they contain the expected types of data
 
 ## Simplified Functionality
 
 Let us point out here that the above pipeline may appear incomplete: it does _not_ explicitly specify what will happen to the selected values when the processors are run. Assume that, after this pipeline has been run, the data appears like so:
 
 ```yaml
-{
-   "docs": [
-      "doc": {
-         "foo": ["Z", "B", "C", ...],
-         "baz": [5, 100, 1, ...],
-         "bar": true,
-      }
-   ]
-}
+data:
+  - foo: ["Z", "B", "C", ...]
+  - baz: [5, 100, 1, ...]
+   -bar: true
 ```
 
-A brief glance will indicate that the value `A` in `foo` has become `Z`, that the `10` in `baz` has become `100`, whereas `bar` is left untouched since it was already `true`.
+With a brief glance, one can notice that the value `A` in `foo` has become `Z`, that the `10` in `baz` has become `100`, whereas `bar` is left untouched since it was already `true`.
 
 Although the pipeline appears underspecified, the example is intended to illustrate that what a sequence of processors does is as simple as this. Each performs a single operation on a specific field, and that is the pipeline's power. Once the incoming data is [normalized](../misc/normalization.mdx)&mdash;i.e. converted into a structure making it easy to extract data items from it&mdash; it becomes very easy to curate, transform, and enrich its values into a desirable form on the fly.
 
 Let us now explain the concepts of _curation_, _transformation_, and _enrichment_ a bit further.
 
-## Processing Data
+## Stream Processing
 
 As we have said earlier, the incoming raw data streams will have their own structure. As such, they will at best be partially suitable for analysis and, therefore, decision making. In its raw form, data is frequently not&mdash;at least may not be&mdash;what it seems to be. It has to be normalized and sifted through.
 
@@ -198,21 +190,21 @@ Finally, the data may contain hints or fragments of information which, when corr
 The overall process can be represented schematically as follows:
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
+%%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
 	source1Box["`Source 1
-		<code>A</code>
-		<code>B</code>
+		A
+		B
 	`"]
 	source2Box["`Source 2
-		<code>C</code>
+		C
 	`"]
-    	processorBox["`
-      <code>D=curate(A, B, C);</code>
-			<code>E=enrich(transform(D))</code>
+  processorBox["`
+    D = curate(A, B, C)
+		E = enrich(transform(D))
 	`"]
 	targetBox["`Target
-		<code>E</code>
+		E
 	`"]
 	source1Box --> processorBox;
 	source2Box --> processorBox;
@@ -220,10 +212,6 @@ flowchart LR
 ```
 
 It is through this three-fold process that a pipeline truly shines and becomes indispensible.
-
-## Configuration
-
-TODO: Show how to configure a pipeline using JSON.
 
 ---
 

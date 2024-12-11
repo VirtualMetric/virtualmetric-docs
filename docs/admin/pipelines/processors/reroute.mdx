@@ -41,13 +41,10 @@ The client needs to have execute permissions on the final target. Otherwise, the
 Using the `if` option, the document can be rerouted to a new target:
 
 ```yaml
-{
-   "reroute": {
-      "tag": "review-routing",
-      "if" : "log?.file?.path?.contains('review')",
-      "dataset": "review"
-   }
-}
+- reroute:
+   tag: "review-routing"
+   if: "log?.file?.path?.contains('review')"
+   dataset: review
 ```
 
 The processor first tries to resolve the `service.name` to determine the dataset. If that field contains `null`, does not exist, or is not a string, it tries the next element in the list which, in the example below, is "`generic`". The `namespace` is configured with a single literal value:
@@ -58,4 +55,4 @@ The processor first tries to resolve the `service.name` to determine the dataset
    namespace: default
 ```
 
-TODO: Make the example more illustrative.
+TODO: Make the example more illustrative

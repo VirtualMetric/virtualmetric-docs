@@ -9,18 +9,11 @@ Frequently, a pipeline will terminate in a valid state and not a failed one. (In
 In its simplest form, the mechanism can be used to notify the user that it exited its execution gracefully.
 
 ```yaml
-{
-   "processors" : [
-      {
-         "processor-1": {
-            // ...
-            "on_success": {
-               "user-message": "Pipeline completed successfully"
-            }
-         }
-      }
-   ]
-}
+processors:
+   - processor-1:
+      # ...
+      on_success:
+         - user-message: "Pipeline completed successfully"
 ```
 
 ## Continue
@@ -28,21 +21,12 @@ In its simplest form, the mechanism can be used to notify the user that it exite
 Furthermore, a pipeline can be configured to continue to the next processor by using the termination state of the previous one. Unlike other solutions on the market, this does not require any meta-level error information to be accessed. Before its termination, a processor can start the next one in the same pipeline.
 
 ```yaml
-{
-   "pipeline": "foo" {
-      "processors" : [
-         {
-            "processor-1": {
-               "on_success": "processor-2"
-            },
-
-            "processor-2": {
-               "on_success": // etc.
-            }
-         }
-      ]
-   }
-}
+pipeline: foo
+   processors:
+      - processor-1:
+            on_success: processor-2
+      - processor-2:
+            on_success: ...
 ```
 
 Using this technique, the execution of processors can be _nested_.
@@ -52,27 +36,16 @@ Using this technique, the execution of processors can be _nested_.
 Finally, it can be used to trigger the execution of a processor in another pipeline by invoking it.
 
 ```yaml
-{
-   "pipeline": "foo" {
-      "processors" : [
-         {
-            "processor-1": {
-               "on_success": "bar.processor-1"
-            }
-         }
-      ]
-   },
+pipeline: foo
+   processors:
+      - processor-1:
+         on_success: bar.processor-1
 
-   "pipeline": "bar" {
-      "processors" : [
-         {
-            "processor-1": {
-               "on_success": // etc.
-            }
-         }
-      ]
-   }
-}
+pipeline: bar
+   processors:
+      - processor-1:
+         on_success:
+            ...
 ```
 
 Using this technique, the execution of processors can be _daisy-chained_.

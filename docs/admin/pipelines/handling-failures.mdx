@@ -9,13 +9,10 @@ The `on_failure` processor can be used to specify a list of processors to run im
 To ignore a failure and keep running the remaining processors in the pipeline, `ignore_failure` must be set to `true`.
 
 ```yaml
-{
-   "rename": {
-      "field": "provider",
-      "target_field": "cloud.provider",
-      "ignore_failure": true
-   }
-}
+- rename:
+   field: provider
+   target_field: cloud.provider
+   ignore_failure: true
 ```
 
 ## Continuation
@@ -23,21 +20,14 @@ To ignore a failure and keep running the remaining processors in the pipeline, `
 To configure a processor so that in the event of a failure another processor runs, the `on_failure` parameter can be used.
 
 ```yaml
-{
-   "rename": {
-      "field": "foo",
-      "target_field": "bar",
-      "on_failure": [
-         {
-            "set": {
-               "field": "error.message",
-               "value": "Field 'foo' could not be renamed as 'bar'",
-               "override": false
-            }
-         }
-      ]
-   }
-}
+- rename:
+   field: foo
+   target_field: bar
+   on_failure: [
+      - set:
+         field: error.message
+         value: "Field 'foo' could not be renamed as 'bar'"
+         override: false
 ```
 
 ## Nesting
@@ -45,28 +35,19 @@ To configure a processor so that in the event of a failure another processor run
 For cascading errors, multiple `on_failure` processors can be nested.
 
 ```yaml
-"rename": {
-   "field": "foo",
-   "target_field": "bar",
-   "on_failure": [
-      {
-         "set": {
-            "field": "error.message",
-            "value": "Field 'foo' could not be renamed as 'bar'",
-            "override": false,
-            "on_failure": [
-               {
-                  "set": {
-                     "field": "error.message.cascade",
-                     "value": "Multiple errors encountered",
-                     "override": true
-                  }
-               }
-            ]
-         }
-      }
-   ]
-}
+- rename:
+   field: foo
+   target_field: bar
+   on_failure:
+      - set:
+         field: error.message
+         value: "Field 'foo' could not be renamed as 'bar'"
+         override: false
+         on_failure:
+            - set:
+               field: error.message.cascade
+               value: "Multiple errors encountered"
+               override: true
 ```
 
 ## Pipelines
@@ -74,16 +55,10 @@ For cascading errors, multiple `on_failure` processors can be nested.
 The `on_failure` can also be specified for the pipeline. When a processor fails, in the absence of a processor-level `on_failure` setting, **Director** uses the pipeline-level setting as a fallback. However, in that case it does not attempt to run the remaining processors.
 
 ```yaml
-{
-   "on_failure": [
-      {
-         "set": {
-            "field": "_index",
-            "value": "failed-{{{ _index }}}"
-         }
-      }
-   ]
-}
+on_failure: [
+   - set:
+      field: _index
+      value: failed-{{ _index }}
 ```
 
 ## Metadata
@@ -91,12 +66,8 @@ The `on_failure` can also be specified for the pipeline. When a processor fails,
 More information may be available in the metadata fields `on_failure_message`, `on_failure_processor_type`, `on_failure_processor_tag`, and `on_failure_pipeline` which can only be accessed from within an `on_failure` block.
 
 ```yaml
-"on_failure": [
-   {
-      "set": {
-         "field": "error_info",
-         "value": "{{ _ingest.on_failure_processor_type }} in {{ _ingest.on_failure_pipeline }} failed; error message: {{ _ingest.on_failure_message }}"
-      }
-   }
-]
+on_failure:
+   - set:
+      field: error_info
+      value: "{{ _ingest.on_failure_processor_type }} in {{ _ingest.on_failure_pipeline }} failed; error message: {{ _ingest.on_failure_message }}"
 ```
