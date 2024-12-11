@@ -1,7 +1,7 @@
 # Community ID
 
 <Synopsis>
-Computes the **Community ID** for network flow data, as defined in the [Community ID Specification].
+Computes the **Community ID** for network flow data, as defined in the [**Community ID Specification**](https://github.com/corelight/community-id-spec).
 </Synopsis>
 
 Use to correlate network events related to a single flow. By default, reads network flow data from related **ECS**.
@@ -30,14 +30,55 @@ Use to correlate network events related to a single flow. By default, reads netw
 
 ## Examples
 
-```js
-{
-   "processors": [
-      {
-         "community_id": { ... }
-      }
-   ]
-}
-```
 
-TODO: Provide more illustrative examples
+<Example>
+   <Description>
+   Input
+   </Description>
+   <SampleCode>
+   ```json
+   {
+      "source": {
+         "ip": "<ip-address-1>",
+         "port": 100 // arbitrary number
+      },
+      "destination": {
+         "ip": "<ip-address-2>",
+         "port": 200 // arbitrary number
+      },
+      "network": {
+         "transport": "TCP"
+      }
+   }
+   ```
+   </SampleCode>
+
+   <Description>
+   Spec
+   </Description>
+   <SampleCode>
+   ```json
+   {
+      "processors": [
+         {
+            "community_id": {}
+         }
+      ]
+   }
+   ```
+   </SampleCode>
+
+   <Description>
+   Output
+   </Description>
+   <SampleCode>
+   ```json
+   {
+      "network" : {
+         "community_id" : "<base-64-hash>",
+         "transport" : "TCP"
+      }
+   }
+   ```
+   </SampleCode>
+</Example>

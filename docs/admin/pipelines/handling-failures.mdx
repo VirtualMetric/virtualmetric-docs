@@ -8,7 +8,7 @@ The `on_failure` processor can be used to specify a list of processors to run im
 
 To ignore a failure and keep running the remaining processors in the pipeline, `ignore_failure` must be set to `true`.
 
-```js
+```json
 {
    "rename": {
       "field": "provider",
@@ -22,7 +22,7 @@ To ignore a failure and keep running the remaining processors in the pipeline, `
 
 To configure a processor so that in the event of a failure another processor runs, the `on_failure` parameter can be used.
 
-```js
+```json
 {
    "rename": {
       "field": "foo",
@@ -44,7 +44,7 @@ To configure a processor so that in the event of a failure another processor run
 
 For cascading errors, multiple `on_failure` processors can be nested.
 
-```js
+```json
 "rename": {
    "field": "foo",
    "target_field": "bar",
@@ -73,7 +73,7 @@ For cascading errors, multiple `on_failure` processors can be nested.
 
 The `on_failure` can also be specified for the pipeline. When a processor fails, in the absence of a processor-level `on_failure` setting, **Director** uses the pipeline-level setting as a fallback. However, in that case it does not attempt to run the remaining processors.
 
-```js
+```json
 {
    "on_failure": [
       {
@@ -90,7 +90,7 @@ The `on_failure` can also be specified for the pipeline. When a processor fails,
 
 More information may be available in the metadata fields `on_failure_message`, `on_failure_processor_type`, `on_failure_processor_tag`, and `on_failure_pipeline` which can only be accessed from within an `on_failure` block.
 
-```js
+```json
 "on_failure": [
    {
       "set": {

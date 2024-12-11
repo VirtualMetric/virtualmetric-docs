@@ -6,7 +6,7 @@ Processors support an optional `if` field, written as a script expression.
 
 If provided, the processor only runs when the stated condition is met. The condition is evaluated in the ingest processor's context.
 
-```js
+```json
 "processors": [
    {
       "drop": {
@@ -24,7 +24,7 @@ If regular expressions are enabled in the cluster setting, they can be used in t
 As regular expressions can slow down indexing operations, it is better to avoid them whenever possible.
 :::
 
-```js
+```json
 "processors": [
    {
       "set": {
@@ -44,7 +44,7 @@ Normally, the `if` condition must specified as a single valid JSON line. However
 It is better to avoid using complex scripts as they may slow down the process.
 :::
 
-```js
+```json
 "processors": [
    {
       "drop": {
@@ -68,7 +68,7 @@ It is better to avoid using complex scripts as they may slow down the process.
 
 It is also possible to use a script stored elsewhere in the `if` condition:
 
-```js
+```json
 "processors": [
    {
       "drop": {
@@ -84,18 +84,18 @@ When working with documents that contain objects, if a script attempts to access
 
 It is better, for example, to rewrite
 
-```js
+```json
 ctx.network?.name.equalsIgnoreCase('Guest')
 ```
 as
 
-```js
+```json
 'Guest'.equalsIgnoreCase(ctx.network?.name)
 ```
 
 to make it null safe. If that is not possible, then it may be good practice to include an explicit null check:
 
-```js
+```json
 "processors": [
    {
       "drop": {
@@ -109,7 +109,7 @@ to make it null safe. If that is not possible, then it may be good practice to i
 
 The `if` condition can be combined with the `pipeline` processor to run other pipelines based on certain criteria. This can be used as the default pipeline in a template.
 
-```js
+```json
 "processors": [
    {
       "pipeline": {
