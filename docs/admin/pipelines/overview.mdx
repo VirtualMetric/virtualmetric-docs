@@ -185,7 +185,7 @@ Although the pipeline appears underspecified, the example is intended to illustr
 
 Let us now explain the concepts of _curation_, _transformation_, and _enrichment_ a bit further.
 
-## Transforming Data
+## Processing Data
 
 As we have said earlier, the incoming raw data streams will have their own structure. As such, they will at best be partially suitable for analysis and, therefore, decision making. In its raw form, data is frequently not&mdash;at least may not be&mdash;what it seems to be. It has to be normalized and sifted through.
 
@@ -195,8 +195,32 @@ After this is done, the selected data may need to be converted into forms making
 
 Finally, the data may contain hints or fragments of information which, when correlated with other available data, may yield insights that may be required for analysis and use. The process of adding correlated information in order to render the data more relevant&mdash;or increase its relevance&mdash;is known as _enrichment_.
 
-It is at this three-fold stage that a pipeline truly shines and becomes indispensible.
+The overall process can be represented schematically as follows:
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}} }%%
+flowchart LR
+	source1Box["`Source 1
+		<code>A</code>
+		<code>B</code>
+	`"]
+	source2Box["`Source 2
+		<code>C</code>
+	`"]
+    	processorBox["`
+      <code>D=curate(A, B, C);</code>
+			<code>E=enrich(transform(D))</code>
+	`"]
+	targetBox["`Target
+		<code>E</code>
+	`"]
+	source1Box --> processorBox;
+	source2Box --> processorBox;
+	processorBox --> targetBox
+```
+
+It is through this three-fold process that a pipeline truly shines and becomes indispensible.
 
 ---
 
-In the chapters below, you will find a palette of processors designed to meet your needs for creating efficient pipelines.
+In the chapters below, you will find a wide palette of processors designed to meet your needs for creating powerful and efficient pipelines.
