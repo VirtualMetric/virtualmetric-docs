@@ -29,16 +29,9 @@ Parse the various level domains for `www.example.com`:
       The source contains a _URL_.
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": [
-            {
-               "_source": {
-                  "fqdn": "www.example.com"
-               }
-            }
-         ]
-      }
+      ```yaml
+      - source:
+         fqdn: "www.example.com"
       ```
    </SampleCode>
 
@@ -46,19 +39,10 @@ Parse the various level domains for `www.example.com`:
       Extract the domain info from the _URL_...
    </Description>
    <SampleCode>
-      ```json
-      {
-         "pipeline": {
-            "processors": [
-               {
-                  "registered_domain": {
-                     "field": "fqdn",
-                     "target_field": "url"
-                  }
-               }
-            ]
-         }
-      }
+      ```yaml
+      - registered_domain:
+            field: fqdn
+            target_field: url
       ```
    </SampleCode>
 
@@ -66,24 +50,14 @@ Parse the various level domains for `www.example.com`:
       ...and place them in the **url** field.
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": [
-            {
-               "doc": {
-                  "_source": {
-                     "fqdn": "www.example.com",
-                     "url": {
-                        "domain": "www.example.com",
-                        "registered_domain": "example.com",
-                        "top_level_domain": "com",
-                        "subdomain": "www"
-                     }
-                  }
-               }
-            }
-         ]
-      }
+      ```yaml
+      - source:
+         fqdn: "www.example.com"
+         url:
+            - domain: "www.example.com"
+            - registered_domain: "example.com"
+            - top_level_domain: "com"
+            - subdomain: "www"
       ```
    </SampleCode>
 </Example>

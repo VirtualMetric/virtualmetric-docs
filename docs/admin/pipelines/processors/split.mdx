@@ -24,16 +24,12 @@ Splits a field into an array using a separator character.
 
 <Example>
    <Description>
-      The field **foo** contains multiple values.
+      The _foo_ field contains space-separated values.
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": {
-            "id": "data",
-            "foo": "A B C"
-         }
-      }
+      ```yaml
+      data:
+         - foo: "A B C"
       ```
    </SampleCode>
 
@@ -41,27 +37,21 @@ Splits a field into an array using a separator character.
       Split those values using space boundaries.
    </Description>
    <SampleCode>
-      ```json
-      {
-         "split": {
-            "field": "foo",
-            "separator": "\\s+",
-            "target_field": "foos"
-         }
-      }
+      ```yaml
+      processors:
+         - split:
+            field: foo
+            separator: "\\s+"
+            target_field: "foos"
       ```
    </SampleCode>
    <Description>
       Done.
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": {
-            "id": "data",
-            "foos": ["A", "B", "C"]
-         }
-      }
+      ```yaml
+      data:
+         - foos: ["A", "B", "C"]
       ```
    </SampleCode>
 </Example>

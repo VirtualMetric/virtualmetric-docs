@@ -41,40 +41,28 @@ Multiple elements can be applied the same operation.
       The array has three strings.
    </Description>
    <SampleCode>
-      ```json
-      {
-         "values" : ["foo", "bar", "baz"]
-      }
+      ```yaml
+      values: ["foo", "bar", "baz"]
       ```
    </SampleCode>
    <Description>
       With this configuration...
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foreach" : {
-            "field" : "values",
-            "processor" : {
-               "uppercase" : {
-                  "field" : "_ingest._value"
-               }
-            }
-         }
-      }
+      ```yaml
+      foreach:
+         - field: values
+         - processor:
+            - uppercase:
       ```
    </SampleCode>
    <Description>
       ...they are converted to uppercase.
    </Description>
    <SampleCode>
-      <div class="pre.example">
-      ```json
-      {
-         "values" : ["FOO", "BAR", "BAZ"]
-      }
+      ```yaml
+      - values: ["FOO", "BAR", "BAZ"]
       ```
-      </div>
    </SampleCode>
 </Example>
 
@@ -87,53 +75,34 @@ Multiple elements can be applied the same operation.
       The objects in the array have an `id` field
    </Description>
    <SampleCode>
-      ```json
-      {
-         "things": [
-            {
-               "id": "1",
-               "name": "foo"
-            },
-            {
-               "id": "2",
-               "name": "bar"
-            }
-         ]
-      }
+      ```yaml
+      things: [
+         [id: 1, name: "foo"],
+         [id: 2, name: "bar"]
+      ]
       ```
    </SampleCode>
    <Description>
       The processor is configured to remove that field...
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foreach": {
-            "field": "things",
-               "processor": {
-                  "remove": {
-                  "field": "_ingest._value.id"
-               }
-            }
-         }
-      }
+      ```yaml
+      foreach:
+         - field: things
+         - processor:
+            - remove:
+               field: id
       ```
    </SampleCode>
    <Description>
-      ...resulting in this document:
+      ...resulting in:
    </Description>
    <SampleCode>
-      ```json
-      {
-         "things": [
-            {
-               "name": "foo"
-            },
-            {
-               "name": "bar"
-            }
-         ]
-      }
+      ```yaml
+      things: [
+         [name: "foo"],
+         [name: "bar"]
+      ]
       ```
    </SampleCode>
 </Example>
@@ -147,90 +116,63 @@ Object with multiple fields can be applied an operation.
       We have **3** objects with **2** fields each:
    </Description>
    <SampleCode>
-      ```json
-      {
-         "things" : {
-            "foos" : {
-               "size": 10,
-               "display_name": "Foos"
-            },
-            "bars" : {
-               "size": 20,
-               "display_name": "Bars"
-            },
-            "quxs" : {
-               "size": 50,
-               "display_name": ""
-            }
-         }
-      }
-      ```
+   ```yaml
+   things:
+      - foos:
+         - size: 10
+         - display_name: "Foos"
+      - bars:
+         - size: 20
+         - display_name: "Bars"
+      - quxs:
+         - size: 50
+         - display_name: ""
+   ```
    </SampleCode>
    <Description>
       This configuration tells the processor to convert their **display names** to **uppercase**:
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foreach": {
-            "field": "things",
-               "processor": {
-               "uppercase": {
-                  "field": "_ingest._value.display_name"
-               }
-            }
-         }
-      }
+      ```yaml
+      foreach:
+         - field: things
+         - processor:
+            - uppercase:
+               - field: display_name
       ```
    </SampleCode>
    <Description>
       Done.
    </Description>
    <SampleCode>
-      ```json
-      {
-         "things" : {
-            "foos" : {
-               "size" : 10,
-               "display_name" : "FOOS"
-            },
-            "bars" : {
-               "size" : 20,
-               "display_name" : "BARS"
-            },
-            "quxs" : {
-               "size" : 50,
-               "display_name" : ""
-            }
-         }
-      }
+      ```yaml
+      things:
+         - foos:
+            - size: 10
+            - display_name: "FOOS"
+         - bars:
+            - size: 20
+            - display_name: "BARS"
+         - quxs:
+            - size: 50
+            - display_name: ""
       ```
    </SampleCode>
 </Example>
 
 ### Failures
 
-The nested processor can have an `on_failure` definition that can be used to send the document to the failure queue for review.
+The nested processor can have an `on_failure` definition that can be used to send pipeline to the failure queue for review.
 
-```json
-{
-   "foreach" : {
-      "field" : "things",
-      "processor": {
-         "remove": {
-            "field" : "_value.id",
-            "on_failure" : [
-               {
-                  "set" : {
-                     "field": "_index",
-                     "value": "failure_queue"
-                  }
-               }
-            ]
-         }
-      }
-   }
-}
+```yaml
+foreach:
+   - field: things
+   - processor:
+      - remove:
+         - field: id
+         - on_failure:
+               - id: errors.id
+               - message: "remove failed"
 ```
 
-In the event of a failure, elements processed so far will remain updated.
+In the event of such a failure, elements processed so far will remain updated.

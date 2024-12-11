@@ -29,50 +29,43 @@ The URI object includes properties of the URI's domain, path, port, fragment, qu
       The _URI_ contains all the details of a web query.
    </Description>
    <SampleCode>
-   ```json
-   "_source": {
-         "input_field": "http://some-user:some-password@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment"
-   }
+   ```yaml
+   - source:
+      input_field: "http://user:pass@www.example.com:80/foo.gif?k1=v1&k2=v2#frag"
    ```
    </SampleCode>
    <Description>
       Parse the _URI_ to extract the details...
    </Description>
    <SampleCode>
-   ```json
-   "processors" : [
-      {
-         "uri_parts": {
-            "field": "input_field",
-            "target_field": "url",
-            "keep_original": true,
-            "remove_if_successful": false
-         }
-      }
-   ]
+   ```yaml
+   processors:
+      - uri_parts:
+         field: input_field
+         target_field: url
+         keep_original: true
+         remove_if_successful: false
    ```
    </SampleCode>
    <Description>
-      ...and place them in the **url** field.
+      ...and place them in the _url_ field.
    </Description>
    <SampleCode>
-   ```json
-   "_source": {
-      "input_field": "http://some-user:some-password@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment",
-      "url": {
-         "path": "/foo.gif",
-         "fragment": "fragment",
-         "extension": "gif",
-         "password": "some-password",
-         "original": "http://some-username:some-password@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment",
-         "scheme": "http",
-         "port": 80,
-         "user_info" : "some-user:some-password",
-         "domain" : "www.example.com",
-         "query" : "key1=val1&key2=val2",
-         "username" : "some-username"
-      }
-   }
+   ```yaml
+   - source":
+      input_field: "http://user:pass@www.example.com:80/foo.gif?k1=v1&k2=v2#frag"
+      url:
+         - path: "/foo.gif"
+         - fragment: "frag"
+         - extension: "gif"
+         - password: "password"
+         - original: "http://user:pass@www.example.com:80/foo.gif?key1=val1&key2=val2#frag"
+         - scheme: http
+         - port: 80
+         - user_info: "user:pass"
+         - domain: "www.example.com"
+         - query: "k1=v1&k2=v2"
+         - username: "user"
    ```
    </SampleCode>
 </Example>

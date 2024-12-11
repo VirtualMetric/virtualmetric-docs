@@ -44,21 +44,12 @@ Collect a _private_ connection and place it under _inbound_.
       **Input**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": [
-            {
-               "_source": {
-                  "source": {
-                     "ip": "127.15.15.20"
-                  },
-                  "destination": {
-                     "ip": "192.168.1.10"
-                  }
-               }
-            }
-         ]
-      }
+      ```yaml
+      data:
+         - source:
+            - ip: "127.15.15.20"
+         - destination:
+            - ip: "192.168.1.10"
       ```
    </SampleCode>
 
@@ -66,14 +57,9 @@ Collect a _private_ connection and place it under _inbound_.
       **Spec**
    </Description>
    <SampleCode>
-      ```json
-      {
-         {
-            "network_direction": {
-               "internal_networks": ["private"]
-            }
-         }
-      }
+      ```yaml
+      network_direction:
+         - internal_networks: ["private"]
       ```
    </SampleCode>
 
@@ -81,26 +67,13 @@ Collect a _private_ connection and place it under _inbound_.
       **Output**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": [
-            {
-               "doc": {
-                  "_source": {
-                     "network": {
-                        "direction": "inbound"
-                     },
-                     "source": {
-                        "ip": "127.15.15.20"
-                     },
-                     "destination": {
-                        "ip": "192.168.1.10"
-                     }
-                  }
-               }
-            }
-         ]
-      }
-      ```
+   ```yaml
+   - network:
+      direction: inbound
+      source:
+         ip: "127.15.15.20"
+      destination:
+         ip: "192.168.1.10"
+   ```
    </SampleCode>
 </Example>

@@ -29,31 +29,22 @@ Multiple date formats can be specified which will be used sequentially to parse 
 
 Adding the parsed date to the `timestamp` field based on the `initial_date` field:
 
-```json
-{
-   "processors": [
-      {
-         "date": {
-            "field": "initial_date",
-            "target_field": "timestamp",
-            "formats": ["dd/MM/yyyy HH:mm:ss"],
-            "timezone": "Europe/London"
-         }
-      }
-   ]
-}
+```yaml
+processors:
+   - date:
+      - field: initial_date
+      - target_field: timestamp
+      - formats: "dd/MM/yyyy HH:mm:ss"
+      - timezone: "Europe/London"
 ```
 
-The `timezone` and `locale` parameters can be extracted from fields in the document if templated. The following spec show how to extract them from the existing fields `the_timezone` and `the_locale`.
+The `timezone` and `locale` parameters can be extracted from fields in the document if templated. The following spec show how to extract them from the templated fields `foo` and `bar`.
 
-```json
-{
-   "date" : {
-      "field": "initial_date",
-      "target_field": "timestamp",
-      "formats": ["ISO8601"],
-      "timezone": "{{{the_timezone}}}",
-      "locale": "{{{the_locale}}}"
-   }
-}
+```yaml
+date:
+   - field: initial_date
+   - target_field: timestamp
+   - formats: "ISO8601"
+   - timezone: "{{foo}}"
+   - locale: "{{bar}}"
 ```

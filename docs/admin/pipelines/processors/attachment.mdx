@@ -1,7 +1,7 @@
 # Attachment
 
 <Synopsis>
-Allows **Elasticsearch** to extract widely used file formats like **DOC**, **XLS**, **PDF**, etc. using **Apache**'s **Tika** library.
+Allows **Director** to extract widely used file formats like **DOC**, **XLS**, **PDF**, etc. using **Apache**'s **Tika** library.
 </Synopsis>
 
 The source field must point to a base64-encoded binary file which will be converted to JSON. To avoid the overhead of back and forth conversions, use CBOR and specify the field as a byte array.
@@ -37,38 +37,29 @@ The following fields can be extracted from a document:
 
 <Example>
 	<Description>
-		Properties to extract from the file
+   Properties to extract from the file
 	</Description>
 	<SampleCode>
-		```json
-         {
-            "attachment": {
-               "field": "data",
-               "remove_binary": false
-            }
-         }
-         {
-            "data": "Zm9vIGJhciBiYXogcXV4"
-         }
-		```
+   ```yaml
+   attachment:
+      - field: data
+      - remove_binary: false
+   data: Zm9vIGJhciBiYXogcXV4
+   ```
 	</SampleCode>
 	<Description>
       The `attachment` object contains the extracted properties
 	</Description>
 	<SampleCode>
-      ```json
-      {
-         "found": true,
-         "_source": {
-            "data": "Zm9vIGJhciBiYXogcXV4",
-            "attachment": {
-               "content_type": "application/txt",
-               "content": "foo bar baz qux",
-               "content_length": 15
-            }
-         }
-      }
-      ```
+   ```yaml
+   found: true
+   source:
+      - data: "Zm9vIGJhciBiYXogcXV4"
+      - attachment:
+         - content_type: "application/txt"
+         - content: "foo bar baz qux"
+         - content_length: 15
+   ```
 	</SampleCode>
 </Example>
 
@@ -79,15 +70,14 @@ With the `properties` array, specific fields can be extracted:
       Extract **content** and **title**
 	</Description>
 	<SampleCode>
-      ```json
-         {
-            "attachment": {
-               "field": "data",
-               "properties": [ "content", "title" ],
-               "remove_binary": false
-            }
-         }
-      ```
+   ```yaml
+   attachment:
+      - field: data
+      - properties:
+         - content
+         - title
+      - remove_binary: false
+   ```
 	</SampleCode>
 </Example>
 
@@ -102,37 +92,28 @@ To override the default limit, `indexed_chars_field` can be used to set limits p
       Specifying:
    </Description>
    <SampleCode>
-      ```json
-         {
-            "attachment": {
-               "field": "data",
-               "indexed_chars" : 15,
-               "indexed_chars_field": "max_size",
-               "remove_binary": false
-            }
-         }
-         {
-            "data": "Zm9vIGJhciBiYXogcXV4"
-         }
-      ```
-   </SampleCode>
+   ```yaml
+   attachment:
+      - field: data
+      - indexed_chars: 15
+      - indexed_chars_field: max_size
+      - remove_binary: false
+   - data: "Zm9vIGJhciBiYXogcXV4"
+   ```
+</SampleCode>
    <Description>
    ...returns:
    </Description>
    <SampleCode>
-      ```json
-         {
-            "found": true,
-            "_source": {
-               "data": "Zm9vIGJhciBiYXogcXV4",
-               "attachment": {
-                  "content_type": "application/rtf",
-                  "content": "foo bar baz qux",
-                  "content_length": 15
-               }
-            }
-         }
-      ```
+   ```yaml
+   found: true
+   source:
+      - data: "Zm9vIGJhciBiYXogcXV4"
+      - attachment":
+         - content_type: "application/rtf"
+         - content: "foo bar baz qux"
+         - content_length: 15
+   ```
    </SampleCode>
 </Example>
 

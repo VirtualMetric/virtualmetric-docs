@@ -28,72 +28,44 @@ If the field already exists, its value will be replaced with the provided one.
 * Copying scalar values is straightforward:
 
 <Example>
-      <Description>
-         Set value of the `foo` field to **1**:
-      </Description>
-      <SampleCode>
-         ```json
-         {
-            "set": {
-               "field": "foo",
-               "value": 1
-            }
-         }
-         ```
-      </SampleCode>
+   <Description>
+      Set value of the `foo` field to **1**:
+   </Description>
+   <SampleCode>
+   ```yaml
+   set:
+      field: foo
+      value: 1
+   ```
+   </SampleCode>
 </Example>
 
 <Example>
-      <Description>
-         Grab `foo` from `foo.bar` and...
-      </Description>
-      <SampleCode>
-         ```json
-         {
-            "processors": [
-               {
-                  "set": {
-                     "field": "foo.bar",
-                     "value": "{{{bar}}}"
-                  }
-               }
-            ]
-         }
+   <Description>
+      Grab `foo` from `foo.bar` and...
+   </Description>
+   <SampleCode>
+      ```yaml
+      processors:
+         - set:
+            field: foo.bar
+            value: "{{bar}}"
 
-         POST _ingest/pipeline/set_os/_simulate
-         {
-            "docs": [
-               {
-                  "_source": {
-                     "foo.bar": "BAR"
-                  }
-               }
-            ]
-         }
-         ```
-      </SampleCode>
-      <Description>
-      ...copy it into `bar`
-      </Description>
-      <SampleCode>
-         ```json
-         {
-            "docs": [
-               {
-                  "doc": {
-                     "_source": {
-                        "foo": {
-                           "bar": {
-                              "value": "BAR"
-                           }
-                        }
-                     },
-                  }
-               }
-            ]
-         }
-         ```
-      </SampleCode>
+      source:
+         foo.bar: "BAR"
+      ```
+   </SampleCode>
+   <Description>
+   ...copy it into `bar`
+   </Description>
+   <SampleCode>
+      ```yaml
+      source:
+         foo:
+            - bar:
+               value: "BAR"
+      ```
+   </SampleCode>
 </Example>
 
 * It is possible to access array fields with the dot notation.
@@ -103,54 +75,25 @@ If the field already exists, its value will be replaced with the provided one.
       The `foo` field contains `bar` with 3 elements:
    </Description>
    <SampleCode>
-      ```json
-      POST /_ingest/pipeline/_simulate
-      {
-         "pipeline": {
-            "processors": [
-               {
-                  "set": {
-                     "field": "foo",
-                     "value": "{{{bar.1}}}"
-                  }
-               }
-            ]
-         },
-         "docs": [
-            {
-               "_source": {
-                  "foo": [
-                     "A",
-                     "B",
-                     "C"
-                  ]
-               }
-            }
-         ]
-      }
+      ```yaml
+      - pipeline:
+         processors:
+            - set:
+               field: foo
+               value": "{{bar.1}}"
+
+      - source:
+        foo: ["A", "B", "C"]
       ```
    </SampleCode>
    <Description>
-      We grabbed the **1st** one:
+      The _1st_ is copied to _bar_:
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": [
-            {
-               "doc": {
-                  "_source": {
-                     "input_field": [
-                        "A",
-                        "B",
-                        "C"
-                     ],
-                     "bar": "A"
-                  },
-               }
-            }
-         ]
-      }
+      ```yaml
+      source:
+         - input_field: ["A", "B", "C"]
+         - bar: "A"
       ```
    </SampleCode>
 </Example>
@@ -159,49 +102,28 @@ If the field already exists, its value will be replaced with the provided one.
 
 <Example>
    <Description>
-      We will copy the valus in `foo`...
+      The values in `foo`...
    </Description>
    <SampleCode>
-      ```json
-      {
-         "processors": [
-            {
-               "set": {
-                  "field": "bar",
-                  "copy_from": "foo"
-               }
-            }
-         ]
-      }
+      ```yaml
+      processors:
+         - set:
+            field: "bar"
+            copy_from: "foo"
       ...
-      {
-         "docs": [
-            {
-               "_source": {
-                  "foo": ["A", "B"]
-               }
-            }
-         ]
-      }
+
+      source:
+         foo: ["A", "B"]
       ```
    </SampleCode>
    <Description>
-      ...into `bar`
+      ...are copied into `bar`:
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": [
-            {
-               "doc": {
-                  "_source": {
-                     "foo": ["A", "B"],
-                     "bar": ["A", "B"]
-                  },
-               }
-            }
-         ]
-      }
+      ```yaml
+      source:
+         foo: ["A", "B"]
+         bar: ["A", "B"]
       ```
    </SampleCode>
 </Example>

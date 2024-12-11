@@ -28,43 +28,21 @@ Circles containing poles cannot be converted.
 
 <Example>
    <Description>
-      In **JSON**
+   Define a circle
    </Description>
    <SampleCode>
-      ```json
-      {
-         "mappings": {
-            "properties": {
-               "circle": {
-                  "type": "geo_shape"
-               }
-            }
-         }
-      }
-
-      {
-         "processors": [
-            {
-               "circle": {
-                  "field": "circle",
-                  "error_distance": 5.0,
-                  "shape_type": "geo_shape"
-               }
-            }
-         ]
-      }
-      ```
-   </SampleCode>
-   <Description>
-      In **WKT**
-   </Description>
-   <SampleCode>
-      ```json
-      {
-         "circle": "CIRCLE (15 7 30)"
-      }
-      ```
-   </SampleCode>
+   ```yaml
+   mapping:
+      properties:
+         - circle:
+            type: geo_shape
+   processors:
+      - circle:
+         - field: circle
+         - error_distance: 5.0
+         - shape_type: geo_shape
+```
+</SampleCode>
 </Example>
 
-With this pipeline, a document containing a circle, represented in either **WKT** or **GeoJSON**, can be assigned to the `circles` index and tranformed into a polygon in the source format.
+With this pipeline, data containing a circle, represented in **GeoJSON**, can be assigned to the `circles` index and tranformed into a polygon in the source format.

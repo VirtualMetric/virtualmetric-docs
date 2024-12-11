@@ -26,35 +26,27 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       **Input**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo.bar": "v"
-      }
+      ```yaml
+      foo.bar: "v"
       ```
    </SampleCode>
    <Description>
       **Spec**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "dot_expander": {
-            "field": "foo.bar"
-         }
-      }
-      ```
+   ```yaml
+   dot_expander:
+      - field: foo.bar
+   ```
    </SampleCode>
    <Description>
       **Output**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo": {
-            "bar": "v"
-         }
-      }
-      ```
+   ```yaml
+   foo:
+      - bar: "v"
+   ```
    </SampleCode>
 </Example>
 
@@ -65,38 +57,31 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       **Input**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo.bar": "v1",
-         "foo": {
-            "bar": "v2"
-         }
-      }
-      ```
+   ```yaml
+   foo.bar: "v1"
+   foo:
+      bar: "v2"
+   ```
    </SampleCode>
    <Description>
       **Spec**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "dot_expander": {
-            "field": "foo.bar"
-         }
-      }
-      ```
+   ```yaml
+   dot_expander:
+      field: foo.bar
+   ```
    </SampleCode>
    <Description>
       **Output**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo": {
-            "bar": ["v1", "v2"]
-         }
-      }
-      ```
+   ```yaml
+   foo:
+      - bar:
+         - "v1"
+         - "v2"
+   ```
    </SampleCode>
 </Example>
 
@@ -107,39 +92,30 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       **Input**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo.bar": "v1",
-         "foo": {
-            "bar": "v2"
-         }
-      }
-      ```
+   ```yaml
+   foo.bar: "v1"
+   foo:
+      - bar: "v2"
+   ```
    </SampleCode>
    <Description>
       **Spec**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "dot_expander": {
-            "field": "foo.bar",
-            "override": true
-         }
-      }
-      ```
+   ```yaml
+   dot_expander:
+      - field: foo.bar
+      - override: true
+   ```
    </SampleCode>
    <Description>
       **Output**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo": {
-            "bar": "v2"
-         }
-      }
-      ```
+   ```yaml
+   foo:
+      - bar: "v2"
+   ```
    </SampleCode>
 </Example>
 
@@ -150,39 +126,30 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       **Input**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo.bar": "v1",
-         "baz.qux": "v2"
-      }
-      ```
+   ```yaml
+   foo.bar: "v1"
+   baz.qux: "v2"
+   ```
    </SampleCode>
    <Description>
       **Spec**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "dot_expander": {
-            "field": "*"
-         }
-      }
-      ```
+   ```yaml
+   dot_expander:
+      - field: "*"
+   ```
    </SampleCode>
    <Description>
       **Output**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo": {
-            "bar": "v1"
-         },
-         "baz": {
-            "qux": "v2"
-         }
-      }
-      ```
+   ```yaml
+   foo:
+      - bar: "v1"
+   baz:
+      - qux: "v2"
+   ```
    </SampleCode>
 </Example>
 
@@ -193,42 +160,32 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       **Input**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo": {
-            "bar.baz": "v1",
-            "bar.qux": "v2"
-         }
-      }
-      ```
+   ```yaml
+   foo:
+      - bar.baz: "v1"
+      - bar.qux: "v2"
+   ```
    </SampleCode>
    <Description>
       **Spec**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "dot_expander": {
-            "path": "foo",
-            "field": "*"
-         }
-      }
-      ```
+   ```yaml
+   dot_expander:
+      - path: foo
+      - field: "*"
+   ```
    </SampleCode>
    <Description>
       **Output**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo": {
-            "bar": {
-               "baz": "v1",
-               "qux": "v2"
-            }
-         }
-      }
-      ```
+   ```yaml
+   foo:
+      - bar:
+         - baz: "v1"
+         - qux: "v2"
+   ```
    </SampleCode>
 </Example>
 
@@ -239,46 +196,34 @@ Expands a field containing dots into an object field. Makes fields with dots in 
       **Input**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo": "v1",
-         "foo.bar": "v2"
-      }
-      ```
+   ```yaml
+   foo: "v1"
+   foo.bar: "v2"
+   ```
    </SampleCode>
    <Description>
       **Spec**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "processors": [
-            {
-               "rename": {
-                  "field": "foo",
-                  "target_field": "foo.bar"
-               }
-            },
-            {
-               "dot_expander": {
-                  "path": "foo",
-                  "field": "*"
-               }
-            }
-         ]
-      }
-      ```
+   ```yaml
+   processors:
+      - rename:
+         - field: foo
+         - target_field: foo.bar
+      - dot_expander:
+         - path: foo
+         - field: "*"
+   ```
    </SampleCode>
    <Description>
       **Output**
    </Description>
    <SampleCode>
-      ```json
-      {
-         "foo": {
-            "bar": ["v1", "v2"]
-         }
-      }
-      ```
+   ```yaml
+   foo:
+      - bar:
+         - "v1"
+         - "v2"
+   ```
    </SampleCode>
 </Example>

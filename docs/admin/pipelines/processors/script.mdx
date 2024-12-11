@@ -32,55 +32,34 @@ The `ctx['_source']['field']` syntax or the `ctx._souce.field` syntax are not su
 
 The following shows the use of a script to extract the `tags` field from the `env` source field.
 
-```json
-{
-   "pipeline": {
-      "processors": [
-         {
-            "script": {
-               "description": "Extract 'tags' from the 'env' field",
-               "lang": "js",
-               "source": """
-                  String[] envSplit = ctx['env'].splitOnToken(params['delimiter']);
-                  ArrayList tags = new ArrayList();
-                  tags.add(envSplit[params['position']].trim());
-                  ctx['tags'] = tags;
-               """,
-               "params": {
-                  "delimiter": "-",
-                  "position": 1
-               }
-            }
-         }
-      ]
-   },
-   "docs": [
-      {
-         "_source": {
-            "env": "co-prod"
-         }
-      }
-   ]
-}
+```yaml
+processors:
+   - script:
+      lang: js
+      source: """
+         String[] envSplit = ctx['env'].splitOnToken(params['delimiter']);
+         ArrayList tags = new ArrayList();
+         tags.add(envSplit[params['position']].trim());
+         ctx['tags'] = tags;
+      """
+      params:
+         delimiter: "-"
+         position: 1
+```
+
+The data:
+
+```yaml
+- source:
+   env: co-prod
 ```
 
 This creates the following document:
 
-```json
-{
-   "docs": [
-      {
-         "doc": {
-            "_source": {
-               "env": "co-prod",
-               "tags": [
-                  "prod"
-               ]
-            }
-         }
-      }
-   ]
-}
+```yaml
+source:
+   env: "co-prod"
+   tags: ["prod"]
 ```
 
 TODO: Check the values.
@@ -91,20 +70,13 @@ Scripting can also be used to access metadata. The following is a configuration 
 
 <Example>
    <Description>
-      The document is classified under a generic index
+      The data is classified under a generic index
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": [
-            {
-               "_index": "generic-index",
-               "_source": {
-                  "lang": "fr"
-               }
-            }
-         ]
-      }
+      ```yaml
+      index: "generic-index"
+      source:
+         - lang: "fr"
       ```
    </SampleCode>
 
@@ -112,43 +84,27 @@ Scripting can also be used to access metadata. The following is a configuration 
       Concatenate the _language_ and the _dataset name_ to create an index
    </Description>
    <SampleCode>
-      ```json
-      {
-         "processors": [
-            {
-               "script": {
-                  "lang": "fr",
-                  "source": """
-                     ctx['_index'] = ctx['lang'] + '-' + params['dataset'];
-                  """,
-                  "params": {
-                     "dataset": "catalogue"
-                  }
-               }
-            }
-         ]
-      }
-      ```
+   ```yaml
+   processors:
+         - script:
+            lang: fr
+            source: """
+               ctx['index'] = ctx['lang'] + '-' + params['dataset'];
+            """
+            params:
+               - dataset: "catalogue"
+   ```
    </SampleCode>
 
    <Description>
       The document's index name changes
    </Description>
    <SampleCode>
-      ```json
-      {
-         "docs": [
-            {
-               "doc": {
-                  "_index": "fr-catalogue",
-                  "_source": {
-                     "lang": "fr"
-                  }
-               }
-            }
-         ]
-      }
-      ```
+   ```yaml
+   index: "fr-catalogue"
+   source:
+      - lang: "fr"
+   ```
    </SampleCode>
 </Example>
 

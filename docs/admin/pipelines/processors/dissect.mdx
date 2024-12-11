@@ -6,28 +6,25 @@ Matches a text field against a pre-defined pattern, but without using regular ex
 
 As an example, the pattern:
 
-```json
+```cli
 %{clientip} %{ident} %{auth} [%{@timestamp}] %{size}
 ```
 
 will match the following log line:
 
-```json
+```cli
 127.0.0.1 50 JD [25/05/2024:15:12:40 +0000] 512
 ```
 
 and create a document with the following fields:
 
-```json
-"doc": {
-   "_source": {
-      "clientip": "127.0.0.1",
-      "ident": "50",
-      "auth": "JD",
-      "@timestamp": "25/05/2024:15:12:40 +0000",
-      "size": "512",
-   }
-}
+```yaml
+source:
+   clientip: "127.0.0.1"
+   ident: 50
+   auth: "JD"
+   "@timestamp": "25/05/2024:15:12:40 +0000"
+   size: 512
 ```
 
 Dissection patterns are lexed using the parts of the strings that will be discarded, and these can be spaces, separators, parentheses, etc.
