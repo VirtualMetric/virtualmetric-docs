@@ -4,27 +4,38 @@
 Enriches data with data from another source.
 </Synopsis>
 
-TODO: Complete schematics, graphics, and explanation
+This involves correlating data items to increase their semantic depth and relevance for the target. A typical example would be to grab the IP of a Website user, look up the IP range from a geolocation database, and infer what geographical region the user is using the site from.
+
+Schematically, the process looks like this:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}} }%%
 flowchart LR
-	sourceBox["`Source`"]
-    	processorBox["`<code>dissect</code>
-    		<code>grok</code>`"]
-	targetBox["`Target`"]
-	sourceBox --> processorBox --> targetBox
+	source1Box["`Source 1
+		<code>A</code>
+		<code>B</code>
+	`"]
+	source2Box["`Source 2
+		<code>C</code>
+	`"]
+    	processorBox["`
+			<code>E=dissect(A)+grok(B)+C</code>
+	`"]
+	targetBox["`Target
+		<code>E</code>
+	`"]
+	source1Box --> processorBox;
+	source2Box --> processorBox;
+	processorBox --> targetBox
 ```
 
 ## Parameters
 
-TODO: Complete parameters
-
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`dataset_name`|Y|N/A||
-|`lookup_table`|Y|N/A||
-|`query`|Y|N/A||
+|`dataset_name`|Y|N/A|Field containing the dataset to be used for enrichment|
+|`lookup_table`|Y|N/A|Field containing the table to be used to correlate with dataset|
+|`query`|Y|N/A|Criteria to use against `lookup_table`|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
