@@ -1,12 +1,10 @@
 # Grok
 
 <Synopsis>
-Extracts structured fields out of a single text field within a document.
+Extracts structured fields from a single text field within a document using pre-defined regular expression-based patterns.
 </Synopsis>
 
-You choose which field to extract matched fields from, as well as the grok pattern you expect will match. A grok pattern is like a regular expression that supports aliased expressions that can be reused.
-
-Comes with reusable patterns.
+You choose which field to extract matched fields from, as well as the grok pattern you expect will match. A grok pattern contains _key-value_ pairs of labels and predefined regular expressions for reusability, and it follows the syntax `%{PATTERN_NAME:FIELD_NAME}`.
 
 ## Parameters
 
@@ -26,10 +24,32 @@ Comes with reusable patterns.
 
 ## Examples
 
-## Built-in Patterns
+<Example>
+	<Description>
+	Grab event time from:
+	</Description>
+	<SampleCode>
+		```yaml
+		_raw: "2024-10-16T04:15:10.55+01:00 DEBUG Sample message"
+		```
+	</SampleCode>
 
-TODO: Create original examples
+	<Description>
+	...using:
+	</Description>
+	<SampleCode>
+		```js
+		'%{TIMESTAMP_ISO8601:event_time}%'
+		```
+	</SampleCode>
+	<Description>
+	Done.
+	</Description>
+	<SampleCode>
+	```yaml
+	event_time: "2024-10-16T04:15:10.55+01:00"
+	```
+	</SampleCode>
+</Example>
 
-## Custom Patterns
-
-TODO: Create original examples
+TODO: List built-in patterns

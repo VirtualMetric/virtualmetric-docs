@@ -243,16 +243,16 @@ flowchart LR
 	source2["`**Source 2**
 		C
 	`"]
-  processor["`**Pipeline**
+  routing["`**Routing**
     D = curate(A, B, C)
 		E = enrich(transform(D))
 	`"]
 	target["`**Target**
 		E
 	`"]
-	source1 --> processor;
-	source2 --> processor;
-	processor --> target
+	source1 --> routing;
+	source2 --> routing;
+	routing --> target
 ```
 
 It is through this three-fold process that a pipeline truly shines and becomes indispensible.
@@ -260,11 +260,11 @@ It is through this three-fold process that a pipeline truly shines and becomes i
 
 ## Typical Use
 
+It is best to keep the following in mind when creating pipelines.
+
 Processors are designed to select data points by a combination of field values. Their primary design principle, as stated above, is to serve one purpose only to streamline the work they do.
 
 This naturally has an impact on performance: the fewer the data points or field values a processor has to act upon, the better the overall performance. If processor **p** operates on field `foo` only when its values is `A`, whereas processor **q** operates on `bar` if its value is `B`, using the two in sequence guarantees that each completes its work in a shorter time.
-
-It is best to keep these points in mind when creating pipelines.
 
 ---
 
