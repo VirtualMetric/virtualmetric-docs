@@ -113,7 +113,7 @@ const config: Config = {
         },
 
         {
-          to: "community",
+          href: "https://google.com",
           position: "left",
           label: "Community",
         },
