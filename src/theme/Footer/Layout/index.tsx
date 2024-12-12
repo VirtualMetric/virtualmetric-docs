@@ -1,6 +1,8 @@
-import React from 'react';
-import clsx from 'clsx';
-import type {Props} from '@theme/Footer/Layout';
+import React from "react";
+import clsx from "clsx";
+import type { Props } from "@theme/Footer/Layout";
+
+import styles from "./styles.module.css";
 
 export default function FooterLayout({
   style,
@@ -10,14 +12,15 @@ export default function FooterLayout({
 }: Props): JSX.Element {
   return (
     <footer
-      className={clsx('footer', {
-        'footer--dark': style === 'dark',
-      })}>
+      className={clsx("footer", styles.footer, {
+        "footer--dark": style === "dark",
+      })}
+    >
       <div className="container container-fluid">
         {links}
         {(logo || copyright) && (
           <div className="footer__bottom text--center">
-            {logo && <div className="margin-bottom--sm">{logo}</div>}
+            {logo && <div style={{ height: 40 }}>{logo}</div>}
             {copyright}
           </div>
         )}
