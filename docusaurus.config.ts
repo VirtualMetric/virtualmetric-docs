@@ -95,6 +95,7 @@ const config: Config = {
         alt: "VirtualMetric Logo",
         src: "img/VirtualMetric-Logo-Light.svg",
         srcDark: "img/VirtualMetric-Logo-Dark.svg",
+        height: 60,
       },
 
       items: [
