@@ -9,26 +9,26 @@ pagination_prev: null
 
 ## Definitions
 
-Pipelines are chains of [processors](./processors) that run sequentially, operating on the incoming data streamed from [sources](source.mdx), and routing their output to [targets](target.mdx) for consumption or further processing.
+Pipelines are chains of [processors](./processors) that run sequentially, operating on the incoming data streamed from [sources](../sources/overview.mdx), and routing their output to [targets](../targets/overview.mdx) for consumption or further processing.
 
 Schematically, this looks like so:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
-	sourceBox["`**Source**
+	source["`**Source**
     data
   `"]
-  pipelineBox["`**Pipeline**
+  pipeline["`**Pipeline**
 	  processor-1
     processor-2
     ...
     processor-n
   `"]
-	targetBox["`**Target**
+	target["`**Target**
     data
   `"]
-	sourceBox --> pipelineBox --> targetBox
+	source --> pipeline --> target
 ```
 
 As can be expected, in real life scenarious the configurations connecting sources to targets will vary based on the requirements of the various actors.
@@ -40,21 +40,21 @@ A pipeline can consume data from multiple sources, and once it's done processing
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
-	source1Box["`**Source 1**
+	source1["`**Source 1**
     A
     B
   `"]
-	source2Box["`**Source 2**
+	source2["`**Source 2**
     C
   `"]
- 	pipelineBox["`**Pipeline**`"]
-	targetBox["`**Target**
+ 	pipeline["`**Pipeline**`"]
+	target["`**Target**
     B
     C
   `"]
-	source1Box --> pipelineBox;
-	source2Box --> pipelineBox;
-  pipelineBox --> targetBox
+	source1 --> pipeline;
+	source2 --> pipeline;
+  pipeline --> target
 ```
 
 It can also consume data from a single source and deliver the processed results to multiple targets:
@@ -62,22 +62,22 @@ It can also consume data from a single source and deliver the processed results 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
-	sourceBox["`**Source**
+	source["`**Source**
     A
     B
     C
   `"]
- 	pipelineBox["`**Pipeline**`"]
-	target1Box["`**Target 1**
+ 	pipeline["`**Pipeline**`"]
+	target1["`**Target 1**
     A
     C
   `"]
-	target2Box["`**Target 2**
+	target2["`**Target 2**
     B
   `"]
-	sourceBox --> pipelineBox;
-  pipelineBox --> target1Box;
-  pipelineBox --> target2Box;
+	source --> pipeline;
+  pipeline --> target1;
+  pipeline --> target2;
 
 ```
 
@@ -86,31 +86,31 @@ Finally, and in most real-life situations, we will have multiple sources and mul
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
-	source1Box["`**Source 1**
+	source1["`**Source 1**
     A
     B
   `"]
-	source2Box["`**Source 2**
+	source2["`**Source 2**
     C
   `"]
-	source3Box["`**Source 3**
+	source3["`**Source 3**
     D
   `"]
- 	pipelineBox["`**Pipeline**`"]
-	target1Box["`**Target 1**
+ 	pipeline["`**Pipeline**`"]
+	target1["`**Target 1**
     A
     C
   `"]
-	target2Box["`**Target 2**
+	target2["`**Target 2**
     A
     B
     D
   `"]
-	source1Box --> pipelineBox;
-	source2Box --> pipelineBox;
-	source3Box --> pipelineBox;
-  pipelineBox --> target1Box;
-  pipelineBox --> target2Box;
+	source1 --> pipeline;
+	source2 --> pipeline;
+	source3 --> pipeline;
+  pipeline --> target1;
+  pipeline --> target2;
 
 ```
 
@@ -173,7 +173,7 @@ data:
 
 With a brief glance, one can notice that the value `A` in `foo` has become `Z`, that the `10` in `baz` has become `100`, whereas `bar` is left untouched since it was already `true`.
 
-Although the pipeline appears underspecified, the example is intended to illustrate that what a sequence of processors does is as simple as this. Each performs a single operation on a specific field, and that is the pipeline's power. Once the incoming data is [normalized](../misc/normalization.mdx)&mdash;i.e. converted into a structure making it easy to extract data items from it&mdash; it becomes very easy to curate, transform, and enrich its values into a desirable form on the fly.
+Although the pipeline appears underspecified, the example is intended to illustrate that what a sequence of processors does is as simple as this. Each performs a single operation on a specific field, and that is the pipeline's power. Once the incoming data is [normalized](./normalization.mdx)&mdash;i.e. converted into a structure making it easy to extract data items from it&mdash; it becomes very easy to curate, transform, and enrich its values into a desirable form on the fly.
 
 Let us now explain the concepts of _curation_, _transformation_, and _enrichment_ a bit further.
 
@@ -192,26 +192,70 @@ The overall process can be represented schematically as follows:
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
-	source1Box["`Source 1
+	source1["`**Source 1**
 		A
 		B
 	`"]
-	source2Box["`Source 2
+	source2["`**Source 2**
 		C
 	`"]
-  processorBox["`
+  processor["`**Pipeline**
     D = curate(A, B, C)
 		E = enrich(transform(D))
 	`"]
-	targetBox["`Target
+	target["`**Target**
 		E
 	`"]
-	source1Box --> processorBox;
-	source2Box --> processorBox;
-	processorBox --> targetBox
+	source1 --> processor;
+	source2 --> processor;
+	processor --> target
 ```
 
 It is through this three-fold process that a pipeline truly shines and becomes indispensible.
+
+Until now we have skipped two interim stages requried to both receive and send data. These stages are called _pre-processing_ and _post-processing_, respectively, and they both involve what we have referred to above as [normalization](./normalization.mdx). This is the phase of preparing the data for processing downstream. Pipelines are, once again, our primary tool at these interim stages.
+
+Schematically:
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}}}%%
+flowchart LR
+	source1["`Source 1`"]
+	source2["`Source 2`"]
+	source3["`Source 3`"]
+  preprocess["`Preprocess`"]
+	route1["`Route 1`"]
+	route2["`Route 2`"]
+	route3["`Route 3`"]
+	route4["`Route 4`"]
+  postprocess["`Postprocess`"]
+	target1["`Target 1`"]
+	target2["`Target 2`"]
+
+	source1 --> preprocess;
+	source2 --> preprocess;
+	source3 --> preprocess;
+	preprocess --> route1;
+	preprocess --> route2;
+	preprocess --> route3;
+	preprocess --> route4;
+	route1 --> postprocess;
+	route2 --> postprocess;
+	route3 --> postprocess;
+	route4 --> postprocess;
+  postprocess --> target1;
+  postprocess --> target2
+```
+
+As can be seen from the graphics, the components in the middle of this setup are actually called [routes](../routing/overview.mdx).
+
+## Typical Use
+
+Processors are designed to select data points by a combination of field values. Their primary design principle, as stated above, is to serve one purpose only to streamline the work they do.
+
+This naturally has an impact on performance: the fewer the data points or field values a processor has to act upon, the better the overall performance. If processor **p** operates on field `foo` only when its values is `A`, whereas processor **q** operates on `bar` if its value is `B`, using the two in sequence guarantees that each completes its work in a shorter time.
+
+It is best to keep this in mind when designing pipelines.
 
 ---
 
