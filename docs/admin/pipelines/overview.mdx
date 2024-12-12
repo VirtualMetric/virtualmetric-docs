@@ -16,7 +16,7 @@ Schematically, this looks like so:
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
-	source["`**Source**
+	provider["`**Provider**
     data
   `"]
   pipeline["`**Pipeline**
@@ -25,104 +25,148 @@ flowchart LR
     ...
     processor-n
   `"]
-	target["`**Target**
-    data
+	consumer["`**Consumer**
+    processed data
   `"]
-	source --> pipeline --> target
+	provider --> pipeline --> consumer
 ```
 
 As can be expected, in real life scenarious the configurations connecting sources to targets will vary based on the requirements of the various actors.
 
 ## Configurations
 
-A pipeline can consume data from multiple sources, and once it's done processing them, can direct some of the processed data items to a specific target in a _one-to-one_ scheme:
+A pipeline can consume data from multiple providers, and once it is finised processing them, can direct some of the processed data items to a specific consumer in a _one-to-one_ scheme:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
-	source1["`**Source 1**
+	provider1["`**Provider 1**
     A
     B
   `"]
-	source2["`**Source 2**
+	provider2["`**Provider 2**
     C
   `"]
  	pipeline["`**Pipeline**`"]
-	target["`**Target**
+	consumer["`**Consumer**
     B
     C
   `"]
-	source1 --> pipeline;
-	source2 --> pipeline;
-  pipeline --> target
+	provider1 --> pipeline;
+	provider2 --> pipeline;
+  pipeline --> consumer
 ```
 
-It can also consume data from a single source and deliver the processed results to multiple targets:
+It can also consume data from a single provider and deliver the processed results to multiple consumers:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
-	source["`**Source**
+	provider["`**Provider**
     A
     B
     C
   `"]
  	pipeline["`**Pipeline**`"]
-	target1["`**Target 1**
+	consumer1["`**Consumer 1**
     A
     C
   `"]
-	target2["`**Target 2**
+	consumer2["`**Consumer 2**
     B
   `"]
-	source --> pipeline;
-  pipeline --> target1;
-  pipeline --> target2;
+	provider --> pipeline;
+  pipeline --> consumer1;
+  pipeline --> consumer2;
 
 ```
 
-Finally, and in most real-life situations, we will have multiple sources and multiple targets routed to each other in complex arrangements:
+Finally, and in most real-life situations, we will have multiple providers and multiple consumers directed to each other in complex arrangements:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
-	source1["`**Source 1**
+	provider1["`**Provider 1**
     A
     B
   `"]
-	source2["`**Source 2**
+	provider2["`**Provider 2**
     C
   `"]
-	source3["`**Source 3**
+	provider3["`**Provider 3**
     D
   `"]
  	pipeline["`**Pipeline**`"]
-	target1["`**Target 1**
+	consumer1["`**Consumer 1**
     A
     C
   `"]
-	target2["`**Target 2**
+	consumer2["`**Consumer 2**
     A
     B
     D
   `"]
-	source1 --> pipeline;
-	source2 --> pipeline;
-	source3 --> pipeline;
-  pipeline --> target1;
-  pipeline --> target2;
+	provider1 --> pipeline;
+	provider2 --> pipeline;
+	provider3 --> pipeline;
+  pipeline --> consumer1;
+  pipeline --> consumer2;
 
 ```
 
-Effectively, each source may be the target of an upstream pipeline, and each target may serve as the source for a downstream one. The detail to keep in mind is that each **Source** side is delegating some processing to the next pipeline based on some established requirements of the **Target** side. The pipeline is acting as the middleman for the data interchange. Even if it routes _some_ data items without any processing, this should be due to the demands of the **Target** side, so the pipeline is performing a meaningful role by at least fulfilling a configured routing policy.
+Effectively, each source may be the target of an upstream pipeline, and each target may serve as the source for a downstream one. The detail to keep in mind is that each **Provider** side is delegating some processing to the next pipeline based on some established requirements of the **Consumer** side. The pipeline is acting as the middleman for the data interchange. Even if it routes _some_ data items without any processing, this should be due to the demands of the **Consumer** side, so the pipeline is performing a meaningful role by at least fulfilling a configured routing policy.
 
-The purpose of these simple illustrations is to emphasize the underlying logic of this arrangement: the primary purpose of pipelines is using _division of labor_ to simplify telemetry.
+## Telemetry
+
+In telemetry, these basic configurations are clustered according to a scheme where the primary provider is named **Source** and the ultimate consumer is named **Target** or **Destination**.
+
+There is, however, a middle stage&mdash;where the software solutions do their real work&mdash;called **Routing**.
+
+Until now, we have not mentioned two interim stages&mdash;which also act as both consumers and providers&mdash;requried to link those stages in a chain. These are called **Pre-processing** and **Post-processing**, respectively, and they both involve what we have referred to above as [normalization](./normalization.mdx)&mdash;i.e. preparing the data for processing downstream.
+
+Pipelines are, once again, our primary tool at these interim stages. Schematically:
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}}}%%
+flowchart LR
+	source1["`Source 1`"]
+	source2["`Source 2`"]
+	source3["`Source 3`"]
+  preprocess["`Preprocess`"]
+	route1["`Route 1`"]
+	route2["`Route 2`"]
+	route3["`Route 3`"]
+	route4["`Route 4`"]
+  postprocess["`Postprocess`"]
+	target1["`Target 1`"]
+	target2["`Target 2`"]
+
+	source1 --> preprocess;
+	source2 --> preprocess;
+	source3 --> preprocess;
+	preprocess --> route1;
+	preprocess --> route2;
+	preprocess --> route3;
+	preprocess --> route4;
+	route1 --> postprocess;
+	route2 --> postprocess;
+	route3 --> postprocess;
+	route4 --> postprocess;
+  postprocess --> target1;
+  postprocess --> target2
+```
+
+As can be seen from the graphics, the components in the middle of this setup are actually called [routes](../routing/overview.mdx).
+
+The purpose of these simple illustrations is to emphasize one thing: the primary purpose of pipelines is using _division of labor_ to simplify telemetry.
 
 Let us illustrate.
 
 ## Data Streams
 
-In any telemetry operation, the incoming raw data streams will naturally have their own structure. This structure, however, may not&mdash;and frequently _does not_&mdash;lend itself to use for specific purposes, such as analysis or transformation. Trying to do so would be time consuming, processor-intensive, and possibly error prone. Therefore, it is unwise to implement a _curating_ strategy on the _Source_ side, i.e. where the data originates. And that is exactly where pipelines enter the picture.
+In any telemetry operation, the incoming raw data streams will naturally have their own structure. This structure, however, may not&mdash;and frequently _does not_&mdash;lend itself to use for specific purposes, such as analysis or transformation. Trying to do so would be time consuming, processor-intensive, and possibly error prone. Therefore, it is unwise to implement a _curating_ strategy on the **Source** side, i.e. where the data originates. Similarly, if the curated data needs to be transformed or enriched as per the requirements of a downstream consumer, it is unwise to try to delegate these transformation tasks to the **Target** side, i.e. where the data items to be consumed are expected to be in an easily consumable format.
+
+And these are exactly the places where pipelines enter the picture.
 
 ## Divide and Rule
 
@@ -132,13 +176,13 @@ The basic layout of the configuration for a typical pipeline looks like so:
 
 ```yaml
 pipeline:
-  description: "Pipeline description"
+  description: "What the pipeline does"
   processors:
     - processor-1:
         field: foo
         value: "A"
     - processor-2:
-        description: "Explanatory note for processor-2"
+        description: "What processor-2 does"
         field: bar
         value: true
     - processor-3:
@@ -213,41 +257,6 @@ flowchart LR
 
 It is through this three-fold process that a pipeline truly shines and becomes indispensible.
 
-Until now we have skipped two interim stages requried to both receive and send data. These stages are called _pre-processing_ and _post-processing_, respectively, and they both involve what we have referred to above as [normalization](./normalization.mdx). This is the phase of preparing the data for processing downstream. Pipelines are, once again, our primary tool at these interim stages.
-
-Schematically:
-
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	source1["`Source 1`"]
-	source2["`Source 2`"]
-	source3["`Source 3`"]
-  preprocess["`Preprocess`"]
-	route1["`Route 1`"]
-	route2["`Route 2`"]
-	route3["`Route 3`"]
-	route4["`Route 4`"]
-  postprocess["`Postprocess`"]
-	target1["`Target 1`"]
-	target2["`Target 2`"]
-
-	source1 --> preprocess;
-	source2 --> preprocess;
-	source3 --> preprocess;
-	preprocess --> route1;
-	preprocess --> route2;
-	preprocess --> route3;
-	preprocess --> route4;
-	route1 --> postprocess;
-	route2 --> postprocess;
-	route3 --> postprocess;
-	route4 --> postprocess;
-  postprocess --> target1;
-  postprocess --> target2
-```
-
-As can be seen from the graphics, the components in the middle of this setup are actually called [routes](../routing/overview.mdx).
 
 ## Typical Use
 
@@ -255,7 +264,7 @@ Processors are designed to select data points by a combination of field values. 
 
 This naturally has an impact on performance: the fewer the data points or field values a processor has to act upon, the better the overall performance. If processor **p** operates on field `foo` only when its values is `A`, whereas processor **q** operates on `bar` if its value is `B`, using the two in sequence guarantees that each completes its work in a shorter time.
 
-It is best to keep this in mind when designing pipelines.
+It is best to keep these points in mind when creating pipelines.
 
 ---
 
