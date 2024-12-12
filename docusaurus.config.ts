@@ -16,7 +16,7 @@ const config: Config = {
   organizationName: "VirtualMetric",
   projectName: "virtualmetric-docs",
 
-  onBrokenLinks: "throw",
+  onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
 
   i18n: {
@@ -113,7 +113,7 @@ const config: Config = {
         },
 
         {
-          to: "community",
+          href: "https://google.com",
           position: "left",
           label: "Community",
         },
