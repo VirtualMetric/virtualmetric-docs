@@ -30,10 +30,9 @@ Use to correlate network events related to a single flow. By default, reads netw
 
 ## Examples
 
-
 <Example>
    <Description>
-   Input
+   We have incoming and outgoing `ip` addresses and a `port` number:
    </Description>
    <SampleCode>
    ```yaml
@@ -49,23 +48,25 @@ Use to correlate network events related to a single flow. By default, reads netw
    </SampleCode>
 
    <Description>
-   Spec
+   We want to figure out the user's `community_id`
    </Description>
    <SampleCode>
    ```yaml
    processors:
-      - community_id: <a-community-id>
+      - community_id:
+         field: source.ip
+         target_field: network.community_id
    ```
    </SampleCode>
 
    <Description>
-   Output
+   ...which is a base-64 hash value:
    </Description>
    <SampleCode>
    ```yaml
    - network:
-      - community_id: <base-64-hash>
-      - transport: TCP
+      community_id: <base-64-hash>
+      transport: TCP
    ```
    </SampleCode>
 </Example>
