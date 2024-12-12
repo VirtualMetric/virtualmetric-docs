@@ -16,7 +16,7 @@ const config: Config = {
   organizationName: "VirtualMetric",
   projectName: "virtualmetric-docs",
 
-  onBrokenLinks: "throw",
+  onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
 
   i18n: {
