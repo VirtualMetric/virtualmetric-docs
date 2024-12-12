@@ -57,6 +57,7 @@ const sidebars: SidebarsConfig = {
             "admin/pipelines/sources",
             "admin/pipelines/targets",
             "admin/pipelines/normalization",
+            "admin/pipelines/basic-use",
 
             {
               type: "category",
