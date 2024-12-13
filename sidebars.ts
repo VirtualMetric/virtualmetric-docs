@@ -120,6 +120,7 @@ const sidebars: SidebarsConfig = {
     },
 
     "glossary",
+    "appendix"
   ],
 
   tutorDocs: [

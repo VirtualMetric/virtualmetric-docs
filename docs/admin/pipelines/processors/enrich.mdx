@@ -1,8 +1,25 @@
 # Enrich
 
-<Synopsis>
-Enriches data with data from another source.
-</Synopsis>
+## Synopsis
+
+```yaml {2-4}
+enrich:
+  -  dataset_name: <string>
+  -  lookup_table: <ident>
+  -  query: <script>
+  -  description: <string>
+  -  if: <script>
+  -  ignore_failure: <logical>
+  -  ignore_missing: <logical>
+  -  on_failure: <processors...>
+  -  on_success: <processors...>
+  -  override: <logical>
+  -  tag: <string>
+```
+
+## Description
+
+**Functionality**: Enriches data with data from another source.
 
 This involves correlating data items to increase their semantic depth and relevance for the target. A typical example would be to grab the IP of a Website user, look up the IP range from a geolocation database, and infer what geographical region the user is using the site from.
 
@@ -12,24 +29,24 @@ Schematically, the process looks like this:
 %%{init: {"flowchart": {"htmlLabels": false}} }%%
 flowchart LR
 	source1Box["`Source 1
-		<code>A</code>
-		<code>B</code>
+		A
+		B
 	`"]
 	source2Box["`Source 2
-		<code>C</code>
+		C
 	`"]
     	processorBox["`
-			<code>v1=processor-1(A);</code>
-			<code>v2=processor-2(B);</code>
-			<code>v3=processor-3(C);</code>
-			<code>E=v1+v2-v3</code>
+			v1 = processor-1(A)
+			v2 = processor-2(B, C)
+         v3 = processor-3(C)
+			E = v1 + v2 - v3
 	`"]
-	targetBox["`Target
-		<code>E</code>
+	consumerBox["`Consumer
+		E
 	`"]
 	source1Box --> processorBox;
 	source2Box --> processorBox;
-	processorBox --> targetBox
+	processorBox --> consumerBox
 ```
 
 ## Parameters
