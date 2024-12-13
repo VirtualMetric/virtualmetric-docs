@@ -170,13 +170,42 @@ const config: Config = {
         src: "img/VirtualMetric-Logo-Footer.svg",
         srcDark: "img/VirtualMetric-Logo-Footer.svg",
       },
-      links: [],
+      links: [
+        {
+          title: "Development",
+          items: [
+            {
+              label: "Mocks",
+              to: "mocks"
+            },
+            {
+              label: "API",
+              to: "api"
+            },
+          ],
+        },
+        {
+          title: "Useful Links",
+          items: [
+            {
+              label: "Home",
+              href: "https://virtualmetric.com/"
+            },
+            {
+              label: "Blog",
+              to: "blog"
+            },
+          ],
+        },
+      ],
       copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V.`,
     },
 
     prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
+      // theme: prismThemes.github,
+      // darkTheme: prismThemes.dracula,
+      theme: prismThemes.palenight,
+      darkTheme: prismThemes.palenight
     },
   } satisfies Preset.ThemeConfig,
 };
