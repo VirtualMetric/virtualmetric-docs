@@ -1,13 +1,12 @@
 # Appendix
 
-## Synopsis Key
+## Synopsis Type Specifiers
 
-**Director** uses YAML files to configure processors, and plurals of type specifiers uses YAML syntax for plurals where multiple items can be specified
-	* within a pair of brackets (`[]`) and separated by a comma (`,`)&mdash;e.g.
+To configure processors, **Director** uses YAML files in which plurals are represented either as a comma-separated list of items within a pair of brackets&mdash;e.g.
 		```code
 			["A", "B", ...]
 		```
-	* on a line-item basis with a `-` at the beginning&mdash;e.g.
+or as a multi-line list with `-` indicating entries&mdash;e.g.
 		```code
 			- "A"
 			- "B"
@@ -15,30 +14,37 @@
 		```
 ---
 
-**any** Set of all types
+**any** A value that can be represented by alphanumeric strings
 
-**char** | **chars...** _sing_. Any text character. _plu_. One or more characters. Can be a quoted string in which case the string is interpreted as an array of characters
+**char** _sing_. A text character.<br/>
+> _plu_. **chars...** Can be a quoted string in which case the string is interpreted as an array of characters.
 
 **date** A time value based on an internationally recognized format
 
-**enumerated** One of a limited number of options&mdash;e.g. locale identifiers such as `en` or `fr`, date format specifiers such as `d`, `M`, or `y`  etc.
+**enumerated** A value from a specific number of pre-defined options&mdash;e.g. locale identifiers such as `en` or `fr`, date format specifiers such as `d`, `M`, or `y`  etc.
 
-**ident** | **idents...** _sing_. Identifier or unquoted alphanumeric string. Must start with alphabetic uppercase or lowercase characters `A`-`Z` or `a`-`z`, can contain alphabetic or numeric characters `0`-`9`, and `_` or `-` _plu_. One or more identifiers.
+**id** Identity value for a type. `""` for strings, `0` for numeric values, `[]` for lists.
+
+**ident** _sing_. Identifier or unquoted alphanumeric string. Must start with uppercase or lowercase characters (`A...Z` or `a...z`), can contain alphabetic or numeric characters (`0...9`), and `_` or `-`
+> _plu_. **idents...** One or more identifiers.
+
+**numeric** A value that can be represented by numeric characters (`0...9`)
 
 **logical** A boolean value, i.e. `true` or `false`
 
-**processor** | **processors...** _sing_. One of the available processors. _plu_. One or more processors
+**processor** _sing_. One of the available processors.
+> _plu_. **processors...** One or more processors.
 
 **regex** A regular expression&mdash;e.g.
 	```code
-	_ingest.vendor.id =~ "locale-\w+\s+"
+	_ingest.vendor.id =~ "fr-\w+\s+"
 	```
 
-**string** | **strings...** _sing_. Quoted string. Can contain any text character. _plu_. One or more quoted strings.
+**string** _sing_. Quoted string. Can contain any text character.
+> _plu_. **strings...** One or more quoted strings separated by space (e.g. &blank;) or a delimiter (e.g. `,`).
 
-**script** A quoted string containing syntactically valid expressions that can be evaluated by an interpreter&mdash;e.g.
+**script** A quoted string containing expressions that can be evaluated by an interpreter&mdash;e.g.
 	```code
-	if (_ingest.vendor.ip != null) {
-		_ingest.network_direction = "inbound"
-	}
+	_ingest.vendor.ip != null
 	```
+**shape** A shape description standard used for maps.
