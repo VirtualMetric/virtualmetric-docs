@@ -2,11 +2,11 @@
 
 ## Synopsis Type Specifiers
 
-To configure processors, **Director** uses YAML files in which plurals are represented either as a comma-separated list of items within a pair of brackets&mdash;e.g.
+To configure processors, **Director** uses YAML files in which plurals are represented either as comma-separated lists of items within a pair of brackets&mdash;e.g.
 		```code
 			["A", "B", ...]
 		```
-or as a multi-line list with `-` indicating entries&mdash;e.g.
+or as multi-line lists with `-` indicating entries&mdash;e.g.
 		```code
 			- "A"
 			- "B"
@@ -14,7 +14,7 @@ or as a multi-line list with `-` indicating entries&mdash;e.g.
 		```
 ---
 
-**any** A value that can be represented by alphanumeric strings
+**any** Any value that can be represented by alphanumeric strings
 
 **char** _sing_. A text character.<br/>
 > _plu_. **chars...** Can be a quoted string in which case the string is interpreted as an array of characters.
@@ -41,10 +41,25 @@ or as a multi-line list with `-` indicating entries&mdash;e.g.
 	```
 
 **string** _sing_. Quoted string. Can contain any text character.
-> _plu_. **strings...** One or more quoted strings separated by space (e.g. &blank;) or a delimiter (e.g. `,`).
+> _plu_. **strings...** One or more quoted strings separated by whitespace (e.g. &blank;) or a delimiter (e.g. `,`).
 
 **script** A quoted string containing expressions that can be evaluated by an interpreter&mdash;e.g.
 	```code
 	_ingest.vendor.ip != null
 	```
-**shape** A shape description standard used for maps.
+**shape** A standard shape description, such as `GeoJSON`, used for maps.
+
+---
+
+## Built-in Grok Patterns
+
+|Category|Patterns|
+|---|---|
+|General|`DATA` `GREEDYDATA` `NOTSPACE` `SPACE` `WORD`|
+|Numeric|`BASE10NUM` `INT` `NUMBER`|
+|Networking|`HOSTNAME` `IP` `IPV4` `IPV6` `MAC`|
+|Data and Time|`DATESTAMP` `DATESTAMP_RFC822` `TIMESTAMP_ISO8601`|
+|File System|`FILENAME` `PATH`|
+|HTTP|`HTTPDATE` `HTTPDERRORLOG` `HTTPDUSER`|
+|System|`SYSLOGBASE` `SYSLOGHOST` `SYSLOGTIMESTAMP`|
+|Other|`EMAILADDRESS` `URIPARAM` `URIPATH` `UUID`|
