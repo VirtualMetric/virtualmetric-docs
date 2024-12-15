@@ -176,7 +176,7 @@ const config: Config = {
           items: [
             {
               label: "Tutorials",
-              to: "tutorials"
+              to: "tutorials/intro"
             },
             {
               label: "API",

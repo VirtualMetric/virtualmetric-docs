@@ -133,6 +133,7 @@ const sidebars: SidebarsConfig = {
   ],
 
   tutorDocs: [
+    "tutorials/intro",
     "tutorials/syslog-to-console",
     "tutorials/syslog-to-parquet-file",
   ],
