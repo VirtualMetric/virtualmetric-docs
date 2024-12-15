@@ -41,4 +41,28 @@ geo_ip:
 
 ## Examples
 
-{/* TODO: */}
+Using a map database, add geographical information to `localized_ip` field using `ip`:
+
+```yaml
+_source:
+   ip: 101.167.184.0
+
+processors:
+   - geoip:
+      field: ip
+      target_field: localized_ip
+```
+
+Result:
+
+```yaml
+_index:
+   localized_ip:
+      - continent_name: "Europe"
+      - country_name: "UK"
+      - location:
+         lat: <lattitue>
+         lon: <longitude>
+```
+
+{/* TODO: Check the values. Fill in missing fields if necessary */}

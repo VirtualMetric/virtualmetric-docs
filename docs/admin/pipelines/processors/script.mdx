@@ -41,88 +41,88 @@ A scripting cache is used to avoid re-compiling the script for each document. To
 
 ## Source Fields
 
-The fields of each document's JSON is parsed from which primitives, lists, and maps are created. To access the fields, the access operator: `ctx['field']`, or its shorthand:`ctx.<field>` should be used.
+The fields of each document's JSON is parsed from which primitives, lists, and maps are created. To access the fields, the access operator: `index['field']`, or its shorthand:`index.<field>` should be used.
 
 :::note
-The `ctx['_source']['field']` syntax or the `ctx._souce.field` syntax are not supported.
+The `index['_source']['field']` or `index._souce.field` syntaxes are not supported.
 :::
 
-The following shows the use of a script to extract the `tags` field from the `env` source field.
+Scripting can also be used to access _metadata_ fields such as `_ingest` or `_source`.
 
-```yaml
-processors:
-   - script:
-      lang: java
-      source: """
-         String[] envSplit = ctx['env'].splitOnToken(params['delimiter']);
-         ArrayList tags = new ArrayList();
-         tags.add(envSplit[params['position']].trim());
-         ctx['tags'] = tags;
-      """
-      params:
-         delimiter: "-"
-         position: 1
-```
+## Examples
 
-The data:
-
-```yaml
-- source:
-   env: co-prod
-```
-
-This creates the following document:
-
-```yaml
-source:
-   env: "co-prod"
-   tags: ["prod"]
-```
-
-{/* TODO: Check the values. */}
-
-## Metadata Fields
-
-Scripting can also be used to access metadata. The following is a configuration to extract a document's `_index` and rename it using an inline double-quoted script:
+* Using **Java** code:
 
 <Example>
    <Description>
-      The data is classified under a generic index
+   The data:
    </Description>
    <SampleCode>
-      ```yaml
-      index: "generic-index"
-      source:
-         - lang: "de"
-      ```
+   ```json
+   {env: "foo"}
+   ```
    </SampleCode>
 
    <Description>
-      Concatenate the _language_ and the _dataset name_ to create an index
+   Extract the `tags` field from the `env` source field
    </Description>
    <SampleCode>
    ```yaml
    processors:
-         - script:
-            lang: "de"
-            source: """
-               log['index'] = log['lang'] + '-' + params['dataset'];
-            """
-            params:
-               - dataset: "catalogue"
+      - script:
+         lang: java
+         source: """
+            String[] envSplit = ctx['env'].splitOnToken(params['delimiter']);
+            ArrayList tags = new ArrayList();
+            tags.add(envSplit[params['position']].trim());
+            ctx['tags'] = tags;
+         """
    ```
    </SampleCode>
-
    <Description>
-      The document's index name changes
+   The result:
    </Description>
    <SampleCode>
-   ```yaml
-   index: "de-catalogue"
-   source:
-      - lang: "de"
+   ```json
+   {env: "foo", tags: ["foo-tags"]}
    ```
    </SampleCode>
 </Example>
 
-{/* TODO: Check the values */}
+* Using an double-quoted **inline** script:
+
+<Example>
+   <Description>
+      The data:
+   </Description>
+   <SampleCode>
+      ```json
+      {dataset: "foo", locale: "en-UK"}
+      ```
+   </SampleCode>
+
+   <Description>
+      Use the _locale_ and the _dataset name_...
+   </Description>
+   <SampleCode>
+   ```yaml
+   processors:
+      - script:
+         locale: "en-UK"
+         source: """
+            log['index'] = log['locale'] + '-' + params['dataset'];
+         """
+         params:
+            - dataset: "foo"
+   ```
+   </SampleCode>
+
+   <Description>
+       to create an index:
+   </Description>
+   <SampleCode>
+   ```yaml
+   index: "en-UK-foo"
+   ```
+   </SampleCode>
+</Example>
