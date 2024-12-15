@@ -1,0 +1,15 @@
+---
+pagination_prev: null
+---
+
+# Routes Overview
+
+Routes are the stage where incoming events are filtered to select a correct subset that will be delivered tol a certain pipeline. Events that will directly delivered to the pipeline naturally do not need to be cloned.
+
+The selection process is carried out by applying filters. These are essentially expressions that evaluate to _boolean_ values:
+
+* `dataset == daily_log`
+* `! (field == log.foo || field == log.bar)`
+* `log.date >= '2024-10-14`
+
+A set of such filtering, cloning, and aggregation operations are called **Routes**. Each filtering operation's efficiency can be measured as a proportion in execution time to the overall throughput of the inbound data.

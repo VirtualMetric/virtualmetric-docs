@@ -100,6 +100,16 @@ const sidebars: SidebarsConfig = {
 
         {
           type: "category",
+          label: "Routes",
+          link: {type: "doc", id: "admin/routes/overview"},
+          items: [
+            'admin/routes/configuration',
+            'admin/routes/management'
+          ],
+        },
+
+        {
+          type: "category",
           label: "Targets",
           link: {type: "doc", id: "admin/targets/overview"},
           items: [
@@ -118,7 +128,6 @@ const sidebars: SidebarsConfig = {
             'admin/templates/checkpoint'
           ],
         },
-
       ],
     },
 
