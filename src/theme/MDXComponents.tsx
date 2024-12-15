@@ -7,7 +7,7 @@ import CardHeader from "@site/src/components/Card/CardHeader";
 import CardImage from "@site/src/components/Card/CardImage";
 
 import Synopsis from "@site/src/components/CustomFeatures/Synopsis";
-import {Example, Description, SampleCode} from "@site/src/components/CustomFeatures/Example";
+import {ExampleTable, Description, SampleCode} from "@site/src/components/CustomFeatures/ExampleTable";
 
 import ImageFrame from "@site/src/components/CustomFeatures/ImageFrame";
 import Highlight from "@site/src/components/CustomFeatures/Highlight";
@@ -22,11 +22,12 @@ export default {
 	CardFooter,
 	CardImage,
 
-	Example,
+	ExampleTable,
 	Description,
+	SampleCode,
+
 	Highlight,
 	ImageFrame,
-	SampleCode,
 	Synopsis,
 
 	FooterCopyright,

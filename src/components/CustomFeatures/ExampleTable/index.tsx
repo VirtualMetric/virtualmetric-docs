@@ -1,11 +1,11 @@
 import React from "react";
 // import styles from '../styles.module.css';
 
-interface ExampleProps {
+interface ExampleTableProps {
   children: React.ReactNode;
 }
 
-export const Example = ({ children }: ExampleProps) => {
+export const ExampleTable = ({ children }: ExampleTableProps) => {
   const pairs: { description: React.ReactNode; code: React.ReactNode }[] = [];
   let currentDescription: React.ReactNode | null = null;
 
@@ -65,7 +65,7 @@ export const SampleCode = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default {
-  Example,
+  ExampleTable,
   Description,
   SampleCode,
 };
