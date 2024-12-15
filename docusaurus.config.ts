@@ -173,12 +173,17 @@ const config: Config = {
       },
       links: [
         {
-          title: "Development Sources",
+          title: "Training",
           items: [
             {
               label: "Tutorials",
               to: "tutorials/intro"
             },
+          ],
+        },
+        {
+          title: "Development",
+          items: [
             {
               label: "API",
               to: "api"
