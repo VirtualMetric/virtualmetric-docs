@@ -172,11 +172,11 @@ const config: Config = {
       },
       links: [
         {
-          title: "Development",
+          title: "Development Sources",
           items: [
             {
-              label: "Mocks",
-              to: "mocks"
+              label: "Tutorials",
+              to: "tutorials"
             },
             {
               label: "API",
@@ -188,7 +188,7 @@ const config: Config = {
           title: "Useful Links",
           items: [
             {
-              label: "Home",
+              label: "VirtualMetric Home",
               href: "https://virtualmetric.com/"
             },
             {
