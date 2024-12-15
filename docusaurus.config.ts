@@ -84,8 +84,9 @@ const config: Config = {
     },
 
     mermaid: {
-      // theme: {light: 'neutral', dark: 'forest'},
-      // options: {maxTextSize: 50},
+      theme: {
+        // light: 'neutral', dark: 'neutral'
+      }
     },
 
     navbar: {

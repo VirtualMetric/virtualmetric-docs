@@ -21,36 +21,44 @@ enrich:
 
 **Functionality**: Enriches data with data from another source.
 
-This involves correlating data items to increase their semantic depth and relevance for the target. A typical example would be to grab the IP of a Website user, look up the IP range from a _geolocation_ database, and infer what _geographical region_ the user is using the site from.
+This involves correlating data items to increase their semantic depth and relevance for the target. A typical example would be to grab the IP of a Website user, look up the IP range from a _geolocation_ database, and infer what _geographical region_ the user is in.
 
 Schematically:
 
 ```mermaid
-%%
-{
+%%{
 	init: {
-		"flowchart": {
+		"flowchart":
+		{
 			"htmlLabels": false
-		}
+		},
+		/*{
+			"theme": "base",
+			"themeVariables": {
+				"primaryTextColor": "#ffffff",
+				"primaryColor": "#595fe8",
+				"secondaryColor": "#5258e7",
+				"lineColor": "#5258e7"
+			}
+		}*/
 	}
-}
-%%
+}%%
 flowchart LR
-	source1["`Source 1
+	provider1[("`<b>Provider 1</b>
 		A
 		B
-	`"]
-	source2["`Source 2
+	`")]
+	provider2[("`<b>Provider 2</b>
 		C
-	`"]
-    	pipeline["`Pipeline
-			E = f(A) + g(B, C) - h(C)
-	`"]
-	consumer["`Consumer
+	`")]
+    	pipeline{"`<b>Enrichment</b>
+			<i>E = f(A) + g(B, C) - h(C)</i>
+	`"}
+	consumer["`<b>Consumer</b>
 		E
 	`"]
-	source1 --> pipeline;
-	source2 --> pipeline;
+	provider1  --> pipeline;
+	provider2  --> pipeline;
 	pipeline --> consumer
 ```
 
