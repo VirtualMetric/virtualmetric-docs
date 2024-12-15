@@ -4,49 +4,54 @@
 
 ```yaml {2-4}
 enrich:
-  -  dataset_name: <string>
-  -  lookup_table: <ident>
-  -  query: <script>
-  -  description: <string>
-  -  if: <script>
-  -  ignore_failure: <logical>
-  -  ignore_missing: <logical>
-  -  on_failure: <processors...>
-  -  on_success: <processors...>
-  -  override: <logical>
-  -  tag: <string>
+   - dataset_name: <string>
+   - lookup_table: <ident>
+   - query: <script>
+   - description: <string>
+   - if: <script>
+   - ignore_failure: <logical>
+   - ignore_missing: <logical>
+   - on_failure: <processors...>
+   - on_success: <processors...>
+   - override: <logical>
+   - tag: <string>
 ```
 
 ## Description
 
 **Functionality**: Enriches data with data from another source.
 
-This involves correlating data items to increase their semantic depth and relevance for the target. A typical example would be to grab the IP of a Website user, look up the IP range from a geolocation database, and infer what geographical region the user is using the site from.
+This involves correlating data items to increase their semantic depth and relevance for the target. A typical example would be to grab the IP of a Website user, look up the IP range from a _geolocation_ database, and infer what _geographical region_ the user is using the site from.
 
-Schematically, the process looks like this:
+Schematically:
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
+%%
+{
+	init: {
+		"flowchart": {
+			"htmlLabels": false
+		}
+	}
+}
+%%
 flowchart LR
-	source1Box["`Source 1
+	source1["`Source 1
 		A
 		B
 	`"]
-	source2Box["`Source 2
+	source2["`Source 2
 		C
 	`"]
-    	processorBox["`
-			v1 = processor-1(A)
-			v2 = processor-2(B, C)
-         v3 = processor-3(C)
-			E = v1 + v2 - v3
+    	pipeline["`Pipeline
+			E = f(A) + g(B, C) - h(C)
 	`"]
-	consumerBox["`Consumer
+	consumer["`Consumer
 		E
 	`"]
-	source1Box --> processorBox;
-	source2Box --> processorBox;
-	processorBox --> consumerBox
+	source1 --> pipeline;
+	source2 --> pipeline;
+	pipeline --> consumer
 ```
 
 ## Parameters
