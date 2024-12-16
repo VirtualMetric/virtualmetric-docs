@@ -39,30 +39,24 @@ dot_expander:
    </Description>
    <SampleCode>
       ```yaml
-      foo.bar: "v"
+      source:
+         - foo.bar: "v"
       ```
    </SampleCode>
    <Description>
-      the part after the dot...
+      the part after the dot becomes nested:
    </Description>
    <SampleCode>
-   ```yaml
-   dot_expander:
-      - field: foo.bar
-   ```
-   </SampleCode>
-   <Description>
-   becomes nested:
-   </Description>
-   <SampleCode>
-   ```yaml
-   foo:
-      - bar: "v"
-   ```
+      ```yaml
+      dot_expander:
+         - field: foo.bar
+      foo:
+         - bar: "v"
+      ```
    </SampleCode>
 
    <Description>
-      If the dotted field clashes with a...
+      If the dotted field clashes with a nested field...
    </Description>
    <SampleCode>
    ```yaml
@@ -72,84 +66,53 @@ dot_expander:
    ```
    </SampleCode>
    <Description>
-      nested field...
-   </Description>
-   <SampleCode>
-   ```yaml
-   dot_expander:
-      field: foo.bar
-   ```
-   </SampleCode>
-   <Description>
       it is merged with it:
    </Description>
    <SampleCode>
-   ```yaml
-   foo:
-      - bar:
-         - "v1"
-         - "v2"
-   ```
+      ```yaml
+      dot_expander:
+         field: foo.bar
+      foo:
+         - bar:
+            - "v1"
+            - "v2"
+      ```
    </SampleCode>
 
    <Description>
-      In the above case...
+      Using `override` causes the expanded field to be overridden by the nested field:
    </Description>
    <SampleCode>
-   ```yaml
-   foo.bar: "v1"
-   foo:
-      - bar: "v2"
-   ```
-   </SampleCode>
-   <Description>
-      using `override` causes the expanded field...
-   </Description>
-   <SampleCode>
-   ```yaml
-   dot_expander:
-      - field: foo.bar
-      - override: true
-   ```
-   </SampleCode>
-   <Description>
-      to be overridden by the nested field:
-   </Description>
-   <SampleCode>
-   ```yaml
-   foo:
-      - bar: "v2"
-   ```
+      ```yaml
+      dot_expander:
+         - field: foo.bar
+         - override: true
+      foo:
+         - bar: "v2"
+      ```
    </SampleCode>
 
    <Description>
-      With multiple dotted fields...
+      With multiple dotted fields, ...
    </Description>
    <SampleCode>
-   ```yaml
-   foo.bar: "v1"
-   baz.qux: "v2"
-   ```
+      ```yaml
+      foo.bar: "v1"
+      baz.qux: "v2"
+      ```
    </SampleCode>
    <Description>
-      using `*`...
+      using `*` expands all top-level ones:
    </Description>
    <SampleCode>
-   ```yaml
-   dot_expander:
-      - field: "*"
-   ```
-   </SampleCode>
-   <Description>
-      expands all top-level ones:
-   </Description>
-   <SampleCode>
-   ```yaml
-   foo:
-      - bar: "v1"
-   baz:
-      - qux: "v2"
-   ```
+      ```yaml
+      dot_expander:
+         - field: "*"
+      foo:
+         - bar: "v1"
+      baz:
+         - qux: "v2"
+      ```
    </SampleCode>
 
    <Description>
@@ -163,59 +126,45 @@ dot_expander:
    ```
    </SampleCode>
    <Description>
-       use `path`...
+      use `path` to group them:
    </Description>
    <SampleCode>
-   ```yaml
-   dot_expander:
-      - path: foo
-      - field: "*"
-   ```
-   </SampleCode>
-   <Description>
-      to group them as subfields:
-   </Description>
-   <SampleCode>
-   ```yaml
-   foo:
-      - bar:
-         - baz: "v1"
-         - qux: "v2"
-   ```
+      ```yaml
+      dot_expander:
+         - path: foo
+         - field: "*"
+      foo:
+         - bar:
+            - baz: "v1"
+            - qux: "v2"
+      ```
    </SampleCode>
 
    <Description>
-      If a potential name clash exists...
+      If a potential name clash exists, ...
    </Description>
    <SampleCode>
-   ```yaml
-   foo: "v1"
-   foo.bar: "v2"
-   ```
+      ```yaml
+      foo: "v1"
+      foo.bar: "v2"
+      ```
    </SampleCode>
    <Description>
-      use `rename` first...
+      use `rename` first to avoid overwriting a field:
    </Description>
    <SampleCode>
-   ```yaml
-   processors:
-      - rename:
-         - field: foo
-         - target_field: foo.bar
-      - dot_expander:
-         - path: foo
-         - field: "*"
-   ```
-   </SampleCode>
-   <Description>
-     to avoid overwriting a field
-   </Description>
-   <SampleCode>
-   ```yaml
-   foo:
-      - bar:
-         - "v1"
-         - "v2"
-   ```
+      ```yaml
+      processors:
+         - rename:
+            - field: foo
+            - target_field: foo.bar
+         - dot_expander:
+            - path: foo
+            - field: "*"
+      foo:
+         - bar:
+            - "v1"
+            - "v2"
+      ```
    </SampleCode>
 </ExampleTable>

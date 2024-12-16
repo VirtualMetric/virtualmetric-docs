@@ -39,7 +39,7 @@ kv:
 |`description`|N|-|Explanatory note|
 |`exclude_keys`|N|`null`|List of keys to exclude from the document|
 |`if`|N|-|Condition to run|
-|`ignore_casting`|N|`false`|???|
+|`ignore_casting`|N|`false`| {/* TODO:*/} |
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
 |`include_keys`|N|`null`|List of keys to include in the document|
@@ -55,12 +55,24 @@ kv:
 
 ## Examples
 
-Pairs are separated by _commas_ and the field names are followed by a _colon_ and a value.
+<ExampleTable>
+   <Description>
+      Pairs are separated by commas (',') and field names are followed by colons (':').
+   </Description>
+   <SampleCode>
+      ```yaml
+      {msg: "foo: 'A', bar: 1"}
 
-```yaml
-processors:
-   - kv:
-      field: definitions
-      field_split: ","
-      value_split: ":"
-```
+      processors:
+         - kv:
+            field: msg
+            field_split: ","
+            value_split: ":"
+            target_field: data
+
+      data:
+         - foo: "A"
+         - bar: 1
+      ```
+   </SampleCode>
+</ExampleTable>
