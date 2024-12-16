@@ -58,52 +58,53 @@ The following fields can be extracted from a document:
 
 <ExampleTable>
 	<Description>
-   Properties to extract from the file
+   Using the field named **data** in the attachment...
 	</Description>
 	<SampleCode>
    ```yaml
    attachment:
       - field: data
-      - remove_binary: false
-   data: Zm9vIGJhciBiYXogcXV4
+   ```
+   ```json
+   {"data": "Zm9vIGJhciBiYXogcXV4"}
    ```
 	</SampleCode>
 	<Description>
-      The `attachment` object contains the extracted properties
+      the properties are extracted:
 	</Description>
 	<SampleCode>
-   ```yaml
-   found: true
-   source:
-      - data: "Zm9vIGJhciBiYXogcXV4"
-      - attachment:
-         - content_type: "application/txt"
-         - content: "foo bar baz qux"
-         - content_length: 15
+   ```json
+   {
+      "content_type": "application/txt",
+      "content": "foo bar baz qux",
+   }
    ```
 	</SampleCode>
-</ExampleTable>
 
-With the `properties` array, specific fields can be extracted:
-
-<ExampleTable>
 	<Description>
-      Extract **content** and **title**
+   With the `properties` array:
 	</Description>
 	<SampleCode>
    ```yaml
    attachment:
       - field: data
       - properties:
-         - content
          - title
-      - remove_binary: false
+         - content
    ```
 	</SampleCode>
-</ExampleTable>
+   <Description>
+   the **content** and **title** properties can be extracted separately
+   </Description>
+   <SampleCode>
+   ```json
+   [
+      {"title": "ABC", "content": 123}
+   ]
+   ```
+   </SampleCode>
 
-{/* TODO: Do we support this? */}
-* **COBR**
+</ExampleTable>
 
 * **Character limits** In order not to overload the _node cache_, the number of characters that can be extracted is limited to `100,000`. The value can be set with the `indexed_chars` field. For no limits, `-1` can be specified, although this should not be used without verifying that there is enough memory to extract very large documents.
 
@@ -111,7 +112,7 @@ To override the default limit, `indexed_chars_field` can be used to set limits p
 
 <ExampleTable>
    <Description>
-      Specifying:
+      Specifying the **indexed chars field**...
    </Description>
    <SampleCode>
    ```yaml
@@ -119,22 +120,23 @@ To override the default limit, `indexed_chars_field` can be used to set limits p
       - field: data
       - indexed_chars: 15
       - indexed_chars_field: max_size
-      - remove_binary: false
-   - data: "Zm9vIGJhciBiYXogcXV4"
+   ```
+   ```json
+   {
+      "data": "Zm9vIGJhciBiYXogcXV4"
+   }
    ```
 </SampleCode>
    <Description>
-   ...returns:
+   extracts only the required amount of data:
    </Description>
    <SampleCode>
-   ```yaml
-   found: true
-   source:
-      - data: "Zm9vIGJhciBiYXogcXV4"
-      - attachment:
-         - content_type: "application/rtf"
-         - content: "foo bar baz qux"
-         - content_length: 15
+   ```json
+   {
+      "content_type": "application/rtf",
+      "content": "foo bar baz qux",
+      "content_length": 15
+   }
    ```
    </SampleCode>
 </ExampleTable>

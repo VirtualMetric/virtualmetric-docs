@@ -83,14 +83,6 @@ const sidebars: SidebarsConfig = {
 
         {
           type: "category",
-          label: "Sources",
-          link: {type: "doc", id: "admin/sources/overview"},
-          items: [
-          ],
-        },
-
-        {
-          type: "category",
           label: "Routes",
           link: {type: "doc", id: "admin/routes/overview"},
           items: [
