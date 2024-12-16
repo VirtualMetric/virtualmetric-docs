@@ -69,8 +69,6 @@ const sidebars: SidebarsConfig = {
           label: "Pipelines",
           link: {type: "doc", id: "admin/pipelines/overview"},
           items: [
-            "admin/pipelines/sources",
-            "admin/pipelines/targets",
             "admin/pipelines/normalization",
             "admin/pipelines/configuration",
 
@@ -95,7 +93,9 @@ const sidebars: SidebarsConfig = {
           type: "category",
           label: "Sources",
           link: {type: "doc", id: "admin/sources/overview"},
-          items: [],
+          items: [
+            "admin/sources/pre-processing",
+          ],
         },
 
         {
@@ -113,6 +113,7 @@ const sidebars: SidebarsConfig = {
           label: "Targets",
           link: {type: "doc", id: "admin/targets/overview"},
           items: [
+            "admin/targets/post-processing",
             "admin/targets/console",
             "admin/targets/file",
             "admin/targets/ms-sentinel",
