@@ -9,7 +9,7 @@ If provided, the processor only runs when the stated condition is met. The condi
 ```yaml
 processors:
    - drop:
-      if: "_ctx.network?.name == 'Guest'"
+      if: "_ingest.network?.name == 'Admin'"
 ```
 
 ### Regular Expressions
@@ -23,7 +23,7 @@ As regular expressions can slow down indexing operations, it is better to avoid 
 ```yaml
 processors:
    - set:
-      if: "ctx.url?.scheme =~ /^http[^s]/"
+      if: "_ingest_.url?.scheme =~ /^http[^s]/"
       field: url.insecure
       value: true
 ```
@@ -59,7 +59,7 @@ It is also possible to use a script stored elsewhere in the `if` condition:
 ```yaml
 processors:
    - drop:
-      if: "check_user"
+      if: "user_is_admin"
 ```
 
 ### Null Safety
@@ -69,12 +69,12 @@ When working with documents that contain objects, if a script attempts to access
 It is better, for example, to rewrite
 
 ```yaml
-ctx.network?.name.equalsIgnoreCase('Guest')
+_ingest.network?.name.equalsIgnoreCase('Admin')
 ```
 as
 
 ```yaml
-'Guest'.equalsIgnoreCase(ctx.network?.name)
+'Admin'.equalsIgnoreCase(_ingest_.network?.name)
 ```
 
 to make it null safe. If that is not possible, then it may be good practice to include an explicit null check:
@@ -82,7 +82,7 @@ to make it null safe. If that is not possible, then it may be good practice to i
 ```yaml
 processors:
    - drop:
-      if: "ctx.network?.name != null && ctx.network.name.contains('Guest')"
+      if: "_ingest_.network?.name != null && ctx.network.name.contains('Admin')"
 ```
 
 ## Running Pipelines
@@ -92,12 +92,12 @@ The `if` condition can be combined with the `pipeline` processor to run other pi
 ```yaml
 processors:
    - pipeline:
-      if: "ctx.service?.name == 'foo'"
+      if: "_ingest.service?.name == 'foo'"
       name: foo_pipeline
    - pipeline:
-      if: "ctx.service?.name == 'bar'",
+      if: "_ingest.service?.name == 'bar'",
       name: bar_pipeline
    - fail:
-      if: "ctx.service?.name != 'foo' && ctx.service?.name != 'bar'"
-      message: "It is required to have `foo` or `bar`"
+      if: "_ingest.service?.name != 'foo' && _ingest.service?.name != 'bar'"
+      message: "Either `foo` or `bar` must be present"
 ```
