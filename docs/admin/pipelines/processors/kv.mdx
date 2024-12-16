@@ -57,22 +57,39 @@ kv:
 
 <ExampleTable>
    <Description>
-      Pairs are separated by commas (',') and field names are followed by colons (':').
+      The **data** field contains a string in which...
+   </Description>
+   <SampleCode>
+      ```json
+      {
+         "data": "foo: 'A', bar: 1"
+      }
+      ```
+   </SampleCode>
+   <Description>
+      pairs are separated by commas and keys are separated by colons:
    </Description>
    <SampleCode>
       ```yaml
-      {msg: "foo: 'A', bar: 1"}
-
-      processors:
-         - kv:
-            field: msg
-            field_split: ","
-            value_split: ":"
-            target_field: data
-
-      data:
-         - foo: "A"
-         - bar: 1
+      - kv:
+         field: data
+         field_split: ","
+         value_split: ":"
+         target_field: pairs
+      ```
+   </SampleCode>
+   <Description>
+      They are parsed and placed in **pairs**:
+   </Description>
+   <SampleCode>
+      ```json
+      {
+         "data": "foo: 'A', bar: 1",
+         "pairs": {
+            "foo": "A",
+            "bar": 1
+         }
+      }
       ```
    </SampleCode>
 </ExampleTable>

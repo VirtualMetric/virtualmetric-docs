@@ -50,7 +50,7 @@ The source field must point to a base64-encoded binary file which will be conver
 
 The following fields can be extracted from a document:
 
-> altitude author comments content content_length content_type contributor coverage creator_tool date description format identifier keywords language latitude longitude metadata_date modified modifier print_date publisher rating relation rights source title type
+> `altitude` `author` `comments` `content` `content_length` `content_type` `contributor` `coverage` `creator_tool` `date` `description` `format` `identifier` `keywords` `language` `latitude` `longitude` `metadata_date` `modified` `modifier` `print_date` `publisher` `rating` `relation` `rights` `source` `title` `type`
 
 ## Examples
 
@@ -58,33 +58,47 @@ The following fields can be extracted from a document:
 
 <ExampleTable>
 	<Description>
-   Using the field named **data** in the attachment...
-	</Description>
-	<SampleCode>
-   ```yaml
-   attachment:
-      - field: data
-   ```
-   ```json
-   {"data": "Zm9vIGJhciBiYXogcXV4"}
-   ```
-	</SampleCode>
-	<Description>
-      the properties are extracted:
+   The field **data** contains the attachment as a base64-encoded string.
 	</Description>
 	<SampleCode>
    ```json
    {
-      "content_type": "application/txt",
-      "content": "foo bar baz qux",
+      "data": "<base64-encoded string>"
+   }
+   ```
+   ```yaml
+   attachment:
+      - field: data
+   ```
+	</SampleCode>
+	<Description>
+      The content is extracted and decoded:
+	</Description>
+	<SampleCode>
+   ```json
+   {
+      "data": "<base64-encoded string>",
+      "attachment": {
+         "content_type": "application/txt",
+         "content": "foo bar baz qux"
+      }
    }
    ```
 	</SampleCode>
+</ExampleTable>
 
+* **Property extraction** The exported fields listed above can be used to drill down to the properties of the document:
+
+<ExampleTable>
 	<Description>
-   With the `properties` array:
+   With the `properties` array, relevant fragments of information...
 	</Description>
 	<SampleCode>
+   ```json
+   {
+      "data": "<base64-encoded string>"
+   }
+   ```
    ```yaml
    attachment:
       - field: data
@@ -94,16 +108,21 @@ The following fields can be extracted from a document:
    ```
 	</SampleCode>
    <Description>
-   the **content** and **title** properties can be extracted separately
+   can be extracted separately:
    </Description>
    <SampleCode>
    ```json
-   [
-      {"title": "ABC", "content": 123}
-   ]
+   {
+      "data": "data": "<base64-encoded string>",
+      "attachment": {
+         "properties": {
+            "title": "ABC",
+            "content": 123
+         }
+      }
+   }
    ```
    </SampleCode>
-
 </ExampleTable>
 
 * **Character limits** In order not to overload the _node cache_, the number of characters that can be extracted is limited to `100,000`. The value can be set with the `indexed_chars` field. For no limits, `-1` can be specified, although this should not be used without verifying that there is enough memory to extract very large documents.
@@ -123,7 +142,7 @@ To override the default limit, `indexed_chars_field` can be used to set limits p
    ```
    ```json
    {
-      "data": "Zm9vIGJhciBiYXogcXV4"
+      "data": "<base64-encoded string>"
    }
    ```
 </SampleCode>
@@ -133,9 +152,12 @@ To override the default limit, `indexed_chars_field` can be used to set limits p
    <SampleCode>
    ```json
    {
-      "content_type": "application/rtf",
-      "content": "foo bar baz qux",
-      "content_length": 15
+      "data": "<base64-encoded string>",
+      "attachment": {
+         "content_type": "application/rtf",
+         "content": "foo bar baz qux",
+         "content_length": 15
+      }
    }
    ```
    </SampleCode>
