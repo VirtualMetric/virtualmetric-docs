@@ -29,16 +29,6 @@ const sidebars: SidebarsConfig = {
 
         {
           type: "category",
-          label: "CLI",
-          link: {type: "doc", id: "admin/cli/overview"},
-          items: [
-            'admin/cli/director',
-            'admin/cli/generator'
-          ],
-        },
-
-        {
-          type: "category",
           label: "Devices",
           link: {type: "doc", id: "admin/devices/overview"},
           items: [
