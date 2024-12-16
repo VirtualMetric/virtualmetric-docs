@@ -49,11 +49,45 @@ Provides a number of predefined matching patterns.
 
 ## Examples
 
-Remove data matching the indicated grok pattern from _foo_ and replace it with a redacted text in _bar_.
+<ExampleTable>
+   <Description>
+      We have data containing private e-mail addresses:
+   </Description>
+   <SampleCode>
+   ```json
+   {
+      "user": {
+         "name": "John",
+         "last-name": "Doe",
+         "email-address": "john.doe@example.com"
+      }
+   }
+   ```
+   </SampleCode>
 
-```yaml
-processors:
-   redact:
-      - field: foo
-      - patterns: {GROK_PATTERN: bar}
-```
+   <Description>
+      Remove data matching the indicated grok pattern from **user**....
+   </Description>
+   <SampleCode>
+      ```yaml
+      redact:
+         - field: user
+         - patterns: {EMAIL: redacted-user}
+      ```
+   </SampleCode>
+
+   <Description>
+      and place it in **bar** after redacting it:
+   </Description>
+   <SampleCode>
+   ```json
+   {
+      "redacted-user": {
+         "name": "John",
+         "last-name": "Doe",
+         "email-address": "<REDACTED>"
+      }
+   }
+   ```
+   </SampleCode>
+</ExampleTable>

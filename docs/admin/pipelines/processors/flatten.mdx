@@ -18,23 +18,36 @@ flatten:
       Fields with multiple nested levels...
    </Description>
    <SampleCode>
-      ```yaml
-      foo:
-         - bar:
-            - baz: 10
-            - qux: "D"
-         - jaz: [1, 2, 3]
+      ```json
+      {
+         "foo": {
+            "bar": {
+               "baz": 10,
+               "qux": "D",
+            },
+            "jaz": [1, 2, 3]
+         }
+      }
       ```
    </SampleCode>
 
    <Description>
-      ...are flattened into a single level:
+      are flattened to a single level:
    </Description>
    <SampleCode>
    ```yaml
-   foo_bar_baz: 10
-   foo_bar_qux: "D"
-   foo_jaz: [1, 2, 3]
+   flatten:
+      - fields:
+         - foo.bar.baz
+         - foo.bar.qux
+         - foo.jaz
+   ```
+   ```json
+   {
+      "foo_bar_baz": 10,
+      "foo_bar_qux": "D",
+      "foo_jaz": [1, 2, 3]
+   }
    ```
    </SampleCode>
 </ExampleTable>

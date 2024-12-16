@@ -43,65 +43,81 @@ If the field already exists, its value will be replaced with the provided one.
 
 ## Examples
 
-* Copying scalar values is straightforward:
+* Assigning scalar values is straightforward:
 
 <ExampleTable>
    <Description>
-      Set value of the `foo` field to **1**:
+      The data contains a **foo** field:
    </Description>
    <SampleCode>
-   ```yaml
-   set:
-      field: foo
-      value: 1
-   ```
-   </SampleCode>
-</ExampleTable>
-
-<ExampleTable>
-   <Description>
-      Grab `foo` from `foo.bar` and...
-   </Description>
-   <SampleCode>
-      ```yaml
-      processors:
-         - set:
-            field: foo.bar
-            value: "{{bar}}"
-
-      source:
-         foo.bar: "BAR"
+      ```json
+      {
+         "foo": 5
+      }
       ```
    </SampleCode>
+
    <Description>
-   ...copy it into `bar`
+      Set its value to **1**:
    </Description>
    <SampleCode>
       ```yaml
-      source:
-         foo:
-            - bar:
-               value: "BAR"
+      set:
+         field: foo
+         value: 1
+      ```
+      ```json
+      {
+         "foo": 1
+      }
       ```
    </SampleCode>
 </ExampleTable>
 
-* It is possible to access array fields with the dot notation.
-
 <ExampleTable>
    <Description>
-      The `foo` field contains `bar` with 3 elements:
+      The **data.foo** field contains _A_:
+   </Description>
+   <SampleCode>
+      ```json
+      {
+         "data": {
+            "foo": "A"
+         }
+      }
+      ```
+   </SampleCode>
+
+   <Description>
+      Set its value to that of the **B** meta field:
    </Description>
    <SampleCode>
       ```yaml
-      - pipeline:
-         processors:
-            - set:
-               field: foo
-               value: "{{bar.1}}"
+      - set:
+         field: data.foo
+         value: {{{B}}}
+      ```
+      ```json
+      {
+         "data": {
+            "foo": "META-B"
+         }
+      }
+      ```
+   </SampleCode>
+</ExampleTable>
 
-      - source:
-        foo: ["A", "B", "C"]
+* Array fields can be accessed with the dot notation:
+
+<ExampleTable>
+   <Description>
+      The **foo** field contains 3 elements:
+   </Description>
+   <SampleCode>
+      ```json
+      {
+         "foo": ["A", "B", "C"]
+      }
       ```
    </SampleCode>
    <Description>
@@ -109,39 +125,46 @@ If the field already exists, its value will be replaced with the provided one.
    </Description>
    <SampleCode>
       ```yaml
-      source:
-         - input_field: ["A", "B", "C"]
-         - bar: "A"
+      - set:
+         field: bar
+         value: {{{foo.1}}}
+      ```
+      ```json
+      {
+         "foo": ["A", "B", "C"],
+         "bar": ["A"]
+      }
       ```
    </SampleCode>
 </ExampleTable>
 
-* The contents of a field including complex values such as arrays or objects can be copied to another field using `copy_from`:
+* The contents of a field containing complex values&mdash;such as arrays or objects&mdash;can be copied to another using `copy_from`:
 
 <ExampleTable>
    <Description>
-      The values in `foo`...
+      The values in **foo**...
    </Description>
    <SampleCode>
-      ```yaml
-      processors:
-         - set:
-            field: bar
-            copy_from: foo
-      ...
-
-      source:
-         foo: ["A", "B"]
+      ```json
+      {
+         "foo": ["A", "B"]
+      }
       ```
    </SampleCode>
    <Description>
-      ...are copied into `bar`:
+      ...are copied into **bar**:
    </Description>
    <SampleCode>
       ```yaml
-      source:
-         foo: ["A", "B"]
-         bar: ["A", "B"]
+      - set:
+         field: bar
+         copy_from: foo
+      ```
+      ```json
+      {
+         "foo": ["A", "B"],
+         "bar": ["A", "B"]
+      }
       ```
    </SampleCode>
 </ExampleTable>

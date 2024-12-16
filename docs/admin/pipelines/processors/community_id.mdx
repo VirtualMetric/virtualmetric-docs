@@ -55,41 +55,56 @@ Use to correlate network events related to a single flow. By default, reads netw
 
 <ExampleTable>
    <Description>
-   We have incoming and outgoing `ip` addresses and a `port` number:
+      We have incoming and outgoing `ip` addresses and a `port` number:
    </Description>
    <SampleCode>
-   ```yaml
-   source:
-      - ip: <ip-address-1>
-      - port: <a-number>
-   destination:
-      - ip: <ip-address-2>
-      - port: <a-number>
-   network:
-      transport: TCP
+   ```json
+   {
+      "source": {
+         "ip": "<ip-address-1>",
+         "port": "<port-number-1>"
+      },
+      "destination": {
+         "ip": "<ip-address-2>"
+         "port": "<port-number-2>"
+      },
+      "network": {
+         "transport": "TCP"
+      }
+   }
    ```
    </SampleCode>
 
    <Description>
-   We want to figure out the user's `community_id`
+      We want to figure out the user's `community_id`
    </Description>
    <SampleCode>
-   ```yaml
-   processors:
+      ```yaml
       - community_id:
-         field: "source.ip"
-         target_field: "network.community_id"
-   ```
+         field: source.ip
+         target_field: network.community_id
+      ```
    </SampleCode>
 
    <Description>
-   ...which is a base-64 hash value:
+      ...which is a _base64_ hash value:
    </Description>
    <SampleCode>
-   ```yaml
-   - network:
-      community_id: "<base-64-hash>"
-      transport: "TCP"
+   ```json
+   {
+      "source": {
+         "ip": "<ip-address-1>",
+         "port": "<port-number-1>"
+      },
+      "destination": {
+         "ip": "<ip-address-2>"
+         "port": "<port-number-2>"
+      },
+      "network": {
+         "community_id": "<base64-hash>",
+         "transport": "TCP"
+      }
+   }
    ```
    </SampleCode>
 </ExampleTable>

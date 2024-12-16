@@ -3,7 +3,7 @@
 ## Synopsis
 
 ```yaml {2}
-user_agemt:
+user_agent:
    - field: <ident>
    - description: <string>
    - extract_device_type: <logical>
@@ -41,7 +41,7 @@ Adds this information by default to the `user_agent` field.
 
 ## Node Settings
 
-The processor has a `ingest.user_agent.cache_size` setting which is the maximum number of results to be cached. The default is `1000`.
+The processor has an `_ingest.user_agent.cache_size` setting which is the maximum number of results to be cached. The default is `1000`.
 
 Also, the node settings apply to all `user_agent` processors.
 
@@ -49,34 +49,41 @@ Also, the node settings apply to all `user_agent` processors.
 
 <ExampleTable>
    <Description>
-      This spec:
+      Given this agent:
    </Description>
    <SampleCode>
-      ```yaml
-      processors:
-         - user_agent:
-            field: agent
-
-      agent: "Mozilla/5.0 Chrome/51.0.2704.103"
+      ```json
+      {
+         "agent": "Mozilla/5.0 Chrome/51.0.2704.103"
+      }
       ```
    </SampleCode>
    <Description>
-      ...adds the user agent details to `user_agent` based on `agent`:
+      these user agent details can be inferred:
    </Description>
    <SampleCode>
       ```yaml
-      - source:
-         agent: "Mozilla/5.0 Chrome/51.0.2704.103"
-         user_agent:
-            - name: "Chrome"
-            - original: "Mozilla/5.0 Chrome/51.0.2704.103"
-            - version: "51.0.2704.103"
-            - os:
-               name: "Mac OS X"
-               version: "10.10.5"
-               full: "Mac OS X 10.10.5"
-            - device:
-               name: "Mac"
+      user_agent:
+         field: agent
+         target_field: agent-details
+      ```
+      ```json
+      {
+         "agent": "Mozilla/5.0 Chrome/51.0.2704.103",
+         "agent-details": {
+            "name": "Chrome",
+            "original": "Mozilla/5.0 Chrome/51.0.2704.103",
+            "version": "51.0.2704.103",
+            "os": {
+               "name": "Mac OS X",
+               "version": "10.10.5",
+               "full": "Mac OS X 10.10.5"
+            },
+            "device": {
+               "name": "Mac"
+            }
+         }
+      }
       ```
    </SampleCode>
 </ExampleTable>

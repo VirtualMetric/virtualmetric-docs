@@ -38,9 +38,10 @@ dot_expander:
       If the expanded name is distinct...
    </Description>
    <SampleCode>
-      ```yaml
-      source:
-         - foo.bar: "v"
+      ```json
+      {
+         "foo.bar": "v"
+      }
       ```
    </SampleCode>
    <Description>
@@ -50,8 +51,13 @@ dot_expander:
       ```yaml
       dot_expander:
          - field: foo.bar
-      foo:
-         - bar: "v"
+      ```
+      ```json
+      {
+         "foo": {
+            "bar": "v"
+         }
+      }
       ```
    </SampleCode>
 
@@ -59,10 +65,13 @@ dot_expander:
       If the dotted field clashes with a nested field...
    </Description>
    <SampleCode>
-   ```yaml
-   foo.bar: "v1"
-   foo:
-      bar: "v2"
+   ```json
+   {
+      "foo.bar": "v1",
+      "foo": {
+         "bar": "v2"
+      }
+   }
    ```
    </SampleCode>
    <Description>
@@ -72,10 +81,13 @@ dot_expander:
       ```yaml
       dot_expander:
          field: foo.bar
-      foo:
-         - bar:
-            - "v1"
-            - "v2"
+      ```
+      ```json
+      {
+         "foo": {
+            "bar": ["v1", "v2"]
+         }
+      }
       ```
    </SampleCode>
 
@@ -87,8 +99,13 @@ dot_expander:
       dot_expander:
          - field: foo.bar
          - override: true
-      foo:
-         - bar: "v2"
+      ```
+      ```json
+      {
+         "foo": {
+            "bar": "v2"
+         }
+      }
       ```
    </SampleCode>
 
@@ -96,9 +113,11 @@ dot_expander:
       With multiple dotted fields, ...
    </Description>
    <SampleCode>
-      ```yaml
-      foo.bar: "v1"
-      baz.qux: "v2"
+      ```json
+      {
+         "foo.bar": "v1",
+         "baz.qux": "v2"
+      }
       ```
    </SampleCode>
    <Description>
@@ -108,10 +127,16 @@ dot_expander:
       ```yaml
       dot_expander:
          - field: "*"
-      foo:
-         - bar: "v1"
-      baz:
-         - qux: "v2"
+      ```
+      ```json
+      {
+         "foo": {
+            "bar": "v1"
+         },
+         "baz": {
+            "qux": "v2"
+         }
+      }
       ```
    </SampleCode>
 
@@ -119,11 +144,14 @@ dot_expander:
       If the dotted fields have a common parent...
    </Description>
    <SampleCode>
-   ```yaml
-   foo:
-      - bar.baz: "v1"
-      - bar.qux: "v2"
-   ```
+      ```json
+      {
+         "foo": {
+            "bar.baz": "v1",
+            "bar.qux": "v2"
+         }
+      }
+      ```
    </SampleCode>
    <Description>
       use `path` to group them:
@@ -133,10 +161,16 @@ dot_expander:
       dot_expander:
          - path: foo
          - field: "*"
-      foo:
-         - bar:
-            - baz: "v1"
-            - qux: "v2"
+      ```
+      ```json
+      {
+         "foo": {
+            "bar": {
+               "baz": "v1",
+               "qux": "v2"
+            }
+         }
+      }
       ```
    </SampleCode>
 
@@ -144,9 +178,11 @@ dot_expander:
       If a potential name clash exists, ...
    </Description>
    <SampleCode>
-      ```yaml
-      foo: "v1"
-      foo.bar: "v2"
+      ```json
+      {
+         "foo": "v1",
+         "foo.bar": "v2"
+      }
       ```
    </SampleCode>
    <Description>
@@ -161,10 +197,13 @@ dot_expander:
          - dot_expander:
             - path: foo
             - field: "*"
-      foo:
-         - bar:
-            - "v1"
-            - "v2"
+      ```
+      ```json
+      {
+         "foo": {
+            "bar": ["v1", "v2"]
+         }
+      }
       ```
    </SampleCode>
 </ExampleTable>

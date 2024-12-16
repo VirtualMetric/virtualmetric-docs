@@ -45,6 +45,12 @@ Both of these can be accessed and modified during iteration.
 
 If an element cannot be processed and no `on_failure` processor is specified, `foreach` exits silently leaving the entire array or object unmodified.
 
+As this processor has to iterate multiple elements to perform its job, and as there is always the likelihood that one of them is in an invalid state, there is always the possibility of failure. Therefore, it is good practice to not leave the `on_failure` field undefined.
+
+:::note
+In the event of such a failure, elements processed thus far will remain updated.
+:::
+
 ## Examples
 
 ### Arrays
@@ -56,8 +62,10 @@ Multiple elements can be applied the same operation.
       The array has three strings.
    </Description>
    <SampleCode>
-      ```yaml
-      values: ["foo", "bar", "baz"]
+      ```json
+      {
+         "data": ["foo", "bar", "baz"]
+      }
       ```
    </SampleCode>
    <Description>
@@ -66,7 +74,7 @@ Multiple elements can be applied the same operation.
    <SampleCode>
       ```yaml
       foreach:
-         - field: values
+         - field: data
          - processor:
             - uppercase:
       ```
@@ -75,8 +83,10 @@ Multiple elements can be applied the same operation.
       ...they are converted to uppercase.
    </Description>
    <SampleCode>
-      ```yaml
-      - values: ["FOO", "BAR", "BAZ"]
+      ```json
+      {
+         "data": ["FOO", "BAR", "BAZ"]
+      }
       ```
    </SampleCode>
 </ExampleTable>
@@ -90,11 +100,13 @@ Multiple elements can be applied the same operation.
       The objects in the array have an `id` field
    </Description>
    <SampleCode>
-      ```yaml
-      things: [
-         [id: 1, name: "foo"],
-         [id: 2, name: "bar"]
-      ]
+      ```json
+      {
+         "data": [
+            {"id": 1, "name": "foo"},
+            {"id": 2, "name": "bar"}
+         ]
+      }
       ```
    </SampleCode>
    <Description>
@@ -103,7 +115,7 @@ Multiple elements can be applied the same operation.
    <SampleCode>
       ```yaml
       foreach:
-         - field: things
+         - field: data
          - processor:
             - remove:
                field: id
@@ -113,11 +125,13 @@ Multiple elements can be applied the same operation.
       ...resulting in:
    </Description>
    <SampleCode>
-      ```yaml
-      things: [
-         [name: "foo"],
-         [name: "bar"]
-      ]
+      ```json
+      {
+         "data": [
+            {"name": "foo"},
+            {"name": "bar"}
+         ]
+      }
       ```
    </SampleCode>
 </ExampleTable>
@@ -131,17 +145,23 @@ Object with multiple fields can be applied an operation.
       We have **3** objects with **2** fields each:
    </Description>
    <SampleCode>
-   ```yaml
-   things:
-      - foos:
-         - size: 10
-         - display_name: "Foos"
-      - bars:
-         - size: 20
-         - display_name: "Bars"
-      - quxs:
-         - size: 50
-         - display_name: ""
+   ```json
+   {
+      "data": {
+         "foos": {
+            "size": 10,
+            "display_name": "Foos"
+         },
+         "bars": {
+            "size": 20,
+            "display_name": "Bars"
+         },
+         "quxs": {
+            "size": 50,
+            "display_name": ""
+         }
+      }
+   }
    ```
    </SampleCode>
    <Description>
@@ -150,7 +170,7 @@ Object with multiple fields can be applied an operation.
    <SampleCode>
       ```yaml
       foreach:
-         - field: things
+         - field: data
          - processor:
             - uppercase:
                - field: display_name
@@ -160,34 +180,38 @@ Object with multiple fields can be applied an operation.
       Done.
    </Description>
    <SampleCode>
-      ```yaml
-      things:
-         - foos:
-            - size: 10
-            - display_name: "FOOS"
-         - bars:
-            - size: 20
-            - display_name: "BARS"
-         - quxs:
-            - size: 50
-            - display_name: ""
+      ```json
+      {
+         "data": {
+            "foos": {
+               "size": 10,
+               "display_name": "FOOS"
+            },
+            "bars": {
+               "size": 20,
+               "display_name": "BARS"
+            },
+            "quxs": {
+               "size": 50
+               "display_name": ""
+            }
+         }
+      }
       ```
    </SampleCode>
 </ExampleTable>
 
-### Failures
+### Cascading Failures
 
-The nested processor can have an `on_failure` definition that can be used to send pipeline to the failure queue for review.
+If multiple levels of nesting are being used, the innermost processor can be assigned the task of sending the pipeline to a failure queue for review.
 
 ```yaml
 foreach:
-   - field: things
+   - field: data
    - processor:
       - remove:
          - field: id
          - on_failure:
                - id: errors.id
-               - message: "remove failed"
+               - message: "Remove failed"
 ```
-
-In the event of such a failure, elements processed so far will remain updated.

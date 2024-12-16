@@ -24,7 +24,9 @@ date:
 
 By default, the parsed date is added as a new field called `@timestamp`. A different field can be set with `target_field`.
 
-Multiple date formats can be specified which will be used sequentially to parse the date.
+Multiple date formats can be specified which are used sequentially to parse the date.
+
+The `timezone` and `locale` parameters can be extracted from document fields if they are defined.
 
 ## Parameters
 
@@ -48,15 +50,14 @@ Multiple date formats can be specified which will be used sequentially to parse 
 Adding the parsed date to the `timestamp` field based on the `initial_date` field:
 
 ```yaml
-processors:
-   - date:
-      - field: "initial_date"
-      - target_field: "timestamp"
-      - formats: "dd/MM/yyyy HH:mm:ss"
-      - timezone: "Europe/London"
+- date:
+   - field: "initial_date"
+   - target_field: "timestamp"
+   - formats: "dd/MM/yyyy HH:mm:ss"
+   - timezone: "Europe/London"
 ```
 
-The `timezone` and `locale` parameters can be extracted from fields in the document if templated. The following spec show how to extract them from the templated fields `foo` and `bar`.
+Extracting values from template `foo` and `bar` fields:
 
 ```yaml
 date:

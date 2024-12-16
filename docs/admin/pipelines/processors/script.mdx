@@ -51,45 +51,7 @@ Scripting can also be used to access _metadata_ fields such as `_ingest` or `_so
 
 ## Examples
 
-* Using **Java** code:
-
-<ExampleTable>
-   <Description>
-   The data:
-   </Description>
-   <SampleCode>
-   ```json
-   {env: "foo"}
-   ```
-   </SampleCode>
-
-   <Description>
-   Extract the `tags` field from the `env` source field
-   </Description>
-   <SampleCode>
-   ```yaml
-   processors:
-      - script:
-         lang: java
-         source: """
-            String[] envSplit = ctx['env'].splitOnToken(params['delimiter']);
-            ArrayList tags = new ArrayList();
-            tags.add(envSplit[params['position']].trim());
-            ctx['tags'] = tags;
-         """
-   ```
-   </SampleCode>
-   <Description>
-   The result:
-   </Description>
-   <SampleCode>
-   ```json
-   {env: "foo", tags: ["foo-tags"]}
-   ```
-   </SampleCode>
-</ExampleTable>
-
-* Using an double-quoted **inline** script:
+* Using library code:
 
 <ExampleTable>
    <Description>
@@ -97,18 +59,54 @@ Scripting can also be used to access _metadata_ fields such as `_ingest` or `_so
    </Description>
    <SampleCode>
       ```json
-      {dataset: "foo", locale: "en-UK"}
+      {
+         "foo": {
+            "bar": ["A", "B", "C"]
+         }
+      }
       ```
    </SampleCode>
 
    <Description>
-      Use the _locale_ and the _dataset name_...
+      Extract the `bar` field from the `foo` field:
    </Description>
    <SampleCode>
-   ```yaml
-   processors:
+      ```yaml
       - script:
-         locale: "en-UK"
+         lang: golang
+         source: package.Function
+         """
+      ```
+      ```json
+      {
+         "foo.bar": ["A", "B", "C"]
+      }
+      ```
+   </SampleCode>
+</ExampleTable>
+
+* Using a double-quoted **inline** script:
+
+<ExampleTable>
+   <Description>
+      The dataset **foo** is from a specific **locale**:
+   </Description>
+   <SampleCode>
+      ```json
+      {
+         "dataset": "foo",
+         "locale": "aa-BB"
+      }
+      ```
+   </SampleCode>
+
+   <Description>
+      Use the **locale** and the **dataset** name_...
+   </Description>
+   <SampleCode>
+      ```yaml
+      - script:
+         locale: "aa-BB"
          source: """
             log['index'] = log['locale'] + '-' + params['dataset'];
          """
@@ -116,13 +114,16 @@ Scripting can also be used to access _metadata_ fields such as `_ingest` or `_so
             - dataset: "foo"
    ```
    </SampleCode>
-
    <Description>
        to create an index:
    </Description>
    <SampleCode>
-   ```yaml
-   index: "en-UK-foo"
-   ```
+      ```json
+      {
+         "log": {
+            "index": "aa-BB-foo"
+         }
+      }
+      ```
    </SampleCode>
 </ExampleTable>

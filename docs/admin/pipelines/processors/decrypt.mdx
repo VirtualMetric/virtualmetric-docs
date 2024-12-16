@@ -7,7 +7,7 @@ decrypt:
    - algorithm: <ident>
    - encryption_key: <string>
    - field: <ident>
-   - iv_field: <numeric>
+   - iv_field: <hash>
    - description: <string>
    - if: <script>
    - ignore_failure: <logical>
@@ -43,39 +43,37 @@ decrypt:
 
 <ExampleTable>
    <Description>
-   When the encrypted field _foo_
+      When the encrypted field **foo**
    </Description>
    <SampleCode>
-   ```yaml
-   iv_field: "FmXUb0OPOWm1A2kw6diKYw=="
-   foo: "vFza"
-   ```
+      ```json
+      {
+         "qux": "FmXUb0OPOWm1A2kw6diKYw==",
+         "foo": "vFza"
+      }
+      ```
    </SampleCode>
-
    <Description>
-   ...is used with this algorithm
+      ...is used with
    </Description>
    <SampleCode>
-   ```yaml
-   AES-256-CFB (key=32 chars., iv=16 chars.)
-   ```
+      ```yaml
+      decrypt:
+         - field: foo
+         - iv_field: qux
+         - encryption_key: 6B58703273357638792F423F4528482B
+         - algorithm: AES-256-CFB (key=32 chars., iv=16 chars.)
+      ```
   </SampleCode>
 
    <Description>
-   ...and this encryption key
+      ...it yields:
    </Description>
    <SampleCode>
-   ```yaml
-   6B58703273357638792F423F4528482B
-   ```
-   </SampleCode>
-
-   <Description>
-   ...it yields:
-   </Description>
-   <SampleCode>
-   ```yaml
-   foo: "bar"
-   ```
+      ```json
+      {
+         "foo": "bar"
+      }
+      ```
    </SampleCode>
 </ExampleTable>
