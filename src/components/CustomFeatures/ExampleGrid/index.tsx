@@ -1,48 +1,70 @@
-import React, { ReactNode } from 'react';
-import './style.module.css';
-
-interface RowProps {
-  children: ReactNode;
-}
-
-const CaseRow: React.FC<RowProps> = ({ children }) => (
-  <tr>
-    <td className="label"></td>
-    <td className="content">{children}</td>
-  </tr>
-);
-
-const InputRow: React.FC<RowProps> = ({ children }) => (
-  <tr>
-    <td style={{textAlign: "right", verticalAlign: "top"}}><b>Input</b></td>
-    <td className="content">{children}</td>
-  </tr>
-);
-
-const SpecRow: React.FC<RowProps> = ({ children }) => (
-  <tr>
-    <td style={{textAlign: "right", verticalAlign: "top"}}><b>Spec</b></td>
-    <td className="content">{children}</td>
-  </tr>
-);
-
-const OutputRow: React.FC<RowProps> = ({ children }) => (
-  <tr>
-    <td style={{textAlign: "right", verticalAlign: "top"}}><b>Output</b></td>
-    <td className="content">{children}</td>
-  </tr>
-);
+import React from "react";
 
 interface ExampleGridProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-const ExampleGrid: React.FC<ExampleGridProps> = ({ children }) => {
+export const ExampleGrid = ({ children }: ExampleGridProps) => {
+  const pairs: { comment: React.ReactNode; code: React.ReactNode }[] = [];
+  let currentDescription: React.ReactNode | null = null;
+
+  React.Children.forEach(children, (child) => {
+    if (React.isValidElement(child)) {
+      if (child.type === CommentCol) {
+        if (currentDescription) {
+          pairs.push({ comment: currentDescription, code: null });
+        }
+        currentDescription = child.props.children;
+      } else if (child.type === CodeCol) {
+        pairs.push({
+          comment: currentDescription,
+          code: child.props.children,
+        });
+        currentDescription = null;
+      }
+    }
+  });
+
+  if (currentDescription != null) {
+    pairs.push({ comment: currentDescription, code: null });
+  }
+
   return (
-    <table className="example-grid">
-      <tbody>{children}</tbody>
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <tbody>
+        {pairs.map((pair, index) => (
+          <tr
+            key={index}
+            style={{
+              border: "0px",
+              background: "none",
+              borderBottom: "1px solid var(--ifm-table-border-color)",
+              width: "100%",
+            }}
+          >
+            <td style={{ verticalAlign: "top", border: "none", width: "25%" }}>
+              {pair.comment && <div>{pair.comment}</div>}
+            </td>
+            <td style={{ verticalAlign: "top", border: "none", width: "75%" }}>
+              {pair.code && <div>{pair.code}</div>}
+            </td>
+          </tr>
+        ))}
+      </tbody>
     </table>
   );
 };
 
-export { ExampleGrid, CaseRow, InputRow, SpecRow, OutputRow };
+export const CommentCol = ({ children }: { children: React.ReactNode }) => {
+  return <div>{children}</div>;
+};
+
+export const CodeCol = ({ children }: { children: React.ReactNode }) => {
+  return <div>{children}</div>;
+};
+
+export default {
+  ExampleGrid,
+  CommentCol,
+  CodeCol,
+};
