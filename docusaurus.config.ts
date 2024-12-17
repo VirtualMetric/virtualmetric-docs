@@ -171,39 +171,39 @@ const config: Config = {
         src: "img/VirtualMetric-Logo-Footer.svg",
         srcDark: "img/VirtualMetric-Logo-Footer.svg",
       },
-      links: [
-        {
-          title: "Training",
-          items: [
-            {
-              label: "Tutorials",
-              to: "tutorials/intro"
-            },
-          ],
-        },
-        {
-          title: "Development",
-          items: [
-            {
-              label: "API",
-              to: "api"
-            },
-          ],
-        },
-        {
-          title: "Useful Links",
-          items: [
-            {
-              label: "VirtualMetric Home",
-              href: "https://virtualmetric.com/"
-            },
-            {
-              label: "Blog",
-              to: "blog"
-            },
-          ],
-        },
-      ],
+      // links: [
+      //   {
+      //     title: "Training",
+      //     items: [
+      //       {
+      //         label: "Tutorials",
+      //         to: "tutorials/intro"
+      //       },
+      //     ],
+      //   },
+      //   {
+      //     title: "Development",
+      //     items: [
+      //       {
+      //         label: "API",
+      //         to: "api"
+      //       },
+      //     ],
+      //   },
+      //   {
+      //     title: "Useful Links",
+      //     items: [
+      //       {
+      //         label: "VirtualMetric Home",
+      //         href: "https://virtualmetric.com/"
+      //       },
+      //       {
+      //         label: "Blog",
+      //         to: "blog"
+      //       },
+      //     ],
+      //   },
+      // ],
       copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V.`,
     },
 

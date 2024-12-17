@@ -21,7 +21,7 @@ const CardHeader: React.FC<CardHeaderProps> = ({
 	children,
 	textAlign,
 	variant,
-	italic = false,
+	italic = true,
 	noDecoration = false,
 	transform,
 	breakWord = false,

@@ -43,10 +43,10 @@ export const ExampleTable = ({ children }: ExampleTableProps) => {
               width: "100%",
             }}
           >
-            <td style={{ verticalAlign: "top", border: "none" }}>
+            <td style={{ verticalAlign: "top", border: "none", width: "30%" }}>
               {pair.description && <div>{pair.description}</div>}
             </td>
-            <td style={{ verticalAlign: "top", border: "none" }}>
+            <td style={{ verticalAlign: "top", border: "none", width: "70%" }}>
               {pair.code && <div>{pair.code}</div>}
             </td>
           </tr>
