@@ -6,7 +6,6 @@ import CardFooter from "@site/src/components/Card/CardFooter";
 import CardHeader from "@site/src/components/Card/CardHeader";
 import CardImage from "@site/src/components/Card/CardImage";
 
-import Synopsis from "@site/src/components/CustomFeatures/Synopsis";
 import {ExampleGrid, CommentCol, CodeCol} from "@site/src/components/CustomFeatures/ExampleGrid";
 
 import ImageFrame from "@site/src/components/CustomFeatures/ImageFrame";
@@ -28,7 +27,6 @@ export default {
 
 	Highlight,
 	ImageFrame,
-	Synopsis,
 
 	FooterCopyright,
 };
