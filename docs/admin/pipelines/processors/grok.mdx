@@ -41,34 +41,71 @@ You choose which field to extract matched fields from, as well as the grok patte
 
 ## Examples
 
+### Setting information
+
 <ExampleTable>
 	<Description>
-		Parse the _local time_...
+		Data contains user identification information:
 	</Description>
 	<SampleCode>
 		```json
 		{
-		   "local_time": "2024-10-16T04:15:10.55+01:00 DEBUG Sample message"
+			"user": {
+				"name": "John",
+				"last-name": "Doe"
+			}
 		}
+		```
+	</SampleCode>
+	<Description>
+		Using his hostname...
+	</Description>
+	<SampleCode>
+		```js
+		   '%{HOSTNAME:privilege}%'
 		```
 	</SampleCode>
 
 	<Description>
-		with the expression...
-	</Description>
-	<SampleCode>
-		```js
-		   '%{TIMESTAMP_ISO8601:event_time}%'
-		```
-	</SampleCode>
-	<Description>
-		and place the result where specified:
+		classify the user for his access privileges:
 	</Description>
 	<SampleCode>
 		```json
 		{
-		   "local_time": "2024-10-16T04:15:10.55+01:00 DEBUG Sample message"
-		   "event_time": "2024-10-16T04:15:10.55+01:00"
+			"user": {
+				"name": "John",
+				"last-name": "Doe",
+				"privilege": "Guest"
+			}
+		}
+		```
+	</SampleCode>
+</ExampleTable>
+
+### Inferring information
+
+<ExampleTable>
+	<Description>
+		Using local time...
+	</Description>
+	<SampleCode>
+		```json
+		{
+		   "local-time": "2024-10-16T04:15:10.55+01:00"
+		}
+		```
+	</SampleCode>
+	<Description>
+		infer the event date:
+	</Description>
+	<SampleCode>
+		```js
+		   '%{DATESTAMP:event-date}%'
+		```
+		```json
+		{
+		   "local-time": "2024-10-16T04:15:10.55+01:00"
+		   "event-data": "2024-10-16"
 		}
 		```
 	</SampleCode>

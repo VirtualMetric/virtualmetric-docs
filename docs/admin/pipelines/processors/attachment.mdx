@@ -25,7 +25,9 @@ attacment:
 **Functionality**: Allows **Director** to extract widely used file formats like **DOC**, **XLS**, **PDF**, etc. using **Apache**'s **Tika** library.
 
 
-The source field must point to a base64-encoded binary file which will be converted to JSON. To avoid the overhead of back and forth conversions, use CBOR and specify the field as a byte array.
+The source field must point to a base64-encoded binary file which will be converted to **JSON**. To avoid the overhead of back and forth conversions, use **CBOR** and specify the field as a byte array.
+
+{/* FIXME: Chat is COBR? Do we use it? */}
 
 ## Parameters
 
@@ -54,114 +56,118 @@ The following fields can be extracted from a document:
 
 ## Examples
 
-{/* FIXME: Append the input json field to the output json */}
+### Encoding data
 
-* **Encoding data** The files to be attached to the JSON documents must first be encoded as `base64` strings. Then, to decode the string the processor can be used:
+The files to be attached to the JSON documents must first be encoded as `base64` strings. Then, to decode the string the processor can be used:
 
 <ExampleTable>
 	<Description>
-   The field **data** contains the attachment as a base64-encoded string.
+      The field contains the attachment as a base64-encoded string.
 	</Description>
 	<SampleCode>
-   ```json
-   {
-      "data": "<base64-encoded string>"
-   }
-   ```
-   ```yaml
-   attachment:
-      - field: data
-   ```
+      ```json
+      {
+         "data": "<base64-encoded string>"
+      }
+      ```
+      ```yaml
+      attachment:
+         - field: data
+      ```
 	</SampleCode>
 	<Description>
       The content is extracted and decoded:
 	</Description>
 	<SampleCode>
-   ```json
-   {
-      "data": "<base64-encoded string>",
-      "attachment": {
-         "content_type": "application/txt",
-         "content": "foo bar baz qux"
+      ```json
+      {
+         "data": "<base64-encoded string>",
+         "attachment": {
+            "content_type": "application/txt",
+            "content": "foo bar baz qux"
+         }
       }
-   }
-   ```
+      ```
 	</SampleCode>
 </ExampleTable>
 
-* **Property extraction** The exported fields listed above can be used to drill down to the properties of the document:
+### Property extraction
+
+The exported fields listed above can be used to drill down to the properties of the document:
 
 <ExampleTable>
 	<Description>
-   With the `properties` array, relevant fragments of information...
+      With the `properties` array, relevant fragments of information...
 	</Description>
 	<SampleCode>
-   ```json
-   {
-      "data": "<base64-encoded string>"
-   }
-   ```
-   ```yaml
-   attachment:
-      - field: data
-      - properties:
-         - title
-         - content
-   ```
+      ```json
+      {
+         "data": "<base64-encoded string>"
+      }
+      ```
+      ```yaml
+      attachment:
+         - field: data
+         - properties:
+            - title
+            - content
+      ```
 	</SampleCode>
    <Description>
-   can be extracted separately:
+      can be extracted separately:
    </Description>
    <SampleCode>
-   ```json
-   {
-      "data": "data": "<base64-encoded string>",
-      "attachment": {
-         "properties": {
-            "title": "ABC",
-            "content": 123
+      ```json
+      {
+         "data": "data": "<base64-encoded string>",
+         "attachment": {
+            "properties": {
+               "title": "ABC",
+               "content": 123
+            }
          }
       }
-   }
-   ```
+      ```
    </SampleCode>
 </ExampleTable>
 
-* **Character limits** In order not to overload the _node cache_, the number of characters that can be extracted is limited to `100,000`. The value can be set with the `indexed_chars` field. For no limits, `-1` can be specified, although this should not be used without verifying that there is enough memory to extract very large documents.
+### Character limits
+
+In order not to overload the _node cache_, the number of characters that can be extracted is limited to `100,000`. The value can be set with the `indexed_chars` field. For no limits, `-1` can be specified, although this should not be used without verifying that there is enough memory to extract very large documents.
 
 To override the default limit, `indexed_chars_field` can be used to set limits per document.
 
 <ExampleTable>
    <Description>
-      Specifying the **indexed chars field**...
+      Specifying an upper limit...
    </Description>
    <SampleCode>
-   ```yaml
-   attachment:
-      - field: data
-      - indexed_chars: 15
-      - indexed_chars_field: max_size
-   ```
-   ```json
-   {
-      "data": "<base64-encoded string>"
-   }
-   ```
+      ```yaml
+      attachment:
+         - field: data
+         - indexed_chars: 15
+         - indexed_chars_field: max_size
+      ```
+      ```json
+      {
+         "data": "<base64-encoded string>"
+      }
+      ```
 </SampleCode>
    <Description>
-   extracts only the required amount of data:
+      extracts only the required amount of data:
    </Description>
    <SampleCode>
-   ```json
-   {
-      "data": "<base64-encoded string>",
-      "attachment": {
-         "content_type": "application/rtf",
-         "content": "foo bar baz qux",
-         "content_length": 15
+      ```json
+      {
+         "data": "<base64-encoded string>",
+         "attachment": {
+            "content_type": "application/rtf",
+            "content": "foo bar baz qux",
+            "content_length": 15
+         }
       }
-   }
-   ```
+      ```
    </SampleCode>
 </ExampleTable>
 
