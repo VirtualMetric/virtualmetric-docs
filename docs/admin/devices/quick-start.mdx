@@ -10,13 +10,26 @@ sidebar_label: Quick Start
 
 There is also a category of devices that cannot be accessed remotely but nevertheless publish their data. The streams from these can be be collected via certain protocols&mdash;e.g. **Syslog**, **Netflow**, etc.
 
-{/*
+## Typical Use
 
-TODO: Check whether we support the following Crible features:
+Assume we have the following device configuration:
 
-* deploying stream instances close to Syslog producers to minimize data loss (esp. with UDP), and using load balancers across multiple nodes to avoid overloading a single process.
-* ensuring data integrity during downstream outages by using persistent queues to buffer incoming events
+```yaml
+devices:
+  - id: 1
+    name: "syslog listener"
+    description: syslog
+    type: syslog
+    properties:
+      address: "0.0.0.0"
+      port: 514
+```
 
-*/}
+With this device, we can do the following:
+
+- Listen to **Syslog** over a regular **UDP** connection
+- Listen to **Syslog** over a regular **TCP** connection launched by a pre-processor pipeline
+- Launch a **Syslog** over **TLS**; requires configuring how to introduce a server certificate
+- Collect data with a **TCP** line parser
 
 {/* TODO: Complete */}

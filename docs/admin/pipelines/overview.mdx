@@ -226,7 +226,7 @@ Although the pipeline appears underspecified, the example is intended to illustr
 
 Let us now explain the concepts of _curation_, _transformation_, and _enrichment_ a bit further.
 
-## Stream Processing
+## Streamlined Streams
 
 As we have said earlier, the incoming raw data streams will have their own structure. As such, they will at best be partially suitable for analysis and, therefore, decision making. In its raw form, data is frequently not&mdash;at least may not be&mdash;what it seems to be. It has to be normalized and sifted through.
 
@@ -260,16 +260,25 @@ flowchart LR
 	routing --> target
 ```
 
-It is through this three-fold process that a pipeline truly shines and becomes indispensible.
+It is through this three-fold staging that a pipeline truly shines and becomes indispensible.
 
-
-## Typical Use
+## Best Practices
 
 It is best to keep the following in mind when creating pipelines.
 
 Processors are designed to select data points by a combination of field values. Their primary design principle, as stated above, is to serve one purpose only to streamline the work they do.
 
 This naturally has an impact on performance: the fewer the data points or field values a processor has to act upon, the better the overall performance. If processor **p** operates on field `foo` only when its values is `A`, whereas processor **q** operates on `bar` if its value is `B`, using the two in sequence guarantees that each completes its work in a shorter time.
+
+However, this implies that their overuse is likely to cancel whatever benefits they may offer, and their sequencing has to be carefully considered, particularly if the output of one is fed into the next as input.
+
+Finally, their selection will generally be dictated by the consumers downstream. This is where premature optimization, as usual, can be a sources of frustration.
+
+Therefore, the guiding principles should be
+
+* use only the processors directly relevant to the curation process
+* use them in the correct order
+* avoid any premature processing
 
 ---
 
