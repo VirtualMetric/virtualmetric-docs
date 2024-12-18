@@ -47,23 +47,30 @@ The `timezone` and `locale` parameters can be extracted from document fields if 
 
 ## Examples
 
-Adding the parsed date to the `timestamp` field based on the `initial_date` field:
-
-```yaml
-- date:
-   - field: "initial_date"
-   - target_field: "timestamp"
-   - formats: "dd/MM/yyyy HH:mm:ss"
-   - timezone: "Europe/London"
-```
-
-Extracting values from template `foo` and `bar` fields:
-
-```yaml
-date:
-   - field: "initial_date"
-   - target_field: "timestamp"
-   - formats: "ISO8601"
-   - timezone: "{{foo}}"
-   - locale: "{{bar}}"
-```
+<ExampleGrid>
+   <CommentCol>
+      Put the date parsed from the field to the target field:
+   </CommentCol>
+   <CodeCol>
+      ```yaml
+      date:
+         - field: foo
+         - target_field: bar
+         - formats: "dd/MM/yyyy HH:mm:ss"
+         - timezone: "Europe/London"
+      ```
+   </CodeCol>
+   <CommentCol>
+      Get date-related info from template fields:
+   </CommentCol>
+   <CodeCol>
+      ```yaml
+      date:
+         - field: foo
+         - target_field: bar
+         - formats: "ISO8601"
+         - timezone: "{{baz}}"
+         - locale: "{{qux}}"
+      ```
+   </CodeCol>
+</ExampleGrid>

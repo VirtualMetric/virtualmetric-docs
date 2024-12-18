@@ -6,27 +6,30 @@ interface ExampleGridProps {
 
 export const ExampleGrid = ({ children }: ExampleGridProps) => {
   const pairs: { comment: React.ReactNode; code: React.ReactNode }[] = [];
-  let currentDescription: React.ReactNode | null = null;
+  let node: React.ReactNode | null = null;
 
   React.Children.forEach(children, (child) => {
     if (React.isValidElement(child)) {
       if (child.type === CommentCol) {
-        if (currentDescription) {
-          pairs.push({ comment: currentDescription, code: null });
+        if (node != null) {
+          pairs.push({
+            comment: node,
+            code: null
+          });
         }
-        currentDescription = child.props.children;
+        node = child.props.children;
       } else if (child.type === CodeCol) {
         pairs.push({
-          comment: currentDescription,
-          code: child.props.children,
+          comment: node,
+          code: child.props.children
         });
-        currentDescription = null;
+        node = null;
       }
     }
   });
 
-  if (currentDescription != null) {
-    pairs.push({ comment: currentDescription, code: null });
+  if (node != null) {
+    pairs.push({ comment: node, code: null });
   }
 
   return (

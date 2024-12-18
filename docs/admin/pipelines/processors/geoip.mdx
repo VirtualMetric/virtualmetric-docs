@@ -41,28 +41,53 @@ geo_ip:
 
 ## Examples
 
-Using a map database, add geographical information to `localized_ip` field using `ip`:
+<ExampleGrid>
+   <CommentCol>
+      The user has an ip:
+   </CommentCol>
+   <CodeCol>
+      ```json
+      {
+         "user": {
+            "name": "John",
+            "last-name": "Doe",
+            "ip": 100.10.20.30
+         }
+      }
+      ```
+   </CodeCol>
 
-```yaml
-_source:
-   ip: 101.167.184.0
+   <CommentCol>
+      Using that info (and a map database)...
+   </CommentCol>
+   <CodeCol>
+      ```yaml
+      geoip:
+         - field: ip
+         - target_field: localized_ip
+      ```
+   </CodeCol>
 
-processors:
-   - geoip:
-      field: ip
-      target_field: localized_ip
-```
-
-Result:
-
-```yaml
-_index:
-   localized_ip:
-      - continent_name: "Europe"
-      - country_name: "UK"
-      - location:
-         lat: <lattitue>
-         lon: <longitude>
-```
-
-{/* FIXME: Check the values. Fill in the missing fields if any */}
+   <CommentCol>
+      add geographical information to the target field:
+   </CommentCol>
+   <CodeCol>
+      ```json
+      {
+         "user": {
+            "name": "John",
+            "last-name": "Doe",
+            "ip": 100.10.20.30,
+            "localized_ip": {
+               "continent_name": "<a-continent",
+               "country_name": "<a-country>",
+               "location": {
+                  "lattitude": 10,
+                  "longitude": 20
+               }
+            }
+         }
+      }
+      ```
+   </CodeCol>
+</ExampleGrid>
