@@ -32,6 +32,7 @@ const sidebars: SidebarsConfig = {
           label: "Devices",
           link: {type: "doc", id: "admin/devices/overview"},
           items: [
+            "admin/devices/quick-start",
             "admin/devices/http",
             "admin/devices/syslog",
             "admin/devices/tcp",
@@ -59,7 +60,7 @@ const sidebars: SidebarsConfig = {
           label: "Pipelines",
           link: {type: "doc", id: "admin/pipelines/overview"},
           items: [
-            "admin/pipelines/configuration",
+            "admin/pipelines/quick-start",
             "admin/pipelines/normalization",
             "admin/pipelines/pre-processing",
             "admin/pipelines/post-processing",
@@ -96,6 +97,7 @@ const sidebars: SidebarsConfig = {
           label: "Targets",
           link: {type: "doc", id: "admin/targets/overview"},
           items: [
+            "admin/targets/quick-start",
             "admin/targets/console",
             "admin/targets/file",
             "admin/targets/ms-sentinel",
