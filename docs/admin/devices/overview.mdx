@@ -8,21 +8,23 @@ Devices are essentially listeners that act as proxies for actual senders of data
 
 ## Motivation
 
-* **Identification**: Devices can be identified source IP, hostname, MAC address, or structured metadata
-* **Data marshalling**: Devices can be tagged and grouped for filtering, routing, or enrichment
-* **Efficiency**: Keeping preprocessing local, before forwarding the data upstream upstream. Also, lightweight agents can be used. Standardized fields ensure devices and their logs can be correlated efficiently
-* **Assert management**: They can show health, events, and telemetry
+The motivation behind using this abstraction layer can be summarized with the following bullet points:
+
+* **Identification** Devices can be identified by source IP, hostname, MAC address, or structured metadata
+* **Data marshalling** Devices can be tagged and grouped for filtering, routing, or enrichment
+* **Efficiency**: As they are used before forwarding the data upstream, devices keep preprocessing local. Also, lightweight agents can be used. Standardized fields ensure devices and their logs can be correlated efficiently
+* **Asset management**: Devices can indicate health, display events, and monitor telemetric activity
 * **Security**: Devices can be represented as network entities
 
 ## The Process
 
-**Director** is given the information on which devices will be used to collect data. This is possible for remote collection on devices that run an OS, such as **Windows**, **Linux**, **MacOS**, etc.
+**Director** is given the information about the devices that will be used to collect data. This makes it possible to collect data remotely from devices that run an OS, such as **Windows**, **Linux**, **MacOS**, etc.
 
-There is also the category of devices that cannot be accessed remotely but publish their data. The data from these can be be collected via certain protocols&mdash;e.g. Syslog, Netflow.
-
-The listener that is initialized to collect this type of data is referred to as a device.
+There is also a category of devices that cannot be accessed remotely but nevertheless publish their data. The streams from these can be be collected via certain protocols&mdash;e.g. Syslog, Netflow.
 
 ## Typical Uses
+
+Let us assume we have the following **Syslog** device configuration:
 
 ```yaml
 devices:
@@ -35,11 +37,11 @@ devices:
       port: 514
 ```
 
-### Examples
+With this device, we can do the following:
 
-* Listening to Syslog over a regular **UDP** connection
-* Listening to Syslog over a regular **TCP** which is launched by a pre-processor pipeline
-* Launching a Syslog over TLS; requires configuring how to introduce a server certificate
-* Collecting data with a TCP line parser
+* Listen to Syslog over a regular **UDP** connection
+* Listen to Syslog over a regular **TCP** connection launched by a pre-processor pipeline
+* Launch a Syslog over TLS; requires configuring how to introduce a server certificate
+* Collect data with a TCP line parser
 
 {/* TODO: Complete */}
