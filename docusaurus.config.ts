@@ -128,13 +128,6 @@ const config: Config = {
         // },
 
         // {
-        // 	type: 'docSidebar',
-        // 	sidebarId: 'mockDocs',
-        // 	position: 'left',
-        // 	label: 'Mocks',
-        // },
-
-        // {
         // 	to: '/blog',
         // 	position: 'left',
         // 	label: 'Blog'
