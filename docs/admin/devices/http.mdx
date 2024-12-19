@@ -2,9 +2,19 @@
 
 ## Description
 
-Represent the HTTP protocol as a device to listen on...
+Represents the HTTP protocol to listen on...
 
 {/* TODO: Provide definition */}
+
+The protocol offers the following features:
+
+* **Statelessness**: Each request is independent, with no inherent connection between them
+* **Caching**: Mechanisms like `ETag`, `Cache-Control`, and `Expires` for optimizing resource delivery
+* **Compression**: Encoding like `gzip` or `deflate` for reducing payload size
+* **Persistence**: With `HTTP/1.1` and later, connections can be reused for multiple requests
+* **Security** (HTTPS): Uses SSL/TLS to encrypt HTTP traffic, providing confidentiality and integrity
+
+This structure allows HTTP to support a wide range of applications, from simple websites to complex APIs and distributed systems.
 
 ## Common Settings
 
@@ -13,84 +23,61 @@ Represent the HTTP protocol as a device to listen on...
 **Transport** -\
 <tab-ln/>Typically relies on **TCP**\
 <tab-ln/>Default ports:\
-<tab-ln indent="4"/>`80` for HTTP\
-<tab-ln indent="4"/>`443` for HTTPS
+<tab-ln/><tab-ln/>`80` for HTTP\
+<tab-ln/><tab-ln/>`443` for HTTPS
 
-## Content
+## Protocol Content
 
-Provides the following information:
-
-**Request Line** (For HTTP Requests) -\
-<tab-ln/>Common methods:\
-<tab-ln indent="4"/>`GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `OPTIONS`, `PATCH`\
+**Request Line** (for HTTP requests) -\
+<tab-ln/>`GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `OPTIONS`, `PATCH`\
 **URI**  (Uniform Resource Identifier) -\
-<tab-ln/>The resource being requested\
-<tab-ln/>Version: `HTTP/1.1` or `HTTP/2`\
-**Status Line** (For HTTP Responses) -\
-<tab-ln/>HTTP Version: version used in the response\
+<tab-ln/>Resource being requested (`HTTP/1.1` or `HTTP/2`)\
+**Status Line** (for HTTP responses) -\
+<tab-ln/>HTTP version used in the response\
 <tab-ln/>Status Code: 3-digit code indicating the result of the request\
-<tab-ln/>Common status codes:\
-<tab-ln indent="4"/>`200 OK`: Successful request\
-<tab-ln indent="4"/>`301 Moved Permanently`: Resource moved\
-<tab-ln indent="4"/>`404 Not Found`: Resource not found\
-<tab-ln indent="4"/>`500 Internal Server Error`: Server error\
+<tab-ln/><tab-ln/>`200 OK`: Successful request\
+<tab-ln/><tab-ln/>`301 Moved Permanently`: Resource moved\
+<tab-ln/><tab-ln/>`404 Not Found`: Resource not found\
+<tab-ln/><tab-ln/>`500 Internal Server Error`: Server error\
 <tab-ln/>Reason phrase: textual description of the status code\
 **Headers** -\
 <tab-ln/>Key-value pairs that provide metadata about the request or response\
 <tab-ln/>Request Headers:\
-<tab-ln indent="4"/>`Host`: server's hostname\
-<tab-ln indent="4"/>`User-Agent`: client making the request\
-<tab-ln indent="4"/>`Accept`: acceptable content types (e.g. `text/html`)\
-<tab-ln indent="4"/>`Authorization`: credentials for authentication\
+<tab-ln/><tab-ln/>`Host`: server's hostname\
+<tab-ln/><tab-ln/>`User-Agent`: client making the request\
+<tab-ln/><tab-ln/>`Accept`: acceptable content types (e.g. `text/html`)\
+<tab-ln/><tab-ln/>`Authorization`: credentials for authentication\
 <tab-ln/>Response Headers:\
-<tab-ln indent="4"/>`Content-Type`: type of content returned (e.g. `application/json`)\
-<tab-ln indent="4"/>`Content-Length`: size of the response body\
-<tab-ln indent="4"/>`Set-Cookie`: cookie in the client\
-<tab-ln indent="4"/>`Server`: info about the server handling the request\
+<tab-ln/><tab-ln/>`Content-Type`: type of content returned (e.g. `application/json`)\
+<tab-ln/><tab-ln/>`Content-Length`: size of the response body\
+<tab-ln/><tab-ln/>`Set-Cookie`: cookie in the client\
+<tab-ln/><tab-ln/>`Server`: info about the server handling the request\
 **Body** -\
-<tab-ln/>The data being sent or received\
+<tab-ln/>Data being sent or received\
 <tab-ln/>Request Body:\
-<tab-ln indent="4"/>Used with methods like `POST` or `PUT` to send data\
+<tab-ln/><tab-ln/>Used with methods like `POST` or `PUT` to send data\
 <tab-ln/>Response Body:\
-<tab-ln indent="4"/>Contains the content of the response\
+<tab-ln/><tab-ln/>Contains the content of the response\
 **Methods** (Request Type) -\
-<tab-ln/>Defines the desired operation on the resource\
-<tab-ln/>Examples:\
-<tab-ln indent="4"/>`GET`: Retrieve data from the server\
-<tab-ln indent="4"/>`POST`: Submit data to the server\
-<tab-ln indent="4"/>`PUT`: Update a resource\
-<tab-ln indent="4"/>`DELETE`: Remove a resource\
+<tab-ln/>Desired operation on the resource:\
+<tab-ln/><tab-ln/>`GET`: Retrieve data from the server\
+<tab-ln/><tab-ln/>`POST`: Submit data to the server\
+<tab-ln/><tab-ln/>`PUT`: Update a resource\
+<tab-ln/><tab-ln/>`DELETE`: Remove a resource\
 **Status Codes** (Response Type) -\
-<tab-ln/>Categorized into five classes:\
-<tab-ln indent="4"/>**1xx (Informational)**: Request received, continuing process\
-<tab-ln indent="4"/>**2xx (Success)**: Request successfully received, understood, and accepted\
-<tab-ln indent="4"/>**3xx (Redirection)**: Further action needed to complete the request\
-<tab-ln indent="4"/>**4xx (Client Error)**: Request contains errors (e.g., bad syntax, unauthorized)\
-<tab-ln indent="4"/>**5xx (Server Error)**: Server failed to fulfill a valid request\
+<tab-ln/>**1xx (Informational)**: Request received, continuing process\
+<tab-ln/>**2xx (Success)**: Request successfully received, understood, and accepted\
+<tab-ln/>**3xx (Redirection)**: Further action needed to complete the request\
+<tab-ln/>**4xx (Client Error)**: Request contains errors (e.g., bad syntax, unauthorized)\
+<tab-ln/>**5xx (Server Error)**: Server failed to fulfill a valid request\
 **Cookies** -\
-<tab-ln/>Key-value pairs sent by the server to the client to store stateful information\
+<tab-ln/>Key-value pairs sent by the server to the client to store stateful information.\
 <tab-ln/>Included in subsequent requests to the server
-
-### Protocol Features
-
-**Statelessness** -\
-<tab-ln/>Each request is independent, with no inherent connection between them\
-**Caching** -\
-<tab-ln/>Mechanisms like `ETag`, `Cache-Control`, and `Expires` for optimizing\
-<tab-ln/>resource delivery\
-**Compression** -\
-<tab-ln/>Encoding like `gzip` or `deflate` for reducing payload size\
-**Persistence** -\
-<tab-ln/>With `HTTP/1.1` and later, connections can be reused for multiple requests\
-**Security** (HTTPS)-\
-<tab-ln/>Uses SSL/TLS to encrypt HTTP traffic, providing confidentiality and integrity.
-
-This structure allows HTTP to support a wide range of applications, from simple websites to complex APIs and distributed systems.
 
 ## Use Cases
 
 <details>
-<summary>Use cases for the **HTTP** device</summary>
+<summary>Sample code</summary>
 ```yaml
 {/* TODO: Provide configuration */}
 ```
