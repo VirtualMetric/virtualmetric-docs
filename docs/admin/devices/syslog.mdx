@@ -1,28 +1,100 @@
 # Syslog
 
-## Defaults
+## Common Settings
 
-{/* TODO: Step-by-step configuration  */}
-
-<p class="hanging-indent">
-**Protocol**:<br/>**UDP** or **TCP**
+<p class="term-entry">
+**Protocol** -<br/>
+**UDP** or **TCP**
 </p>
 
-**Port**:\
-<indent-ln>**514**</indent-ln>
+<p class="term-entry">
+**Port** -<br/>
+**514**
+</p>
 
-**Encryption**:\
-<indent-ln>**TLS** for secure transfer</indent-ln>
+<p class="term-entry">
+**Encryption** -<br/>
+**TLS** for secure transfer
+</p>
 
-## Setup
+
+## Configuration
 
 <details>
-<summary>`syslog.yaml` file</summary>
+<summary>`syslog.yaml`</summary>
 ```yaml
 devices:
-    type: syslog
-    properties:
+   id: "<some-id>"
+   type: syslog
+   properties:
       address: "0.0.0.0"
       port: 514
 ```
 </details>
+
+## Contents
+
+Provides the following information items:
+
+<p class="term-entry">
+**Timestamp** -<br/>
+Date and time of event<br/>
+**Format**: YYYY-MM-DD HH:MM:SS
+</p>
+
+<p class="term-entry">
+**Hostname / IP Address** -<br/>
+System where the event originated<br/>
+</p>
+
+<p class="term-entry">
+**Facility** -<br/>
+Type of program or service generating the log message<br/>
+Examples:<br/>
+<tab-ln>**auth**: Authentication</tab-ln><br/>
+<tab-ln>**cron**: Scheduled job</tab-ln><br/>
+<tab-ln>**daemon**: System</tab-ln><br/>
+<tab-ln>**kern**: Kernel</tab-ln><br/>
+<tab-ln>**mail**: E-mail</tab-ln><br/>
+</p>
+
+<p class="term-entry">
+**Severity** -<br/>
+Urgency of the message<br/>
+Standard levels:<br/>
+<tab-ln>**0**: Emergency. System is unusable</tab-ln><br/>
+<tab-ln>**1**: Alert. Immediate action required</tab-ln><br/>
+<tab-ln>**2**: Critical condition</tab-ln><br/>
+<tab-ln>**3**: Error conditions</tab-ln><br/>
+<tab-ln>**4**: Warning conditions</tab-ln><br/>
+<tab-ln>**5**: Notice. Normal but significant conditions</tab-ln><br/>
+<tab-ln>**6**: Informational message</tab-ln><br/>
+<tab-ln>**7**: Debugging messages</tab-ln>
+</p>
+
+<p class="term-entry">
+**Message** -<br/>
+Actual log content. Provides details about the event or action, such as errors, process activities, or custom application messages
+</p>
+
+<p class="term-entry">
+**Process Information** -<br/>
+Name of the process or application generating the log. May include **PID** (Process ID)
+</p>
+
+<p class="term-entry">
+**Remote Logging** (Optional) -<br/>
+If syslog messages are forwarded to a central server, the logs may include:<br/>
+<tab-ln>- The source IP of the sender</tab-ln><br/>
+<tab-ln>- Network-related metadata</tab-ln>
+</p>
+
+<p class="term-entry">
+**Priority** -<br/>
+Combination of facility and severity encoded into a single numeric value
+</p>
+
+<p class="term-entry">
+**Protocol Metadata** -<br/>
+Protocol or port number. Used when messages are transported over a network
+</p>
