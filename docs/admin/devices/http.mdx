@@ -1,5 +1,32 @@
 # HTTP
 
+## Synopsis
+
+```yaml
+devices:
+	- id: <numeric>
+		name: <ip-address>
+		description: <ident>
+		type: http
+		status: <logical>
+    	properties:
+      	address: <string>
+      	port: <numeri>
+      	tls: <logical>
+      	cert_name: <string>
+      	key_name: <string>
+      	url: <string>
+      	content:
+        		type: <string>
+      	response:
+        		code: <numeric>
+        		body: <string>
+      	flush_interval: <numeric>
+      	queue:
+	        interval: <numeric>
+      	batch_size: <numeric>
+```
+
 ## Description
 
 Represents the HTTP protocol to listen on web data streams.
@@ -18,74 +45,79 @@ This structure allows HTTP to support a wide range of applications, from simple 
 
 ## Common Settings
 
-<dt>**Protocol**</dt>
-<dd>**HTTP** or **HTTPS**</dd>
-<dt>**Transport**</dt>
-<dd>
-	Typically relies on **TCP**
-	<dt>Default ports:</dt>
-	<dd>`80` for HTTP</dd>
-	<dd>`443` for HTTPS</dd>
-</dd>
+<dl>
+	<dt>**Protocol**</dt>
+	<dd>**HTTP** or **HTTPS**</dd>
+	<dt>**Transport**</dt>
+	<dd>
+		Typically relies on **TCP**
+		<dt>Default ports:</dt>
+		<dd>`80` for HTTP</dd>
+		<dd>`443` for HTTPS</dd>
+	</dd>
+</dl>
 
 ## Protocol Content
 
-<dt>**Request Line** (for HTTP requests)</dt>
-<dd>`GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `OPTIONS`, `PATCH`</dd>
-<dt>**URI**  (Uniform Resource Identifier)</dt>
-<dd>Resource being requested (`HTTP/1.1` or `HTTP/2`)</dd>
-<dt>**Status Line** (for HTTP responses)</dt>
-<dd>HTTP version used in the response</dd>
-<dd>
-	<dt>Status Code: 3-digit code indicating the result of the request</dt>
-		<dd>`200 OK`: Successful request</dd>
-		<dd>`301 Moved Permanently`: Resource moved</dd>
-		<dd>`404 Not Found`: Resource not found</dd>
-		<dd>`500 Internal Server Error`: Server error</dd>
-		<dd>Reason phrase: textual description of the status code</dd>
-</dd>
+<dl>
 
-<dt>**Headers**</dt>
-<dd>Key-value pairs that provide metadata about the request or response</dd>
-<dd>
-	<dt>Request Headers:</dt>
-	<dd>`Host`: server's hostname</dd>
-	<dd>`User-Agent`: client making the request</dd>
-	<dd>`Accept`: acceptable content types (e.g. `text/html`)</dd>
-	<dd>`Authorization`: credentials for authentication</dd>
-	<dt>Response Headers:</dt>
-	<dd>`Content-Type`: type of content returned (e.g. `application/json`)</dd>
-	<dd>`Content-Length`: size of the response body</dd>
-	<dd>`Set-Cookie`: cookie in the client</dd>
-	<dd>`Server`: info about the server handling the request</dd>
-</dd>
+	<dt>**Request Line** (for HTTP requests)</dt>
+	<dd>`GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `OPTIONS`, `PATCH`</dd>
+	<dt>**URI**  (Uniform Resource Identifier)</dt>
+	<dd>Resource being requested (`HTTP/1.1` or `HTTP/2`)</dd>
+	<dt>**Status Line** (for HTTP responses)</dt>
+	<dd>HTTP version used in the response</dd>
+	<dd>
+		<dt>Status Code: 3-digit code indicating the result of the request</dt>
+			<dd>`200 OK`: Successful request</dd>
+			<dd>`301 Moved Permanently`: Resource moved</dd>
+			<dd>`404 Not Found`: Resource not found</dd>
+			<dd>`500 Internal Server Error`: Server error</dd>
+			<dd>Reason phrase: textual description of the status code</dd>
+	</dd>
 
-<dt>**Body**</dt>
-<dd>Data being sent or received</dd>
-<dd>
-	<dt>Request Body:</dt>
-	<dd>Used with methods like `POST` or `PUT` to send data</dd>
-	<dt>Response Body:</dt>
-	<dd>Contains the content of the response</dd>
-</dd>
+	<dt>**Headers**</dt>
+	<dd>Key-value pairs that provide metadata about the request or response</dd>
+	<dd>
+		<dt>Request Headers:</dt>
+		<dd>`Host`: server's hostname</dd>
+		<dd>`User-Agent`: client making the request</dd>
+		<dd>`Accept`: acceptable content types (e.g. `text/html`)</dd>
+		<dd>`Authorization`: credentials for authentication</dd>
+		<dt>Response Headers:</dt>
+		<dd>`Content-Type`: type of content returned (e.g. `application/json`)</dd>
+		<dd>`Content-Length`: size of the response body</dd>
+		<dd>`Set-Cookie`: cookie in the client</dd>
+		<dd>`Server`: info about the server handling the request</dd>
+	</dd>
 
-<dt>**Methods** (Request Type)</dt>
-<dd>
-	<dt>Desired operation on the resource:</dt>
-	<dd>`GET`: Retrieve data from the server</dd>
-	<dd>`POST`: Submit data to the server</dd>
-	<dd>`PUT`: Update a resource</dd>
-	<dd>`DELETE`: Remove a resource</dd>
-</dd>
-<dt>**Status Codes** (Response Type)</dt>
-<dd>**1xx (Informational)**: Request received, continuing process</dd>
-<dd>**2xx (Success)**: Request successfully received, understood, and accepted</dd>
-<dd>**3xx (Redirection)**: Further action needed to complete the request</dd>
-<dd>**4xx (Client Error)**: Request contains errors (e.g., bad syntax, unauthorized)</dd>
-<dd>**5xx (Server Error)**: Server failed to fulfill a valid request</dd>
-<dt>**Cookies**</dt>
-<dd>Key-value pairs sent by the server to the client to store stateful information.</dd>
-<dd>Included in subsequent requests to the server</dd>
+	<dt>**Body**</dt>
+	<dd>Data being sent or received</dd>
+	<dd>
+		<dt>Request Body:</dt>
+		<dd>Used with methods like `POST` or `PUT` to send data</dd>
+		<dt>Response Body:</dt>
+		<dd>Contains the content of the response</dd>
+	</dd>
+
+	<dt>**Methods** (Request Type)</dt>
+	<dd>
+		<dt>Desired operation on the resource:</dt>
+		<dd>`GET`: Retrieve data from the server</dd>
+		<dd>`POST`: Submit data to the server</dd>
+		<dd>`PUT`: Update a resource</dd>
+		<dd>`DELETE`: Remove a resource</dd>
+	</dd>
+	<dt>**Status Codes** (Response Type)</dt>
+	<dd>**1xx**: Informational. Request received, continuing process</dd>
+	<dd>**2xx**: Success. Request successfully received, understood, and accepted</dd>
+	<dd>**3xx**: Redirection. Further action needed to complete the request</dd>
+	<dd>**4xx**: Client Error. Request contains errors (e.g., bad syntax, unauthorized)</dd>
+	<dd>**5xx**: Server Error. Server failed to fulfill a valid request</dd>
+	<dt>**Cookies**</dt>
+	<dd>Key-value pairs sent by the server to the client to store stateful information.</dd>
+	<dd>Included in subsequent requests to the server</dd>
+</dl>
 
 ## Use Cases
 

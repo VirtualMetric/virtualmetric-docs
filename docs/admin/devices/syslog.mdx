@@ -1,74 +1,101 @@
 # Syslog
 
+## Synopsis
+
+```yaml
+devices:
+   - id: <numeric>
+      name: <ip-address>
+      description: <ident>
+      type: syslog
+      status: <logical>
+      properties:
+         network: <string>
+         address: <string>
+         port: <numeric>
+         tls: <logical>
+         cert_name: <string>
+         key_name: <string>
+         reuse: <logical>
+         flush_interval: <numeric>
+         queue:
+            interval: <numeric>
+         batch_size: <numeric>
+```
+
 ## Description
 
 Represents the _syslog_ format which offers the flexibility to filter, analyze, and store logs in a centralized location for monitoring, troubleshooting, and compliance purposes.
 
 ## Common Settings
 
-<dt>**Transport**</dt>
-<dd>
-   **UDP** or **TCP** protocols
-   <dt>Default ports:</dt>
-   <dd>`514` for either</dd>
-</dd>
+<dl>
+   <dt>**Transport**</dt>
+   <dd>
+      **UDP** or **TCP** protocols
+      <dt>Default ports:</dt>
+      <dd>`514` for either</dd>
+   </dd>
 
-<dt>**Encryption**</dt>
-<dd>For secure transport, use with **TLS**</dd>
+   <dt>**Encryption**</dt>
+   <dd>For secure transport, use with **TLS**</dd>
+</dl>
 
 ## Protocol Content
 
-<dt>**Timestamp**</dt>
-<dd>Date and time of _event_</dd>
-<dd>Format: `YYYY-MM-DD HH:MM:SS`</dd>
+<dl>
+   <dt>**Timestamp**</dt>
+   <dd>Date and time of _event_</dd>
+   <dd>Format: `YYYY-MM-DD HH:MM:SS`</dd>
 
-<dt>**Hostname / IP Address**</dt>
-<dd>System where _event_ originated</dd>
+   <dt>**Hostname / IP Address**</dt>
+   <dd>System where _event_ originated</dd>
 
-<dt>**Facility**</dt>
-<dd>Type of program or service generating the log message.</dd>
-<dd>
-   <dt>Examples:</dt>
-   <dd>**auth**: Authentication</dd>
-   <dd>**cron**: Scheduled job</dd>
-   <dd>**daemon**: System</dd>
-   <dd>**kern**: Kernel</dd>
-   <dd>**mail**: E-mail</dd>
-</dd>
+   <dt>**Facility**</dt>
+   <dd>Type of program or service generating the log message.</dd>
+   <dd>
+      <dt>Examples:</dt>
+      <dd>**auth**: Authentication</dd>
+      <dd>**cron**: Scheduled job</dd>
+      <dd>**daemon**: System</dd>
+      <dd>**kern**: Kernel</dd>
+      <dd>**mail**: E-mail</dd>
+   </dd>
 
-<dt>**Severity**</dt>
-<dd>Urgency of the message</dd>
-<dd>
-   Standard levels:
-   <dd>**0**: Emergency. System is unusable</dd>
-   <dd>**1**: Alert. Immediate action required</dd>
-   <dd>**2**: Critical condition</dd>
-   <dd>**3**: Error conditions</dd>
-   <dd>**4**: Warning conditions</dd>
-   <dd>**5**: Notice. Normal but significant conditions</dd>
-   <dd>**6**: Informational messages</dd>
-   <dd>**7**: Debugging messages</dd>
-</dd>
+   <dt>**Severity**</dt>
+   <dd>Urgency of the message</dd>
+   <dd>
+      Standard levels:
+      <dd>**0**: Emergency. System is unusable</dd>
+      <dd>**1**: Alert. Immediate action required</dd>
+      <dd>**2**: Critical condition</dd>
+      <dd>**3**: Error conditions</dd>
+      <dd>**4**: Warning conditions</dd>
+      <dd>**5**: Notice. Normal but significant conditions</dd>
+      <dd>**6**: Informational messages</dd>
+      <dd>**7**: Debugging messages</dd>
+   </dd>
 
-<dt>**Message**</dt>
-<dd>Actual log content. Provides details about the event or action, such as errors, process activities, or custom application messages</dd>
+   <dt>**Message**</dt>
+   <dd>Actual log content. Provides details about the event or action, such as errors, process activities, or custom application messages</dd>
 
-<dt>**Process Information**</dt>
-<dd>Name of the process or application generating the log.</dd>
-<dd>May include **PID** (Process ID)</dd>
+   <dt>**Process Information**</dt>
+   <dd>Name of the process or application generating the log.</dd>
+   <dd>May include **PID** (Process ID)</dd>
 
-<dt>**Remote Logging** (Optional)</dt>
-<dd>
-   <dt>If _syslog_ messages are forwarded to a central server, the logs may include:</dt>
-   <dd>- The source IP of the sender</dd>
-   <dd>- Network-related metadata</dd>
-</dd>
+   <dt>**Remote Logging** (Optional)</dt>
+   <dd>
+      <dt>If _syslog_ messages are forwarded to a central server, the logs may include:</dt>
+      <dd>- The source IP of the sender</dd>
+      <dd>- Network-related metadata</dd>
+   </dd>
 
-<dt>**Priority**</dt>
-<dd>Combination of facility and severity encoded into a single numeric value</dd>
+   <dt>**Priority**</dt>
+   <dd>Combination of facility and severity encoded into a single numeric value</dd>
 
-<dt>**Metadata**</dt>
-<dd>Protocol and port number. Used when messages are transported over a network</dd>
+   <dt>**Metadata**</dt>
+   <dd>Protocol and port number. Used when messages are transported over a network</dd>
+</dl>
 
 ## Use Cases
 
@@ -102,7 +129,7 @@ devices:
 </details>
 
 <details>
-<summary>Collect data with a **TCP** line parser</summary>
+<summary>Collect data using **Syslog** with a **TCP** line parser</summary>
 ```yaml
 {/* TODO: Provide configuration */}
 ```
