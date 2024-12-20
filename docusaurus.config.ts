@@ -52,6 +52,10 @@ const config: Config = {
           rehypePlugins: [rehypeKatex],
         },
 
+        googleTagManager: {
+          containerId: 'VirtualMetric-10.0.0',
+        },
+
         blog: {
           showReadingTime: true,
 
