@@ -29,7 +29,6 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "admin/devices/overview"},
           items: [
             "admin/devices/quick-start",
-            "admin/devices/common-fields",
             "admin/devices/http",
             "admin/devices/syslog",
             "admin/devices/tcp",
