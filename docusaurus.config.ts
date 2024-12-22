@@ -38,6 +38,10 @@ const config: Config = {
         "sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+",
       crossorigin: "anonymous",
     },
+    {
+      href: "@site/src/css/custom.css",
+      type: "text/css"
+    }
   ],
 
   presets: [
