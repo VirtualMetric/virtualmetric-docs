@@ -6,7 +6,7 @@
 devices:
   - id: <numeric>
     name: <ip-numeric>
-    description: <string>
+    description: <text>
     type: kafka
     status: <logical>
     properties:
@@ -16,9 +16,9 @@ devices:
       password: <string>
       partitions: <numeric>
       group: <string>
-      balancer: <string>
+      balancer: <enum-string>
       topic: <string>
-      algorithm: <string>
+      algorithm: <enum-string>
       tls:
         status: <logical>
         cert_name: <string>
@@ -38,16 +38,28 @@ devices:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`||||
-|`name`||||
-|`description`||||
-|`type`||||
-|`status`||||
+|`id`|Y|||
+|`name|`Y|`127.0.0.1`||
+|`description`|N|-||
+|`type`|Y|`kafka`||
+|`status`|Y|`false`||
 
 ## `properties` Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
+|`address`|Y|`"0.0.0.0"`||
+|`port`|Y|`0`||
+|`username`|N|`""`||
+|`password`|N|`""`||
+|`partition`|N|`1`||
+|`group`|N|`""`||
+|`balancer`|N|`""`|Valid options: `"roundrobin"`, `"cooperativesticky"`, `"range"`, `"sticky"`|
+|`topic`|N|`""`||
+|`algorithm`|N|`""`|Valid options: `"none"`, `"plain"`, `"scram-sha-256"`, `"scram-sha-512"`|
+|`tls:status`|N|`true`||
+|`tls:cert_name`|N|`""`||
+|`tls:key_name`|N|`""`||
 
 ## Use Cases
 
