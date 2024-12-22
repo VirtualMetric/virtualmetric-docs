@@ -4,17 +4,17 @@
 
 ```yaml {2}
 uri_parts:
-   - field: <ident>
-   - description: <string>
-   - if: <script>
-   - ignore_failure: <logical>
-   - ignore_missing: <logical>
-   - keep_original: <logical>
-   - on_failure: <processors...>
-   - on_success: <processors...>
-   - remove_if_successful: <logical>
-   - tag: <string>
-   - target_field: <ident>
+  - field: <ident>
+  - description: <string>
+  - if: <script>
+  - ignore_failure: <logical>
+  - ignore_missing: <logical>
+  - keep_original: <logical>
+  - on_failure: <processors...>
+  - on_success: <processors...>
+  - remove_if_successful: <logical>
+  - tag: <string>
+  - target_field: <ident>
 ```
 
 ## Description
@@ -42,49 +42,49 @@ The URI object includes properties of the URI's domain, path, port, fragment, qu
 ## Examples
 
 <ExampleGrid>
-   <CommentCol>
-      The field contains all the details of a web query:
-   </CommentCol>
-   <CodeCol>
-   ```json
-   {
-      "uri-data": "http://user:pass@www.example.com:80/foo.gif?k1=v1&k2=v2#frag"
-   }
-   ```
-   </CodeCol>
-   <CommentCol>
-      Parse the URI to extract the details...
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      - uri_parts:
-         field: uri-data
-         target_field: url
-         keep_original: true
-         remove_if_successful: false
-      ```
-   </CodeCol>
-   <CommentCol>
-      and place them in the target field:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "uri-data": "http://user:pass@www.example.com:80/foo.gif?k1=v1&k2=v2#frag",
-         "url": {
-            "path": "/foo.gif",
-            "fragment": "frag",
-            "extension": "gif",
-            "password": "pass",
-            "original": "http://user:pass@www.example.com:80/foo.gif?key1=val1&key2=val2#frag",
-            "scheme": "http",
-            "port": 80,
-            "user_info": "user:pass",
-            "domain": "www.example.com",
-            "query": "k1=v1&k2=v2",
-            "username": "user"
-         }
+  <CommentCol>
+    The field contains all the details of a web query:
+  </CommentCol>
+  <CodeCol>
+  ```json
+  {
+    "uri-data": "http://user:pass@www.example.com:80/foo.gif?k1=v1&k2=v2#frag"
+  }
+  ```
+  </CodeCol>
+  <CommentCol>
+    Parse the URI to extract the details...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - uri_parts:
+      field: uri-data
+      target_field: url
+      keep_original: true
+      remove_if_successful: false
+    ```
+  </CodeCol>
+  <CommentCol>
+    and place them in the target field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "uri-data": "http://user:pass@www.example.com:80/foo.gif?k1=v1&k2=v2#frag",
+      "url": {
+        "path": "/foo.gif",
+        "fragment": "frag",
+        "extension": "gif",
+        "password": "pass",
+        "original": "http://user:pass@www.example.com:80/foo.gif?key1=val1&key2=val2#frag",
+        "scheme": "http",
+        "port": 80,
+        "user_info": "user:pass",
+        "domain": "www.example.com",
+        "query": "k1=v1&k2=v2",
+        "username": "user"
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>

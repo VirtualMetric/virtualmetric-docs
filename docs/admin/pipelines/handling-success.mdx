@@ -10,10 +10,10 @@ In its simplest form, the mechanism can be used to notify the user that it exite
 
 ```yaml
 processors:
-   - processor-1:
-      # ...
-      on_success:
-         - user-message: "Pipeline completed successfully"
+  - processor-1:
+    # ...
+    on_success:
+      - user-message: "Pipeline completed successfully"
 ```
 
 ## Continue
@@ -22,11 +22,11 @@ Furthermore, a pipeline can be configured to continue to the next processor by u
 
 ```yaml
 pipeline: foo
-   processors:
-      - processor-1:
-            on_success: processor-2
-      - processor-2:
-            on_success: ...
+  processors:
+    - processor-1:
+        on_success: processor-2
+    - processor-2:
+        on_success: ...
 ```
 
 Using this technique, the execution of processors can be _nested_.
@@ -37,14 +37,14 @@ Finally, it can be used to trigger the execution of a processor in another pipel
 
 ```yaml
 pipeline: foo
-   processors:
-      - processor-1:
-         on_success: bar.processor-1
+  processors:
+    - processor-1:
+      on_success: bar.processor-1
 pipeline: bar
-   processors:
-      - processor-1:
-         on_success:
-            ...
+  processors:
+    - processor-1:
+      on_success:
+        ...
 ```
 
 Using this technique, the execution of processors can be _daisy-chained_.

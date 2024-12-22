@@ -4,15 +4,15 @@
 
 ```yaml {2}
 registered_domain:
-   - field: <ident>
-   - description: <string>
-   - if: <script>
-   - ignore_failure: <logical>
-   - ignore_missing: <logical>
-   - on_failure: <processors...>
-   - on_success: <processors...>
-   - tag: <string>
-   - target_field: <ident>
+  - field: <ident>
+  - description: <string>
+  - if: <script>
+  - ignore_failure: <logical>
+  - ignore_missing: <logical>
+  - on_failure: <processors...>
+  - on_success: <processors...>
+  - tag: <string>
+  - target_field: <ident>
 ```
 
 ## Description
@@ -40,46 +40,46 @@ Uses the registered domains defined in the **Mozilla Public Suffix List**.
 Parse the various level domains for `www.example.com`:
 
 <ExampleGrid>
-   <CommentCol>
-      The _visitor_ field contains a URL.
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      {
-         "visitor": {
-            "fqdn": "www.example.com"
-         }
+  <CommentCol>
+    The _visitor_ field contains a URL.
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    {
+      "visitor": {
+        "fqdn": "www.example.com"
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 
-   <CommentCol>
-      Extract the domain info from the URL...
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      - registered_domain:
-            field: visitor.fqdn
-            target_field: visitor.url
-      ```
-   </CodeCol>
+  <CommentCol>
+    Extract the domain info from the URL...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - registered_domain:
+        field: visitor.fqdn
+        target_field: visitor.url
+    ```
+  </CodeCol>
 
-   <CommentCol>
-      and place the results in the target field:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "visitor": {
-            "fqdn": "www.example.com",
-            "url": {
-               "domain": "www.example.com",
-               "registered_domain": "example.com",
-               "top_level_domain": "com",
-               "subdomain": "www"
-            }
-         }
+  <CommentCol>
+    and place the results in the target field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "visitor": {
+        "fqdn": "www.example.com",
+        "url": {
+          "domain": "www.example.com",
+          "registered_domain": "example.com",
+          "top_level_domain": "com",
+          "subdomain": "www"
+        }
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>

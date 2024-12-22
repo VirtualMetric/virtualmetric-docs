@@ -4,17 +4,17 @@
 
 ```yaml
 script:
-   - description: <string>
-   - function: <script>
-   - if: <script>
-   - id: <ident>
-   - ignore_failure: <logical>
-   - lang: <string>
-   - on_failure: <processors...>
-   - on_success: <processors...>
-   - params: <strings...>
-   - source: <string>
-   - tag: <string>
+  - description: <string>
+  - function: <script>
+  - if: <script>
+  - id: <ident>
+  - ignore_failure: <logical>
+  - lang: <string>
+  - on_failure: <processors...>
+  - on_success: <processors...>
+  - params: <strings...>
+  - source: <string>
+  - tag: <string>
 ```
 
 ## Definition
@@ -54,76 +54,76 @@ Scripting can also be used to access _metadata_ fields such as `_ingest` or `_so
 ### Library code
 
 <ExampleGrid>
-   <CommentCol>
-      The data:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "foo": {
-            "bar": ["A", "B", "C"]
-         }
+  <CommentCol>
+    The data:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo": {
+        "bar": ["A", "B", "C"]
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 
-   <CommentCol>
-      Extract the `bar` field from the `foo` field:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      - script:
-         lang: golang
-         source: package.Function
-         """
-      ```
-      ```json
-      {
-         "foo.bar": ["A", "B", "C"]
-      }
-      ```
-   </CodeCol>
+  <CommentCol>
+    Extract the `bar` field from the `foo` field:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - script:
+      lang: golang
+      source: package.Function
+      """
+    ```
+    ```json
+    {
+      "foo.bar": ["A", "B", "C"]
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Inline code
 
 <ExampleGrid>
-   <CommentCol>
-      The dataset is from a specific locale:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "dataset": "foo",
-         "locale": "aa-BB"
-      }
-      ```
-   </CodeCol>
+  <CommentCol>
+    The dataset is from a specific locale:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "dataset": "foo",
+      "locale": "aa-BB"
+    }
+    ```
+  </CodeCol>
 
-   <CommentCol>
-      Use the locale and the dataset name...
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      - script:
-         locale: "aa-BB"
-         source: """
-            log['index'] = log['locale'] + '-' + params['dataset'];
-         """
-         params:
-            - dataset: "foo"
-   ```
-   </CodeCol>
-   <CommentCol>
-       to create an index:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "log": {
-            "index": "aa-BB-foo"
-         }
+  <CommentCol>
+    Use the locale and the dataset name...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - script:
+      locale: "aa-BB"
+      source: """
+        log['index'] = log['locale'] + '-' + params['dataset'];
+      """
+      params:
+        - dataset: "foo"
+  ```
+  </CodeCol>
+  <CommentCol>
+     to create an index:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log": {
+        "index": "aa-BB-foo"
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>

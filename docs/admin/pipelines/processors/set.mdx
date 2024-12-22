@@ -4,18 +4,18 @@
 
 ```yaml {2}
 set:
-   - field: <ident>
-   - copy_from: <enumerated>
-   - description: <string>
-   - if: <script>
-   - ignore_empty_value: <logical>
-   - ignore_failure: <logical>
-   - media_type: <enumerated>
-   - on_failure: <processors...>
-   - on_success: <processors...>
-   - override: <logical>
-   - tag: <string>
-   - value: <any>
+  - field: <ident>
+  - copy_from: <enumerated>
+  - description: <string>
+  - if: <script>
+  - ignore_empty_value: <logical>
+  - ignore_failure: <logical>
+  - media_type: <enumerated>
+  - on_failure: <processors...>
+  - on_success: <processors...>
+  - override: <logical>
+  - tag: <string>
+  - value: <any>
 ```
 
 ## Description
@@ -48,67 +48,67 @@ If the field already exists, its value will be replaced with the provided one.
 Literal values can be directly assigned:
 
 <ExampleGrid>
-   <CommentCol>
-      The data contains a _foo_ field:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "foo": 5
-      }
-      ```
-   </CodeCol>
+  <CommentCol>
+    The data contains a _foo_ field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo": 5
+    }
+    ```
+  </CodeCol>
 
-   <CommentCol>
-      Set its value to 1:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      set:
-         field: foo
-         value: 1
-      ```
-      ```json
-      {
-         "foo": 1
-      }
-      ```
-   </CodeCol>
+  <CommentCol>
+    Set its value to 1:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    set:
+      field: foo
+      value: 1
+    ```
+    ```json
+    {
+      "foo": 1
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 They can also be assigned from other fields, include meta ones:
 
 <ExampleGrid>
-   <CommentCol>
-      The _data.foo_ field contains _A_:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "data": {
-            "foo": "A"
-         }
+  <CommentCol>
+    The _data.foo_ field contains _A_:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": {
+        "foo": "A"
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 
-   <CommentCol>
-      Set its value to that of the _B_ meta field:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      - set:
-         field: data.foo
-         value: {{{B}}}
-      ```
-      ```json
-      {
-         "data": {
-            "foo": "META-B"
-         }
+  <CommentCol>
+    Set its value to that of the _B_ meta field:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - set:
+      field: data.foo
+      value: {{{B}}}
+    ```
+    ```json
+    {
+      "data": {
+        "foo": "META-B"
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Array field access
@@ -116,32 +116,32 @@ They can also be assigned from other fields, include meta ones:
 Array fields can be accessed with the dot notation:
 
 <ExampleGrid>
-   <CommentCol>
-      The field contains 3 elements:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "foo": ["A", "B", "C"]
-      }
-      ```
-   </CodeCol>
-   <CommentCol>
-      The _1st_ is copied to _bar_:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      - set:
-         field: bar
-         value: {{{foo.1}}}
-      ```
-      ```json
-      {
-         "foo": ["A", "B", "C"],
-         "bar": ["A"]
-      }
-      ```
-   </CodeCol>
+  <CommentCol>
+    The field contains 3 elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo": ["A", "B", "C"]
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    The _1st_ is copied to _bar_:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - set:
+      field: bar
+      value: {{{foo.1}}}
+    ```
+    ```json
+    {
+      "foo": ["A", "B", "C"],
+      "bar": ["A"]
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Set by copying
@@ -149,30 +149,30 @@ Array fields can be accessed with the dot notation:
 The contents of a field containing complex values&mdash;such as arrays or objects&mdash;can be copied to another using `copy_from`:
 
 <ExampleGrid>
-   <CommentCol>
-      The values in _foo_...
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "foo": ["A", "B"]
-      }
-      ```
-   </CodeCol>
-   <CommentCol>
-      ...are copied into _bar_:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      - set:
-         field: bar
-         copy_from: foo
-      ```
-      ```json
-      {
-         "foo": ["A", "B"],
-         "bar": ["A", "B"]
-      }
-      ```
-   </CodeCol>
+  <CommentCol>
+    The values in _foo_...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo": ["A", "B"]
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    ...are copied into _bar_:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - set:
+      field: bar
+      copy_from: foo
+    ```
+    ```json
+    {
+      "foo": ["A", "B"],
+      "bar": ["A", "B"]
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>

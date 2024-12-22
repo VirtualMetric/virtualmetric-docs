@@ -4,15 +4,15 @@
 
 ```yaml {2-3}
 foreach:
-   - field: <ident>
-   - processor: <ident>
-   - description: <string>
-   - if: <script>
-   - ignore_failure: <logical>
-   - ignore_missing: <logical>
-   - on_failure: <processors...>
-   - on_success: <processors...>
-   - tag: <string>
+  - field: <ident>
+  - processor: <ident>
+  - description: <string>
+  - if: <script>
+  - ignore_failure: <logical>
+  - ignore_missing: <logical>
+  - on_failure: <processors...>
+  - on_success: <processors...>
+  - tag: <string>
 ```
 
 ## Description
@@ -58,37 +58,37 @@ In the event of such a failure, elements processed thus far will remain updated.
 Multiple elements can be applied the same operation.
 
 <ExampleGrid>
-   <CommentCol>
-      The array has three strings.
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "data": ["foo", "bar", "baz"]
-      }
-      ```
-   </CodeCol>
-   <CommentCol>
-      With this configuration...
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      foreach:
-         - field: data
-         - processor:
-            - uppercase:
-      ```
-   </CodeCol>
-   <CommentCol>
-      ...they are converted to uppercase.
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "data": ["FOO", "BAR", "BAZ"]
-      }
-      ```
-   </CodeCol>
+  <CommentCol>
+    The array has three strings.
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": ["foo", "bar", "baz"]
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    With this configuration...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    foreach:
+      - field: data
+      - processor:
+        - uppercase:
+    ```
+  </CodeCol>
+  <CommentCol>
+    ...they are converted to uppercase.
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": ["FOO", "BAR", "BAZ"]
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Arrays of Objects
@@ -96,44 +96,44 @@ Multiple elements can be applied the same operation.
  Multiple objects with multiple fields can be applied multiple operations.
 
 <ExampleGrid>
-   <CommentCol>
-      The objects in the array have an `id` field
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "data": [
-            {"id": 1, "name": "foo"},
-            {"id": 2, "name": "bar"}
-         ]
-      }
-      ```
-   </CodeCol>
-   <CommentCol>
-      The processor is configured to remove that field...
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      foreach:
-         - field: data
-         - processor:
-            - remove:
-               field: id
-      ```
-   </CodeCol>
-   <CommentCol>
-      ...resulting in:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "data": [
-            {"name": "foo"},
-            {"name": "bar"}
-         ]
-      }
-      ```
-   </CodeCol>
+  <CommentCol>
+    The objects in the array have an `id` field
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": [
+        {"id": 1, "name": "foo"},
+        {"id": 2, "name": "bar"}
+      ]
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    The processor is configured to remove that field...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    foreach:
+      - field: data
+      - processor:
+        - remove:
+          field: id
+    ```
+  </CodeCol>
+  <CommentCol>
+    ...resulting in:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": [
+        {"name": "foo"},
+        {"name": "bar"}
+      ]
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Objects
@@ -141,59 +141,59 @@ Multiple elements can be applied the same operation.
 Objects with multiple fields can be applied an operation.
 
 <ExampleGrid>
-   <CommentCol>
-      We have 3 objects with 2 fields each:
-   </CommentCol>
-   <CodeCol>
-   ```json
-   {
+  <CommentCol>
+    We have 3 objects with 2 fields each:
+  </CommentCol>
+  <CodeCol>
+  ```json
+  {
+    "data": {
+      "foos": {
+        "size": 10,
+        "display_name": "Foos"
+      },
+      "bars": {
+        "size": 20,
+        "display_name": "Bars"
+      },
+      "quxs": {
+        "size": 50,
+        "display_name": ""
+      }
+    }
+  }
+  ```
+  </CodeCol>
+  <CommentCol>
+    Convert their display names to uppercase:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    foreach:
+      - field: data
+      - processor:
+        - uppercase:
+          - field: display_name
+    ```
+    ```json
+    {
       "data": {
-         "foos": {
-            "size": 10,
-            "display_name": "Foos"
-         },
-         "bars": {
-            "size": 20,
-            "display_name": "Bars"
-         },
-         "quxs": {
-            "size": 50,
-            "display_name": ""
-         }
+        "foos": {
+          "size": 10,
+          "display_name": "FOOS"
+        },
+        "bars": {
+          "size": 20,
+          "display_name": "BARS"
+        },
+        "quxs": {
+          "size": 50
+          "display_name": ""
+        }
       }
-   }
-   ```
-   </CodeCol>
-   <CommentCol>
-      Convert their display names to uppercase:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      foreach:
-         - field: data
-         - processor:
-            - uppercase:
-               - field: display_name
-      ```
-      ```json
-      {
-         "data": {
-            "foos": {
-               "size": 10,
-               "display_name": "FOOS"
-            },
-            "bars": {
-               "size": 20,
-               "display_name": "BARS"
-            },
-            "quxs": {
-               "size": 50
-               "display_name": ""
-            }
-         }
-      }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Cascading Failures
@@ -202,11 +202,11 @@ If multiple levels of nesting are being used, the innermost processor can be ass
 
 ```yaml
 foreach:
-   - field: data
-   - processor:
-      - remove:
-         - field: id
-         - on_failure:
-               - id: {{{errors.id}}}
-               - message: "Remove failed"
+  - field: data
+  - processor:
+    - remove:
+      - field: id
+      - on_failure:
+          - id: {{{errors.id}}}
+          - message: "Remove failed"
 ```

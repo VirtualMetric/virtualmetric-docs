@@ -4,25 +4,25 @@
 
 ```yaml {2-4}
 kv:
-   - field: <ident>
-   - field_split: <regex>
-   - value_split: <regex>
-   - description: <string>
-   - exclude_keys: <strings...>
-   - if: <script>
-   - ignore_casting: <logical>
-   - ignore_failure: <logical>
-   - ignore_missing: <logical>
-   - include_keys: <strings...>
-   - lowercase_keys: <logical>
-   - on_failure: <processors...>
-   - on_success: <processors...>
-   - prefix: <string>
-   - strip_brackets: <logical>
-   - tag: <string>
-   - target_field: <ident>
-   - trim_key: <chars...>
-   - trim_value: <chars...>
+  - field: <ident>
+  - field_split: <regex>
+  - value_split: <regex>
+  - description: <string>
+  - exclude_keys: <strings...>
+  - if: <script>
+  - ignore_casting: <logical>
+  - ignore_failure: <logical>
+  - ignore_missing: <logical>
+  - include_keys: <strings...>
+  - lowercase_keys: <logical>
+  - on_failure: <processors...>
+  - on_success: <processors...>
+  - prefix: <string>
+  - strip_brackets: <logical>
+  - tag: <string>
+  - target_field: <ident>
+  - trim_key: <chars...>
+  - trim_value: <chars...>
 ```
 
 ## Description
@@ -56,42 +56,42 @@ kv:
 ## Examples
 
 <ExampleGrid>
-   <CommentCol>
-      The field contains a string...
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "data": "foo: 'A', bar: 1"
+  <CommentCol>
+    The field contains a string...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "foo: 'A', bar: 1"
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    pairs are separated by commas and keys are separated by colons:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - kv:
+      field: data
+      field_split: ","
+      value_split: ":"
+      target_field: pairs
+    ```
+  </CodeCol>
+  <CommentCol>
+    They are parsed and placed in the target field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "foo: 'A', bar: 1",
+      "pairs": {
+        "foo": "A",
+        "bar": 1
       }
-      ```
-   </CodeCol>
-   <CommentCol>
-      pairs are separated by commas and keys are separated by colons:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      - kv:
-         field: data
-         field_split: ","
-         value_split: ":"
-         target_field: pairs
-      ```
-   </CodeCol>
-   <CommentCol>
-      They are parsed and placed in the target field:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "data": "foo: 'A', bar: 1",
-         "pairs": {
-            "foo": "A",
-            "bar": 1
-         }
-      }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 {/* TODO: Complete */}

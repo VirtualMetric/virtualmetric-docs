@@ -4,14 +4,14 @@
 
 ```yaml {2}
 dot_expander:
-   - field: <ident>
-   - description: <string>
-   - if: <script>
-   - ignore_failure: <logical>
-   - on_failure: <processors...>
-   - on_success: <processors...>
-   - path: <string>
-   - tag: <string>
+  - field: <ident>
+  - description: <string>
+  - if: <script>
+  - ignore_failure: <logical>
+  - on_failure: <processors...>
+  - on_success: <processors...>
+  - path: <string>
+  - tag: <string>
 ```
 
 ## Description
@@ -36,196 +36,196 @@ dot_expander:
 ### Nesting
 
 <ExampleGrid>
-   <CommentCol>
-      If the expanded name is distinct...
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "foo.bar": "A"
+  <CommentCol>
+    If the expanded name is distinct...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo.bar": "A"
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    the part after the dot becomes nested:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    dot_expander:
+      - field: foo.bar
+    ```
+    ```json
+    {
+      "foo": {
+        "bar": "A"
       }
-      ```
-   </CodeCol>
-   <CommentCol>
-      the part after the dot becomes nested:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      dot_expander:
-         - field: foo.bar
-      ```
-      ```json
-      {
-         "foo": {
-            "bar": "A"
-         }
-      }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Merging
 
 <ExampleGrid>
-   <CommentCol>
-      If the dotted field clashes with a nested field...
-   </CommentCol>
-   <CodeCol>
-   ```json
-   {
-      "foo.bar": "A",
+  <CommentCol>
+    If the dotted field clashes with a nested field...
+  </CommentCol>
+  <CodeCol>
+  ```json
+  {
+    "foo.bar": "A",
+    "foo": {
+      "bar": "B"
+    }
+  }
+  ```
+  </CodeCol>
+  <CommentCol>
+    it is merged with it:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    dot_expander:
+      field: foo.bar
+    ```
+    ```json
+    {
       "foo": {
-         "bar": "B"
+        "bar": ["A", "B"]
       }
-   }
-   ```
-   </CodeCol>
-   <CommentCol>
-      it is merged with it:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      dot_expander:
-         field: foo.bar
-      ```
-      ```json
-      {
-         "foo": {
-            "bar": ["A", "B"]
-         }
-      }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Overriding
 
 <ExampleGrid>
-   <CommentCol>
-      Using `override` causes the expanded field to be overridden by the nested field:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      dot_expander:
-         - field: foo.bar
-         - override: true
-      ```
-      ```json
-      {
-         "foo": {
-            "bar": "B"
-         }
+  <CommentCol>
+    Using `override` causes the expanded field to be overridden by the nested field:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    dot_expander:
+      - field: foo.bar
+      - override: true
+    ```
+    ```json
+    {
+      "foo": {
+        "bar": "B"
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Multiple instances
 
 <ExampleGrid>
-   <CommentCol>
-      With multiple dotted fields, ...
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "foo.bar": "A",
-         "baz.qux": "B"
+  <CommentCol>
+    With multiple dotted fields, ...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo.bar": "A",
+      "baz.qux": "B"
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    using `*` expands all top-level ones:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    dot_expander:
+      - field: "*"
+    ```
+    ```json
+    {
+      "foo": {
+        "bar": "A"
+      },
+      "baz": {
+        "qux": "B"
       }
-      ```
-   </CodeCol>
-   <CommentCol>
-      using `*` expands all top-level ones:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      dot_expander:
-         - field: "*"
-      ```
-      ```json
-      {
-         "foo": {
-            "bar": "A"
-         },
-         "baz": {
-            "qux": "B"
-         }
-      }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Common parents
 
 <ExampleGrid>
-   <CommentCol>
-      If the dotted fields have a common parent...
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "foo": {
-            "bar.baz": "A",
-            "bar.qux": "B"
-         }
+  <CommentCol>
+    If the dotted fields have a common parent...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo": {
+        "bar.baz": "A",
+        "bar.qux": "B"
       }
-      ```
-   </CodeCol>
-   <CommentCol>
-      use `path` to group them:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      dot_expander:
-         - path: foo
-         - field: "*"
-      ```
-      ```json
-      {
-         "foo": {
-            "bar": {
-               "baz": "A",
-               "qux": "B"
-            }
-         }
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    use `path` to group them:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    dot_expander:
+      - path: foo
+      - field: "*"
+    ```
+    ```json
+    {
+      "foo": {
+        "bar": {
+          "baz": "A",
+          "qux": "B"
+        }
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Name clashes
 
 <ExampleGrid>
-   <CommentCol>
-      If a potential name clash exists...
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "foo": "A",
-         "foo.bar": "B"
+  <CommentCol>
+    If a potential name clash exists...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo": "A",
+      "foo.bar": "B"
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    use `rename` first to avoid overwriting a field:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - rename:
+        - field: foo
+        - target_field: foo.bar
+      - dot_expander:
+        - path: foo
+        - field: "*"
+    ```
+    ```json
+    {
+      "foo": {
+        "bar": ["A", "B"]
       }
-      ```
-   </CodeCol>
-   <CommentCol>
-      use `rename` first to avoid overwriting a field:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      processors:
-         - rename:
-            - field: foo
-            - target_field: foo.bar
-         - dot_expander:
-            - path: foo
-            - field: "*"
-      ```
-      ```json
-      {
-         "foo": {
-            "bar": ["A", "B"]
-         }
-      }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>

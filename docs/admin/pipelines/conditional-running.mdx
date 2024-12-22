@@ -8,8 +8,8 @@ If provided, the processor only runs when the stated condition is met. The condi
 
 ```yaml
 processors:
-   - drop:
-      if: "_ingest.network?.name == 'Admin'"
+  - drop:
+    if: "_ingest.network?.name == 'Admin'"
 ```
 
 ### Regular Expressions
@@ -22,10 +22,10 @@ As regular expressions can slow down indexing operations, it is better to avoid 
 
 ```yaml
 processors:
-   - set:
-      if: "_ingest_.url?.scheme =~ /^http[^s]/"
-      field: url.insecure
-      value: true
+  - set:
+    if: "_ingest_.url?.scheme =~ /^http[^s]/"
+    field: url.insecure
+    value: true
 ```
 
 ### Inline Scripting
@@ -38,18 +38,18 @@ It is better to avoid using complex scripts as they may slow down the process.
 
 ```yaml
 processors:
-   - drop:
-      if: """
-            Collection tags = ctx.tags;
-            if (tags != null) {
-               for (String tag : tags) {
-                  if (tag.toLowerCase().contains('foo')) {
-                     return false;
-                  }
-               }
+  - drop:
+    if: """
+        Collection tags = ctx.tags;
+        if (tags != null) {
+          for (String tag : tags) {
+            if (tag.toLowerCase().contains('foo')) {
+              return false;
             }
-            return true;
-         """
+          }
+        }
+        return true;
+      """
 ```
 
 ### Stored Scripts
@@ -58,8 +58,8 @@ It is also possible to use a script stored elsewhere in the `if` condition:
 
 ```yaml
 processors:
-   - drop:
-      if: "user_is_admin"
+  - drop:
+    if: "user_is_admin"
 ```
 
 ### Null Safety
@@ -81,8 +81,8 @@ to make it null safe. If that is not possible, then it may be good practice to i
 
 ```yaml
 processors:
-   - drop:
-      if: "_ingest_.network?.name != null && ctx.network.name.contains('Admin')"
+  - drop:
+    if: "_ingest_.network?.name != null && ctx.network.name.contains('Admin')"
 ```
 
 ## Running Pipelines
@@ -91,13 +91,13 @@ The `if` condition can be combined with the `pipeline` processor to run other pi
 
 ```yaml
 processors:
-   - pipeline:
-      if: "_ingest.service?.name == 'foo'"
-      name: foo_pipeline
-   - pipeline:
-      if: "_ingest.service?.name == 'bar'",
-      name: bar_pipeline
-   - fail:
-      if: "_ingest.service?.name != 'foo' && _ingest.service?.name != 'bar'"
-      message: "Either `foo` or `bar` must be present"
+  - pipeline:
+    if: "_ingest.service?.name == 'foo'"
+    name: foo_pipeline
+  - pipeline:
+    if: "_ingest.service?.name == 'bar'",
+    name: bar_pipeline
+  - fail:
+    if: "_ingest.service?.name != 'foo' && _ingest.service?.name != 'bar'"
+    message: "Either `foo` or `bar` must be present"
 ```

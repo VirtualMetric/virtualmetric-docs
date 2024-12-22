@@ -4,17 +4,17 @@
 
 ```yaml {2}
 user_agent:
-   - field: <ident>
-   - description: <string>
-   - extract_device_type: <logical>
-   - if: <script>
-   - ignore_failure: <logical>
-   - ignore_missing: <logical>
-   - on_failure: <processors...>
-   - on_success: <processors...>
-   - properties: <enumerated>
-   - tag: <string>
-   - target_field: <ident>
+  - field: <ident>
+  - description: <string>
+  - extract_device_type: <logical>
+  - if: <script>
+  - ignore_failure: <logical>
+  - ignore_missing: <logical>
+  - on_failure: <processors...>
+  - on_success: <processors...>
+  - properties: <enumerated>
+  - tag: <string>
+  - target_field: <ident>
 ```
 
 ## Description
@@ -48,42 +48,42 @@ Also, the node settings apply to all `user_agent` processors.
 ## Examples
 
 <ExampleGrid>
-   <CommentCol>
-      Given this agent:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "agent": "Mozilla/5.0 Chrome/51.0.2704.103"
+  <CommentCol>
+    Given this agent:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "agent": "Mozilla/5.0 Chrome/51.0.2704.103"
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    these user agent details can be inferred:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    user_agent:
+      field: agent
+      target_field: agent-details
+    ```
+    ```json
+    {
+      "agent": "Mozilla/5.0 Chrome/51.0.2704.103",
+      "agent-details": {
+        "name": "Chrome",
+        "original": "Mozilla/5.0 Chrome/51.0.2704.103",
+        "version": "51.0.2704.103",
+        "os": {
+          "name": "Mac OS X",
+          "version": "10.10.5",
+          "full": "Mac OS X 10.10.5"
+        },
+        "device": {
+          "name": "Mac"
+        }
       }
-      ```
-   </CodeCol>
-   <CommentCol>
-      these user agent details can be inferred:
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      user_agent:
-         field: agent
-         target_field: agent-details
-      ```
-      ```json
-      {
-         "agent": "Mozilla/5.0 Chrome/51.0.2704.103",
-         "agent-details": {
-            "name": "Chrome",
-            "original": "Mozilla/5.0 Chrome/51.0.2704.103",
-            "version": "51.0.2704.103",
-            "os": {
-               "name": "Mac OS X",
-               "version": "10.10.5",
-               "full": "Mac OS X 10.10.5"
-            },
-            "device": {
-               "name": "Mac"
-            }
-         }
-      }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>

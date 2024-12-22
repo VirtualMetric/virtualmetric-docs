@@ -22,16 +22,16 @@ Schematically, this looks like so:
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
 	provider[("`**Provider**
-    data
+   data
   `")]
   pipeline{"`**Pipeline**
 	  processor-1
-    processor-2
-    ...
-    processor-n
+   processor-2
+   ...
+   processor-n
   `"}
 	consumer[/"`**Consumer**
-    processed data
+   processed data
   `"/]
 	provider --> pipeline --> consumer
 ```
@@ -46,16 +46,16 @@ A pipeline can consume data from multiple providers, and once it is finised proc
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
 	provider1[("`**Provider 1**
-    A
-    B
+   A
+   B
   `")]
 	provider2[("`**Provider 2**
-    C
+   C
   `")]
  	pipeline{"`**Pipeline**`"}
 	consumer["`**Consumer**
-    B
-    C
+   B
+   C
   `"]
 	provider1 --> pipeline;
 	provider2 --> pipeline;
@@ -68,17 +68,17 @@ It can also consume data from a single provider and deliver the processed result
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
 	provider[("`**Provider**
-    A
-    B
-    C
+   A
+   B
+   C
   `")]
  	pipeline{"`**Pipeline**`"}
 	consumer1["`**Consumer 1**
-    A
-    C
+   A
+   C
   `"]
 	consumer2["`**Consumer 2**
-    B
+   B
   `"]
 	provider --> pipeline;
   pipeline --> consumer1;
@@ -92,24 +92,24 @@ Finally, and in most real-life situations, we will have multiple providers and m
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
 flowchart LR
 	provider1[("`**Provider 1**
-    A
-    B
+   A
+   B
   `")]
 	provider2[("`**Provider 2**
-    C
+   C
   `")]
 	provider3[("`**Provider 3**
-    D
+   D
   `")]
  	pipeline{"`**Pipeline**`"}
 	consumer1["`**Consumer 1**
-    A
-    C
+   A
+   C
   `"]
 	consumer2["`**Consumer 2**
-    A
-    B
-    D
+   A
+   B
+   D
   `"]
 	provider1 --> pipeline;
 	provider2 --> pipeline;
@@ -183,16 +183,16 @@ The basic layout of the configuration for a typical pipeline looks like so:
 pipeline:
   description: "What the pipeline does"
   processors:
-    - processor-1:
-        field: foo
-        value: "A"
-    - processor-2:
-        description: "What processor-2 does"
-        field: bar
-        value: true
-    - processor-3:
-        field: baz
-        value: 10
+   - processor-1:
+      field: foo
+      value: "A"
+   - processor-2:
+      description: "What processor-2 does"
+      field: bar
+      value: true
+   - processor-3:
+      field: baz
+      value: 10
 ```
 
 This pipeline is created based on the assumption that the incoming data stream will have the following structure:
@@ -217,7 +217,7 @@ Let us point out here that the above pipeline may appear incomplete: it does _no
 data:
   - foo: ["Z", "B", "C", ...]
   - baz: [5, 100, 1, ...]
-   -bar: true
+  -bar: true
 ```
 
 With a brief glance, one can notice that the value `A` in `foo` has become `Z`, that the `10` in `baz` has become `100`, whereas `bar` is left untouched since it was already `true`.
@@ -249,7 +249,7 @@ flowchart LR
 		C
 	`")]
   routing{"`**Routing**
-    D = curate(A, B, C)
+   D = curate(A, B, C)
 		E = enrich(transform(D))
 	`"}
 	target["`**Target**
@@ -260,12 +260,12 @@ flowchart LR
 	routing --> target
 ```
 
-   {/*
-   style source1 fill: #f99, stroke: #333, stroke-width: 2px
-   style source2 fill: #bbf, stroke: #333, stroke-width: 2px
-   style routing fill: #8fb, stroke: #333, stroke-width: 2px
-   style target  fill: #9f7, stroke: #333, stroke-width: 2px
-   */}
+  {/*
+  style source1 fill: #f99, stroke: #333, stroke-width: 2px
+  style source2 fill: #bbf, stroke: #333, stroke-width: 2px
+  style routing fill: #8fb, stroke: #333, stroke-width: 2px
+  style target  fill: #9f7, stroke: #333, stroke-width: 2px
+  */}
 
 It is through this three-fold staging that a pipeline truly shines and becomes indispensible.
 

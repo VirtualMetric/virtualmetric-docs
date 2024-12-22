@@ -4,20 +4,20 @@
 
 ```yaml {2}
 attachment:
-   - field: <ident>
-   - description: <string>
-   - target_field: <ident>
-   - if: <script>
-   - indexed_chars_field: <ident>
-   - indexed_chars: <string>
-   - ignore_failure: <logical>
-   - ignore_missing: <logical>
-   - on_failure: <processors...>
-   - on_success: <processors...>
-   - properties: <enumerated>
-   - remove_binary: <logical>
-   - resource_name: <string>
-   - tag: <string>
+  - field: <ident>
+  - description: <string>
+  - target_field: <ident>
+  - if: <script>
+  - indexed_chars_field: <ident>
+  - indexed_chars: <string>
+  - ignore_failure: <logical>
+  - ignore_missing: <logical>
+  - on_failure: <processors...>
+  - on_success: <processors...>
+  - properties: <enumerated>
+  - remove_binary: <logical>
+  - resource_name: <string>
+  - tag: <string>
 ```
 
 ## Description
@@ -62,32 +62,32 @@ The files to be attached to the JSON documents must first be encoded as `base64`
 
 <ExampleGrid>
 	<CommentCol>
-      The field contains the attachment as a base64-encoded string.
+    The field contains the attachment as a base64-encoded string.
 	</CommentCol>
 	<CodeCol>
-      ```json
-      {
-         "data": "<base64-encoded string>"
-      }
-      ```
-      ```yaml
-      attachment:
-         - field: data
-      ```
+    ```json
+    {
+      "data": "<base64-encoded string>"
+    }
+    ```
+    ```yaml
+    attachment:
+      - field: data
+    ```
 	</CodeCol>
 	<CommentCol>
-      The content is extracted and decoded:
+    The content is extracted and decoded:
 	</CommentCol>
 	<CodeCol>
-      ```json
-      {
-         "data": "<base64-encoded string>",
-         "attachment": {
-            "content_type": "application/txt",
-            "content": "foo bar baz qux"
-         }
+    ```json
+    {
+      "data": "<base64-encoded string>",
+      "attachment": {
+        "content_type": "application/txt",
+        "content": "foo bar baz qux"
       }
-      ```
+    }
+    ```
 	</CodeCol>
 </ExampleGrid>
 
@@ -97,38 +97,38 @@ The exported fields listed above can be used to drill down to the properties of 
 
 <ExampleGrid>
 	<CommentCol>
-      With the `properties` array, relevant fragments of information...
+    With the `properties` array, relevant fragments of information...
 	</CommentCol>
 	<CodeCol>
-      ```json
-      {
-         "data": "<base64-encoded string>"
-      }
-      ```
-      ```yaml
-      attachment:
-         - field: data
-         - properties:
-            - title
-            - content
-      ```
+    ```json
+    {
+      "data": "<base64-encoded string>"
+    }
+    ```
+    ```yaml
+    attachment:
+      - field: data
+      - properties:
+        - title
+        - content
+    ```
 	</CodeCol>
-   <CommentCol>
-      can be extracted separately:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "data": "data": "<base64-encoded string>",
-         "attachment": {
-            "properties": {
-               "title": "ABC",
-               "content": 123
-            }
-         }
+  <CommentCol>
+    can be extracted separately:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "data": "<base64-encoded string>",
+      "attachment": {
+        "properties": {
+          "title": "ABC",
+          "content": 123
+        }
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 ### Character limits
@@ -138,37 +138,37 @@ In order not to overload the _node cache_, the number of characters that can be 
 To override the default limit, `indexed_chars_field` can be used to set limits per document.
 
 <ExampleGrid>
-   <CommentCol>
-      Specifying an upper limit...
-   </CommentCol>
-   <CodeCol>
-      ```yaml
-      attachment:
-         - field: data
-         - indexed_chars: 15
-         - indexed_chars_field: max_size
-      ```
-      ```json
-      {
-         "data": "<base64-encoded string>"
-      }
-      ```
+  <CommentCol>
+    Specifying an upper limit...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    attachment:
+      - field: data
+      - indexed_chars: 15
+      - indexed_chars_field: max_size
+    ```
+    ```json
+    {
+      "data": "<base64-encoded string>"
+    }
+    ```
 </CodeCol>
-   <CommentCol>
-      extracts only the required amount of data:
-   </CommentCol>
-   <CodeCol>
-      ```json
-      {
-         "data": "<base64-encoded string>",
-         "attachment": {
-            "content_type": "application/rtf",
-            "content": "foo bar baz qux",
-            "content_length": 15
-         }
+  <CommentCol>
+    extracts only the required amount of data:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "<base64-encoded string>",
+      "attachment": {
+        "content_type": "application/rtf",
+        "content": "foo bar baz qux",
+        "content_length": 15
       }
-      ```
-   </CodeCol>
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
 :::note
