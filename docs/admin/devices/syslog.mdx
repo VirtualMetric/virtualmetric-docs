@@ -6,7 +6,7 @@
 devices:
   - id: <numeric>
     name: <ip-address>
-    description: <ident>
+    description: <string>
     type: http
     status: <logical>
     properties:
@@ -31,9 +31,8 @@ Represents the _syslog_ format which offers the flexibility to filter, analyze, 
 
 <dl>
   <dt>**Facility**</dt>
-  <dd>Type of program or service generating the log message.</dd>
   <dd>
-    <dt>Examples:</dt>
+    <dt>Type of program or service generating the log message. Examples:</dt>
     <dd>**auth**: Authentication</dd>
     <dd>**cron**: Scheduled job</dd>
     <dd>**daemon**: System</dd>
@@ -54,8 +53,7 @@ Represents the _syslog_ format which offers the flexibility to filter, analyze, 
   <dd>Combination of facility and severity encoded into a single numeric value</dd>
 
   <dt>**Process Information**</dt>
-  <dd>Name of the process or application generating the log.</dd>
-  <dd>May include **PID** (Process ID)</dd>
+  <dd>Name of the process or application generating the log. May include **PID** (Process ID)</dd>
 
   <dt>**Remote Logging** (Optional)</dt>
   <dd>
@@ -65,33 +63,28 @@ Represents the _syslog_ format which offers the flexibility to filter, analyze, 
   </dd>
 
   <dt>**Severity**</dt>
-  <dd>Urgency of the message</dd>
   <dd>
-    Standard levels:
-    <dd>**0**: Emergency. System is unusable</dd>
-    <dd>**1**: Alert. Immediate action required</dd>
-    <dd>**2**: Critical condition</dd>
-    <dd>**3**: Error conditions</dd>
-    <dd>**4**: Warning conditions</dd>
-    <dd>**5**: Notice. Normal but significant conditions</dd>
-    <dd>**6**: Informational messages</dd>
-    <dd>**7**: Debugging messages</dd>
+    <dt>Urgency of the message. Standard levels:</dt>
+      <dd>**0**: Emergency, system is unusable</dd>
+      <dd>**1**: Alert, immediate action required</dd>
+      <dd>**2**: Critical condition</dd>
+      <dd>**3**: Error conditions</dd>
+      <dd>**4**: Warning conditions</dd>
+      <dd>**5**: Notice, normal but significant conditions</dd>
+      <dd>**6**: Informational messages</dd>
+      <dd>**7**: Debugging messages</dd>
   </dd>
 
   <dt>**Timestamp**</dt>
-  <dd>Date and time of _event_</dd>
-  <dd>Format: `YYYY-MM-DD HH:MM:SS`</dd>
+  <dd>Date and time of event. Format: `YYYY-MM-DD HH:MM:SS`</dd>
 </dl>
 
 ### Common Settings
 
 <dl>
   <dt>**Transport**</dt>
-  <dd>
-    **UDP** or **TCP** protocols
-    <dt>Default ports:</dt>
-    <dd>`514` for either</dd>
-  </dd>
+    <dd>Protocols: **UDP** or **TCP**</dd>
+    <dd>Ports: `514`</dd>
 
   <dt>**Encryption**</dt>
   <dd>For secure transport, use with **TLS**</dd>
@@ -101,15 +94,26 @@ Represents the _syslog_ format which offers the flexibility to filter, analyze, 
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`||||
-|`name`||||
-|`description`||||
-|`status`||||
+|`id`|Y|||
+|`name`|Y|`127.0.0.1`||
+|`description`|N|-|Explanatory note|
+|`type`|Y|`syslog`||
+|`status`|Y|`false`||
 
 ## `properties` Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
+|`network`|Y|`"udp"`||
+|`address`|Y|`"0.0.0.0"`||
+|`port`|Y|`14514`||
+|`tls`||`false`||
+|`cert_name`||`false`||
+|`key_name`||`false`||
+|`reuse`||`false`||
+|`flush_interval`||`1`||
+|`queue:interval`||`1`||
+|`batch_size`||`1000`||
 
 ## Use Cases
 
@@ -129,19 +133,19 @@ devices:
 </details>
 
 <details>
-<summary>Listen to **Syslog** over a regular **UDP** connection</summary>
+<summary>Listen to syslog over a regular **UDP** connection</summary>
 ```yaml
 ```
 </details>
 
 <details>
-<summary>Listen to **Syslog** over a regular **TCP** connection launched by a pre-processor pipeline</summary>
+<summary>Listen to syslog over a regular **TCP** connection launched by a pre-processor pipeline</summary>
 ```yaml
 ```
 </details>
 
 <details>
-<summary>Collect data using **Syslog** with a **TCP** line parser</summary>
+<summary>Collect data using syslog with a **TCP** line parser</summary>
 ```yaml
 ```
 </details>

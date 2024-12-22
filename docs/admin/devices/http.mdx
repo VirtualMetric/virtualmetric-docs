@@ -29,17 +29,7 @@ devices:
 
 ## Description
 
-Represents the HTTP protocol to listen on web data streams.
-
-The HTTP protocol offers the following features:
-
-* **Statelessness**: Each request is independent, with no inherent connection between them
-* **Caching**: Mechanisms like `ETag`, `Cache-Control`, and `Expires` for optimizing resource delivery
-* **Compression**: Encoding like `gzip` or `deflate` for reducing payload size
-* **Persistence**: With `HTTP/1.1` and later, connections can be reused for multiple requests
-* **Security** (HTTPS): Uses SSL/TLS to encrypt HTTP traffic, providing confidentiality and integrity
-
-These allow HTTP to support a wide range of applications, from simple websites to complex APIs and distributed systems.
+Represents the HTTP protocol to listen to web data streams.
 
 ### Protocol Content
 
@@ -118,21 +108,56 @@ These allow HTTP to support a wide range of applications, from simple websites t
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`||||
-|`name`||||
-|`description`||||
-|`status`||||
+|`id`|Y||Device identifier|
+|`name`|Y|`127.0.0.1`|The ip used to refer to the device|
+|`description`|N|-|Explanatory note|
+|`type`|Y|`http`|The ip used to refer to the device|
+|`status`|Y|`false`||
 
 ## `properties` Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
+|`address`|Y|`"0.0.0.0"`||
+|`port`||`0`||
+|`tls`||`false`||
+|`cert_name`||`""`||
+|`key_name`||`""`||
+|`url`||`""`||
+|`content:type`||`""`||
+|`response:code`||`200`||
+|`response:body`||`""`|
+|`flush_interval`||`1`||
+|`queue:interval`||`1`||
+|`batch_size`||`1000`||
 
 ## Use Cases
 
 <details>
 <summary>Sample code</summary>
 ```yaml
+devices:
+  - id: 324233249
+    name: 127.0.0.1
+    description: http
+    type: http
+    status: false
+    properties:
+      address: "0.0.0.0"
+      port: 0
+      tls: false
+      cert_name: ""
+      key_name: ""
+      url: ""
+      content:
+        type: ""
+      response:
+        code: 200
+        body: ""
+      flush_interval: 1
+      queue:
+        interval: 1
+      batch_size: 1000
 ```
 </details>
 

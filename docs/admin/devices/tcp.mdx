@@ -41,21 +41,62 @@ devices:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`||||
-|`name`||||
-|`description`||||
-|`status`||||
+|`id`|Y|`324236543`||
+|`name`|Y|`127.0.0.1`||
+|`description`|N|-||
+|`type`|Y|`tcp`||
+|`status`|Y|`false`||
 
 ## `properties` Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
+|`address`|Y|`"0.0.0.0"`||
+|`port`|Y|`0`||
+|`tls:status`|N|`false`||
+|`tls:cert_name`|N|`""`||
+|`tls:key_name`|N|`""`||
+|`reuse`|N|`false`||
+|`flush_interval`|N|`1`||
+|`queue:interval`|N|`1`||
+|`timeout`|N|`300`|Stated in seconds|
+|`batch_size`|N|`1000`||
+|`framing`|N|||
+|`line_delimiter`|N|`"\\n"`||
+|`max_message_size`|N|||
+|`max_connections`|N|||
 
 ## Use Cases
 
 <details>
 <summary>Sample code</summary>
+
+The YAML file is as follows:
+
 ```yaml
+devices:
+  - id: 324236543
+    name: 127.0.0.1
+    description: tcp
+    type: tcp
+    status: false
+    properties:
+      address: "0.0.0.0"
+      port: 0
+      tls:
+        status: false
+        cert_name: ""
+        key_name: ""
+      reuse: false
+      flush_interval: 1
+      queue:
+        interval: 1
+      batch_size: 1000
+      max_message_size: 20971520
+      framing: "delimiter"
+      line_delimiter: "\\n"
+      timeout: 300
+      max_connections: 10000
 ```
 </details>
 
