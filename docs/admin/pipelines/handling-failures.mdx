@@ -10,9 +10,9 @@ To ignore a failure and keep running the remaining processors in the pipeline, `
 
 ```yaml
 - rename:
-  field: provider
-  target_field: cloud.provider
-  ignore_failure: true
+    field: provider
+    target_field: cloud.provider
+    ignore_failure: true
 ```
 
 ## Continuation
@@ -25,9 +25,9 @@ To configure a processor so that in the event of a failure another processor run
   target_field: bar
   on_failure: [
     - set:
-      field: error.message
-      value: "Field 'foo' could not be renamed as 'bar'"
-      override: false
+        field: error.message
+        value: "Field 'foo' could not be renamed as 'bar'"
+        override: false
 ```
 
 ## Nesting
@@ -36,18 +36,18 @@ For cascading errors, multiple `on_failure` processors can be nested.
 
 ```yaml
 - rename:
-  field: foo
-  target_field: bar
-  on_failure:
-    - set:
-      field: error.message
-      value: "Field 'foo' could not be renamed as 'bar'"
-      override: false
-      on_failure:
-        - set:
-          field: error.message.cascade
-          value: "Multiple errors encountered"
-          override: true
+    field: foo
+    target_field: bar
+    on_failure:
+      - set:
+          field: error.message
+          value: "Field 'foo' could not be renamed as 'bar'"
+          override: false
+          on_failure:
+            - set:
+              field: error.message.cascade
+              value: "Multiple errors encountered"
+              override: true
 ```
 
 ## Pipelines
@@ -57,9 +57,9 @@ The `on_failure` can also be specified for the pipeline. When a processor fails,
 ```yaml
 on_failure:
   - set:
-    field: _index
-    value: failed-{{{ _ingest.on_failure_processor_tag }}}
-    message: "Processor failed"
+      field: _index
+      value: failed-{{{ _ingest.on_failure_processor_tag }}}
+      message: "Processor failed"
 ```
 
 ## Metadata
@@ -69,6 +69,6 @@ More information may be available in the metadata fields `on_failure_message`, `
 ```yaml
 on_failure:
   - set:
-    field: error_info
-    value: "{{ _ingest.on_failure_processor_type }} in {{ _ingest.on_failure_pipeline }} failed; error message: {{ _ingest.on_failure_message }}"
+      field: error_info
+      value: "{{ _ingest.on_failure_processor_type }} in {{ _ingest.on_failure_pipeline }} failed; error message: {{ _ingest.on_failure_message }}"
 ```
