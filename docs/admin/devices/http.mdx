@@ -33,116 +33,46 @@ Represents the HTTP protocol to listen to web data streams.
 
 ### Protocol Content
 
-{/* <dl>
-	<dt>**Body**</dt>
-		<hr style={{margin: "0px"}}/>
-		<dd>Data being sent or received</dd>
-		<dd>
-			<dt>Request Body:</dt>
-				<dd>Used with methods (e.g. `POST` or `PUT`) to send data</dd>
-				<dt>Response Body:</dt>
-				<dd>Contains the content of the response</dd>
-		</dd>
-
-	<dt>**Cookies**</dt>
-		<hr style={{margin: "0px"}}/>
-		<dd>Key-value pairs sent by the server to the client to store stateful information.</dd>
-		<dd>Included in subsequent requests to the server</dd>
-
-	<dt>**Headers**</dt>
-		<hr style={{margin: "0px"}}/>
-		<dd>Key-value pairs that provide metadata about the request or response</dd>
-		<dd>
-			<dt>Request Headers:</dt>
-				<dd>`Accept`: Acceptable content types (e.g. `text/html`)</dd>
-				<dd>`Authorization`: Credentials for authentication</dd>
-				<dd>`Host`: Server's hostname</dd>
-				<dd>`User-Agent`: Client making the request</dd>
-			<dt>Response Headers:</dt>
-				<dd>`Content-Length`: Size of the response body</dd>
-				<dd>`Content-Type`: Type of content returned (e.g. `application/json`)</dd>
-				<dd>`Server`: Information about the server handling the request</dd>
-				<dd>`Set-Cookie`: Cookie in the client</dd>
-		</dd>
-
-	<dt>**Methods** (Request Type)</dt>
-		<hr style={{margin: "0px"}}/>
-		<dd>`DELETE`, `GET`, `POST`, `PUT`</dd>
-
-	<dt>**Request Line** (for HTTP requests)</dt>
-		<hr style={{margin: "0px"}}/>
-		<dd>`DELETE`, `GET`, `HEAD`, `OPTIONS`, `PATCH`, `POST`, `PUT`</dd>
-
-	<dt>**Status Codes** (Response Type)</dt>
-		<hr style={{margin: "0px"}}/>
-		<dd>**1xx**: Informational</dd>
-		<dd>**2xx**: Success</dd>
-		<dd>**3xx**: Redirection</dd>
-		<dd>**4xx**: Client Error</dd>
-		<dd>**5xx**: Server Error</dd>
-
-	<dt>**Status Line** (for HTTP responses)</dt>
-		<hr style={{margin: "0px"}}/>
-		<dd>HTTP version used in the response</dd>
-		<dd>
-			<dt>Status Code: 3-digit code indicating the result of the request</dt>
-				<dd>`200`: Request successful</dd>
-				<dd>`301`: Resource moved Permanently</dd>
-				<dd>`404`: Resource Not Found</dd>
-				<dd>`500`: Internal Server Error</dd>
-				<dd>Reason phrase: textual description of the status code</dd>
-		</dd>
-
-	<dt>**URI**  (Uniform Resource Identifier)</dt>
-		<hr style={{margin: "0px"}}/>
-		<dd>Resource being requested. Contains query fragments</dd>
-</dl> */}
-
 ## Parameters
 
 |Field|Subfield|Required|Default|Description|
 |---|---|---|---|---|
-|`id`|-|Y||Device identifier|
-|`name`|-|Y|`127.0.0.1`|The ip used to refer to the device|
 |`description`|-|N|-|Explanatory note|
-|`type`|-|Y|`http`|The ip used to refer to the device|
+|`id`|-|Y||Device identifier|
+|`name`|-|Y|`127.0.0.1`|The IP used to refer to the device|
 |`status`|-|Y|`false`||
-|`properties:`|`address`|Y|`"0.0.0.0"`||
-||`port`||`0`||
-||`tls`||`false`||
+|`type`|-|Y||The type of the device. Should be `http`|
+|`properties`|`address`|Y|`"0.0.0.0"`||
+||`batch_size`||`1000`|The total number of rows the device will ingest in one round|
 ||`cert_name`||`""`||
-||`key_name`||`""`||
-||`url`||`""`||
+||<dt>`content:`</dt><dd>`body`</dd>||`""`||
 ||<dt>`content:`</dt><dd>`type`</dd>||`""`||
-||<dt>`response:`</dt><dd>`code`</dd>||`200`||
-||<dd>`body`</dd>||`""`|
-|`flush_interval`|-||`1`||
-|`queue:`|`interval`||`1`||
-|`batch_size`|-||`1000`||
+||`flush_interval`||`1`|The time interval (sec) used to flush the... whatever|
+||`key_name`||`""`||
+||`port`||`0`||
+||<dt>`queue:`</dt><dd>`interval`</dd>||`1`|The time interval (sec) used to... whatever|
+||<dt>`response:`</dt><dd>`code`</dd>||`200`|The response code returned by the server|
+||`tls`||`false`||
+||`url`||`""`|The URL through which the device will listen to the HTTP stream|
 
-## Parameters - Alternative Format
+{/* ## Parameters
 
 <dl>
 	<dt>`batch_size`</dt>
-	<hr style={{margin: "0px"}}/>
 	<dd>The total number of rows to be processed</dd>
 	<dd>_default_: `1000`</dd>
 
 	<dt>`description`</dt>
-	<hr style={{margin: "0px"}}/>
 	<dd>Explanatory note</dd>
 
 	<dt>`flush_interval`</dt>
-	<hr style={{margin: "0px"}}/>
-	<dd>The interval to refresh the ... whatever</dd>
+	<dd>The interval to refresh the... whatever</dd>
 	<dd>_default_: `1` (sec)</dd>
 
 	<dt>`id` _required_</dt>
-	<hr style={{margin: "0px"}}/>
 	<dd>Device identifier</dd>
 
 	<dt>`name`</dt>
-	<hr style={{margin: "0px"}}/>
 	<dd>The IP number used to refer to the device</dd>
 	<dd>_default_: `127.0.0.1`</dd>
 
@@ -160,8 +90,9 @@ Represents the HTTP protocol to listen to web data streams.
 			<dd>_default_: `""`</dd>
 		</dd>
 
+    	<hr style={{margin: "0px"}}/>
 		<dt>`port`</dt>
-		<dd>The port number to be used by the ... whatever</dd>
+		<dd>The port number to be used by the... whatever</dd>
 		<dd>_default_: `0`</dd>
 
 		<dt>`queue`</dt>
@@ -172,6 +103,7 @@ Represents the HTTP protocol to listen to web data streams.
 			<dd>_default_: `1` (sec)</dd>
 		</dd>
 
+    	<hr style={{margin: "0px"}}/>
 		<dt>`response`</dt>
 		<hr style={{margin: "0px"}}/>
 		<dd>
@@ -184,7 +116,12 @@ Represents the HTTP protocol to listen to web data streams.
 			<dd>_default_: `200`</dd>
 		</dd>
 	</dd>
-</dl>
+
+	<dt>`status`</dt>
+	<dd>The status of the device</dd>
+	<dd>_default_: `false`</dd>
+
+</dl> */}
 
 ## Examples
 
