@@ -4,18 +4,45 @@ sidebar_label: Quick Start
 
 # Devices: Quick Start
 
-This quick start will walk you through the steps to configure a device for **Director**. As an example, we will pick a widely used log format, namely _syslog_.
+This quick start will walk you through the steps to configure a device for **Director**. As an example, we will pick a widely used log format, namely _syslog_, so we will configure a **Syslog** device.
 
-## Create The Device YAML File
+## Create The YAML File
 
-As we will create a _Syslog_ device, we will begin by creating a `syslog.yaml` file with which we will define the parameters required to initialize and use a listener.
+As we will create a **Syslog** device, we will begin by creating a `syslog.yaml` file under `<vm_root>` (the directory where you have installed **Director**) with which we will define the parameters required to initialize and use a listener.
 
 ## Define The Parameters
 
-Define the common parameters that will identify the object as a device. The bare minimum will be `id`, `name`, `type`, and `status`.
+Now, we have to define the parameters that will identify _syslog_ listener as a device:
+
+```yaml
+devices
+   id: 324235346
+   name: 127.0.0.1
+   type: syslog
+   status: false
+```
+
+Why these values? For the time being, bear with us etc.
 
 ## Define The Properties
 
-Define the parameters that are device-specific.
+Now we have to define the properties that are device-specific. For our example these will be
+
+```yaml
+   properties:
+      network: "udp"
+      address: "0.0.0.0"
+      port: 14514
+      tls: false
+      cert_name: ""
+      key_name: ""
+      reuse: false
+      flush_interval: 1
+      queue:
+         interval: 1
+      batch_size: 1000
+```
+
+Again, why these values? Please be patient, etc.
 
 {/* TODO: Complete */}

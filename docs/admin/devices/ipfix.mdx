@@ -27,7 +27,7 @@ IPFIX (IP Flow Information Export) is a protocol for exporting network flow info
 
 ### Protocol Content
 
-<dl>
+{/* <dl>
   <dt>**Flow Metadata**</dt>
     <hr style={{margin: "0px"}}/>
     <dd>
@@ -87,9 +87,9 @@ IPFIX (IP Flow Information Export) is a protocol for exporting network flow info
     <dd>
       NAT translations, DPI data, and security features like IDS/IPS alerts
     </dd>
-</dl>
+</dl> */}
 
-## Parameters
+{/* ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -98,19 +98,65 @@ IPFIX (IP Flow Information Export) is a protocol for exporting network flow info
 |`description`|N|-||
 |`type`|Y|`ipfix`||
 |`status`||`false`||
+|<dt>`properties:`</dt><dd>`address`</dd>|Y|`"0.0.0.0"`||
+|<dd>`port`</dd>|Y|`4739`||
+|<dd>`reuse`</dd>||`false`||
+|<dd>`flush_interval`</dd>||`1`||
+|<dd><dt>`queue:`</dt><dd>`interval`</dd></dd>||`1`||
+|<dd>`batch_size`</dd>||`1000`|| */}
 
-## `properties` Parameters
+## Parameters
 
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`address`|Y|`"0.0.0.0"`||
-|`port`|Y|`4739`||
-|`reuse`||`false`||
-|`flush_interval`||`1`||
-|<dt>`queue:`</dt><dd>`interval`</dd>||`1`||
-|`batch_size`||`1000`||
+<dl>
+  <dt>`description`</dt>
+  <dd>Explanatory note</dd>
 
-## Use Cases
+  <dt>`id` _required_</dt>
+  <dd>The identifier of the device</dd>
+
+  <dt>`name`</dt>
+  <dd>The IP number used to refer to the device</dd>
+  <dd>_default_: `127.0.0.1`</dd>
+
+  <dt>`properties`</dt>
+  <hr style={{margin: "0px"}}/>
+  <dd>
+    <dt>`address`</dt>
+    <dd>_default_: `"0.0.0.0"`</dd>
+
+    <dt>`batch_size`</dt>
+    <dd>The total number of rows to be processed</dd>
+    <dd>_default_: `1000`</dd>
+
+    <dt>`flush_interval`</dt>
+    <dd>The time interval used to refresh the... whatever</dd>
+    <dd>_default_: `1` (sec)</dd>
+
+    <dt>`port` _required_</dt>
+    <dd>_default_: `4739`</dd>
+
+    <dt>`queue`</dt>
+    <hr style={{margin: "0px"}}/>
+    <dd>
+      <dt>`interval`</dt>
+      <dd>The time interval used to do... whatever</dd>
+      <dd>_default_: `1` (sec)</dd>
+    </dd>
+
+    <hr style={{margin: "0px"}}/>
+    <dt>`reuse`</dt>
+    <dd>_default_: `false`</dd>
+  </dd>
+
+  <hr style={{margin: "0px"}}/>
+  <dt>`status`</dt>
+  <dd>_default_: `false`</dd>
+
+  <dt>`type` _required_</dt>
+  <dd>Type of the device. Should be `ipfix`</dd>
+</dl>
+
+## Examples
 
 <details>
 <summary>Sample code</summary>

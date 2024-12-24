@@ -142,9 +142,9 @@ const sidebars: SidebarsConfig = {
       link: {type: "doc", id: "appendix/index"},
       items: [
         "appendix/cli",
-        "appendix/built-in-grok-patterns",
+        "appendix/grok-patterns",
         "appendix/metadata-tags",
-        "appendix/synopsis-type-specifiers",
+        "appendix/synopsis-key",
       ],
     },
 
