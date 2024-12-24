@@ -1,0 +1,100 @@
+name: Pull Request Pipeline
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: "Prepare: Bootstrap the repository"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      # Cache node modules
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: ./**/node_modules
+          key: ${{ github.sha }}-node-modules
+          restore-keys: |
+            ${{ github.sha }}-node-modules
+
+  build-docs:
+    name: Build VirtualMetric Docs
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Restore node modules
+      - name: Restore Node Modules
+        uses: actions/cache@v3
+        with:
+          path: ./**/node_modules
+          key: ${{ github.sha }}-node-modules
+          restore-keys: |
+            ${{ github.sha }}-node-modules
+      - name: Building the dashboard application
+        run: npm run build
+
+      # Cache the build outputs
+      - name: Cache Main Build
+        uses: actions/cache@v3
+        with:
+          path: ./build
+          key: ${{ github.sha }}-docs-build-output
+          restore-keys: |
+            ${{ github.sha }}-docs-build-output
+
+  deploy-docs:
+    name: Deploy VirtualMetric Docs
+    outputs:
+      docs-url: ${{ steps.application-deployment.outputs.deployment-url }}
+    needs: [build-docs]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Restore build outputs for main app
+      - name: Restore Main Build
+        uses: actions/cache@v3
+        with:
+          path: ./build
+          key: ${{ github.sha }}-docs-build-output
+          restore-keys: |
+            ${{ github.sha }}-docs-build-output
+
+      - name: Docs CloudFlare Deployment
+        id: application-deployment
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy build --project-name virtualmetric-docs
+
+  notify:
+    name: Notify
+    needs: [deploy-docs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Remove old deployment links
+        uses: izhangzhihao/delete-comment@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_user_name: github-actions[bot]
+          issue_number: ${{ github.event.number }}
+      - name: Comment on PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Docs Feature Deployment ${{ needs.deploy-docs.outputs.docs-url}}
