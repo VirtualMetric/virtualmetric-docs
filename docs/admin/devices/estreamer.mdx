@@ -30,61 +30,45 @@ devices:
 
 ## Description
 
-**eStreamer** data refers to event data collected from Cisco Firepower devices, including Firepower Threat Defense (FTD) and Firepower Management Center (FMC). It is transmitted using the eStreamer protocol, part of Cisco's Event Streamer API. The data provides detailed security event information that organizations can use for monitoring, analysis, and threat detection.
+Represents that listener that delivers data from **eStreamer**.
+
+The protocol refers to event data collected from Cisco Firepower devices, including Firepower Threat Defense (FTD) and Firepower Management Center (FMC). It is transmitted using the eStreamer protocol, part of Cisco's _Event Streamer API_. The data provides detailed security event information that can be used for monitoring, analysis, and threat detection.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
+|`id`|Y|N/A||
 |`name`|Y|`127.0.0.1`||
 |`description`|N|-|Explanatory note|
-|`type`|Y|`estreamer`||
+|`type`|N|-|Type of device. Should be `estreamer`|
 |`status`||`false`||
 
 ### `properties:`
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|Y|`"0.0.0.0"`||
-|`port`|Y|`8302`||
-|`cert_name`|N|`""`||
-|`key_name`|N|`""`||
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|N|`8302`|Listening port|
+|`cert_name`|N|`""`|TLS certificate path|
+|`key_name`|N|`""`|TLS key path|
 |`reuse`||`false`||
-|`flush_interval`||`1`||
-|`batch_size`||`1000`||
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
+|`flush_interval`||`1`|Ingester flush interval in sec|
+|`batch_size`|N|`1000`|Ingester batch size|
 
 ### `inputs:`
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
-|`name`|Y|||
-|`status`|Y|||
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
+|`id`|Y|N/A|Event id|
+|`name`|N|-||
+|`status`|N|`true`|Enables event|
 
 ### `queue:`
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`interval`|Y|`1`||
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
+|`interval`|N|`1`|Ingester de-queue interval in sec|
 
 ### `tls:`
 
@@ -97,7 +81,6 @@ devices:
 ```yaml
 ```
 </details>
-
 
 {/* <dl>
 ## Protocol Content
