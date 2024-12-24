@@ -16,11 +16,11 @@ devices:
       cert_name: <string>
       key_name: <string>
       url: <string>
-      content:
-        type: <string>
+      content_type: <string>
       response:
-        code: <numeric>
+        code: <enum-numeric>
         body: <string>
+        content_type: <string>
       flush_interval: <numeric>
       queue:
         interval: <numeric>
@@ -29,161 +29,73 @@ devices:
 
 ## Description
 
-Represents the HTTP protocol to listen to web data streams.
+Represents the listener that delivers data from HTTP-based web data streams. Expects POST requests containing a JSON body, and the body to be an object or array of objects.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`description`|N|-|Explanatory note|
-|`id`|Y||Device identifier|
-|`name`|Y|`127.0.0.1`|The IP used to refer to the device|
-|`status`|Y|`false`||
-|`type`|Y||The type of the device. Should be `http`|
+|`id`|Y|N/A|Device id|
+|`name`|Y|N/A|The IP to use to listen to the stream|
+|`status`|N|`false`|Enable device|
+|`type`|Y|N/A|Device type. Should be `http`|
 
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
-
-## `properties:`
+### `properties:`
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|Y|`"0.0.0.0"`||
-|`batch_size`||`1000`|The total number of rows the device will ingest in one round|
-|`cert_name`||`""`||
-|`flush_interval`||`1`|The time interval (sec) used to flush the... whatever|
-|`key_name`||`""`||
-|`port`||`0`||
-|`tls`||`false`||
-|`url`||`""`|The URL through which the device will listen to the HTTP stream|
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
-
-### `content:`
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`body`||`""`||
-|`type`||`""`||
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`batch_size`|N|`1000`|Ingester batch size|
+|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
+|`content_type`|N|`"application/json"`|Request content body MIME type|
+|`flush_interval`|N|`1`|Ingester flush time interval in sec|
+|`key_name`|N|`"key.pem"`|TLS key file path|
+|`port`|Y|N/A|Listening port|
+|`tls`|N|`false`|Enables TLS connection|
+|`url`|N|`"/"`|Listening path|
 
 ### `queue:`
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`interval`||`1`|The time interval (sec) used to... whatever|
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
+|`interval`|N|`1`|Ingester de-queue time interval in sec|
 
 ### `response:`
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`code`||`200`|The response code returned by the server|
+|`body`|N|`"{\"message\":\"success\"}"`|Response content body|
+|`content_type`|N|`"application/json"`|Response content body MIME type|
+|`code`|N|`200`|Response HTTP status code|
 
-<details>
-<summary>Sample code</summary>
+## Examples
+
+### Basic Listening
+
 ```yaml
+devices:
+  - id: 1
+    name: 127.0.0.1
+    type: http
+    status: true
+    properties:
+      address: "192.168.1.1"
+      port: 8080
 ```
-</details>
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`description`|N|-|Explanatory note|
-|`id`|Y||Device identifier|
-|`name`|Y|`127.0.0.1`|The IP used to refer to the device|
-|`status`|Y|`false`||
-|`type`|Y||The type of the device. Should be `http`|
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
-
-## `properties:`
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`address`|Y|`"0.0.0.0"`||
-|`batch_size`||`1000`|The total number of rows the device will ingest in one round|
-|`cert_name`||`""`||
-|`flush_interval`||`1`|The time interval (sec) used to flush the... whatever|
-|`key_name`||`""`||
-|`port`||`0`||
-|`tls`||`false`||
-|`url`||`""`|The URL through which the device will listen to the HTTP stream|
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
-
-### `content:`
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`body`||`""`||
-|`type`||`""`||
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
-
-### `queue:`
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`interval`||`1`|The time interval (sec) used to... whatever|
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
-
-### `response:`
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`code`||`200`|The response code returned by the server|
-
-<details>
-<summary>Sample code</summary>
-```yaml
-```
-</details>
 
 {/* ## Parameters
 
 <dl>
 	<dt>`batch_size`</dt>
-	<dd>The total number of rows to be processed</dd>
+	<dd>Ingester batch size</dd>
 	<dd>_default_: `1000`</dd>
 
 	<dt>`description`</dt>
 	<dd>Explanatory note</dd>
 
 	<dt>`flush_interval`</dt>
-	<dd>The interval to refresh the... whatever</dd>
+	<dd>Ingester flush interval</dd>
 	<dd>_default_: `1` (sec)</dd>
 
 	<dt>`id` _required_</dt>
@@ -203,20 +115,19 @@ Represents the HTTP protocol to listen to web data streams.
     	<hr style={{margin: "0px"}}/>
 		<dd>
 			<dt>`type`</dt>
-			<dd>Type of content to be extracted, e.g. `text/html`</dd>
-			<dd>_default_: `""`</dd>
+			<dd>Type of content to be extracted</dd>
+			<dd>_default_: `"application/json"`</dd>
 		</dd>
 
-    	<hr style={{margin: "0px"}}/>
-		<dt>`port`</dt>
-		<dd>The port number to be used by the... whatever</dd>
-		<dd>_default_: `0`</dd>
+    <hr style={{margin: "0px"}}/>
+		<dt>`port` _required_</dt>
+		<dd>The port number to be used by the listener</dd>
 
 		<dt>`queue`</dt>
 		<hr style={{margin: "0px"}}/>
 		<dd>
 			<dt>`interval`</dt>
-			<dd>The interval to refresh the queue</dd>
+			<dd>Time interval to flush the queue</dd>
 			<dd>_default_: `1` (sec)</dd>
 		</dd>
 
@@ -225,21 +136,19 @@ Represents the HTTP protocol to listen to web data streams.
 		<hr style={{margin: "0px"}}/>
 		<dd>
 			<dt>`body`</dt>
-			<dd>The body of content sent by the server</dd>
+			<dd>Response content body sent by the server</dd>
 			<dd>_default_: `""`</dd>
 
 			<dt>`code`</dt>
-			<dd>The response code sent by the server</dd>
+			<dd>Response code sent by the server</dd>
 			<dd>_default_: `200`</dd>
 		</dd>
 	</dd>
 
 	<dt>`status`</dt>
-	<dd>The status of the device</dd>
+	<dd>Enables the device</dd>
 	<dd>_default_: `false`</dd>
 
 </dl> */}
-
-{/* ## Protocol Content */}
 
 {/* TODO: Complete */}
