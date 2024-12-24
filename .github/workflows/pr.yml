@@ -1,11 +1,10 @@
-name: Deployment Pipeline
+name: Pull Request Pipeline
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -42,7 +41,7 @@ jobs:
           key: ${{ github.sha }}-node-modules
           restore-keys: |
             ${{ github.sha }}-node-modules
-      - name: Building the dashboard application
+      - name: Building the documentation application
         run: npm run build
 
       # Cache the build outputs
@@ -56,6 +55,8 @@ jobs:
 
   deploy-docs:
     name: Deploy VirtualMetric Docs
+    outputs:
+      docs-url: ${{ steps.application-deployment.outputs.deployment-url }}
     needs: [build-docs]
     runs-on: ubuntu-latest
     steps:
@@ -76,4 +77,24 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build --project-name virtualmetric-docs --branch=main
+          command: pages deploy build --project-name virtualmetric-docs
+
+  notify:
+    name: Notify
+    needs: [deploy-docs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Remove old deployment links
+        uses: izhangzhihao/delete-comment@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_user_name: github-actions[bot]
+          issue_number: ${{ github.event.number }}
+      - name: Comment on PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Docs Feature Deployment ${{ needs.deploy-docs.outputs.docs-url}}
