@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-```yaml
+```yaml {5}
 devices:
   - id: <numeric>
     name: <ip-numeric>
@@ -11,11 +11,10 @@ devices:
     status: <logical>
     properties:
       address: <ip-string>
-      port: 0
+      port: <numeric>
       community: <string>
       username: <string>
       password: <string>
-      channel: <string>
       authentication:
         status: <logical>
         protocol: <numeric>
@@ -31,22 +30,36 @@ devices:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
-|`name`|Y|`127.0.0.1`||
-|`description`|N|-||
-|`type`|Y|`snmptrap`||
-|`status`||`false`||
-|<dt>`properties:`</dt><dd>`address`</dd>|Y|`"0.0.0.0"`||
-|<dd>`port`</dd>|Y|`0`||
-|<dd>`community`</dd>||`""`||
-|<dd>`username`</dd>||`""`||
-|<dd>`password`</dd>||`""`||
-|<dd>`channel`</dd>||`""`||
-|<dd><dt>`authentication:`</dt><dd>`status`</dd></dd>|Y|`false`||
-|<dd><dd>`protocol`</dd></dd>|Y|`1`||
-|<dd><dd>`password`</dd></dd>|Y|`""`||
-|<dd><dt>`privacy:`</dt><dd>`protocol`</dd></dd>|Y|`1`||
-|<dd><dd>`passphrase`</dd></dd>|Y|`""`||
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
+|`description`|N|-|Explanatory note|
+|`type`|Y|N/A|Type of device. Should be `smmptrap`|
+|`status`|N|`true`|Enable device|
+
+### `properties:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|Y|N/A|Listening port|
+|`community`|N|`""`|Community string. Required if authentication v2 is used|
+|`username`|N|`""`|Authentication username|
+|`password`|N|`""`|Authentication password|
+
+### `authentication:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`status`|N|`false`|Enable authentication v3. Required if authentication v3 is used|
+|`protocol`|N|`1`|Authentication protocol. Required if authentication v3 is used|
+|`password`|N|`""`|Authentication password. Required if authentication v3 is used|
+
+### `privacy:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`protocol`|N|-|Privacy protocol. Required if authentication v3 is used. Valid options: TODO: Complete|
+|`passphrase`|N|`""`|Privacy passphrase. Required if authentication v3 is used|
 
 ## Examples
 

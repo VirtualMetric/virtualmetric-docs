@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-```yaml
+```yaml {5}
 devices:
   - id: <numeric>
     name: <ip-address>
@@ -11,11 +11,13 @@ devices:
     status: <logical>
     properties:
       network: <string>
+      protocol: <string>
       address: <string>
       port: <numeric>
-      tls: <logical>
-      cert_name: <string>
-      key_name: <string>
+      tls:
+        status: <logical>
+        cert_name: <string>
+        key_name: <string>
       reuse: <logical>
       flush_interval: <numeric>
       queue:
@@ -29,23 +31,36 @@ Represents the _syslog_ format which offers the flexibility to filter, analyze, 
 
 ## Parameters
 
-|Field|Subfield|Required|Default|Description|
-|---|---|---|---|---|
-|`id`|-|Y|||
-|`name`|-|Y|`127.0.0.1`||
-|`description`|-|N|-|Explanatory note|
-|`type`|-|Y|`syslog`||
-|`status`|-|Y|`false`||
-|`properties`|`network`|Y|`"udp"`||
-||`address`|Y|`"0.0.0.0"`||
-||`port`|Y|`14514`||
-||`tls`||`false`||
-||`cert_name`||`""`||
-||`key_name`||`""`||
-||`reuse`||`false`||
-||`flush_interval`||`1`||
-||`queue.interval`||`1`||
-||`batch_size`||`1000`||
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
+|`description`|N|-|Explanatory note|
+|`type`|Y|N/A|Type of device. Should be `syslog`|
+|`status`|N|`true`|Enable device|
+
+### `properties:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`protocol`|N|`"udp"`|Listening protocol|
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|Y|N/A|Listening port|
+|`reuse`|N|`true`|Enable reuse of same address and port|
+|`flush_interval`|N|`1`|Ingest flush interval in sec|
+|`batch_size`||`1000`|Ingest batch size|
+
+### `tls:`
+
+|`status`|N|`false`|Enable TLS connection|
+|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
+|`key_name`|N|`"key.pem"`|TLS key file path|
+
+### `queue:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|`1`|Queue flush interval in sec|
 
 ## Examples
 

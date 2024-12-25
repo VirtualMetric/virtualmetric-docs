@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-```yaml
+```yaml {5}
 devices:
   - id: <numeric>
     name: <ip-numeric>
@@ -30,6 +30,8 @@ devices:
 ## Description
 
 Represents the listener that delivers data from HTTP-based web data streams. Expects POST requests containing a JSON body, and the body to be an object or array of objects.
+
+Multiple HTTP devices can be assigned to a single addres and port since the device will resolve requests based on the URL configuration. All devices must, however, use the same TLS configuration, and be enabled or disabled as such.
 
 ## Parameters
 
@@ -73,9 +75,11 @@ Represents the listener that delivers data from HTTP-based web data streams. Exp
 
 ### Basic Listening
 
+The following is a basic configuration to listen on HTTP:
+
 ```yaml
 devices:
-  - id: 1
+  - id:
     name: 127.0.0.1
     type: http
     status: true
@@ -84,4 +88,20 @@ devices:
       port: 8080
 ```
 
-{/* TODO: Complete */}
+### Response
+
+A typical response configuration:
+
+```yaml
+devices:
+  - id:
+    type: http
+    status: true
+    properties:
+      address: "192.168.1.1"
+      port: 8080
+    url: "/"
+    response:
+      code: 200
+      body: "{\"message\":\"success\"}"
+```
