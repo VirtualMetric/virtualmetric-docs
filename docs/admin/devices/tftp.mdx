@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-```yaml
+```yaml {5}
 devices:
   - id: <numeric>
     name: <ip-numeric>
@@ -11,26 +11,38 @@ devices:
     status: <logical>
     properties:
       address: <string>
-      port: 0
+      port: <numeric>
       device:
-        (<ip-numeric>: <port-numeric>)+
+        <ip-numeric>: <port-numeric>
+        ...
 ```
 
 ## Description
+
+Represents the listener streaming data through the TFTP protocol.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
-|`name`|Y|`127.0.0.1`||
-|`description`|N|-||
-|`type`|Y|`tftp`||
-|`status`||`false`||
-|<dt>`properties:`</dt><dd>`address`</dd>|Y|`"0.0.0.0"`||
-|<dd>`port`</dd>|Y|`0`||
-|<dd><dt>`device:`</dt><dd>`127.0.0.1`</dd></dd>|Y|`6942`||
-|<dd><dd>`1.2.3.4`</dd></dd>|Y|`5683`||
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
+|`description`|N|-|Explanatory note|
+|`type`|Y|N/A|Type of device. Should be `tcp`|
+|`status`|N|`true`|Enable device|
+
+### `properties:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|Y|N/A|Listening port|
+
+### `device:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`<ip-address>`|N|`<post-number>`||
 
 ## Examples
 

@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-```yaml
+```yaml {5}
 devices:
   - id: <numeric>
     name: <ip-numeric>
@@ -11,7 +11,7 @@ devices:
     status: <logical>
     properties:
       address: <ip-string>
-      port: 0
+      port: <numeric>
       tls:
         status: <logical>
         cert_name: <string>
@@ -30,29 +30,46 @@ devices:
 
 ## Description
 
+Represents the listener streaming data through the TCP protocol.
+
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
-|`name`|Y|`127.0.0.1`||
-|`description`|N|-||
-|`type`|Y|`tcp`||
-|`status`|Y|`false`||
-|<dt>`properties:`</dt><dd>`address`</dd>|Y|`"0.0.0.0"`||
-|<dd>`port`</dd>|Y|`0`||
-|<dd><dt>`tls:`</dt><dd>`status`</dd></dd>|N|`false`||
-|<dd><dd>`cert_name`</dd></dd>|N|`""`||
-|<dd><dd>`key_name`</dd></dd>|N|`""`||
-|<dd>`reuse`</dd>|N|`false`||
-|<dd>`flush_interval`</dd>|N|`1`||
-|<dd><dt>`queue:`</dt><dd>`interval`</dd></dd>|N|`1`||
-|<dd>`timeout`</dd>|N|`300`|Stated in seconds|
-|<dd>`batch_size`</dd>|N|`1000`||
-|<dd>`framing`</dd>|N|||
-|<dd>`line_delimiter`</dd>|N|`"\\n"`||
-|<dd>`max_message_size`</dd>|N|||
-|<dd>`max_connections`</dd>|N|||
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
+|`description`|N|-|Explanatory note|
+|`type`|Y|N/A|Type of device. Should be `tcp`|
+|`status`|N|`true`|Enable device|
+
+### `properties:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|Y|N/A|Listening port|
+|`reuse`|N|`false`|Enable reuse of same address and port|
+|`flush_interval`|N|`1`|Ingest flush interval in sec|
+|`batch_size`|N|`1000`|Ingest batch size|
+|`max_message_size`|N|20 * 1024 * 1024|Maximum message size in bytes|
+|`framing`|N|delimiter|Framing method|
+|`line_delimiter`|N|`"\\n"`|Delimiter character|
+|`timeout`|N|`300`|Connection timeout in sec|
+|`max_connections`|N|10000|Maximum connection count|
+
+### `tls:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`status`|N|`false`|Enable TLS connection|
+|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
+|`key_name`|N|`"key.pem`|TLS key file path|
+
+### `queue:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|`1`|Ingest de-queue interval in sec|
 
 ## Examples
 
