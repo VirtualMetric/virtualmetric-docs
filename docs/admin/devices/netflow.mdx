@@ -11,7 +11,7 @@ devices:
     status: <logical>
     properties:
       address: <ip-string>
-      port: 2055
+      port: <numeric>
       reuse: <logical>
       flush_interval: <numeric>
       queue:
@@ -29,17 +29,27 @@ Developed by Cisco to collect and analyze IP network traffic data, the protocol 
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
-|`name`|Y|`127.0.0.1`||
-|`description`|N|-||
-|`type`|Y|`netflow`||
-|`status`||`false`||
-|<dt>`properties:`</dt><dd>`address`</dd>|Y|`"0.0.0.0"`||
-|<dd>`port`</dd>|Y|`2055`||
-|<dd>`reuse`</dd>||`false`||
-|<dd>`flush_interval`</dd>|Y|`1`||
-|<dd><dt>`queue:`</dt><dd>`interval`</dd></dd>|Y|`1`||
-|<dd>`batch_size`</dd>|Y|`1000`||
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
+|`description`|N|-|Explanatory note|
+|`type`|Y|N/A|Type of device. Should be `netflow`|
+|`status`|N|`true`|Enable device|
+
+### `properties:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|N|`2055`|Listening port|
+|`reuse`|N|`true`|Enable reuse of same address and port|
+|`flush_interval`|N|`1`|Ingester flush interval in sec|
+|`batch_size`|N|`1000`|Ingester batch size|
+
+### `queue:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|`1`|Ingester de-queue interval in sec|
 
 ## Examples
 
@@ -48,63 +58,5 @@ Developed by Cisco to collect and analyze IP network traffic data, the protocol 
 ```yaml
 ```
 </details>
-
-## Protocol Content
-
-{/* <dl>
-   <dt>**Flow Metadata**</dt>
-      <dd>
-      Unique identifiers for network flows, typically defined as packets sharing the same source/destination IP, port, protocol, and ToS
-      </dd>
-
-   <dt>**Traffic Statistics**</dt>
-      <dd>
-      - Packet and byte counts for each flow
-      - Flow start and end timestamps
-      </dd>
-
-   <dt>**Network Layer Information**</dt>
-      <dd>
-      - Source and destination IP addresses (IPv4 or IPv6 in NetFlow v9 or IPFIX-based NetFlow)
-      - IP protocol type (e.g., TCP, UDP, ICMP)
-      - Type of Service (ToS) or Differentiated Services Code Point (DSCP)
-      </dd>
-
-   <dt>**Transport Layer Information**</dt>
-      <dd>
-      - Source and destination port numbers
-      - TCP flags for session state tracking (e.g., SYN, ACK, FIN)
-      </dd>
-
-   <dt>**Routing Information**</dt>
-      <dd>
-      - Input and output interface IDs (as seen by the router)
-      - Next-hop IP address
-      - Source and destination Autonomous System (AS) numbers
-      - BGP prefix and community information (if available)
-      </dd>
-
-   <dt>**Application Information (Optional in Extended Versions)**</dt>
-      <dd>
-      Application-layer identification based on traffic patterns (if supported by the device)
-      </dd>
-
-   <dt>**Exporter Information**</dt>
-      <dd>
-      - Details about the device generating the NetFlow data (e.g., router IP address, system uptime)
-      - NetFlow version (e.g., v5, v9)
-      </dd>
-
-   <dt>**Time Synchronization Data**</dt>
-      <dd>
-      Flow timestamps to correlate events accurately
-      </dd>
-
-   <dt>**Additional Extensions (NetFlow v9+)**</dt>
-      <dd>
-      - Support for IPv6, MPLS labels, and multicast traffic
-      - Flexible templates for custom data fields
-      </dd>
-</dl> */}
 
 {/* TODO: Complete */}

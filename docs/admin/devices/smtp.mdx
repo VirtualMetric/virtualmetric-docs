@@ -11,7 +11,7 @@ devices:
     status: <logical>
     properties:
       address: <ip-string>
-      port: 0
+      port: <numeric>
       username: <string>
       password: <string>
       tls:
@@ -28,20 +28,30 @@ devices:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
-|`name`|Y|`127.0.0.1`||
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
 |`description`|N|-|Explanatory note|
-|`type`|Y|`smtp`||
-|`status`||`false`||
-|<dt>`properties:`</dt><dd>`address`</dd>|Y|`"0.0.0.0"`||
-|<dd>`port`</dd>|Y|`0`||
-|<dd>`username`</dd>||`""`||
-|<dd>`password`</dd>||`""`||
-|<dd><dt>`tls:`</dt><dd>`status`</dd></dd>||`false`||
-|<dd><dd>`cert_name`</dd></dd>||`""`||
-|<dd><dd>`key_name`</dd></dd>||`""`||
-|<dd>`reuse`</dd>||`false`||
-|<dd>`timeout`</dd>||`15`|Duration in seconds|
+|`type`|Y|N/A|Type of device. Should be `smtp`|
+|`status`|N|`true`|Enable device|
+
+### `properties:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|N|`0`|Listening port|
+|`username`|N|`""`||
+|`password`|N|`""`||
+|`reuse`|N|`false`||
+|`timeout`|N|`15`|Duration in seconds|
+
+### `tls:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`status`|N|`false`|Enable TLS connection|
+|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
+|`key_name`|N|`"key.pem"`|TLS key file path|
 
 ## Examples
 
@@ -50,7 +60,5 @@ devices:
 ```yaml
 ```
 </details>
-
-## Protocol Content
 
 {/* TODO: Complete */}
