@@ -11,7 +11,7 @@ devices:
     status: <logical>
     properties:
       address: <ip-string>
-      port: 4739
+      port: <numeric>
       reuse: <logical>
       flush_interval: <numeric>
       queue:
@@ -25,23 +25,31 @@ Represents the listener that delivers data collected with the **IPFIX** protocol
 
 IPFIX (IP Flow Information Export) is a protocol for exporting network flow information from devices such as routers, switches, and firewalls to a collector for analysis. It is an IETF standard (RFC 7011) and is widely used for network monitoring, performance analysis, security auditing, and anomaly detection.
 
-{/* ## Parameters
+## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
-|`name`|Y|`127.0.0.1`||
-|`description`|N|-||
-|`type`|Y|`ipfix`||
-|`status`||`false`||
-|<dt>`properties:`</dt><dd>`address`</dd>|Y|`"0.0.0.0"`||
-|<dd>`port`</dd>|Y|`4739`||
-|<dd>`reuse`</dd>||`false`||
-|<dd>`flush_interval`</dd>||`1`||
-|<dd><dt>`queue:`</dt><dd>`interval`</dd></dd>||`1`||
-|<dd>`batch_size`</dd>||`1000`|| */}
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
+|`description`|N|-|Explanatory note|
+|`type`|Y|N/A|Type of device. Should be `ipfix`|
+|`status`|N|`true`|Enable device|
 
-## Parameters
+### `properties:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|N|`4739`|Listening port|
+|`reuse`|N|`true`|Enable reuse of same address and port|
+|`flush_interval`|N|`1`|Ingester flush interval in sec|
+|`batch_size`|N|`1000`|Ingester batch size|
+
+### `queue:`
+
+|`interval`|N|`1`|Ingester de-queue interval in sec|
+
+{/* ## Parameters
 
 <dl>
   <dt>`description`</dt>
@@ -90,7 +98,7 @@ IPFIX (IP Flow Information Export) is a protocol for exporting network flow info
 
   <dt>`type` _required_</dt>
   <dd>Type of the device. Should be `ipfix`</dd>
-</dl>
+</dl> */}
 
 ## Examples
 

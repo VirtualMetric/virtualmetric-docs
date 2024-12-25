@@ -11,7 +11,7 @@ devices:
     status: <logical>
     properties:
       address: <ip-string>
-      port: 0
+      port: <numeric>
       username: <string>
       password: <string>
       partitions: <numeric>
@@ -35,33 +35,33 @@ Kafka is a distributed event streaming platform designed for high-throughput, fa
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`description`|N|-||
-|`id`|Y|||
-|`name`|`Y|`127.0.0.1`||
-|`status`|Y|`false`||
-|`type`|Y|`kafka`||
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
+|`description`|N|-|Explanatory note|
+|`type`|Y|N/A|Type of device. Should be `kafka`|
+|`status`|N|`true`|Enable device|
 
 ### `properties:`
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`||
-|`algorithm`|N|`""`|Valid options: `"none"`, `"plain"`, `"scram-sha-256"`, `"scram-sha-512"`|
-|`balancer`|N|`""`|Valid options: `"roundrobin"`, `"cooperativesticky"`, `"range"`, `"sticky"`|
-|`group`|N|`""`||
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`algorithm`|N|`""`|Required if authentication is used. Valid options: `"none"`, `"plain"`, `"scram-sha-256"`, `"scram-sha-512"`|
+|`balancer`|N|`"roundrobbin"`|Consumer group balancing algorithm. Valid options: `"roundrobin"`, `"cooperativesticky"`, `"range"`, `"sticky"`|
+|`group`|N|`"vmetric"`|Consumer group|
 |`partition`|N|`1`||
-|`password`|N|`""`||
-|`port`|Y|`0`||
-|`topic`|N|`""`||
-|`username`|N|`""`||
+|`password`|N|`""`|Required if authentication is used|
+|`port`|Y|N/A|Listening port|
+|`topic`|Y|N/A|Consumer topic|
+|`username`|N|`""`|Required if authentication is used|
 
 ### `tls:`
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`cert_name`|N|`""`||
-|`key_name`|N|`""`||
-|`status`|N|`true`||
+|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
+|`key_name`|N|`"key.pem"`|TLS key file path|
+|`status`|N|`false`|Enable TLS connection|
 
 ## Examples
 

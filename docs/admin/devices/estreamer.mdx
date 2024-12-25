@@ -11,7 +11,7 @@ devices:
     status: <logical>
     properties:
       address: <ip-string>
-      port: 8302
+      port: <numeric>
       tls:
         non_secure: <logical>
       cert_name: <string>
@@ -38,11 +38,11 @@ The protocol refers to event data collected from Cisco Firepower devices, includ
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|N/A||
-|`name`|Y|`127.0.0.1`||
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
 |`description`|N|-|Explanatory note|
-|`type`|N|-|Type of device. Should be `estreamer`|
-|`status`||`false`||
+|`type`|Y|N/A|Type of device. Should be `estreamer`|
+|`status`|N|`true`|Enable device|
 
 ### `properties:`
 
@@ -52,8 +52,8 @@ The protocol refers to event data collected from Cisco Firepower devices, includ
 |`port`|N|`8302`|Listening port|
 |`cert_name`|N|`""`|TLS certificate path|
 |`key_name`|N|`""`|TLS key path|
-|`reuse`||`false`||
-|`flush_interval`||`1`|Ingester flush interval in sec|
+|`reuse`|N|`true`|Enable reuse of same address and port|
+|`flush_interval`|N|`1`|Ingester flush interval in sec|
 |`batch_size`|N|`1000`|Ingester batch size|
 
 ### `inputs:`
@@ -61,8 +61,8 @@ The protocol refers to event data collected from Cisco Firepower devices, includ
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`id`|Y|N/A|Event id|
-|`name`|N|-||
-|`status`|N|`true`|Enables event|
+|`name`|N|-|Event name|
+|`status`|N|`true`|Enable event|
 
 ### `queue:`
 
@@ -74,7 +74,7 @@ The protocol refers to event data collected from Cisco Firepower devices, includ
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`non_secure`|N|`false`||
+|`non_secure`|N|`false`|Use to enable non-secure TLS|
 
 <details>
 <summary>Sample code</summary>
