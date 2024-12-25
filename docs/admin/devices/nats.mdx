@@ -11,7 +11,7 @@ devices:
     status: <logical>
     properties:
       address: <ip-string>
-      port: 0
+      port: <numeric>
       username: <string>
       password: <string>
       stream: <string>
@@ -25,7 +25,7 @@ devices:
 
 ## Description
 
-Represents the NATS protocol.
+Represents the listener that delivers the data collected with the NATS protocol.
 
 NATS is a lightweight, high-performance messaging system that supports simple publish-subscribe and request-reply patterns. Known for its speed and simplicity, it is well-suited for microservices, IoT, and cloud-native architectures.
 
@@ -33,21 +33,31 @@ NATS is a lightweight, high-performance messaging system that supports simple pu
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
-|`name`|Y|`127.0.0.1`||
-|`description`|N|-||
-|`type`|Y|`nats`||
-|`status`||`false`||
-|<dt>`properties:`</dt><dd>`address`</dd>|Y|`"0.0.0.0"`||
-|<dd>`port`</dd>|Y|`0`||
-|<dd>`username`</dd>|N|`""`||
-|<dd>`password`</dd>|N|`""`||
-|<dd>`stream`</dd>|N|`""`||
-|<dd>`consumer`</dd>|N|`""`||
-|<dd>`subject`</dd>|N|`""`||
-|<dd><dt>`tls:`</dt><dd>`status`</dd></dd>|N|`true`||
-|<dd><dd>`cert_name`</dd></dd>|N|`""`||
-|<dd><dd>`key_name`</dd></dd>|N|`""`||
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
+|`description`|N|-|Explanatory note|
+|`type`|Y|N/A|Type of device. Should be `nats`|
+|`status`|N|`true`|Enable device|
+
+### `properties:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|N|`0`|Listening port|
+|`username`|N|`""`|Required if authentication is used|
+|`password`|N|`""`|Required if authentication is used|
+|`stream`|N|`"vmetric"`|Stream name|
+|`consumer`|N|`"vmetric"`|Consumer name|
+|`subject`|Y|N/A|Stream subject|
+
+### `tls:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`status`|N|`false`|Enable TLS connection|
+|`cert_name`|N|`"cert.pem"`|TLS certificcate file path|
+|`key_name`|N|`"key.pem"`|TLS key file path|
 
 ## Examples
 
