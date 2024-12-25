@@ -11,10 +11,10 @@ devices:
     status: <logical>
     properties:
       address: <ip-string>
-      port: 0
+      port: <numeric>
+      authentication: <enum-string>
       username: <string>
       password: <string>
-      authentication: <enum-string>
       exchange:
         name: <string>
         type: <enum-string>
@@ -29,29 +29,49 @@ devices:
 
 ## Description
 
-Represents the RabbitMQ protocol.
+Represents the listener that deliver data from the RabbitMQ protocol.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|||
-|`name`|Y|`127.0.0.1`||
-|`type`|Y|`rabbitmq`||
+|`id`|Y|N/A|Device identifier|
+|`name`|Y|N/A|Address of the listener, e.g. `127.0.0.1`|
 |`description`|N|-|Explanatory note|
-|`status`||`false`||
-|<dt>`properties:`</dt><dd>`address`</dd>|Y|`"0.0.0.0"`||
-|<dd>`port`</dd>|Y|`0`||
-|<dd>`username`</dd>|N|`""`||
-|<dd>`password`</dd>|N|`""`||
-|<dd>`authentication`</dd>|Y|`""`|Valid options: `"plain"`, `"amqplain"`|
-|<dd><dt>`exchange:`</dt><dd>`name`</dd></dd>|N|`""`||
-|<dd><dd>`type`</dd></dd>|N|`""`|Valid options: `"direct"`, `"fanout"`, `"topic"`, `"x-custom"`|
-|<dd><dt>`queue:`</dt><dd>`name`</dd></dd>|N|`""`||
-|<dd><dd>`key`</dd></dd>|N|`""`||
-|<dd><dt>`tls:`</dt><dd>`status`</dd></dd>|Y|`false`||
-|<dd><dd>`cert_name`</dd></dd>|N|`""`||
-|<dd><dd>`key_name`</dd></dd>|N|`""`||
+|`type`|Y|N/A|Type of device. Should be `rabbitmq`|
+|`status`|N|`true`|Enable device|
+
+### `properties:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listening address|
+|`port`|N|`0`|Listening port|
+|`authentication`|N|`""`|Valid options: `"plain"`, `"amqplain"`|
+|`username`|N|`""`|Required if authentication is used|
+|`password`|N|`""`|Required if authentication is used|
+
+### `exchange:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|N|`""`||
+|`type`|N|`""`|Valid options: `"direct"`, `"fanout"`, `"topic"`, `"x-custom"`|
+
+### `queue:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|N|`""`||
+|`key`|N|`""`||
+
+### `tls:`
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`status`|N|`false`|Enable TLS|
+|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
+|`key_name`|N|`"key.pem"`|TLS key file path|
 
 ## Examples
 
@@ -60,7 +80,5 @@ Represents the RabbitMQ protocol.
 ```yaml
 ```
 </details>
-
-## Protocol Content
 
 {/* TODO: Complete */}
