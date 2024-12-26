@@ -205,7 +205,7 @@ const config: Config = {
       //     ],
       //   },
       // ],
-      copyright: `Copyright © ${new Date().getFullYear()} VirtualMetric B.V.`,
+      copyright: `Copyright ©${new Date().getFullYear()} VirtualMetric B.V.`,
     },
 
     prism: {
