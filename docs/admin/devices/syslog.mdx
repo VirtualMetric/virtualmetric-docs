@@ -97,4 +97,978 @@ devices:
 ```
 </details>
 
+### VM Example
+
+```yaml
+devices:
+  - id: 324235346
+    name: 127.0.0.1
+    description: syslog
+    type: syslog
+    status: true
+    properties:
+      address: "0.0.0.0"
+      port: 14514
+      reuse: false
+      flush_interval: 60
+      queue:
+        interval: 1
+      batch_size: 1000
+      forwarding:
+        - address: 127.0.0.1
+          port: 14515
+          type: udp
+        - address: 127.0.0.1
+          port: 14516
+          type: udp
+    definitions:
+      - id: 46125347124
+        name: custom message
+        type: syslog
+        properties:
+            source_addresses: [""]
+    pipelines:
+      - name: checkpoint
+        description: Pipeline for parsing checkpoint firewall logs
+        processors:
+          - rename:
+              field: message
+              target_field: event.original
+              ignore_missing: true
+              if: event?.original == nil
+          - kv:
+              field: event.original
+              prefix: vendor.
+              lowercase_keys: true
+              ignore_failure: true
+              exclude_keys:
+                - flags
+                - layer_uuid
+                - __policy_id_tag
+                - version
+                - rounded_bytes
+                - update_service
+                - db_tag
+                - ProductName
+                - ProductFamily
+                - UP_match_table
+                - ROW_END
+              on_failure:
+                - append:
+                    field: error.message
+                    value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+                - fail:
+                    message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+          - append:
+              field: event.category
+              value: network
+              if: "!['Log In','Log Out'].contains(vendor?.operation) && !['Log In','Log Out'].contains(vendor?.action)"
+              allow_duplicates: false
+          - set:
+              field: observer.vendor
+              value: Checkpoint
+          - set:
+              field: observer.type
+              value: firewall
+              if: vendor?.type == nil
+          - set:
+              field: observer.product
+              value: "{{vendor.product}}"
+              ignore_empty_value: true
+          - rename:
+              field: vendor.src
+              target_field: source.ip
+              ignore_missing: true
+          - rename:
+              field: vendor.client_ip
+              target_field: source.ip
+              ignore_missing: true
+              if: source?.ip == nil
+          - rename:
+              field: vendor.xlatesrc
+              target_field: source.nat.ip
+              if: "vendor?.xlatesrc != '0.0.0.0' && vendor?.xlatesrc != ''"
+              ignore_missing: true
+          - rename:
+              field: vendor.dst
+              target_field: destination.ip
+              ignore_missing: true
+          - rename:
+              field: vendor.xlatedst
+              target_field: destination.nat.ip
+              if: "vendor?.xlatedst != '0.0.0.0' && vendor?.xlatedst != ''"
+              ignore_missing: true
+          - rename:
+              field: vendor.uid
+              target_field: source.user.id
+              ignore_missing: true
+          - rename:
+              field: vendor.administrator
+              target_field: source.user.name
+              ignore_missing: true
+          - rename:
+              field: vendor.src_user_name
+              target_field: source.user.name
+              if: source?.user?.name == nil
+              ignore_missing: true
+          - convert:
+              field: vendor.client_outbound_packets
+              target_field: source.packets
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+          - convert:
+              field: vendor.server_outbound_packets
+              target_field: destination.packets
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+          - convert:
+              field: vendor.client_outbound_bytes
+              target_field: source.bytes
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+          - convert:
+              field: vendor.sent_byte
+              target_field: source.bytes
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+              if: source?.bytes == nil
+          - convert:
+              field: vendor.server_outbound_bytes
+              target_field: destination.bytes
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+          - convert:
+              field: vendor.received_bytes
+              target_field: destination.bytes
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+              if: destination?.bytes == nil
+          - convert:
+              field: vendor.service
+              target_field: destination.port
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+          - convert:
+              field: vendor.xlatedport
+              target_field: destination.nat.port
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+              if: "vendor?.xlatedport != 0"
+          - convert:
+              field: vendor.s_port
+              target_field: source.port
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+          - convert:
+              field: vendor.xlatesport
+              target_field: source.nat.port
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+              if: "vendor?.xlatesport != 0"
+          - rename:
+              field: vendor.mac_source_address
+              target_field: source.mac
+              ignore_missing: true
+          - rename:
+              field: vendor.src_machine_name
+              target_field: source.domain
+              ignore_missing: true
+          - rename:
+              field: vendor.destination_dns_hostname
+              target_field: destination.domain
+              ignore_missing: true
+          - rename:
+              field: vendor.dst_machine_name
+              target_field: destination.domain
+              if: server?.domain == nil
+              ignore_missing: true
+          - rename:
+              field: vendor.dst_user_name
+              target_field: destination.user.name
+              ignore_missing: true
+          - rename:
+              field: vendor.dst_user_dn
+              target_field: destination.user.domain
+              ignore_missing: true
+          - rename:
+              field: vendor.src_user_group
+              target_field: source.user.group.name
+              ignore_missing: true
+          - append:
+              field: event.category
+              value: authentication
+              if: vendor?.operation == 'Log In' || vendor?.operation == 'Log Out'
+              allow_duplicates: false
+          - rename:
+              field: vendor.originsicname
+              target_field: vendor.origin_sic_name
+              ignore_missing: true
+          - set:
+              field: event.kind
+              value: alert
+              if: "['Prevent', 'Detect', 'Quarantine'].contains(vendor?.rule_action)"
+          - set:
+              field: event.kind
+              value: event
+              if: event?.kind == nil
+          - set:
+              field: event.outcome
+              value: success
+              if: "['Accept', 'Allow'].contains(vendor?.rule_action)"
+          - append:
+              field: event.type
+              value:
+                - allowed
+                - connection
+              if: "['Accept', 'Allow'].contains(vendor?.rule_action) && (vendor?.operation != 'Log In' && vendor?.operation != 'Log Out')"
+          - set:
+              field: event.outcome
+              value: success
+              if: vendor?.audit_status == 'Success'
+          - set:
+              field: event.outcome
+              value: failure
+              if: vendor?.audit_status == 'Failure'
+          - set:
+              field: event.outcome
+              value: success
+              if: "['Drop', 'Reject', 'Block', 'Prevent'].contains(vendor?.rule_action)"
+          - append:
+              field: event.type
+              value:
+                - connection
+                - denied
+              if: "['Drop', 'Reject', 'Block', 'Prevent'].contains(vendor?.rule_action)"
+          - append:
+              field: event.category
+              value: malware
+              if: vendor?.malware_action != nil
+              allow_duplicates: false
+          - append:
+              field: event.category
+              value: intrusion_detection
+              if: "['Detect', 'Prevent'].contains(vendor?.rule_action)"
+              allow_duplicates: false
+          - set:
+              field: event.outcome
+              value: success
+              if: vendor?.action == 'Log In'
+          - set:
+              field: event.outcome
+              value: failure
+              if: vendor?.action == 'Failed Log In'
+          - set:
+              field: event.outcome
+              value: success
+              if: vendor?.operation == 'Log Out'
+              override: true
+              description: "Set 'success' outcome for logoff activity."
+          - set:
+              field: event.outcome
+              value: success
+              if: vendor?.operation == 'Log In' && (vendor?.audit_status == 'Success' || vendor?.audit_status == nil)
+              override: true
+              description: "Set 'success' outcome by default for logon events without audit outcome set."
+          - append:
+              field: event.category
+              value: authentication
+              if: "['Log In', 'Failed Log In'].contains(vendor?.action)"
+              allow_duplicates: false
+          - append:
+              field: event.type
+              value:
+                - start
+              allow_duplicates: false
+              if: vendor?.action == 'Log In' || vendor?.operation == 'Log In'
+          - append:
+              field: event.type
+              value: end
+              allow_duplicates: false
+              if: vendor?.action == 'Log Out' || vendor?.operation == 'Log Out'
+              description: "Add 'end' categorization type for events related to log out activities."
+          - set:
+              field: vendor.action
+              value: logged-in
+              if: vendor?.action == 'Log In'
+          - append:
+              field: event.type
+              value: denied
+              allow_duplicates: false
+              if: vendor?.action == 'Failed Log In'
+          - set:
+              field: vendor.action
+              value: logon-failed
+              if: vendor?.action == 'Failed Log In'
+          - append:
+              field: related.ip
+              value: "{{source.ip}}"
+              allow_duplicates: false
+              if: source?.ip != nil
+          - append:
+              field: related.ip
+              value: "{{source.nat.ip}}"
+              allow_duplicates: false
+              if: source?.nat?.ip != nil
+          - append:
+              field: related.ip
+              value: "{{destination.ip}}"
+              allow_duplicates: false
+              if: destination?.ip != nil
+          - append:
+              field: related.ip
+              value: "{{destination.nat.ip}}"
+              allow_duplicates: false
+              if: destination?.nat?.ip != nil
+          - append:
+              field: related.hash
+              value: "{{vendor.file_md5}}"
+              allow_duplicates: false
+              if: vendor?.file_md5 != nil
+          - append:
+              field: related.hash
+              value: "{{vendor.file_sha1}}"
+              allow_duplicates: false
+              if: vendor?.file_sha1 != nil
+          - append:
+              field: related.hash
+              value: "{{vendor.file_sha256}}"
+              allow_duplicates: false
+              if: vendor?.file_sha256 != nil
+          - rename:
+              field: vendor.from
+              target_field: source.user.email
+              ignore_missing: true
+          - rename:
+              field: vendor.to
+              target_field: destination.user.email
+              ignore_missing: true
+          - set:
+              field: email.from.address
+              value: ["{{{destination.user.email}}}"]
+              if: "destination?.user?.email != nil"
+          - set:
+              field: email.to.address
+              value: ["{{{destination.user.email}}}"]
+              if: "destination?.user?.email != nil"
+          - append:
+              field: email.from.address
+              value: "{{{vendor.mime_from}}}"
+              if: "vendor?.mime_from != nil"
+          - append:
+              field: email.to.address
+              value: "{{{vendor.mime_to}}}"
+              if: "vendor?.mime_to != nil"
+          - set:
+              field: email.subject
+              copy_from: vendor.email_subject
+              if: "vendor?.email_subject != nil"
+          - append:
+              field: email.bcc.address
+              value: "{{{vendor.bcc}}}"
+              if: "vendor?.bcc != nil"
+          - append:
+              field: email.cc.address
+              value: "{{{vendor.cc}}}"
+              if: "vendor?.cc != nil"
+          - set:
+              field: email.delivery_timestamp
+              copy_from: vendor.delivery_time
+              if: "vendor?.delivery_time != nil"
+          - set:
+              field: email.message_id
+              copy_from: vendor.email_message_id
+              if: "vendor?.email_message_id != nil"
+          - set:
+              field: email.local_id
+              copy_from: vendor.email_queue_id
+              if: "vendor?.email_queue_id != nil"
+          - rename:
+              field: vendor.usercheck_incident_uid
+              target_field: destination.user.id
+              ignore_missing: true
+          - rename:
+              field: vendor.service_name
+              target_field: destination.service.name
+              ignore_missing: true
+          - rename:
+              field: vendor.mac_destination_address
+              target_field: destination.mac
+              ignore_missing: true
+          - rename:
+              field: vendor.dns_type
+              target_field: dns.question.type
+              ignore_missing: true
+          - rename:
+              field: vendor.domain_name
+              target_field: dns.question.name
+              ignore_missing: true
+          - rename:
+              field: dns.question.name
+              target_field: source.user.domain
+              ignore_missing: true
+              if: vendor?.operation == 'Log Out' && source?.user?.domain == nil
+          - dissect:
+              field: vendor.additional_info
+              pattern: 'Administrator failed to log in: %{event.reason}'
+              ignore_missing: true
+              ignore_failure: true
+              if: vendor?.operation == 'Log In' && vendor.audit_status == 'Failure' && (event?.reason == nil || event?.reason == "")
+          - rename:
+              field: vendor.dns_message_type
+              target_field: dns.type
+              ignore_missing: true
+          - rename:
+              field: vendor.tid
+              target_field: dns.id
+              ignore_missing: true
+          - rename:
+              field: vendor.loguid
+              target_field: event.id
+              ignore_missing: true
+          - convert:
+              field: vendor.sequencenum
+              target_field: event.sequence
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+          - convert:
+              field: vendor.severity
+              target_field: event.severity
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+          - rename:
+              field: vendor.action
+              target_field: event.action
+              ignore_missing: true
+          - set:
+              field: event.action
+              value: logon-failed
+              override: true
+              if: vendor?.operation == 'Log In' && vendor.audit_status == 'Failure'
+              description: "Set 'logon-failed' action categorization for failed logon attempts."
+          - set:
+              field: event.action
+              value: logged-in
+              override: true
+              if: vendor?.operation == 'Log In' && (vendor.audit_status == 'Success' || vendor.audit_status == nil)
+              description: "Set 'logged-in' action categorization for events related to successful logons."
+          - set:
+              field: event.action
+              value: logged-out
+              override: true
+              if: vendor?.operation == 'Log Out'
+              description: "Set 'logged-out' action categorization for logoff events."
+          - set:
+              field: host.name
+              value: '{{{ vendor.device_name }}}'
+              override: false
+              ignore_empty_value: true
+              if: vendor?.operation == 'Log In' && observer?.product == 'Expert Shell'
+              description: "Copy the device name to the host.name field for logon events in Checkpoint expert shells."
+          - set:
+              field: host.type
+              value: '{{{ vendor.device_type }}}'
+              override: false
+              ignore_empty_value: true
+              if: vendor?.operation == 'Log In' && observer?.product == 'Expert Shell'
+              description: "Copy the device type to the host.type field for logon events in Checkpoint expert shells."
+          - set:
+              field: source.domain
+              value: '{{{ vendor.machine }}}'
+              override: false
+              ignore_empty_value: true
+              if: "['Log In', 'Log Out'].contains(vendor?.operation) && vendor.machine != 'localhost'"
+              description: "Copy the device type to the host.type field for logon events in Checkpoint expert shells."
+          - set:
+              field: network.protocol
+              value: ssh
+              override: false
+              if: vendor?.operation == 'Log In' && observer?.product == 'Expert Shell'
+              description: "Set network protocol to SSH for logon activities made with Checkpoint expert shells."
+          - set:
+              field: user.name
+              value: '{{{ source.user.name }}}'
+              override: false
+              ignore_empty_value: true
+          - set:
+              field: user.id
+              value: '{{{ source.user.id }}}'
+              override: false
+              ignore_empty_value: true
+          - set:
+              field: user.group.name
+              value: '{{{ source.user.group.name }}}'
+              override: false
+              ignore_empty_value: true
+          - set:
+              field: user.email
+              value: '{{{ source.user.email }}}'
+              override: false
+              ignore_empty_value: true
+          - set:
+              field: user.domain
+              value: '{{{ source.user.domain }}}'
+              override: false
+              ignore_empty_value: true
+          - append:
+              field: user.roles
+              value: administrator
+              allow_duplicates: false
+              if: message == 'Administrator Login' || message == 'Administrator Logout' || message == 'Administrator Expert Shell login'
+              description: "Add administrator label to the user.role field for all events related to administrator logon / logoff activities."
+          - set:
+              field: event.code
+              value: '{{{ vendor.operation_number }}}'
+              override: false
+              ignore_empty_value: true
+          - lowercase:
+              field: user.name
+              ignore_missing: true
+          - lowercase:
+              field: user.id
+              ignore_missing: true
+          - lowercase:
+              field: user.email
+              ignore_missing: true
+          - lowercase:
+              field: user.domain
+              ignore_missing: true
+          - lowercase:
+              field: user.group.name
+              ignore_missing: true
+          - rename:
+              field: vendor.packet_capture
+              target_field: event.url
+              ignore_missing: true
+          - rename:
+              field: vendor.start_time
+              target_field: event.start
+              ignore_missing: true
+          - rename:
+              field: vendor.first_detection
+              target_field: event.start
+              ignore_missing: true
+              if: event?.start == nil
+          - rename:
+              field: vendor.last_detection
+              target_field: event.end
+              ignore_missing: true
+          - rename:
+              field: vendor.app_risk
+              target_field: event.risk_score
+              ignore_missing: true
+          - rename:
+              field: vendor.file_id
+              target_field: file.inode
+              ignore_missing: true
+          - rename:
+              field: vendor.file_type
+              target_field: file.type
+              ignore_missing: true
+          - rename:
+              field: vendor.file_name
+              target_field: file.name
+              ignore_missing: true
+          - convert:
+              field: vendor.file_size
+              target_field: file.size
+              type: long
+              ignore_failure: true
+              ignore_missing: true
+          - rename:
+              field: vendor.file_md5
+              target_field: file.hash.md5
+              ignore_missing: true
+          - rename:
+              field: vendor.file_sha1
+              target_field: file.hash.sha1
+              ignore_missing: true
+          - rename:
+              field: vendor.file_sha256
+              target_field: file.hash.sha256
+              ignore_missing: true
+          - rename:
+              field: vendor.dlp_file_name
+              target_field: file.name
+              ignore_missing: true
+          - rename:
+              field: vendor.user_group
+              target_field: group.name
+              ignore_missing: true
+          - rename:
+              field: vendor.os_version
+              target_field: host.os.version
+              ignore_missing: true
+          - rename:
+              field: vendor.os_name
+              target_field: host.os.name
+              ignore_missing: true
+          - rename:
+              field: vendor.method
+              target_field: http.request.method
+              ignore_missing: true
+          - rename:
+              field: vendor.referrer
+              target_field: http.request.referrer
+              ignore_missing: true
+          - rename:
+              field: vendor.service_id
+              target_field: network.application
+              ignore_missing: true
+          - rename:
+              field: vendor.ifdir
+              target_field: network.direction
+              ignore_missing: true
+          - convert:
+              field: vendor.bytes
+              type: long
+              ignore_missing: true
+          - convert:
+              field: vendor.icmp_code
+              type: long
+              ignore_missing: true
+              ignore_failure: true
+          - convert:
+              field: vendor.icmp_type
+              type: long
+              ignore_missing: true
+              ignore_failure: true
+          - rename:
+              field: vendor.bytes
+              target_field: network.bytes
+              ignore_missing: true
+          - rename:
+              field: vendor.proto
+              target_field: network.iana_number
+              ignore_missing: true
+          - script:
+              lang: vmetric
+              ignore_failure: true
+              if: network?.iana_number != nil
+              function: getNetworkTransport()
+          - convert:
+              field: vendor.packets
+              type: long
+              ignore_missing: true
+          - rename:
+              field: vendor.packets
+              target_field: network.packets
+              ignore_missing: true
+          - rename:
+              field: vendor.layer_name
+              target_field: network.name
+              ignore_missing: true
+          - rename:
+              field: vendor.app_name
+              target_field: network.application
+              ignore_missing: true
+          - rename:
+              field: vendor.client_inbound_interface
+              target_field: observer.ingress.interface.name
+              ignore_missing: true
+          - rename:
+              field: vendor.client_outbound_interface
+              target_field: observer.egress.interface.name
+              ignore_missing: true
+          - rename:
+              field: vendor.ifname
+              target_field: observer.ingress.interface.name
+              ignore_missing: true
+              if: observer?.ingress?.interface?.name == nil && network?.direction == 'inbound'
+          - rename:
+              field: vendor.ifname
+              target_field: observer.egress.interface.name
+              ignore_missing: true
+              if: observer?.egress?.interface?.name == nil && network?.direction == 'outbound'
+          - rename:
+              field: vendor.type
+              target_field: observer.type
+              ignore_missing: true
+          - rename:
+              field: vendor.origin
+              target_field: observer.name
+              ignore_missing: true
+          - rename:
+              field: vendor.mac_address
+              target_field: _temp_.observer.mac
+              ignore_missing: true
+          - gsub:
+              field: _temp_.observer.mac
+              ignore_missing: true
+              pattern: '[:]'
+              replacement: '-'
+          - uppercase:
+              field: _temp_.observer.mac
+              ignore_missing: true
+          - append:
+              value: "{{{_temp_.observer.mac}}}"
+              field: observer.mac
+              if: _temp_?.observer?.mac != nil
+          - append:
+              value: "{{{vendor.origin_ip}}}"
+              field: observer.ip
+              if: vendor?.origin_ip != nil
+          - append:
+              value: "{{{vendor.endpoint_ip}}}"
+              field: observer.ip
+              if: vendor?.endpoint_ip != nil && observer?.ip == nil
+          - rename:
+              field: vendor.outzone
+              target_field: observer.egress.zone
+              ignore_missing: true
+          - rename:
+              field: vendor.inzone
+              target_field: observer.ingress.zone
+              ignore_missing: true
+          - rename:
+              field: vendor.security_outzone
+              target_field: observer.egress.zone
+              ignore_missing: true
+              if: observer?.egress?.zone == nil
+          - rename:
+              field: vendor.security_inzone
+              target_field: observer.ingress.zone
+              ignore_missing: true
+              if: observer?.ingress?.zone == nil
+          - rename:
+              field: vendor.update_version
+              target_field: observer.version
+              ignore_missing: true
+          - rename:
+              field: vendor.process_md5
+              target_field: process.hash.md5
+              ignore_missing: true
+          - rename:
+              field: vendor.process_name
+              target_field: process.name
+              ignore_missing: true
+          - rename:
+              field: vendor.parent_process_md5
+              target_field: process.parent.hash.md5
+              ignore_missing: true
+          - rename:
+              field: vendor.parent_process_name
+              target_field: process.parent.name
+              ignore_missing: true
+          - rename:
+              field: vendor.matched_category
+              target_field: rule.category
+              ignore_missing: true
+          - rename:
+              field: vendor.categories
+              target_field: rule.category
+              ignore_missing: true
+              if: rule?.category == nil
+          - rename:
+              field: vendor.malware_action
+              target_field: rule.description
+              ignore_missing: true
+          - rename:
+              field: vendor.malware_rule_id
+              target_field: rule.id
+              ignore_missing: true
+          - rename:
+              field: vendor.app_rule_id
+              target_field: rule.id
+              ignore_missing: true
+              if: rule?.id == nil
+          - rename:
+              field: vendor.objectname
+              target_field: rule.name
+              ignore_missing: true
+          - rename:
+              field: vendor.rule_name
+              target_field: rule.name
+              ignore_missing: true
+              if: rule?.name == nil
+          - rename:
+              field: vendor.malware_rule_name
+              target_field: rule.name
+              ignore_missing: true
+              if: rule?.name == nil
+          - rename:
+              field: vendor.app_rule_name
+              target_field: rule.name
+              ignore_missing: true
+              if: rule?.name == nil
+          - rename:
+              field: vendor.dlp_rule_name
+              target_field: rule.name
+              ignore_missing: true
+              if: rule?.name == nil
+          - rename:
+              field: vendor.smartdefence_profile
+              target_field: rule.ruleset
+              ignore_missing: true
+          - rename:
+              field: vendor.policy
+              target_field: rule.ruleset
+              ignore_missing: true
+              if: rule?.ruleset == nil
+          - rename:
+              field: vendor.rule_uid
+              target_field: rule.uuid
+              ignore_missing: true
+          - rename:
+              field: vendor.dlp_rule_uid
+              target_field: rule.uuid
+              ignore_missing: true
+              if: rule?.uuid == nil
+          - rename:
+              field: vendor.url
+              target_field: url.original
+              ignore_missing: true
+          - rename:
+              field: vendor.resource
+              target_field: url.original
+              ignore_missing: true
+              if: url?.original == nil
+          - rename:
+              field: vendor.http_host
+              target_field: url.domain
+              ignore_missing: true
+          - rename:
+              field: vendor.web_client_type
+              target_field: user_agent.name
+              ignore_missing: true
+          - rename:
+              field: vendor.user_agent
+              target_field: user_agent.original
+              ignore_missing: true
+          - rename:
+              field: vendor.industry_reference
+              target_field: vulnerability.id
+              ignore_missing: true
+          - rename:
+              field: vendor.message
+              target_field: message
+              ignore_missing: true
+          - rename:
+              field: vendor.reason
+              target_field: message
+              ignore_missing: true
+              if: message == nil
+          - rename:
+              field: vendor.subject
+              target_field: message
+              ignore_missing: true
+              if: message == nil
+          - gsub:
+              field: vendor.sys_message
+              pattern: ^:"
+              replacement: ""
+              if: vendor?.sys_message != nil
+          - append:
+              field: related.user
+              value: "{{source.user.name}}"
+              allow_duplicates: false
+              if: source?.user?.name != nil
+          - append:
+              field: related.user
+              value: "{{destination.user.name}}"
+              allow_duplicates: false
+              if: destination?.user?.name != nil
+          - script:
+              lang: vmetric
+              function: sumFields("network.bytes", "source.bytes", "destination.bytes")
+              if: source?.bytes != nil && destination?.bytes != nil && network?.bytes == nil
+              ignore_failure: true
+          - script:
+              lang: vmetric
+              function: sumFields("network.packets", "source.packets", "destination.packets")
+              if: source?.packets != nil && destination?.packets != nil && network?.packets == nil
+              ignore_failure: true
+          - rename:
+              field: vendor.action_reason
+              target_field: vendor.action_reason_msg
+              if: vendor?.action_reason != nil && vendor?.action_reason.contains(" ")
+              ignore_missing: true
+          - rename:
+              field: source.as.asn
+              target_field: source.as.number
+              ignore_missing: true
+          - rename:
+              field: source.as.organization_name
+              target_field: source.as.organization.name
+              ignore_missing: true
+          - rename:
+              field: destination.as.asn
+              target_field: destination.as.number
+              ignore_missing: true
+          - rename:
+              field: destination.as.organization_name
+              target_field: destination.as.organization.name
+              ignore_missing: true
+          - remove:
+              field:
+                - vendor.ifname
+                - vendor.server_outbound_interface
+                - vendor.client_outbound_packets
+                - vendor.server_outbound_packets
+                - vendor.client_outbound_bytes
+                - vendor.server_outbound_bytes
+                - vendor.client_inbound_packets
+                - vendor.server_inbound_packets
+                - vendor.client_inbound_bytes
+                - vendor.server_inbound_bytes
+                - vendor.sent_byte
+                - vendor.received_bytes
+                - vendor.service
+                - vendor.xlatedport
+                - vendor.s_port
+                - vendor.xlatesport
+                - vendor.contextnum
+                - vendor.sequencenum
+                - vendor.file_size
+                - vendor.product
+                - vendor.severity
+                - vendor.xlatesrc
+                - vendor.xlatedst
+                - vendor.uid
+                - vendor.time
+                - vendor.__nsons
+                - vendor.__p_dport
+                - vendor.__pos
+                - vendor.subs_exp
+                - vendor.hll_key
+                - vendor.segment_time
+                - vendor.lastupdatetime
+                - vendor.endpoint_ip
+                - vendor.origin_ip
+                - syslog5424_ts
+                - _temp_
+                - _conf
+                - _ingest
+                - _temp
+                - tags
+              ignore_missing: true
+          - script:
+              description: Drops nil/empty values recursively.
+              lang: vmetric
+              function: dropEmptyFields()
+          - remove:
+              field: event.original
+              ignore_failure: true
+              ignore_missing: true
+              if: "tags == nil || !(tags.contains('preserve_original_event'))"
+        on_failure:
+          - set:
+              field: event.kind
+              value: pipeline_error
+          - append:
+              field: error.message
+              value: "{{ _ingest.on_failure_message }}"
+```
+
 {/* TODO: Complete */}
