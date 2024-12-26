@@ -1,3 +1,5 @@
+import BasicConfig from "./_basic-config.mdx";
+
 # IPFIX
 
 ## Synopsis
@@ -27,15 +29,7 @@ IPFIX (IP Flow Information Export) is a protocol for exporting network flow info
 
 ## Parameters
 
-Basic configuration.
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`id`|Y|N/A|Device identifier|
-|`name`|Y|N/A|Address used to refer to the listener, e.g. `127.0.0.1`|
-|`description`|N|-|Explanatory note|
-|`type`|Y|N/A|Type of device. Here, `ipfix`|
-|`status`|N|`true`|Enable device|
+<BasicConfig />
 
 ### `properties:`
 
@@ -60,6 +54,20 @@ Device-specific settings.
 <details>
 <summary>Sample code</summary>
 ```yaml
+devices:
+  - id: 325567456
+    name: 127.0.0.1
+    description: ipfix
+    type: ipfix
+    status: false
+    properties:
+      address: "0.0.0.0"
+      port: 4739
+      reuse: false
+      flush_interval: 1
+      queue:
+        interval: 1
+      batch_size: 1000
 ```
 </details>
 
