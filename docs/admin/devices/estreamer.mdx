@@ -1,117 +1,217 @@
 import BasicConfig from "./_basic-config.mdx";
 
-# EStreamer
+# eStreamer
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: estreamer
-  status: <logical>
+  status: <boolean>
   properties:
-    address: <ip-string>
+    address: <string>
     port: <numeric>
     tls:
-      non_secure: <logical>
-    cert_name: <string>
-    key_name: <string>
-    flush_interval: <numeric>
-    queue:
-      interval: <numeric>
+      status: <boolean>
+      cert_name: <string>
+      key_name: <string>
+      non_secure: <boolean>
+    reuse: <boolean>
+    workers: <numeric>
     batch_size: <numeric>
+    flush_interval: <numeric>
     inputs:
       - id: <numeric>
-      name: <string>
-      status: <logical>
-      ...
+        status: <boolean>
 ```
 
 ## Description
 
-Represents the listener that delivers data through **eStreamer**.
+Creates an eStreamer client that connects to an eStreamer server to receive various security events. Supports TLS encryption, event filtering, and batch processing of events.
 
-The protocol refers to event data collected from Cisco Firepower devices, including Firepower Threat Defense (FTD) and Firepower Management Center (FMC). It is transmitted using the eStreamer protocol, part of Cisco's _Event Streamer API_. The data provides detailed security event information that can be used for monitoring, analysis, and threat detection.
+## Basic Configuration
 
-## Parameters
+Basic configuration contains properties to define minimum requirements for the device.
 
-<BasicConfig />
-
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|N|`8302`|Listening port|
-|`cert_name`|N|`""`|TLS certificate path|
-|`key_name`|N|`""`|TLS key path|
-|`flush_interval`|N|`1`|Ingester flush interval in sec|
-|`batch_size`|N|`1000`|Ingester batch size|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `estreamer`|
+|`status`|N|`true`|Enable/disable the device|
 
-### `inputs:`
-
-Event settings.
+### Network Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|N/A|Event id|
-|`status`|N|`true`|Enable event|
+|`address`|N|`"0.0.0.0"`|Server address to connect to|
+|`port`|N|`8302`|Server port|
 
-### `queue:`
-
-Ingester queue settings.
+### TLS Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`interval`|N|`1`|Ingester de-queue interval in sec|
+|`tls.status`|Y|`true`|Enable TLS encryption (always required)|
+|`tls.cert_name`|Y|-|Client certificate file path|
+|`tls.key_name`|Y|-|Client private key file path|
+|`tls.non_secure`|N|`false`|Allow less secure TLS versions|
 
-### `tls:`
+## Advanced Configuration
 
-Transport Layer Security settings.
+Advanced configuration contains properties to tune performance and event handling.
+
+### Event Processing
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`non_secure`|N|`false`|Enable non-secure TLS|
+|`batch_size`|N|`1000`|Number of events to batch before processing|
+|`flush_interval`|N|`60`|Event flush interval in seconds|
+
+### Event Types
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`inputs[].id`|N|-|Event type ID to process|
+|`inputs[].status`|N|`true`|Enable/disable specific event type|
+
+#### Available Event Types
+
+|ID|Description|Default|
+|---|---|---|
+|`102`|Connection Events|Enabled|
+|`103`|File Events|Enabled|
+|`104`|Malware Events|Enabled|
+|`106`|Intrusion Events|Enabled|
 
 ## Examples
 
-* VM example
+### Basic eStreamer Client
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 324342342
-    name: 127.0.0.1
-    description: estreamer
-    type: estreamer
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 8302
-      tls:
-        non_secure: false
-      cert_name: ""
-      key_name: ""
-      reuse: false
-      flush_interval: 1
-      queue:
-        interval: 1
-      batch_size: 1000
-      inputs:
-        - id: 102
-          name: eStreamer Connection Events
-          status: true
-        - id: 103
-          name: eStreamer File Events
-          status: true
-        - id: 104
-          name: eStreamer Malware Events
-          status: true
-        - id: 106
-          name: eStreamer Intrusion Events
-          status: true
-```
-</Details>
+<ExampleGrid>
+  <CommentCol>
+    Create a simple eStreamer client...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: estreamer_basic
+      type: estreamer
+      properties:
+        address: "192.168.1.100"
+        port: 8302
+        tls:
+          cert_name: "client.crt"
+          key_name: "client.key"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Basic configuration:
+    - TLS encryption enabled
+    - Default event types
+    - Default processing settings
+  </CommentCol>
+</ExampleGrid>
+
+### High-Performance Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high event volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: estreamer_performance
+      type: estreamer
+      properties:
+        address: "192.168.1.100"
+        port: 8302
+        tls:
+          cert_name: "client.crt"
+          key_name: "client.key"
+        batch_size: 5000
+        flush_interval: 30
+        reuse: true
+        workers: 4
+    ```
+  </CodeCol>
+  <CommentCol>
+    Performance tuning:
+    - Increased batch size
+    - Reduced flush interval
+    - Multiple workers
+  </CommentCol>
+</ExampleGrid>
+
+### Filtered Event Collection
+
+<ExampleGrid>
+  <CommentCol>
+    Collect specific event types...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: estreamer_filtered
+      type: estreamer
+      properties:
+        address: "192.168.1.100"
+        port: 8302
+        tls:
+          cert_name: "client.crt"
+          key_name: "client.key"
+        inputs:
+          - id: 102
+            status: true
+          - id: 106
+            status: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    Selective event processing:
+    - Connection events enabled
+    - Intrusion events enabled
+    - File and malware events disabled
+  </CommentCol>
+</ExampleGrid>
+
+### Legacy System Support
+
+<ExampleGrid>
+  <CommentCol>
+    Connect to older eStreamer servers...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: estreamer_legacy
+      type: estreamer
+      properties:
+        address: "192.168.1.100"
+        port: 8302
+        tls:
+          cert_name: "client.crt"
+          key_name: "client.key"
+          non_secure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    Legacy compatibility:
+    - Allows older TLS versions
+    - Standard event processing
+    - Default security events
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+The client certificate and private key files must be placed in the service root directory.
+:::
+
+:::warning
+For improved security, set `tls.non_secure: false` unless connecting to legacy systems that require older TLS versions.
+:::
