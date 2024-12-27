@@ -91,7 +91,7 @@ Advanced configuration contains properties to tweak performance and data handlin
 |---|---|---|---|
 |`reuse`|N|`true`|Enable socket address reuse|
 |`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
-|`max_connections`|N|`10000`|Maximum concurrent TCP connections| 
+|`max_connections`|N|`10000`|Maximum concurrent TCP connections|
 |`max_message_size`|N|`20971520`|Maximum message size in bytes (20MB)|
 |`timeout`|N|`300`|Connection timeout in seconds|
 |`buffer_size`|N|`9000`|Network read buffer size in bytes|
@@ -108,7 +108,7 @@ Advanced configuration contains properties to tweak performance and data handlin
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`forwarding[].address`|Y|-|Forward destination address| 
+|`forwarding[].address`|Y|-|Forward destination address|
 |`forwarding[].port`|Y|`514`|Forward destination port|
 |`forwarding[].type`|N|`"udp"`|Forward protocol (`udp` or `tcp`)|
 
@@ -124,7 +124,7 @@ Advanced configuration contains properties to tweak performance and data handlin
     ```yaml
     - id: 1
       name: basic_syslog
-      type: syslog  
+      type: syslog
       properties:
         port: 514
     ```
@@ -136,7 +136,7 @@ Advanced configuration contains properties to tweak performance and data handlin
   </CommentCol>
 </ExampleGrid>
 
-### High-Performance UDP Server 
+### High-Performance UDP Server
 
 <ExampleGrid>
   <CommentCol>
@@ -150,7 +150,7 @@ Advanced configuration contains properties to tweak performance and data handlin
       properties:
         protocol: udp
         port: 514
-        reuse: true 
+        reuse: true
         workers: 4
         buffer_size: 32768
         batch_size: 5000
@@ -169,7 +169,7 @@ Advanced configuration contains properties to tweak performance and data handlin
 </ExampleGrid>
 
 :::note
-The worker count cannot be less than 1 or more than the maximum number of physical cores available on the system. 
+The worker count cannot be less than 1 or more than the maximum number of physical cores available on the system.
 Otherwise, this setting will be automatically capped between 1 and the available CPU cores.
 :::
 
@@ -182,7 +182,7 @@ Otherwise, this setting will be automatically capped between 1 and the available
   <CodeCol>
     ```yaml
     - id: 3
-      name: tcp_syslog  
+      name: tcp_syslog
       type: syslog
       properties:
         protocol: tcp
@@ -215,7 +215,7 @@ When using TCP with delimiter framing, ensure the `line_delimiter` matches the c
     ```yaml
     - id: 4
       name: secure_syslog
-      type: syslog  
+      type: syslog
       properties:
         protocol: tcp
         port: 6514
@@ -227,7 +227,7 @@ When using TCP with delimiter framing, ensure the `line_delimiter` matches the c
           - address: "10.0.0.1"
             port: 514
             type: udp
-          - address: "10.0.0.2" 
+          - address: "10.0.0.2"
             port: 6514
             type: tcp
     ```
@@ -275,10 +275,10 @@ The TLS certificate and key files must be placed in the service root directory.
     - Network devices with single syslog output
     - Legacy systems needing multiple destinations
     - Fan-out to different analysis tools
-    
+
     Messages are forwarded exactly as received to:
     - UDP server on port 514
-    - TCP server on port 1514  
+    - TCP server on port 1514
     - TCP server on port 6514
   </CommentCol>
 </ExampleGrid>
