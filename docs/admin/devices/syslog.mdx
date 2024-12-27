@@ -4,7 +4,7 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Synopsis
 
-```yaml {5}
+```yaml
 - id: <numeric>
   name: <string>
   description: <string>
@@ -42,7 +42,7 @@ Creates a Syslog server that accepts log messages over UDP or TCP connections. S
 
 ## Basic Configuration
 
-Basic configuration contains properties to define minimum requirements for the device.
+The following are the minimum requirements to define the device.
 
 ### Device Properties
 
@@ -64,7 +64,7 @@ Basic configuration contains properties to define minimum requirements for the d
 
 ### TCP Properties
 
-Following properties are only applicable when `protocol` is set to `tcp`.
+The following are only applicable when `protocol` is set to `tcp`.
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -73,17 +73,21 @@ Following properties are only applicable when `protocol` is set to `tcp`.
 
 ### TLS Properties
 
-Following properties are only applicable when `protocol` is set to `tcp`.
+The following are only applicable when `protocol` is set to `tcp`.
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`tls.status`|N|`false`|Enable TLS encryption|
-|`tls.cert_name`|Y*|-|TLS certificate file path (required if TLS enabled)|
-|`tls.key_name`|Y*|-|TLS private key file path (required if TLS enabled)|
+|`tls.cert_name`|Y|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y|-|TLS private key file path (required if TLS enabled)|
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
 
 ## Advanced Configuration
 
-Advanced configuration contains properties to tweak performance and data handling.
+In order to tweak performance and data handling, the following settings are used.
 
 ### Performance Tuning
 
@@ -116,6 +120,11 @@ Advanced configuration contains properties to tweak performance and data handlin
 
 ### Basic UDP Server
 
+The minimum required configuration using defaults is:
+
+- `protocol`: "udp"
+- `address`: "0.0.0.0"
+
 <ExampleGrid>
   <CommentCol>
     Create a simple UDP syslog server...
@@ -129,14 +138,16 @@ Advanced configuration contains properties to tweak performance and data handlin
         port: 514
     ```
   </CodeCol>
-  <CommentCol>
-    Minimum required configuration using defaults:
-    - `protocol`: "udp"
-    - `address`: "0.0.0.0"
-  </CommentCol>
 </ExampleGrid>
 
 ### High-Performance UDP Server
+
+For enhanced performance, make sure to use:
+
+- multiple worker processes
+- a larger buffer size
+- an increased batch size
+- adjusted flush intervals
 
 <ExampleGrid>
   <CommentCol>
@@ -159,13 +170,6 @@ Advanced configuration contains properties to tweak performance and data handlin
           interval: 2
     ```
   </CodeCol>
-  <CommentCol>
-    Performance tuning:
-    - Multiple worker processes
-    - Larger buffer size
-    - Increased batch size
-    - Adjusted flush intervals
-  </CommentCol>
 </ExampleGrid>
 
 :::note
@@ -174,6 +178,12 @@ Otherwise, this setting will be automatically capped between 1 and the available
 :::
 
 ### TCP with Framing
+
+For this, the following are required:
+
+- custom frame delimiter
+- connection limits
+- idle timeout
 
 <ExampleGrid>
   <CommentCol>
@@ -193,12 +203,6 @@ Otherwise, this setting will be automatically capped between 1 and the available
         timeout: 60
     ```
   </CodeCol>
-  <CommentCol>
-    TCP-specific settings:
-    - Custom frame delimiter
-    - Connection limits
-    - Idle timeout
-  </CommentCol>
 </ExampleGrid>
 
 :::warning
@@ -206,6 +210,12 @@ When using TCP with delimiter framing, ensure the `line_delimiter` matches the c
 :::
 
 ### TLS Encrypted with Forwarding
+
+For enhanced security, make sure to use:
+
+- TLS encryption
+- multiple forward destinations
+- mixed protocols
 
 <ExampleGrid>
   <CommentCol>
@@ -232,19 +242,21 @@ When using TCP with delimiter framing, ensure the `line_delimiter` matches the c
             type: tcp
     ```
   </CodeCol>
-  <CommentCol>
-    Security features:
-    - TLS encryption
-    - Multiple forward destinations
-    - Mixed protocols
-  </CommentCol>
 </ExampleGrid>
 
-:::note
-The TLS certificate and key files must be placed in the service root directory.
-:::
-
 ### Syslog Message Forwarding
+
+The typical use cases are:
+
+- network devices with single syslog output
+- legacy systems that need multiple destinations
+- fan-out to different analysis tools
+
+The messages are forwarded exactly as received to:
+
+- UDP server on port `514`
+- TCP server on port `1514`
+- TCP server on port `6514`
 
 <ExampleGrid>
   <CommentCol>
@@ -270,23 +282,10 @@ The TLS certificate and key files must be placed in the service root directory.
             type: tcp
     ```
   </CodeCol>
-  <CommentCol>
-    Use cases:
-    - Network devices with single syslog output
-    - Legacy systems needing multiple destinations
-    - Fan-out to different analysis tools
-
-    Messages are forwarded exactly as received to:
-    - UDP server on port 514
-    - TCP server on port 1514
-    - TCP server on port 6514
-  </CommentCol>
 </ExampleGrid>
 
 :::note
-Syslog forwarding acts as a message replicator, forwarding exact copies of incoming messages to all configured destinations without any modification. This is particularly useful for network devices that can only send syslog to a single destination.
-:::
-
-:::warning
-When using TCP forwarding, ensure the destination servers can handle the connection load. Each TCP forward maintains a persistent connection.
+Syslog forwarding acts as a message replicator, sending exact copies of incoming messages to all configured destinations unmodified. This is particularly useful for network devices that can only send syslog data to a single destination.
+  :::warning
+  When using TCP forwarding, ensure the destination servers can handle the connection load as each connection is persistent.
 :::
