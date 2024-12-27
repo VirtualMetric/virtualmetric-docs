@@ -33,7 +33,7 @@ Creates an eStreamer client that connects to an eStreamer server to receive vari
 
 ## Basic Configuration
 
-Basic configuration contains properties to define minimum requirements for the device.
+The following are the minimum requirements to define the device.
 
 ### Device Properties
 
@@ -61,9 +61,13 @@ Basic configuration contains properties to define minimum requirements for the d
 |`tls.key_name`|Y|-|Client private key file path|
 |`tls.non_secure`|N|`false`|Allow less secure TLS versions|
 
+:::note
+The client certificate and private key files must be placed in the service root directory.
+:::
+
 ## Advanced Configuration
 
-Advanced configuration contains properties to tune performance and event handling.
+In order to tune up performance and event handling, the following settings are used.
 
 ### Event Processing
 
@@ -81,16 +85,21 @@ Advanced configuration contains properties to tune performance and event handlin
 
 #### Available Event Types
 
-|ID|Description|Default|
+|ID|Default|Description|
 |---|---|---|
-|`102`|Connection Events|Enabled|
-|`103`|File Events|Enabled|
-|`104`|Malware Events|Enabled|
-|`106`|Intrusion Events|Enabled|
+|`102`|Enabled|Connection Events|
+|`103`|Enabled|File Events|
+|`104`|Enabled|Malware Events|
+|`106`|Enabled|Intrusion Events|
 
 ## Examples
 
 ### Basic eStreamer Client
+
+For a basic configuration:
+
+- enable TLS encryption
+- use default event types and settings
 
 <ExampleGrid>
   <CommentCol>
@@ -109,15 +118,15 @@ Advanced configuration contains properties to tune performance and event handlin
           key_name: "client.key"
     ```
   </CodeCol>
-  <CommentCol>
-    Basic configuration:
-    - TLS encryption enabled
-    - Default event types
-    - Default processing settings
-  </CommentCol>
 </ExampleGrid>
 
 ### High-Performance Processing
+
+For performance tuning, make sure that:
+
+- the batch size is increased
+- the flush interval is reduced
+- multiple workers are used
 
 <ExampleGrid>
   <CommentCol>
@@ -140,15 +149,15 @@ Advanced configuration contains properties to tune performance and event handlin
         workers: 4
     ```
   </CodeCol>
-  <CommentCol>
-    Performance tuning:
-    - Increased batch size
-    - Reduced flush interval
-    - Multiple workers
-  </CommentCol>
 </ExampleGrid>
 
 ### Filtered Event Collection
+
+For selective event processing:
+
+- connection events must be enabled
+- intrusion events must be enabled
+- file and malware events must be disabled
 
 <ExampleGrid>
   <CommentCol>
@@ -172,15 +181,15 @@ Advanced configuration contains properties to tune performance and event handlin
             status: true
     ```
   </CodeCol>
-  <CommentCol>
-    Selective event processing:
-    - Connection events enabled
-    - Intrusion events enabled
-    - File and malware events disabled
-  </CommentCol>
 </ExampleGrid>
 
 ### Legacy System Support
+
+Compatibility with legacy systems allows:
+
+- use of older TLS versions
+- standard event processing
+- default security events
 
 <ExampleGrid>
   <CommentCol>
@@ -200,17 +209,7 @@ Advanced configuration contains properties to tune performance and event handlin
           non_secure: true
     ```
   </CodeCol>
-  <CommentCol>
-    Legacy compatibility:
-    - Allows older TLS versions
-    - Standard event processing
-    - Default security events
-  </CommentCol>
 </ExampleGrid>
-
-:::note
-The client certificate and private key files must be placed in the service root directory.
-:::
 
 :::warning
 For improved security, set `tls.non_secure: false` unless connecting to legacy systems that require older TLS versions.

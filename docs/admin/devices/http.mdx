@@ -1,5 +1,3 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # HTTP
 
 ## Synopsis
@@ -48,7 +46,7 @@ Creates an HTTP server that accepts messages via HTTP POST requests. Supports mu
 
 ## Basic Configuration
 
-Basic configuration contains properties to define minimum requirements for the device.
+The following are the minimum requirements to define the device.
 
 ### Device Properties
 
@@ -100,16 +98,20 @@ Basic configuration contains properties to define minimum requirements for the d
 |`tls.cert_name`|Y*|-|TLS certificate file path (required if TLS enabled)|
 |`tls.key_name`|Y*|-|TLS private key file path (required if TLS enabled)|
 
+:::note
+TLS certificate and key files must be placed in the service root directory.
+:::
+
 ## Advanced Configuration
 
-Advanced configuration contains properties to tune performance and message handling.
+In order to tune up performance and message handling, the following settings are used.
 
 ### Performance Tuning
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`reuse`|N|`true`|Enable socket address reuse|
-|`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
+|`workers`|N|`<dynamic>`|Number of worker processes when reuse is enabled|
 
 ### Message Processing
 
@@ -120,6 +122,12 @@ Advanced configuration contains properties to tune performance and message handl
 ## Examples
 
 ### Basic HTTP Server
+
+The minimum configuration settings are:
+
+- POST endpoint at `/logs`
+- JSON content type
+- simple success response
 
 <ExampleGrid>
   <CommentCol>
@@ -139,15 +147,14 @@ Advanced configuration contains properties to tune performance and message handl
           body: '{"status":"ok"}'
     ```
   </CodeCol>
-  <CommentCol>
-    Minimum configuration:
-    - POST endpoint at /logs
-    - JSON content type
-    - Simple success response
-  </CommentCol>
 </ExampleGrid>
 
 ### Basic Authentication Server
+
+For basic authentication, use:
+
+- username/password protection
+- an environment variable for the password
 
 <ExampleGrid>
   <CommentCol>
@@ -167,14 +174,15 @@ Advanced configuration contains properties to tune performance and message handl
         password: "${env:VMET_PASSWORD}"
     ```
   </CodeCol>
-  <CommentCol>
-    Basic authentication features:
-    - Username/password protection
-    - Environment variable for password
-  </CommentCol>
 </ExampleGrid>
 
 ### API Key Authentication
+
+To enable this, make sure to use:
+
+- custom header-based authentication
+- configurable header name and value
+- environment variable for secure key storage
 
 <ExampleGrid>
   <CommentCol>
@@ -195,15 +203,15 @@ Advanced configuration contains properties to tune performance and message handl
           value: "${env:API_KEY}"
     ```
   </CodeCol>
-  <CommentCol>
-    Security features:
-    - Custom header-based authentication
-    - Configurable header name and value
-    - Environment variable for secure key storage
-  </CommentCol>
 </ExampleGrid>
 
 ### HMAC Authentication
+
+For secure HMAC authentication, use:
+
+- SHA-256 signature verification
+- custom signature header
+- optional signature prefix
 
 <ExampleGrid>
   <CommentCol>
@@ -226,15 +234,20 @@ Advanced configuration contains properties to tune performance and message handl
           prefix: "sha256="
     ```
   </CodeCol>
-  <CommentCol>
-    Secure HMAC authentication:
-    - SHA-256 signature verification
-    - Custom signature header
-    - Optional signature prefix
-  </CommentCol>
 </ExampleGrid>
 
+:::warning
+When using HMAC authentication, ensure the client calculates the signature using the same algorithm and key.
+:::
+
 ### Secure HTTPS Server
+
+For full security configuration, the following are required:
+
+- TLS encryption
+- basic authentication
+- custom response code
+- secure credentials handling
 
 <ExampleGrid>
   <CommentCol>
@@ -262,23 +275,8 @@ Advanced configuration contains properties to tune performance and message handl
           content_type: "application/json"
     ```
   </CodeCol>
-  <CommentCol>
-    Full security configuration:
-    - TLS encryption
-    - Basic authentication
-    - Custom response code
-    - Secure credentials handling
-  </CommentCol>
 </ExampleGrid>
 
-:::note
-TLS certificate and key files must be placed in the service root directory.
-:::
-
 :::warning
-When using HMAC authentication, ensure the client calculates the signature using the same algorithm and key.
-:::
-
-:::warning
-For production deployments, always use TLS encryption when enabling authentication to protect credentials and tokens.
+For production deployments, always use TLS encryption when authentication is enabled to protect credentials and tokens.
 :::

@@ -36,9 +36,13 @@ import BasicConfig from "./_basic-config.mdx";
 
 Creates an SNMP trap receiver that listens for SNMP trap messages. Supports SNMPv2c and SNMPv3 with various authentication and privacy protocols, MIB integration, and high-performance message processing.
 
+:::note
+The MIB database is automatically loaded from both the service root directory and package directory.
+:::
+
 ## Basic Configuration
 
-Basic configuration contains properties to define minimum requirements for the device.
+The following are the minimum requirements to define the device.
 
 ### Device Properties
 
@@ -56,7 +60,7 @@ Basic configuration contains properties to define minimum requirements for the d
 |---|---|---|---|
 |`address`|N|`"0.0.0.0"`|Listen address|
 |`port`|Y|`162`|Listen port for SNMP traps|
-|`community`|Y*|-|Community string for SNMPv2c (required if not using v3)|
+|`community`|Y|-|Community string for SNMPv2c (required if not using v3)|
 
 ### SNMPv3 Authentication Properties
 
@@ -64,8 +68,8 @@ Basic configuration contains properties to define minimum requirements for the d
 |---|---|---|---|
 |`authentication.status`|N|`false`|Enable SNMPv3 authentication|
 |`authentication.protocol`|N|`1`|Authentication protocol ID|
-|`authentication.password`|Y*|-|Authentication password (required if auth enabled)|
-|`username`|Y*|-|SNMPv3 username|
+|`authentication.password`|Y|-|Authentication password (required if auth enabled)|
+|`username`|Y|-|SNMPv3 username|
 
 #### Authentication Protocols
 
@@ -84,7 +88,7 @@ Basic configuration contains properties to define minimum requirements for the d
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`privacy.protocol`|N|`1`|Privacy protocol ID|
-|`privacy.passphrase`|Y*|-|Privacy passphrase (required if protocol > 1)|
+|`privacy.passphrase`|Y|-|Privacy passphrase (required if protocol > 1)|
 
 #### Privacy Protocols
 
@@ -100,7 +104,7 @@ Basic configuration contains properties to define minimum requirements for the d
 
 ## Advanced Configuration
 
-Advanced configuration contains properties to tune performance and message handling.
+Advanced configuration involves the following properties to tune performance and message handling.
 
 ### Performance Tuning
 
@@ -120,6 +124,12 @@ Advanced configuration contains properties to tune performance and message handl
 
 ### Basic SNMPv2c Trap Receiver
 
+This is achieved with the following configuration:
+
+- Default listen address
+- Standard SNMP trap port
+- Public community string
+
 <ExampleGrid>
   <CommentCol>
     Create a simple SNMPv2c trap receiver...
@@ -134,15 +144,19 @@ Advanced configuration contains properties to tune performance and message handl
         community: "public"
     ```
   </CodeCol>
-  <CommentCol>
-    Basic configuration:
-    - Default listen address
-    - Standard SNMP trap port
-    - Public community string
-  </CommentCol>
 </ExampleGrid>
 
 ### Secure SNMPv3 Trap Receiver
+
+The following features must be configured for enhanced security:
+
+- SHA256 authentication
+- AES-256 privacy
+- Secure credential storage
+
+:::warning
+When using SNMPv3 with privacy, ensure both authentication and privacy passwords meet minimum length requirements for the selected protocols.
+:::
 
 <ExampleGrid>
   <CommentCol>
@@ -165,15 +179,16 @@ Advanced configuration contains properties to tune performance and message handl
         username: "trapuser"
     ```
   </CodeCol>
-  <CommentCol>
-    Security features:
-    - SHA256 authentication
-    - AES-256 privacy
-    - Secure credential storage
-  </CommentCol>
 </ExampleGrid>
 
 ### High-Performance Trap Receiver
+
+The following key aspects must be observed for performance tuning:
+
+- Multiple worker processes
+- Increased batch size
+- Optimized queue processing
+- Basic SHA authentication
 
 <ExampleGrid>
   <CommentCol>
@@ -197,16 +212,15 @@ Advanced configuration contains properties to tune performance and message handl
         username: "trapuser"
     ```
   </CodeCol>
-  <CommentCol>
-    Performance tuning:
-    - Multiple worker processes
-    - Increased batch size
-    - Optimized queue processing
-    - Basic SHA authentication
-  </CommentCol>
 </ExampleGrid>
 
 ### Debug-Enabled Trap Receiver
+
+For a troubleshooting setup, the following is recommended:
+
+- Enabling console debug output
+- Smaller batch size
+- Frequent queue processing
 
 <ExampleGrid>
   <CommentCol>
@@ -228,18 +242,4 @@ Advanced configuration contains properties to tune performance and message handl
           interval: 1
     ```
   </CodeCol>
-  <CommentCol>
-    Troubleshooting setup:
-    - Console debug output enabled
-    - Smaller batch size
-    - Frequent queue processing
-  </CommentCol>
 </ExampleGrid>
-
-:::note
-The MIB database is automatically loaded from both the service root directory and package directory.
-:::
-
-:::warning
-When using SNMPv3 with privacy, ensure both authentication and privacy passwords meet minimum length requirements for the selected protocols.
-:::

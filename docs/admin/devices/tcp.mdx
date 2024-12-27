@@ -1,5 +1,3 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # TCP
 
 ## Synopsis
@@ -37,7 +35,7 @@ Creates a TCP server that accepts network messages over TCP connections. Support
 
 ## Basic Configuration
 
-Basic configuration contains properties to define minimum requirements for the device.
+The following are the minimum requirements to define the device.
 
 ### Device Properties
 
@@ -67,6 +65,10 @@ Basic configuration contains properties to define minimum requirements for the d
 |`timeout`|N|`300`|Connection timeout in seconds|
 |`max_message_size`|N|`20971520`|Maximum message size in bytes (20MB)|
 
+:::warning
+When using delimiter framing, ensure the `line_delimiter` matches the client's to prevent message parsing errors.
+:::
+
 ### TLS Properties
 
 |Field|Required|Default|Description|
@@ -75,9 +77,13 @@ Basic configuration contains properties to define minimum requirements for the d
 |`tls.cert_name`|Y*|-|TLS certificate file path (required if TLS enabled)|
 |`tls.key_name`|Y*|-|TLS private key file path (required if TLS enabled)|
 
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
 ## Advanced Configuration
 
-Advanced configuration contains properties to tune performance and message handling.
+In order to tune up performance and message handling, the following settings are used.
 
 ### Performance Tuning
 
@@ -98,6 +104,12 @@ Advanced configuration contains properties to tune performance and message handl
 
 ### Basic TCP Server
 
+The minimum required settings using the defaults are:
+
+- `protocol`: "tcp"
+- `address`: "0.0.0.0"
+- Default framing and timeout settings
+
 <ExampleGrid>
   <CommentCol>
     Create a simple TCP server...
@@ -111,15 +123,16 @@ Advanced configuration contains properties to tune performance and message handl
         port: 514
     ```
   </CodeCol>
-  <CommentCol>
-    Minimum required configuration using defaults:
-    - `protocol`: "tcp"
-    - `address`: "0.0.0.0"
-    - Default framing and timeout settings
-  </CommentCol>
 </ExampleGrid>
 
 ### High-Performance TCP Server
+
+Make sure that the following are used:
+
+- Multiple worker processes
+- A larger buffer size (4MB)
+- Increased connection limit
+- Optimized batch processing
 
 <ExampleGrid>
   <CommentCol>
@@ -141,21 +154,19 @@ Advanced configuration contains properties to tune performance and message handl
           interval: 2
     ```
   </CodeCol>
-  <CommentCol>
-    Performance tuning:
-    - Multiple worker processes
-    - Larger buffer size (4MB)
-    - Increased connection limit
-    - Optimized batch processing
-  </CommentCol>
 </ExampleGrid>
 
 :::note
-The worker count cannot be less than 1 or more than the maximum number of physical cores available on the system.
-Otherwise, this setting will be automatically capped between 1 and the available CPU cores.
+The worker count cannot be less than 1 or more than the maximum number of physical cores available on the system. Otherwise, this setting will be automatically capped by the available CPU cores.
 :::
 
 ### Custom Framing TCP Server
+
+For a custom framing configuration, use:
+
+- CRLF message delimiter
+- 5MB message size limit
+- 1-minute connection timeout
 
 <ExampleGrid>
   <CommentCol>
@@ -174,15 +185,16 @@ Otherwise, this setting will be automatically capped between 1 and the available
         timeout: 60
     ```
   </CodeCol>
-  <CommentCol>
-    Custom configuration:
-    - CRLF message delimiter
-    - 5MB message size limit
-    - 1-minute connection timeout
-  </CommentCol>
 </ExampleGrid>
 
 ### TLS Encrypted TCP Server
+
+For enhanced security, make sure that:
+
+- TLS encryption is enabled
+- A custom certificate and key are used
+- Connection limits are set
+- An extended timeout is set for the TLS handshake
 
 <ExampleGrid>
   <CommentCol>
@@ -203,19 +215,4 @@ Otherwise, this setting will be automatically capped between 1 and the available
         timeout: 120
     ```
   </CodeCol>
-  <CommentCol>
-    Security features:
-    - TLS encryption enabled
-    - Custom certificate and key
-    - Connection limits
-    - Extended timeout for TLS handshake
-  </CommentCol>
 </ExampleGrid>
-
-:::note
-The TLS certificate and key files must be placed in the service root directory.
-:::
-
-:::warning
-When using delimiter framing, ensure the `line_delimiter` matches the client configuration to prevent message parsing errors.
-:::
