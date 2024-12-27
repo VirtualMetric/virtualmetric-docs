@@ -30,12 +30,150 @@ normalize:
 |`tag`|N|-|Identifier|
 |`target_format`|N|-|Field to assign converted type|
 
+## Field Mappings
+
+### Network Fields
+|ECS|CIM|ASIM|
+|---|---|---|
+|`source.ip`|`src`|`SrcIp`|
+|`destination.ip`|`dest`|`DstIp`|
+|`network.direction`|`direction`|`NetworkDirection`|
+
+## Format Detection
+
+When `source_format` is not specified, the processor attempts to auto-detect the format based on characteristic fields:
+
+- Presence of `@timestamp` indicates ECS format
+- Presence of `_time` indicates CIM format
+- Presence of `TimeGenerated` indicates ASIM format
+
 ## Examples
 
-Normalize the data in field `foo` by converting it to the **ASIM** format:
+### ECS to CIM Conversion
 
 ```yaml
 - normalize:
-  source: foo
-  target_format: ASIM
+    description: "Convert ECS to CIM format"
+    source_format: "ecs"
+    target_format: "cim"
+    tag: "format_conversion"
 ```
+
+Input:
+```json
+{
+  "source": {
+    "ip": "128.232.110.120"
+  },
+  "destination": {
+    "ip": "192.168.1.1"
+  },
+  "network": {
+    "direction": "inbound"
+  }
+}
+```
+
+Output:
+```json
+{
+  "src": "128.232.110.120",
+  "dest": "192.168.1.1",
+  "direction": "inbound"
+}
+```
+
+### CIM to ASIM Conversion
+
+```yaml
+- normalize:
+    description: "Convert CIM to ASIM format"
+    source_format: "cim"
+    target_format: "asim"
+```
+
+Input:
+```json
+{
+  "src": "128.232.110.120",
+  "dest": "192.168.1.1",
+  "direction": "outbound"
+}
+```
+
+Output:
+```json
+{
+  "SrcIp": "128.232.110.120",
+  "DstIp": "192.168.1.1",
+  "NetworkDirection": "outbound"
+}
+```
+
+### Auto-detection with Error Handling
+
+```yaml
+- normalize:
+    description: "Convert to ASIM with error handling"
+    target_format: "asim"
+    ignore_failure: true
+    on_failure:
+      - set:
+          field: "error.message"
+          value: "Format conversion failed"
+```
+
+## Error Handling
+
+The processor provides several ways to handle conversion errors:
+
+### Ignore Failures
+Set `ignore_failure: true` to continue processing even if normalization fails:
+
+```yaml
+- normalize:
+    target_format: "asim"
+    ignore_failure: true
+```
+
+### Failure Processing
+Use `on_failure` to handle conversion errors:
+
+```yaml
+- normalize:
+    target_format: "cim"
+    on_failure:
+      - set:
+          field: "normalize_error"
+          value: true
+```
+
+### Success Processing
+Use `on_success` to perform actions after successful conversion:
+
+```yaml
+- normalize:
+    target_format: "ecs"
+    on_success:
+      - set:
+          field: "normalized"
+          value: true
+```
+
+## Conditional Execution
+
+Use the `if` field to normalize conditionally:
+
+```yaml
+- normalize:
+    if: "ctx.format_version != 'latest'"
+    target_format: "ecs"
+```
+
+:::note
+All normalization is case-insensitive. The format names "ECS", "ecs", and "Ecs" are equivalent.
+:::
+
+:::warning
+Normalization may lose information if the target format doesn't have equivalent fields. Always test your normalization rules with sample data.
+:::
