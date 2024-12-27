@@ -4,22 +4,159 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Synopsis
 
-```ssml
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: udp
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    batch_size: <numeric>
+    queue:
+      interval: <numeric>
 ```
 
 ## Description
 
-Represents the listener streamin data through the UDP protocol.
+Creates a UDP server that accepts network messages over UDP connections. Supports high-performance message ingestion with configurable workers and buffering options.
 
-## Parameters
+## Basic Configuration
 
-<BasicConfig />
+Basic configuration contains properties to define minimum requirements for the device.
+
+### Device Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `udp`|
+|`status`|N|`true`|Enable/disable the device|
+
+### Network Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y|-|Listen port|
+
+## Advanced Configuration
+
+Advanced configuration contains properties to tune performance and message handling.
+
+### Performance Tuning
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable socket address reuse|
+|`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Network read buffer size in bytes|
+
+### Message Processing
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`1000`|Number of messages to batch before processing|
+|`queue.interval`|N|`1`|Queue processing interval in seconds|
 
 ## Examples
 
-* Fill in
+### Basic UDP Server
 
-<Details summary="Click to see">
-```yaml
-```
-</Details>
+<ExampleGrid>
+  <CommentCol>
+    Create a simple UDP server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_udp
+      type: udp
+      properties:
+        port: 514
+    ```
+  </CodeCol>
+  <CommentCol>
+    Minimum required configuration using defaults:
+    - `address`: "0.0.0.0"
+    - Single worker process
+    - Default buffer sizes
+  </CommentCol>
+</ExampleGrid>
+
+### High-Performance UDP Server
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high message volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: performance_udp
+      type: udp
+      properties:
+        address: "0.0.0.0"
+        port: 514
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        batch_size: 5000
+        queue:
+          interval: 2
+    ```
+  </CodeCol>
+  <CommentCol>
+    Performance tuning:
+    - Multiple worker processes
+    - Larger buffer size
+    - Increased batch size
+    - Adjusted queue interval
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+The worker count cannot be less than 1 or more than the maximum number of physical cores available on the system. 
+Otherwise, this setting will be automatically capped between 1 and the available CPU cores.
+:::
+
+### Multi-Port UDP Server
+
+<ExampleGrid>
+  <CommentCol>
+    Listen on multiple ports using separate configurations...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: udp_server_1
+      type: udp
+      properties:
+        port: 514
+        workers: 2
+        
+    - id: 4
+      name: udp_server_2
+      type: udp
+      properties:
+        port: 515
+        workers: 2
+    ```
+  </CodeCol>
+  <CommentCol>
+    Multiple UDP servers:
+    - Different ports
+    - Separate worker processes
+    - Independent message queues
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+When running multiple UDP servers, ensure each configuration has a unique port number and consider the total number of workers across all instances relative to available system resources.
+:::

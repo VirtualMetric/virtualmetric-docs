@@ -4,102 +4,218 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: tcp
   status: <boolean>
   properties:
-    address: <ip-string>
+    protocol: <string>
+    address: <string>
     port: <numeric>
+    framing: <string>
+    line_delimiter: <string>
+    max_connections: <numeric>
+    timeout: <numeric>
+    max_message_size: <numeric>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    batch_size: <numeric>
+    queue:
+      interval: <numeric>
     tls:
       status: <boolean>
       cert_name: <string>
       key_name: <string>
-    reuse: <boolean>
-    flush_interval: <numeric>
-    queue:
-      interval: <numeric>
-    batch_size: <numeric>
-    max_message_size: <numeric>
-    framing: <enum>
-    line_delimiter: <string>
-    timeout: <numeric>
-    max_connections: <numeric>
 ```
 
 ## Description
 
-Represents the listener streaming data through the TCP protocol.
+Creates a TCP server that accepts network messages over TCP connections. Supports both plain and TLS-encrypted connections, with configurable framing modes, connection management, and buffering options.
 
-## Parameters
+## Basic Configuration
 
-<BasicConfig />
+Basic configuration contains properties to define minimum requirements for the device.
 
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|Y||Listening port|
-|`reuse`|N|`false`|Enable reuse of same address and port|
-|`flush_interval`|N|`1`|Ingest flush interval in sec|
-|`batch_size`|N|`1000`|Ingest batch size|
-|`max_message_size`|N|20 * 1024 * 1024|Maximum message size in bytes|
-|`framing`|N|delimiter|Framing method|
-|`line_delimiter`|N|`"\\n"`|Delimiter character|
-|`timeout`|N|`300`|Connection timeout in sec|
-|`max_connections`|N|10000|Maximum connection count|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `tcp`|
+|`status`|N|`true`|Enable/disable the device|
 
-### `tls:`
-
-Transport Layer Security settings.
+### Network Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`status`|N|`false`|Enable TLS connection|
-|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
-|`key_name`|N|`"key.pem`|TLS key file path|
+|`protocol`|N|`"tcp"`|Transport protocol (must be tcp)|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y|-|Listen port|
 
-### `queue:`
-
-Ingester queue settings.
+### TCP Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`interval`|N|`1`|Ingest de-queue interval in sec|
+|`framing`|N|`"delimiter"`|Framing mode (`delimiter` or `octet`)|
+|`line_delimiter`|N|`"\\n"`|Line separator for delimiter framing|
+|`max_connections`|N|`10000`|Maximum concurrent connections|
+|`timeout`|N|`300`|Connection timeout in seconds|
+|`max_message_size`|N|`20971520`|Maximum message size in bytes (20MB)|
+
+### TLS Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y*|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y*|-|TLS private key file path (required if TLS enabled)|
+
+## Advanced Configuration
+
+Advanced configuration contains properties to tune performance and message handling.
+
+### Performance Tuning
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable socket address reuse|
+|`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`1048576`|Network read buffer size in bytes (1MB)|
+
+### Message Processing
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`1000`|Number of messages to batch before processing|
+|`queue.interval`|N|`1`|Queue processing interval in seconds|
 
 ## Examples
 
-* VM example
+### Basic TCP Server
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 324236543
-    name: 127.0.0.1
-    description: tcp
-    type: tcp
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 0
-      tls:
-        status: false
-        cert_name: ""
-        key_name: ""
-      reuse: false
-      flush_interval: 1
-      queue:
-        interval: 1
-      batch_size: 1000
-      max_message_size: 20971520
-      framing: "delimiter"
-      line_delimiter: "\\n"
-      timeout: 300 # seconds
-      max_connections: 10000
-```
-</Details>
+<ExampleGrid>
+  <CommentCol>
+    Create a simple TCP server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_tcp
+      type: tcp
+      properties:
+        port: 514
+    ```
+  </CodeCol>
+  <CommentCol>
+    Minimum required configuration using defaults:
+    - `protocol`: "tcp"
+    - `address`: "0.0.0.0"
+    - Default framing and timeout settings
+  </CommentCol>
+</ExampleGrid>
+
+### High-Performance TCP Server
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high message volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: performance_tcp
+      type: tcp
+      properties:
+        port: 514
+        reuse: true
+        workers: 4
+        buffer_size: 4194304
+        max_connections: 20000
+        batch_size: 5000
+        queue:
+          interval: 2
+    ```
+  </CodeCol>
+  <CommentCol>
+    Performance tuning:
+    - Multiple worker processes
+    - Larger buffer size (4MB)
+    - Increased connection limit
+    - Optimized batch processing
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+The worker count cannot be less than 1 or more than the maximum number of physical cores available on the system.
+Otherwise, this setting will be automatically capped between 1 and the available CPU cores.
+:::
+
+### Custom Framing TCP Server
+
+<ExampleGrid>
+  <CommentCol>
+    TCP server with custom message framing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: framed_tcp
+      type: tcp
+      properties:
+        port: 1514
+        framing: delimiter
+        line_delimiter: "\r\n"
+        max_message_size: 5242880
+        timeout: 60
+    ```
+  </CodeCol>
+  <CommentCol>
+    Custom configuration:
+    - CRLF message delimiter
+    - 5MB message size limit
+    - 1-minute connection timeout
+  </CommentCol>
+</ExampleGrid>
+
+### TLS Encrypted TCP Server
+
+<ExampleGrid>
+  <CommentCol>
+    Secure TCP server with TLS encryption...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: secure_tcp
+      type: tcp
+      properties:
+        port: 6514
+        tls:
+          status: true
+          cert_name: cert.pem
+          key_name: key.pem
+        max_connections: 5000
+        timeout: 120
+    ```
+  </CodeCol>
+  <CommentCol>
+    Security features:
+    - TLS encryption enabled
+    - Custom certificate and key
+    - Connection limits
+    - Extended timeout for TLS handshake
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
+:::warning
+When using delimiter framing, ensure the `line_delimiter` matches the client configuration to prevent message parsing errors.
+:::
