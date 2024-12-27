@@ -2,47 +2,130 @@
 sidebar_label: Quick Start
 ---
 
-# Devices: Quick Start
+This guide walks you through configuring your first device in Director, using a syslog server as an example.
 
-This quick start will walk you through the steps to configure a device for **Director**. As an example, we will pick a widely used log format, namely _syslog_, so we will configure a **Syslog** device.
+## Configuration Structure
 
-## Create The YAML File
+Director searches recursively through the `config` directory for configuration files with either `.yaml` or `.yml` extensions. You can organize your configurations in several ways:
 
-As we will create a **Syslog** device, we will begin by creating a `syslog.yaml` file under `<vm_root>` (the directory where you have installed **Director**) with which we will define the parameters required to initialize and use a listener.
-
-## Define The Parameters
-
-Now, we have to define the parameters that will identify _syslog_ listener as a device:
-
-```yaml
-devices
-   id: 324235346
-   name: 127.0.0.1
-   type: syslog
-   status: false
+```bash
+<director_root>/config/syslog.yaml                     # Using .yaml extension
+<director_root>/config/devices/syslog.yml              # Using .yml extension
+<director_root>/config/device/listeners/syslog.yaml    # Categorized structure
 ```
 
-Why these values? For the time being, bear with us etc.
+Choose the organization that best fits your needs - Director will find the configurations regardless of subfolder structure.
 
-## Define The Properties
+## Basic UDP Syslog Setup
 
-Now we have to define the properties that are device-specific. For our example these will be
+### 1. Create Configuration File
+Create a syslog configuration in your preferred location (e.g., `config/devices/syslog.yaml`):
 
 ```yaml
-   properties:
-      network: "udp"
-      address: "0.0.0.0"
-      port: 14514
-      tls: false
-      cert_name: ""
-      key_name: ""
-      reuse: false
-      flush_interval: 1
-      queue:
-         interval: 1
-      batch_size: 1000
+- id: 1                   # Unique identifier for this device
+  name: syslog_udp        # Descriptive name
+  type: syslog            # Device type
+  properties:             
+    protocol: udp         # Using UDP protocol
+    address: 0.0.0.0      # Listen on all interfaces
+    port: 514             # Standard syslog port
 ```
 
-Again, why these values? Please be patient, etc.
+### 2. Test Configuration
+You can test using VirtualMetric Generator (cross-platform) or traditional tools:
 
-{/* TODO: Complete */}
+**Using VirtualMetric Generator**
+```bash
+vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"     # Linux
+vmetric-generator.exe -mode=syslog -address=127.0.0.1:514 -message="Test Message" # Windows
+```
+
+**Using System Logger (Unix/Linux)**
+```bash
+logger -n 127.0.0.1 -P 514 "Test message"
+```
+
+## Secure TCP Syslog Setup
+
+### 1. Prepare TLS Certificates
+
+**Using VirtualMetric Director (Cross-Platform)**
+```bash
+vmetric-director -pfx2pem=./mycert.pfx     # Linux
+vmetric-director.exe -pfx2pem=./mycert.pfx # Windows
+# Generates: key.pem and cert.pem
+```
+
+**Using OpenSSL (Unix/Linux)**
+```bash
+openssl genrsa -out server.key 2048
+openssl req -new -x509 -key server.key -out server.crt -days 365
+```
+
+### 2. Create Secure Configuration
+Update or create your configuration file (e.g., `config/devices/secure_syslog.yaml`):
+
+```yaml
+- id: 2
+  name: syslog_secure
+  type: syslog
+  properties:
+    protocol: tcp
+    address: 0.0.0.0
+    port: 6514
+    tls:
+      status: true
+      cert_name: cert.pem    # Generated from pfx2pem
+      key_name: key.pem      # Generated from pfx2pem
+    framing: octet
+    max_connections: 1000
+    timeout: 300
+    batch_size: 5000
+    queue:
+      interval: 2
+```
+
+### 3. Place TLS Certificates
+Copy the certificate files to your Director root directory:
+```bash
+cp cert.pem key.pem <director_root>/
+```
+
+### 4. Test Secure Configuration
+Test the secure connection:
+```bash
+echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+```
+
+## Performance Tuning
+
+For high-volume environments, add these settings to your configuration:
+
+```yaml
+    reuse: true                # Enable socket reuse
+    workers: 4                 # Use 4 worker processes
+    buffer_size: 32768         # 32KB buffer size
+    flush_interval: 5          # Flush every 5 seconds
+```
+
+## Monitoring
+
+Watch Director's logs for:
+- "... is successfully started"
+- Connection acceptance messages
+- Configuration validation messages
+
+## Next Steps
+
+- Set up additional device types
+- Configure message forwarding
+- Explore advanced authentication options
+- Implement data processing pipelines
+
+:::tip
+Monitor system resources and adjust worker count, buffer sizes, and batch settings based on your message volume.
+:::
+
+:::warning
+Always use TLS encryption in production environments, especially over untrusted networks.
+:::

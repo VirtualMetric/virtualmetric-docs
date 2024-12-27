@@ -9,6 +9,8 @@ import BasicConfig from "./_basic-config.mdx";
   name: <string>
   description: <string>
   type: syslog
+  tags: <string[]>
+  pipelines: <pipeline[]>
   status: <boolean>
   properties:
     protocol: <string>
@@ -52,6 +54,8 @@ The following are the minimum requirements to define the device.
 |`name`|Y|-|Device name|
 |`description`|N|-|Optional description|
 |`type`|Y|-|Must be `syslog`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
 ### Protocol Properties
@@ -140,6 +144,40 @@ The minimum required configuration using defaults is:
   </CodeCol>
 </ExampleGrid>
 
+### Basic UDP Server with Checkpoint Pre-processing Pipeline
+
+The minimum required configuration using defaults is:
+
+- `protocol`: "udp"
+- `address`: "0.0.0.0"
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple UDP syslog server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: basic_syslog
+      type: syslog
+      tags:
+        - "network_device"
+      pipelines:
+        - checkpoint
+      properties:
+        address: "10.0.0.1"
+        protocol: "udp"
+        port: 1514
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The `checkpoint` is a pre-processing pipeline that extracts Checkpoint firewall logs from syslog messages.
+If the device is a Checkpoint firewall, this pipeline will parse the logs and extract relevant fields for further processing.
+If the device is not a Checkpoint firewall, the pipeline will have no effect on the incoming messages.
+:::
+
 ### High-Performance UDP Server
 
 For enhanced performance, make sure to use:
@@ -155,7 +193,7 @@ For enhanced performance, make sure to use:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
+    - id: 3
       name: performance_syslog
       type: syslog
       properties:
@@ -191,7 +229,7 @@ For this, the following are required:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
+    - id: 4
       name: tcp_syslog
       type: syslog
       properties:
@@ -223,7 +261,7 @@ For enhanced security, make sure to use:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
+    - id: 5
       name: secure_syslog
       type: syslog
       properties:
@@ -264,7 +302,7 @@ The messages are forwarded exactly as received to:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 5
+    - id: 6
       name: forwarder_syslog
       type: syslog
       properties:

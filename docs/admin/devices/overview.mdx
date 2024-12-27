@@ -4,36 +4,160 @@ pagination_prev: null
 
 # Devices: Overview
 
-Devices are essentially listeners that act as proxies for actual senders of data. As such, they are the initial points for the process of _decoupling_ the telemetry chain from actual _physical_ sources.
+VirtualMetric Director uses devices as abstraction layers to collect, process, and manage telemetry data from various sources. These devices serve as the interface between data sources and the Director's processing pipeline.
 
-## Motivation
+## Device Categories
 
-The primary reasons for using this abstraction layer can be summarized with the following bullet points:
+### Operating System Monitoring
 
-* **Identification** Devices can be identified by source IP, hostname, MAC address, or metadata
-* **Data marshalling** Devices can be tagged and grouped for filtering, routing, and enrichment
-* **Efficiency**: As they are used before forwarding the data upstream, devices keep preprocessing local. Also, lightweight agents can be used. Standardized fields ensure devices and their logs can be correlated efficiently
-* **Asset management**: Devices can indicate system health, display events, and monitor telemetric activity
-* **Security**: Devices can be represented as network entities and their activities can be tracked
+Director uses a unified agent-based approach with two deployment methods:
 
-Thanks to this design, devices can provide the following advantages which may help reduce telemetry costs:
+#### Managed Agent (Traditional)
+- Agent installed and managed by system administrators
+- Persistent installation on target systems
+- Local data buffering during network issues
+- Windows, Linux, MacOS, Solaris, AIX support
 
-{/* TODO: Do we support the following features? */}
+#### Auto-managed Agent (Agentless) 
+- Director automatically deploys and manages agent process
+- No manual installation required
+- Same capabilities as managed agent:
+ - Local data buffering 
+ - Network resilience
+ - Performance optimization
+- Self-healing: Director automatically redeploys if process terminates
+- Windows: WinRM for deployment
+- Linux, MacOS, Solaris, AIX: SSH for deployment
+- Supports remote credential management
 
-* deploying stream instances close to data producers to minimize data loss
-* using load balancers across multiple nodes to avoid overloading a single process.
-* using persistent queues to buffer incoming events to ensure data integrity during downstream outages
+Both approaches provide:
+- Local data processing
+- Store-and-forward during connectivity issues 
+- Real-time metrics and events
+- Native OS monitoring capabilities
 
-{/* TODO: Complete */}
+The key difference is deployment and lifecycle management, not functionality.
 
-## Ingesting Data
+### Protocol Listeners
 
-To be able to ingest data, **Director** first has to be given the information about the devices that will be used. This makes it possible to collect data remotely from devices that run an OS, such as **Windows**, **Linux**, **MacOS**, etc.
+Director can receive data through various network protocols:
 
-## Collecting Published Data
+#### Push-based Protocols
+Devices send data to Director:
+- Syslog (UDP/TCP)
+- SNMP Traps
+- HTTP/HTTPS
+- TCP/UDP streams
+- eStreamer events
 
-There is also a category of devices that cannot be accessed remotely but nevertheless publish their data. The streams from these can be be collected via certain protocols&mdash;e.g. **Syslog**, **Netflow**, etc.
+#### Pull-based Integration
+Director fetches data from sources:
+- Kafka topics
+- Microsoft Sentinel
+- REST APIs
+- Database queries
+- Custom integrations
 
-## Message Formats
+## Data Processing
 
-As the data that listeners are receiving is by definition an infinite stream, some method of signalling that a certain chunk of data constitutes a block has to be devised so that it can be marshalled intelligibly. One common technique is using line or record terminator characters to delimit data blocks.
+### Pipeline Processing
+- Message parsing and enrichment with custom rules
+- Data transformation (field mapping, type conversion)
+- Event correlation and aggregation
+- Custom field extraction and tagging
+- Filter and routing based on message content
+- Alert generation for matching conditions
+- Templating support for output formatting
+- Built-in and custom functions
+
+### Queue Management
+- Persistent message storage
+- Configurable batch processing
+- Automatic checkpoint recovery
+- Queue rotation and cleanup
+
+### Performance Features
+- Multi-worker architecture
+- Dynamic scaling
+- Socket reuse optimization
+- Buffer management
+- Resource monitoring
+
+### Security Controls
+- Authentication methods
+  - Basic auth
+  - API keys
+  - HMAC signing
+  - Client certificates
+- Encryption options
+  - TLS/SSL
+  - SNMPv3 privacy
+  - Custom encryption
+- Access control
+- Audit logging
+
+## Deployment Options
+
+### Standalone
+```
+[Sources] → [Director]
+```
+
+### High Availability
+```
+[Sources] → [Load Balancer] → [Director Cluster]
+```
+or
+```
+[Sources] → [Director Cluster with VIP]
+```
+
+## Common Applications
+
+### Infrastructure Monitoring
+- System performance metrics
+- Event logs
+- Resource utilization
+- Service availability
+
+### Security Operations
+- Security event collection
+- Threat detection
+- Compliance monitoring
+- Audit trails
+
+### Application Telemetry
+- Application logs
+- Performance metrics
+- Error tracking
+- User activity
+
+### Network Monitoring
+- Network device logs
+- Traffic analysis 
+- SNMP data
+- Connection tracking
+
+## Configuration
+
+All device configurations reside in the `config` directory using either `.yaml` or `.yml` extensions. Flexible organization options:
+
+```
+config/
+├── devices/
+│   ├── windows/
+│   ├── linux/
+│   └── network/
+├── listeners/
+└── integrations/
+```
+
+Director recursively discovers all configuration files regardless of subfolder structure.
+
+:::note
+Each device type provides specific configuration options detailed in their respective documentation.
+:::
+
+:::warning
+Always implement appropriate security controls when deploying devices, especially in production environments.
+:::
