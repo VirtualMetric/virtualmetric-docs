@@ -1,23 +1,27 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # NATS
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: nats
+  tags: <string[]>
+  pipelines: <pipeline[]>
   status: <boolean>
   properties:
-    address: <ip-string>
+    address: <string>
     port: <numeric>
     username: <string>
     password: <string>
     stream: <string>
     consumer: <string>
     subject: <string>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    stats_frequency: <numeric>
     tls:
       status: <boolean>
       cert_name: <string>
@@ -26,61 +30,217 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Description
 
-Represents the listener that delivers the data collected with the NATS protocol.
+Creates a NATS JetStream consumer that connects to NATS servers and processes messages from specified streams and subjects. Supports authentication, TLS encryption, and multi-worker processing with automatic message acknowledgment.
 
-NATS is a lightweight, high-performance messaging system that supports simple publish-subscribe and request-reply patterns. Known for its speed and simplicity, it is well-suited for microservices, IoT, and cloud-native architectures.
+## Basic Configuration
 
-## Parameters
+The following are the minimum requirements to define the device.
 
-<BasicConfig />
-
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|N|`0`|Listening port|
-|`username`|N|`""`|Required if authentication is used|
-|`password`|N|`""`|Required if authentication is used|
-|`stream`|N|`"vmetric"`|Stream name|
-|`consumer`|N|`"vmetric"`|Consumer name|
-|`subject`|Y||Stream subject|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `nats`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
 
-### `tls:`
-
-Transport Layer Security settings.
+### Connection Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`status`|N|`false`|Enable TLS connection|
-|`cert_name`|N|`"cert.pem"`|TLS certificcate file path|
-|`key_name`|N|`"key.pem"`|TLS key file path|
+|`address`|N|`"0.0.0.0"`|NATS server address|
+|`port`|Y|-|NATS server port|
+|`username`|N|-|Authentication username|
+|`password`|N|-|Authentication password|
+|`stream`|Y|`"vmetric"`|JetStream stream name|
+|`consumer`|Y|`"vmetric"`|JetStream consumer name|
+|`subject`|Y|-|Subject pattern to subscribe to|
+
+### TLS Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y|-|TLS private key file path (required if TLS enabled)|
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
+### Performance Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable multi-worker mode|
+|`workers`|N|`4`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Read buffer size in bytes|
+|`stats_frequency`|N|`300`|Statistics collection interval in seconds|
+
+## Advanced Features
+
+### Multi-Worker Processing
+
+When `reuse` is enabled, the collector uses multiple worker processes:
+- Each worker maintains its own NATS consumer
+- Workers process messages independently
+- Messages are automatically acknowledged
+- Worker count is capped at available CPU cores
+
+### Message Processing
+
+The collector supports:
+- JetStream persistent message storage
+- Message acknowledgment and retry
+- Multiple subject subscriptions
+- TLS encrypted connections
+- Basic authentication
+- Custom message processing pipelines
 
 ## Examples
 
-* VM Example
+### Basic Configuration
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 634567234
-    name: 127.0.0.1
-    description: nats
-    type: nats
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 0
-      username: ""
-      password: ""
-      stream: ""
-      consumer: "vmetric"
-      subject: ""
-      tls:
-        status: true
-        cert_name: ""
-        key_name: ""
-```
-</Details>
+The minimum required configuration:
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple NATS consumer...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_nats
+      type: nats
+      properties:
+        address: "nats.example.com"
+        port: 4222
+        subject: "logs.>"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure Configuration
+
+For connecting to secured NATS servers:
+
+<ExampleGrid>
+  <CommentCol>
+    Connect with authentication and encryption...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: secure_nats
+      type: nats
+      properties:
+        address: "nats.example.com"
+        port: 4222
+        username: "consumer"
+        password: "secret"
+        stream: "LOGS"
+        consumer: "processor"
+        subject: "logs.secure.>"
+        tls:
+          status: true
+          cert_name: "nats.crt"
+          key_name: "nats.key"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Performance Configuration
+
+For processing high message volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high throughput...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: performance_nats
+      type: nats
+      properties:
+        address: "nats.example.com"
+        port: 4222
+        stream: "LOGS"
+        consumer: "high-perf"
+        subject: "logs.>"
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
+:::
+
+### Subject Filter Configuration
+
+For targeted message processing:
+
+<ExampleGrid>
+  <CommentCol>
+    Configure subject-based filtering...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: filtered_nats
+      type: nats
+      properties:
+        address: "nats.example.com"
+        port: 4222
+        stream: "LOGS"
+        consumer: "filtered"
+        subject: "logs.*.error"
+        reuse: true
+        workers: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::tip
+NATS subjects support wildcards: 
+- Single token wildcard: `*`
+- Multiple token wildcard: `>`
+:::
+
+### Message Pipeline Configuration
+
+For message pre-processing:
+
+<ExampleGrid>
+  <CommentCol>
+    Apply custom processing to messages...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: pipeline_nats
+      type: nats
+      pipelines:
+        - json_parser
+        - field_extractor
+      properties:
+        address: "nats.example.com"
+        port: 4222
+        stream: "LOGS"
+        consumer: "processed"
+        subject: "logs.raw.>"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed in order and can modify or drop messages before ingestion.
+:::

@@ -1,1 +1,93 @@
-# Console
+# Console Target
+
+## Synopsis
+
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: console
+  status: <boolean>
+  pipelines: <pipeline[]>
+  properties:
+    format: <string>
+```
+
+## Description
+
+Creates a console target that writes log messages to the standard output (stdout). Supports field normalization to different logging standards through the format property.
+
+## Basic Configuration
+
+The following are the minimum requirements to define the target.
+
+### Target Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Target name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `console`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Format Property
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`format`|N|-|Target format standard for field normalization (`ecs`, `cim`, or `asim`)|
+
+## Format Standards
+
+When a format is specified, the console target will normalize fields to the specified standard:
+
+- `ecs`: Elastic Common Schema format
+- `cim`: Splunk Common Information Model format
+- `asim`: Azure Sentinel Information Model format
+
+If no format is specified, fields will remain in their original form without normalization.
+
+## Examples
+
+### Basic Console Output
+
+Basic configuration without field normalization:
+
+```yaml
+- id: 1
+  name: basic_console
+  type: console
+```
+
+### ECS Normalized Output
+
+Configuration with ECS field normalization:
+
+```yaml
+- id: 2
+  name: ecs_console
+  type: console
+  properties:
+    format: "ecs"
+```
+
+### ASIM Normalized Output
+
+Configuration with ASIM field normalization:
+
+```yaml
+- id: 3
+  name: asim_console
+  type: console
+  properties:
+    format: "asim"
+```
+
+:::note
+If no format is specified, log messages will be written to the console without any field normalization.
+:::
+
+:::warning
+Using field normalization may impact performance when processing high volumes of messages.
+:::
