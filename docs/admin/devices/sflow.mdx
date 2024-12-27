@@ -1,72 +1,211 @@
-import BasicConfig from "./_basic-config.mdx";
-
-# SFlow
+# sFlow
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: sflow
+  tags: <string[]>
+  pipelines: <pipeline[]>
   status: <boolean>
   properties:
-    address: <ip-string>
+    address: <string>
     port: <numeric>
     reuse: <boolean>
-    flush_interval: <numeric>
-    queue:
-      interval: <numeric>
-    batch_size: <numeric>
+    buffer_size: <numeric>
+    stats_frequency: <numeric>
 ```
 
 ## Description
 
-Represents the listener streaming data from the SFlow protocol.
+Creates an sFlow collector that accepts flow sampling data over UDP connections. Supports high-performance collection with multiple worker processes and configurable buffer sizes.
 
-## Parameters
+## Basic Configuration
 
-<BasicConfig />
+The following are the minimum requirements to define the device.
 
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|Y||Listening port|
-|`reuse`|N|`true`|Enable reuse of same address and port|
-|`flush_interval`|N|`1`|Ingester flush interval in sec|
-|`batch_size`|N|`1000`|Ingester batch size|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `sflow`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
 
-### `queue:`
-
-Ingester queue settings.
+### Network Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`interval`|N|`1`|Ingester de-queue interval in sec|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|N|`6343`|Listen port|
+|`reuse`|N|`true`|Enable socket address reuse|
+
+### Performance Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`buffer_size`|N|`9000`|Network read buffer size in bytes|
+|`stats_frequency`|N|`300`|Statistics collection interval in seconds|
+
+## Advanced Features
+
+### Multi-Worker Processing
+
+When `reuse` is enabled, the collector automatically scales to use multiple worker processes based on available CPU cores. Each worker:
+- Maintains its own UDP listener
+- Processes flows independently
+- Writes to a dedicated queue file
+
+### Flow Processing
+
+The collector supports:
+- Interface counter sampling
+- Packet flow sampling
+- Application identification
+- Port-based protocol mapping
+- Flow state tracking
+- Statistics aggregation
 
 ## Examples
 
-* VM example
+### Basic Configuration
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 325567458
-    name: 127.0.0.1
-    description: sflow
-    type: sflow
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 6343
-      reuse: false
-      flush_interval: 1
-      queue:
-        interval: 1
-      batch_size: 1000
+The minimum required configuration using defaults:
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple sFlow collector...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_sflow
+      type: sflow
+      properties:
+        port: 6343
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Performance Configuration 
+
+For enhanced performance with high flow volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high message volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: performance_sflow
+      type: sflow
+      properties:
+        address: "0.0.0.0"
+        port: 6343
+        reuse: true
+        buffer_size: 32768
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When `reuse` is enabled, the collector automatically scales to use all available CPU cores for processing.
+:::
+
+### Multiple Agent Configuration
+
+For collecting from multiple sFlow agents:
+
+<ExampleGrid>
+  <CommentCol>
+    Collect from multiple network devices...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: multi_agent_sflow
+      type: sflow
+      properties:
+        address: "0.0.0.0"
+        port: 6343
+        reuse: true
+        buffer_size: 16384
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+All sFlow agents must be configured to send to the same collector port.
+:::
+
+### Application Protocol Identification
+
+The collector supports application protocol identification through multiple methods:
+
+1. Application-based identification using app-definitions.csv
+2. TCP port mapping using tcp-definitions.csv
+3. UDP port mapping using udp-definitions.csv
+
+The definition files can be placed in three locations, checked in the following order:
+1. `/definitions/app-definitions-{device-id}.csv` (device-specific)
+2. `/definitions/app-definitions.csv` (user-defined)
+3. `/package/definitions/app-definitions.csv` (system defaults)
+
+<ExampleGrid>
+  <CommentCol>
+    Basic flow collection with application identification...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: app_aware_sflow
+      type: sflow
+      properties:
+        port: 6343
+        reuse: true
+        buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+Definition files use CSV format:
+
+app-definitions.csv:
+```csv
+SSH,Secure Shell
+RDP,Remote Desktop
+HTTP,Web Browsing
+HTTPS,Secure Web
 ```
-</Details>
+
+tcp-definitions.csv:
+```csv
+22,SSH
+3389,RDP
+80,HTTP
+443,HTTPS
+```
+
+udp-definitions.csv:
+```csv
+53,DNS
+67,DHCP
+123,NTP
+161,SNMP
+```
+
+:::note
+The collector will fall back to system defaults if custom definition files are not found.
+:::
+
+:::warning
+Definition files must be in CSV format with exactly two columns per row.
+:::

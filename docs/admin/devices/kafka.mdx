@@ -1,24 +1,27 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # Kafka
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: kafka
+  tags: <string[]>
+  pipelines: <pipeline[]>
   status: <boolean>
   properties:
-    address: <ip-string>
+    address: <string>
     port: <numeric>
     username: <string>
     password: <string>
-    algorithm: <enum-string>
     group: <string>
-    balancer: <enum-string>
     topic: <string>
+    balancer: <string>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    stats_frequency: <numeric>
     tls:
       status: <boolean>
       cert_name: <string>
@@ -27,64 +30,211 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Description
 
-Represents the listener that delivers data streamed with the **Kafta** protocol.
+Creates a Kafka consumer that connects to Kafka brokers and consumes messages from specified topics. Supports authentication, TLS encryption, and multi-worker processing.
 
-Kafka is a distributed event streaming platform designed for high-throughput, fault-tolerant, and durable data pipelines. It is ideal for use cases such as real-time analytics, event sourcing, and stream processing, leveraging a publish-subscribe messaging model.
+## Basic Configuration
 
-## Parameters
+The following are the minimum requirements to define the device.
 
-<BasicConfig />
-
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|Y||Listening port|
-|`username`|N|`""`|Required if authentication is used|
-|`password`|N|`""`|Required if authentication is used|
-|`algorithm`|N|`""`|Required if authentication is used. Valid options: `"none"`, `"plain"`, `"scram-sha-256"`, `"scram-sha-512"`|
-|`group`|N|`"vmetric"`|Consumer group|
-|`balancer`|N|`"roundrobbin"`|Consumer group balancing algorithm. Valid options: `"roundrobin"`, `"cooperativesticky"`, `"range"`, `"sticky"`|
-|`topic`|Y||Consumer topic|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `kafka`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
 
-### `tls:`
-
-Transport Layer Security settings.
+### Connection Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`status`|N|`false`|Enable TLS connection|
-|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
-|`key_name`|N|`"key.pem"`|TLS key file path|
+|`address`|N|`"0.0.0.0"`|Kafka broker address|
+|`port`|Y|-|Kafka broker port|
+|`username`|N|-|SASL username|
+|`password`|N|-|SASL password|
+|`group`|N|`"vmetric"`|Consumer group ID|
+|`topic`|Y|-|Topic to consume from|
+|`balancer`|N|`"roundrobin"`|Partition balancing strategy|
+
+### TLS Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y|-|TLS private key file path (required if TLS enabled)|
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
+### Performance Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable multi-worker mode|
+|`workers`|N|`4`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Read buffer size in bytes|
+|`stats_frequency`|N|`300`|Statistics collection interval in seconds|
+
+## Advanced Features
+
+### Multi-Worker Processing
+
+When `reuse` is enabled, the collector uses multiple worker processes:
+- Each worker maintains its own Kafka consumer in the consumer group
+- Workers process messages independently
+- Messages are automatically balanced across workers
+- Worker count is capped at available CPU cores
+
+### Message Processing
+
+The collector supports:
+- Message offset tracking and commits
+- Automatic consumer group rebalancing
+- Multiple topic subscriptions
+- TLS encrypted connections
+- SASL authentication
+- Custom message processing pipelines
 
 ## Examples
 
-* VM example
+### Basic Configuration
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 324235645
-    name: 127.0.0.1
-    description: kafka
-    type: kafka
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 0
-      username: ""
-      password: ""
-      partitions: 1
-      group: "vmetric"
-      balancer: "roundrobin"
-      topic: ""
-      algorithm: "none"
-      tls:
-        status: true
-        cert_name: ""
-        key_name: ""
-```
-</Details>
+The minimum required configuration:
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple Kafka consumer...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_kafka
+      type: kafka
+      properties:
+        address: "kafka.example.com"
+        port: 9092
+        topic: "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure Configuration
+
+For connecting to secured Kafka brokers:
+
+<ExampleGrid>
+  <CommentCol>
+    Connect with authentication and encryption...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: secure_kafka
+      type: kafka
+      properties:
+        address: "kafka.example.com"
+        port: 9093
+        username: "consumer"
+        password: "secret"
+        topic: "secure-logs"
+        tls:
+          status: true
+          cert_name: "kafka.crt"
+          key_name: "kafka.key"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Performance Configuration
+
+For processing high message volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high throughput...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: performance_kafka
+      type: kafka
+      properties:
+        address: "kafka.example.com"
+        port: 9092
+        topic: "high-volume-logs"
+        group: "high-perf-group"
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
+:::
+
+### Consumer Group Configuration
+
+For coordinated message consumption:
+
+<ExampleGrid>
+  <CommentCol>
+    Configure consumer group behavior...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: group_kafka
+      type: kafka
+      properties:
+        address: "kafka.example.com"
+        port: 9092
+        topic: "shared-logs"
+        group: "processing-group"
+        balancer: "roundrobin"
+        reuse: true
+        workers: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+All consumers in the same group must use compatible configuration settings.
+:::
+
+### Message Pipeline Configuration
+
+For message pre-processing:
+
+<ExampleGrid>
+  <CommentCol>
+    Apply custom processing to messages...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: pipeline_kafka
+      type: kafka
+      pipelines:
+        - json_parser
+        - field_extractor
+      properties:
+        address: "kafka.example.com"
+        port: 9092
+        topic: "raw-logs"
+        group: "processing-group"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed in order and can modify or drop messages before ingestion.
+:::

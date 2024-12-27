@@ -4,4 +4,179 @@ pagination_prev: null
 
 # Targets: Overview
 
-In a telemetry stream, a _Target_ is where data that was curated and transformed is directed for consumption.
+VirtualMetric Director uses targets as output destinations to store, forward, or analyze collected telemetry data. These targets provide flexible options for data persistence and integration with various analysis platforms.
+
+## Target Categories
+
+### Local Output
+
+Director supports local data output methods:
+
+#### Console Output
+- Direct stdout writing
+- Real-time message viewing
+- Debugging and testing
+- Format normalization support
+- Synchronous writing with mutex locking
+
+#### File Storage
+- Multiple file formats:
+  - JSON (line-delimited)
+  - Avro (binary serialization)
+  - OCF (container format)
+  - Parquet (columnar storage)
+- Compression options:
+  - ZSTD (default)
+  - GZIP
+  - Snappy
+  - Brotli
+  - LZ4
+- Dynamic file naming
+- Size-based rotation
+- Buffer management
+- Schema validation
+
+### Cloud Storage
+
+Director provides cloud integration options:
+
+#### Azure Blob Storage
+- Direct blob writing
+- Multiple container support
+- Authentication methods:
+  - Service Principal
+  - Managed Identity
+- Features:
+  - Automatic retries
+  - Exponential backoff
+  - Size-based chunking
+  - Connection pooling
+  - Buffer management
+
+#### Microsoft Sentinel
+- Direct DCR integration
+- ASIM normalization
+- Supported tables:
+  - Standard tables
+    - WindowsEvent
+    - SecurityEvent
+    - CommonSecurityLog
+    - Syslog
+  - ASIM tables
+    - ASimAuditEventLogs
+    - ASimAuthenticationEventLogs
+    - ASimDhcpEventLogs
+    - ASimDnsActivityLogs
+    - ASimFileEventLogs
+    - ASimNetworkSessionLogs
+    - ASimProcessEventLogs
+    - ASimRegistryEventLogs
+    - ASimUserManagementActivityLogs
+
+## Data Processing
+
+### Pipeline Processing
+- Field normalization (ECS, CIM, ASIM)
+- Data transformation
+- Message batching
+- Custom field mapping
+- Schema validation
+- Format conversion
+- Post-processing pipelines
+
+### Buffer Management
+- Configurable buffer sizes
+- Batch processing
+- Flush intervals
+- Queue management
+- Checkpoint recovery
+- Error handling
+
+### Performance Features
+- Asynchronous writing
+- Buffer optimization
+- Connection pooling
+- Retry mechanisms
+- Resource monitoring
+- Size-based rotation
+
+### Security Controls
+- Authentication
+  - API keys
+  - Service Principals
+  - Client certificates
+- Encryption
+  - TLS/SSL
+  - HTTPS
+  - Custom encryption
+- Access control
+- Audit logging
+
+## Deployment Options
+
+### Single Target
+```
+[Director] → [Target]
+```
+
+### Multiple Targets
+```
+[Director] → [Target 1]
+         → [Target 2]
+         → [Target N]
+```
+
+### Chained Processing
+```
+[Director] → [Local Storage] → [Cloud Upload] → [Analysis Platform]
+```
+
+## Common Applications
+
+### Local Analysis
+- Debug logging
+- Performance analysis
+- Audit trails
+- Temporary storage
+
+### Cloud Integration
+- Long-term storage
+- Data warehousing
+- Security analysis
+- Compliance monitoring
+
+### Real-time Analysis
+- Live monitoring
+- Alert generation
+- Trend analysis
+- Performance tracking
+
+### Data Lake Building
+- Raw data storage
+- Schema evolution
+- Data partitioning
+- Analytics preparation
+
+## Configuration
+
+All target configurations reside in the `config` directory using either `.yaml` or `.yml` extensions. Flexible organization options:
+
+```
+config/
+├── targets/
+│   ├── local/
+│   ├── cloud/
+│   └── sentinel/
+├── outputs/
+└── storage/
+```
+
+Director recursively discovers all configuration files regardless of subfolder structure.
+
+:::note
+Each target type provides specific configuration options detailed in their respective documentation.
+:::
+
+:::warning
+Always implement appropriate security controls and monitor storage capacity when deploying targets in production environments.
+:::

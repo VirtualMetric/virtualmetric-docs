@@ -1,27 +1,31 @@
-import BasicConfig from "./_basic-config.mdx";
-
-# Rabbitmq
+# RabbitMQ
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: rabbitmq
+  tags: <string[]>
+  pipelines: <pipeline[]>
   status: <boolean>
   properties:
-    address: <ip-string>
+    address: <string>
     port: <numeric>
-    authentication: <enum-string>
     username: <string>
     password: <string>
+    authentication: <string>
     exchange:
       name: <string>
-      type: <enum-string>
+      type: <string>
     queue:
       name: <string>
       key: <string>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    stats_frequency: <numeric>
     tls:
       status: <boolean>
       cert_name: <string>
@@ -30,77 +34,258 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Description
 
-Represents the listener that deliver data from the RabbitMQ protocol.
+Creates a RabbitMQ consumer that connects to RabbitMQ servers and consumes messages from specified exchanges and queues. Supports multiple authentication methods, exchange types, TLS encryption, and multi-worker processing with automatic message acknowledgment.
 
-## Parameters
+## Basic Configuration
 
-<BasicConfig />
+The following are the minimum requirements to define the device.
 
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|N|`0`|Listening port|
-|`authentication`|N|`""`|Authentication type. Valid options: `"plain"`, `"amqplain"`|
-|`username`|N|`""`|Required if authentication is used|
-|`password`|N|`""`|Required if authentication is used|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `rabbitmq`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
 
-### `exchange:`
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`name`|N|`""`|Exchange name|
-|`type`|N|`""`|Exchange type. Valid options: `"direct"`, `"fanout"`, `"topic"`, `"x-custom"`|
-
-### `queue:`
-
-Ingester queue settings.
+### Connection Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`name`|Y||Queue name|
-|`key`|Y||Queue key|
+|`address`|N|`"0.0.0.0"`|RabbitMQ server address|
+|`port`|Y|-|RabbitMQ server port|
+|`username`|N|-|Authentication username|
+|`password`|N|-|Authentication password|
+|`authentication`|Y|-|Auth type (`plain`, `amqplain`)|
 
-### `tls:`
-
-Transport Security Layer settings.
+### Exchange Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`status`|N|`false`|Enable TLS|
-|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
-|`key_name`|N|`"key.pem"`|TLS key file path|
+|`exchange.name`|Y|-|Exchange name|
+|`exchange.type`|Y|-|Exchange type (`direct`, `fanout`, `topic`, `x-custom`)|
+
+### Queue Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`queue.name`|Y|-|Queue name|
+|`queue.key`|Y|-|Routing key pattern|
+
+### TLS Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y|-|TLS private key file path (required if TLS enabled)|
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
+### Performance Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable multi-worker mode|
+|`workers`|N|`4`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Read buffer size in bytes|
+|`stats_frequency`|N|`300`|Statistics collection interval in seconds|
+
+## Advanced Features
+
+### Exchange Types
+
+The collector supports various exchange types:
+- `direct`: Exact routing key match
+- `fanout`: Broadcast to all bound queues
+- `topic`: Pattern-based routing using wildcards
+- `x-custom`: Custom exchange types (if supported by server)
+
+### Multi-Worker Processing
+
+When `reuse` is enabled, the collector uses multiple worker processes:
+- Each worker maintains its own RabbitMQ consumer
+- Workers process messages independently
+- Messages are automatically acknowledged
+- Worker count is capped at available CPU cores
+
+### Message Processing
+
+The collector supports:
+- Multiple exchange types
+- Pattern-based routing
+- Message acknowledgment and rejection
+- Dead letter exchanges
+- TLS encrypted connections
+- Multiple authentication methods
+- Custom message processing pipelines
 
 ## Examples
 
-* VM example
+### Basic Configuration
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 386796783
-    name: 127.0.0.1
-    description: rabbitmq
-    type: rabbitmq
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 0
-      username: ""
-      password: ""
-      authentication: ""
-      exchange:
-        name: ""
-        type: ""
-      queue:
-        name: ""
-        key: ""
-      tls:
-        status: false
-        cert_name: ""
-        key_name: ""
-```
-</Details>
+The minimum required configuration:
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple RabbitMQ consumer...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_rabbitmq
+      type: rabbitmq
+      properties:
+        address: "rabbitmq.example.com"
+        port: 5672
+        authentication: "plain"
+        exchange:
+          name: "logs"
+          type: "direct"
+        queue:
+          name: "app_logs"
+          key: "app.*"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure Configuration
+
+For connecting to secured RabbitMQ servers:
+
+<ExampleGrid>
+  <CommentCol>
+    Connect with authentication and encryption...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: secure_rabbitmq
+      type: rabbitmq
+      properties:
+        address: "rabbitmq.example.com"
+        port: 5671
+        username: "consumer"
+        password: "secret"
+        authentication: "plain"
+        exchange:
+          name: "secure_logs"
+          type: "topic"
+        queue:
+          name: "secure_app_logs"
+          key: "secure.app.#"
+        tls:
+          status: true
+          cert_name: "rabbitmq.crt"
+          key_name: "rabbitmq.key"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Performance Configuration
+
+For processing high message volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high throughput...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: performance_rabbitmq
+      type: rabbitmq
+      properties:
+        address: "rabbitmq.example.com"
+        port: 5672
+        authentication: "plain"
+        exchange:
+          name: "high_volume"
+          type: "direct"
+        queue:
+          name: "high_volume_logs"
+          key: "logs"
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
+:::
+
+### Topic Exchange Configuration
+
+For pattern-based message routing:
+
+<ExampleGrid>
+  <CommentCol>
+    Configure topic-based routing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: topic_rabbitmq
+      type: rabbitmq
+      properties:
+        address: "rabbitmq.example.com"
+        port: 5672
+        authentication: "plain"
+        exchange:
+          name: "logs"
+          type: "topic"
+        queue:
+          name: "filtered_logs"
+          key: "app.*.error"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::tip
+Topic routing keys support wildcards:
+- Single word wildcard: `*`
+- Multiple word wildcard: `#`
+:::
+
+### Pipeline Configuration
+
+For message pre-processing:
+
+<ExampleGrid>
+  <CommentCol>
+    Apply custom processing to messages...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: pipeline_rabbitmq
+      type: rabbitmq
+      pipelines:
+        - json_parser
+        - field_extractor
+      properties:
+        address: "rabbitmq.example.com"
+        port: 5672
+        authentication: "plain"
+        exchange:
+          name: "raw_logs"
+          type: "direct"
+        queue:
+          name: "processed_logs"
+          key: "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed in order and can modify or drop messages before ingestion.
+:::

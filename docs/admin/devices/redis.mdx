@@ -1,21 +1,25 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # Redis
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: redis
+  tags: <string[]>
+  pipelines: <pipeline[]>
   status: <boolean>
   properties:
-    address: <ip-string>
+    address: <string>
     port: <numeric>
     username: <string>
     password: <string>
     channel: <string>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    stats_frequency: <numeric>
     tls:
       status: <boolean>
       cert_name: <string>
@@ -24,55 +28,211 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Description
 
-Represents the listener streaming data from the Redis protocol.
+Creates a Redis Pub/Sub subscriber that connects to Redis servers and processes messages from specified channels. Supports authentication, TLS encryption, and multi-worker processing with automatic message handling.
 
-## Parameters
+## Basic Configuration
 
-<BasicConfig />
+The following are the minimum requirements to define the device.
 
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|N|`0`|Listening port|
-|`username`|N|`""`|Required if authentication is used|
-|`password`|N|`""`|Required if authentication is used|
-|`channel`||`""`||
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `redis`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
 
-### `tls:`
-
-Transport Layer Security settings.
+### Connection Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`status`|N|`false`|Enable TLS connection|
-|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
-|`key_name`||`"key.pem"`|TLS key file path|
+|`address`|N|`"0.0.0.0"`|Redis server address|
+|`port`|Y|-|Redis server port|
+|`username`|N|-|Authentication username|
+|`password`|N|-|Authentication password|
+|`channel`|Y|-|Channel pattern to subscribe to|
+
+### TLS Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y|-|TLS private key file path (required if TLS enabled)|
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
+### Performance Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`false`|Enable multi-worker mode|
+|`workers`|N|`4`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Read buffer size in bytes|
+|`stats_frequency`|N|`300`|Statistics collection interval in seconds|
+
+## Advanced Features
+
+### Channel Patterns
+
+The collector supports Redis Pub/Sub channel patterns:
+- Exact channel names: `logs`
+- Pattern matching: `logs.*`
+- Multiple patterns: `logs.* app.*`
+
+### Multi-Worker Processing
+
+When `reuse` is enabled, the collector uses multiple worker processes:
+- Each worker maintains its own Redis subscription
+- Workers process messages independently
+- Messages are automatically distributed
+- Worker count is capped at available CPU cores
+
+### Message Processing
+
+The collector supports:
+- Pattern-based subscriptions
+- Multiple channel subscriptions
+- TLS encrypted connections
+- Authentication methods
+- Custom message processing pipelines
 
 ## Examples
 
-* VM example
+### Basic Configuration
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 384856465
-    name: 127.0.0.1
-    description: redis
-    type: redis
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 0
-      username: ""
-      password: ""
-      channel: ""
-      tls:
-        status: false
-        cert_name: ""
-        key_name: ""
-```
-</Details>
+The minimum required configuration:
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple Redis subscriber...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_redis
+      type: redis
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        channel: "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure Configuration
+
+For connecting to secured Redis servers:
+
+<ExampleGrid>
+  <CommentCol>
+    Connect with authentication and encryption...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: secure_redis
+      type: redis
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        username: "subscriber"
+        password: "secret"
+        channel: "secure.logs"
+        tls:
+          status: true
+          cert_name: "redis.crt"
+          key_name: "redis.key"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Performance Configuration
+
+For processing high message volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high throughput...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: performance_redis
+      type: redis
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        channel: "high-volume"
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
+:::
+
+### Pattern Subscription Configuration
+
+For pattern-based message filtering:
+
+<ExampleGrid>
+  <CommentCol>
+    Configure pattern-based subscriptions...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: pattern_redis
+      type: redis
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        channel: "logs.*"
+        reuse: true
+        workers: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::tip
+Redis channel patterns support the `*` wildcard character for matching multiple channels.
+:::
+
+### Pipeline Configuration
+
+For message pre-processing:
+
+<ExampleGrid>
+  <CommentCol>
+    Apply custom processing to messages...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: pipeline_redis
+      type: redis
+      pipelines:
+        - json_parser
+        - field_extractor
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        channel: "raw.logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed in order and can modify or drop messages before ingestion.
+:::

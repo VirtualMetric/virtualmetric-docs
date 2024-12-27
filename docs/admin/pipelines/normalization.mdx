@@ -1,59 +1,170 @@
 # Normalization
 
-Normalization is the process of transforming the _structure_ of the data&mdash;whether that data is what is received from sources or what will be directed to destinations&mdash;in order to make it fit for processing downstream.
+The normalize processor converts fields between different log format standards, making it easier to work with logs from various sources.
 
-The motivation behind this is the fact that there are various different logging formats available whose schemas are not always compatible with each other. In order to be able to collate and correlate the information in these disparate formats, the data contained therein must be extracted and placed in pre-defined schemas better suited to analyses.
+## Supported Formats
 
-By doing so, normalization _decouples_ **Sources** from **Routes** and **Routes** from **Targets** due to the following reasons:
+The processor supports three major log format standards:
 
-- the raw data streamed in from **Sources** in the format it arrives may not, and frequently does not, lend itself to the operations that may be carried out by the **Routes**
-- the processed data streamed out from the **Routes** may not be, and frequently is not, easily consumable by the **Targets** for their analytic requirements
+### ECS (Elastic Common Schema)
+- Uses dot notation (e.g., `source.ip`)
+- Identifier field: `@timestamp`
+- Example: `network.direction`
 
-Normalization takes place in two places:
+### CIM (Splunk Common Information Model)
+- Uses underscores (e.g., `src_ip`)
+- Identifier field: `_time`
+- Example: `network_direction`
 
-* Between **Sources** and **Routes**: the purpose of use is to prepare the data for the **Routes** that will select the relevant data points using filters
+### ASIM (Azure Sentinel Information Model)
+- Uses PascalCase (e.g., `SourceIp`)
+- Identifier field: `TimeGenerated`
+- Example: `NetworkDirection`
 
-```mermaid
-graph LR
-	subgraph Sources["`**Sources**
-		S1
-		S2
-	`"]
-	end
-	subgraph Preprocessing["`**Preprocessing**
-		_Normalization_
-	`"]
-	end
-	subgraph Routes["`**Routes**
-		...
-	`"]
-	end
-	Sources --> Preprocessing
-	Preprocessing --> Routes
+## Field Mappings
+
+### Network Fields
+|ECS|CIM|ASIM|
+|---|---|---|
+|`source.ip`|`src`|`SrcIp`|
+|`destination.ip`|`dest`|`DstIp`|
+|`network.direction`|`direction`|`NetworkDirection`|
+
+## Format Detection
+
+When `source_format` is not specified, the processor attempts to auto-detect the format based on characteristic fields:
+
+- Presence of `@timestamp` indicates ECS format
+- Presence of `_time` indicates CIM format
+- Presence of `TimeGenerated` indicates ASIM format
+
+## Examples
+
+### ECS to CIM Conversion
+
+```yaml
+- normalize:
+    description: "Convert ECS to CIM format"
+    source_format: "ecs"
+    target_format: "cim"
+    tag: "format_conversion"
 ```
 
-* Between **Routes** and **Targets**: the purpose of use is to prepare the data points for the post-procesing stage where they are relayed to specific **Targets**
-
-```mermaid
-graph LR
-	subgraph Routes["`**Routes**
-		...
-	`"]
-	end
-	subgraph Postprocessing["`**Postprocessing**
-		_Normalization_
-	`"]
-	end
-	subgraph Targets["`**Targets**
-		T1
-		T2
-		T3
-	`"]
-	end
-	Routes --> Postprocessing
-	Postprocessing --> Targets
+Input:
+```json
+{
+  "source": {
+    "ip": "128.232.110.120"
+  },
+  "destination": {
+    "ip": "192.168.1.1"
+  },
+  "network": {
+    "direction": "inbound"
+  }
+}
 ```
 
-Although what is referred to as _Normalization_ occurs in both intermediate stages, the operations carried out in each are different due to the requirements of the next stage in the chain.
+Output:
+```json
+{
+  "src": "128.232.110.120",
+  "dest": "192.168.1.1",
+  "direction": "inbound"
+}
+```
 
-{/* TODO: Complete */}
+### CIM to ASIM Conversion
+
+```yaml
+- normalize:
+    description: "Convert CIM to ASIM format"
+    source_format: "cim"
+    target_format: "asim"
+```
+
+Input:
+```json
+{
+  "src": "128.232.110.120",
+  "dest": "192.168.1.1",
+  "direction": "outbound"
+}
+```
+
+Output:
+```json
+{
+  "SrcIp": "128.232.110.120",
+  "DstIp": "192.168.1.1",
+  "NetworkDirection": "outbound"
+}
+```
+
+### Auto-detection with Error Handling
+
+```yaml
+- normalize:
+    description: "Convert to ASIM with error handling"
+    target_format: "asim"
+    ignore_failure: true
+    on_failure:
+      - set:
+          field: "error.message"
+          value: "Format conversion failed"
+```
+
+## Error Handling
+
+The processor provides several ways to handle conversion errors:
+
+### Ignore Failures
+Set `ignore_failure: true` to continue processing even if normalization fails:
+
+```yaml
+- normalize:
+    target_format: "asim"
+    ignore_failure: true
+```
+
+### Failure Processing
+Use `on_failure` to handle conversion errors:
+
+```yaml
+- normalize:
+    target_format: "cim"
+    on_failure:
+      - set:
+          field: "normalize_error"
+          value: true
+```
+
+### Success Processing
+Use `on_success` to perform actions after successful conversion:
+
+```yaml
+- normalize:
+    target_format: "ecs"
+    on_success:
+      - set:
+          field: "normalized"
+          value: true
+```
+
+## Conditional Execution
+
+Use the `if` field to normalize conditionally:
+
+```yaml
+- normalize:
+    if: "ctx.format_version != 'latest'"
+    target_format: "ecs"
+```
+
+:::note
+All normalization is case-insensitive. The format names "ECS", "ecs", and "Ecs" are equivalent.
+:::
+
+:::warning
+Normalization may lose information if the target format doesn't have equivalent fields. Always test your normalization rules with sample data.
+:::

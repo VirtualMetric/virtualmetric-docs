@@ -1,1 +1,147 @@
 # Azure Blob Storage
+
+## Synopsis
+
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: azblob
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    account: <string>
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    container: <string>
+    name: <string>
+    type: <string>
+    compression: <string>
+    schema: <string>
+    format: <string>
+    no_buffer: <boolean>
+    max_retry: <numeric>
+    retry_interval: <numeric>
+    timeout: <numeric>
+    max_size: <numeric>
+```
+
+## Description
+
+Creates an Azure Blob Storage target that writes log messages to Azure Blob Storage with support for various file formats, authentication methods, and retry mechanisms. Inherits file format capabilities from the base target.
+
+## Basic Configuration
+
+The following are the minimum requirements to define the target.
+
+### Target Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Target name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `azblob`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Azure Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`account`|Y|-|Azure storage account name|
+|`tenant_id`|Y|-|Azure tenant ID|
+|`client_id`|Y|-|Azure client ID|
+|`client_secret`|Y|-|Azure client secret|
+|`container`|N|`"vmetric"`|Blob container name|
+
+### Connection Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`max_retry`|N|`5`|Maximum number of upload retries|
+|`retry_interval`|N|`10`|Base interval between retries in seconds|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`max_size`|N|`0`|Maximum file size in bytes (0 for unlimited)|
+
+### File Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Blob name template|
+|`type`|N|`"json"`|File format (`json`, `avro`, `ocf`, `parquet`)|
+|`compression`|N|`"zstd"`|Compression algorithm|
+|`schema`|N|-|Data schema for Avro/OCF/Parquet formats|
+|`no_buffer`|N|`false`|Disable write buffering|
+|`format`|N|-|Field normalization format (`ecs`, `cim`, or `asim`)|
+
+## Examples
+
+### Basic JSON Upload
+
+The minimum configuration for JSON blob storage:
+
+```yaml
+- id: 1
+  name: basic_blob
+  type: azblob
+  properties:
+    account: "mystorageaccount"
+    tenant_id: "00000000-0000-0000-0000-000000000000"
+    client_id: "00000000-0000-0000-0000-000000000000"
+    client_secret: "your-client-secret"
+```
+
+### Daily Partitioned Parquet
+
+Configuration for daily partitioned Parquet files:
+
+```yaml
+- id: 2
+  name: parquet_blob
+  type: azblob
+  properties:
+    account: "mystorageaccount"
+    tenant_id: "00000000-0000-0000-0000-000000000000"
+    client_id: "00000000-0000-0000-0000-000000000000"
+    client_secret: "your-client-secret"
+    container: "logs"
+    type: "parquet"
+    compression: "zstd"
+    name: "logs/year={{.Year}}/month={{.Month}}/day={{.Day}}/data_{{.Timestamp}}.parquet"
+    max_size: 536870912  # 512MB
+```
+
+### High Reliability Configuration
+
+Configuration with enhanced retry settings:
+
+```yaml
+- id: 3
+  name: reliable_blob
+  type: azblob
+  pipelines:
+    - checkpoint
+  properties:
+    account: "mystorageaccount"
+    tenant_id: "00000000-0000-0000-0000-000000000000"
+    client_id: "00000000-0000-0000-0000-000000000000"
+    client_secret: "your-client-secret"
+    max_retry: 10
+    retry_interval: 30
+    timeout: 60
+    no_buffer: true
+```
+
+:::note
+When `max_size` is reached, the current file is uploaded to blob storage and a new file is created. Set to 0 for unlimited file size.
+:::
+
+:::warning
+The retry interval uses exponential backoff, so each retry will wait longer than the previous one (retry_interval * 2^attempt seconds).
+:::
+
+:::note
+Failed uploads are retried automatically according to the max_retry and retry_interval settings. Files are only deleted after successful upload.
+:::

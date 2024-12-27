@@ -4,23 +4,111 @@ sidebar_label: Quick Start
 
 # Pipelines: Quick Start
 
-Creating a pipeline involves
+Creating a pipeline is a systematic process that involves two primary considerations:
 
-* determining the source to ingest data from
-* selecting and configuring the processors to be run
+1. **Data Ingestion Source**: Determining the origin of the data to be processed
+2. **Processor Configuration**: Selecting and arranging processors to transform the data
 
-The latter also involves clarifying the sequence of execution. This requires determining whether
+## Pipeline Design Considerations
 
-* the output of a specific processor needs to be fed as input to another; and
-* the calculations of a latter processor can be carried out independently of a former.
+When designing a pipeline, you'll need to address several key aspects:
 
-Finally, given that in most real-life scenarios multiple pipelines serving various purposes will need to be run either simultaneousluy or sequentially, their purpose of use and therefore the hierarchy among them; i.e. whether they are run independently or whether they relay work to each other may also need to be considered. Again, in the latter case, their execution may need to be choreographed.
+### Processor Sequence and Dependency
 
-### Examples
+Processors can be arranged in different configurations based on their interdependence:
 
-* 1 pipeline with 2 processors that can be executed independently
-* 1 pipeline with 2 processors the 1st of which relays its output to the 2nd
-* 2 pipelines that run independently
-* 2 pipelines one of which triggers the other upon completion
+1. **Independent Processors**: Processors that can run simultaneously without relying on each other's output
+2. **Dependent Processors**: Processors where the output of one serves as input for the next
+3. **Conditional Processors**: Processors that execute based on specific conditions or previous processor results
 
-{/* TODO: Complete */}
+### Pipeline Interaction Patterns
+
+Real-world scenarios often require complex pipeline interactions:
+
+1. **Parallel Pipelines**: Multiple pipelines running simultaneously
+2. **Sequential Pipelines**: Pipelines that trigger one another upon completion
+3. **Hierarchical Pipelines**: Pipelines with defined execution order and potential data relay
+
+## Typical Pipeline Configurations
+
+### Example 1: Independent Processors
+```yaml
+pipelines:
+  - name: simple_independent_pipeline
+    processors:
+      - parser  # Processor 1
+      - enricher  # Processor 2 (runs independently)
+```
+
+### Example 2: Dependent Processors
+```yaml
+pipelines:
+  - name: dependent_processors_pipeline
+    processors:
+      - parser  # First processor
+      - normalizer  # Uses output from parser
+      - enricher  # Uses normalized data
+```
+
+### Example 3: Multiple Independent Pipelines
+```yaml
+pipelines:
+  - name: network_logs_pipeline
+    processors:
+      - network_parser
+      - network_enricher
+
+  - name: security_logs_pipeline
+    processors:
+      - security_parser
+      - threat_detector
+```
+
+### Example 4: Sequential Pipeline Triggering
+```yaml
+pipelines:
+  - name: primary_pipeline
+    processors:
+      - initial_parser
+    on_complete:
+      trigger: secondary_pipeline
+
+  - name: secondary_pipeline
+    processors:
+      - advanced_enrichment
+```
+
+## Best Practices
+
+1. **Modularity**: Design processors to be reusable and focused on specific transformations
+2. **Performance**: Consider the computational overhead of complex pipeline designs
+3. **Error Handling**: Implement robust error handling and logging mechanisms
+4. **Scalability**: Design pipelines that can handle varying data volumes
+
+## Considerations for Complex Scenarios
+
+### Performance Optimization
+- Use parallel processing where possible
+- Minimize unnecessary data transformations
+- Choose appropriate processor order to reduce computational complexity
+
+### Data Integrity
+- Ensure consistent data typing across processors
+- Implement validation steps
+- Handle edge cases and unexpected input formats
+
+## Next Steps
+
+- Review available processors and their specific configurations
+- Design your pipeline based on your specific data processing requirements
+- Test and iterate on your pipeline design
+
+:::note
+Pipeline design is an iterative process. Start simple and progressively enhance your configuration as you understand your specific use cases.
+:::
+
+## Common Challenges
+
+- **Data Format Variations**: Handling diverse input formats
+- **Performance Bottlenecks**: Identifying and optimizing slow processors
+- **Complex Transformation Logic**: Managing intricate data manipulation requirements
