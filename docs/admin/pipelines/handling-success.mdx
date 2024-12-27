@@ -1,50 +1,91 @@
 # Handling Success
 
-**Director** provides a unique feature in pipeline management with the processor field `on_success`.
+The processors in a pipeline run sequentially, and when one of them completes successfully, **Director** provides options to control what happens next through the `on_success` field.
 
-Frequently, a pipeline will terminate in a valid state and not a failed one. (In any case, **Director** provides mechanisms for dealing with failures.) However, the termination of a processor will equally frequently require that it be followed by a further operation. The mechanism provided allows the pipeline designer to specify what to do next.
+## Notification
 
-## Notify
-
-In its simplest form, the mechanism can be used to notify the user that it exited its execution gracefully.
+The simplest use of `on_success` is to log a message or set a field when a processor completes successfully.
 
 ```yaml
-processors:
-  - processor-1:
-    ...
+- rename:
+    field: message
+    target_field: event.message
     on_success:
-      - user-message: "Pipeline completed successfully"
+      - set:
+          field: status
+          value: "Field renamed successfully"
 ```
 
-## Continue
+## Chaining
 
-Furthermore, a pipeline can be configured to continue to the next processor by using the termination state of the previous one. Unlike other solutions on the market, this does not require any meta-level error information to be accessed. Before its termination, a processor can start the next one in the same pipeline.
+To run additional processors after a successful execution, list them in the `on_success` field.
 
 ```yaml
-pipeline: foo
-  processors:
-    - processor-1:
-        on_success: processor-2
-    - processor-2:
-        on_success: ...
+- grok:
+    field: message
+    patterns: ["%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}"]
+    on_success:
+      - date:
+          field: timestamp
+          target_field: "@timestamp"
+          formats: ["ISO8601"]
+      - remove:
+          field: timestamp
 ```
 
-Using this technique, the execution of processors can be _nested_.
+## Nesting
 
-## Trigger
-
-Finally, it can be used to trigger the execution of a processor in another pipeline by invoking it.
+For complex processing flows, multiple `on_success` processors can be nested.
 
 ```yaml
-pipeline: foo
-  processors:
-    - processor-1:
-      on_success: bar.processor-1
-pipeline: bar
-  processors:
-    - processor-1:
-      on_success:
-      ...
+- grok:
+    field: message
+    patterns: ["%{IP:client.ip} %{WORD:http.method} %{URIPATHPARAM:http.url}"]
+    on_success:
+      - geoip:
+          field: client.ip
+          target_field: client.geo
+          on_success:
+            - set:
+                field: enrichment_status
+                value: "IP and Geo information extracted"
 ```
 
-Using this technique, the execution of processors can be _daisy-chained_.
+## Pipeline Branching
+
+The `on_success` handlers can trigger processors in other pipelines, enabling conditional processing flows.
+
+```yaml
+pipelines:
+  parse_apache:
+    processors:
+      - grok:
+          field: message
+          patterns: ["%{COMBINEDAPACHELOG}"]
+          on_success:
+            - pipeline: enrich_apache
+  
+  enrich_apache:
+    processors:
+      - geoip:
+          field: clientip
+          target_field: geoip
+```
+
+## Metadata
+
+Success context information is available in metadata fields that can be accessed within an `on_success` block.
+
+```yaml
+- grok:
+    field: message
+    patterns: ["%{DATA:event.type}"]
+    on_success:
+      - set:
+          field: processor_info
+          value: "Successfully processed by {{ _pipeline.name }} pipeline"
+```
+
+:::note
+Unlike error handling, success handlers do not interrupt the normal pipeline flow. After executing `on_success` processors, **Director** continues with the next processor in the pipeline.
+:::

@@ -1,15 +1,170 @@
 # Post-processing
 
-This is the stage where the pipelines attached to a destination do what is known as [normalization](./normalization.mdx) before the data is sent.
+This is the stage where the pipelines attached to a destination perform final transformations and optimizations before data is sent. While pre-processing focuses on initial data preparation, post-processing optimizes data for specific destination requirements.
 
-Here, the processors are applied to all data points, and the data is collated, analyzed, and correlated. Typically, these are processors that re-shape or aggregate the data points as per the receiver side's requirements.
+Post-processing pipelines ensure that data meets destination-specific formats, optimize storage efficiency, and enable advanced analytics capabilities.
 
-**Director** offers unique features for the following:
+## Key Benefits
 
-* **Log routing**: to forward unprocessed data to multiple destinations
-* **Storage optimization**: to reduce data marshalling costs
-* **Query optimization**: to identify underlying patterns beforehand
-* **Aggregation**: to streamline making analytic inferences
-* **Anomaly detection**: to identify unusual patterns in logs for security purposes
+### Log Routing
+Optimize data distribution to multiple destinations:
+- **Format-specific routing**: Send data in destination-native formats
+- **Conditional forwarding**: Route based on content or metadata
+- **Load balancing**: Distribute data across multiple endpoints
+- **Copy routing**: Send identical data to multiple targets
+- **Failover routing**: Implement backup destinations
 
-{/* TODO: Complete */}
+### Storage Optimization
+Reduce storage costs and improve query performance:
+- **Compression optimization**: Choose format-specific compression
+- **Schema optimization**: Align with destination schema
+- **Field selection**: Keep only required fields
+- **Data partitioning**: Optimize for query patterns
+- **Format conversion**: Convert to destination-optimal formats
+
+### Query Optimization
+Prepare data for efficient querying:
+- **Index preparation**: Pre-compute common query fields
+- **Field flattening**: Simplify nested structures
+- **Field typing**: Ensure correct data types
+- **Summary generation**: Create pre-aggregated views
+- **Pattern extraction**: Identify common query patterns
+
+### Aggregation
+Optimize data for analytics:
+- **Time-based rollups**: Aggregate by time windows
+- **Statistical summaries**: Compute metrics and statistics
+- **Event correlation**: Group related events
+- **Dimensional rollups**: Aggregate by key dimensions
+- **Metric calculation**: Compute derived metrics
+
+### Anomaly Detection
+Identify patterns and anomalies:
+- **Pattern recognition**: Detect common sequences
+- **Statistical analysis**: Identify outliers
+- **Baseline computation**: Establish normal behavior
+- **Threshold detection**: Flag unusual patterns
+- **Trend analysis**: Track pattern changes
+
+## Common Use Cases
+
+### Cloud Storage Optimization
+```yaml
+pipeline:
+  processors:
+    - partition:
+        field: "timestamp"
+        format: "year={{.Year}}/month={{.Month}}/day={{.Day}}"
+    - compress:
+        type: "parquet"
+        schema: |
+          {
+            "timestamp": { "type": "INT64" },
+            "message": { "type": "STRING" }
+          }
+```
+
+### Analytics Preparation
+```yaml
+pipeline:
+  processors:
+    - aggregate:
+        window: "5m"
+        metrics:
+          - count: "requests"
+          - avg: "duration"
+        dimensions: ["service", "endpoint"]
+    - calculate:
+        field: "error_rate"
+        expression: "errors / requests * 100"
+```
+
+### Security Analysis
+```yaml
+pipeline:
+  processors:
+    - detect_anomalies:
+        field: "login_count"
+        algorithm: "mad"
+        window: "1h"
+    - alert:
+        condition: "anomaly_score > 0.9"
+        channel: "security_alerts"
+```
+
+## Best Practices
+
+1. **Destination-Specific Optimization**
+   - Use native data formats
+   - Optimize compression ratios
+   - Match schema requirements
+
+2. **Performance Considerations**
+   - Balance aggregation windows
+   - Monitor processing latency
+   - Cache computed results
+
+3. **Storage Efficiency**
+   - Remove unnecessary fields
+   - Use appropriate data types
+   - Optimize partition schemes
+
+4. **Query Performance**
+   - Pre-compute common aggregations
+   - Index important fields
+   - Structure data for common queries
+
+## Integration Examples
+
+### Microsoft Sentinel
+```yaml
+pipeline:
+  processors:
+    - normalize:
+        target_format: "asim"
+    - extract_fields:
+        fields: ["EventID", "Computer", "Channel"]
+    - route:
+        field: "EventID"
+        routes:
+          security: "4624,4625"
+          system: "7036,7040"
+```
+
+### Elastic Stack
+```yaml
+pipeline:
+  processors:
+    - normalize:
+        target_format: "ecs"
+    - date:
+        field: "timestamp"
+        target_field: "@timestamp"
+    - geoip:
+        field: "source.ip"
+        target_field: "source.geo"
+```
+
+### S3 Storage
+```yaml
+pipeline:
+  processors:
+    - partition:
+        field: "timestamp"
+        pattern: "year=%Y/month=%m/day=%d"
+    - compress:
+        format: "parquet"
+        compression: "snappy"
+```
+
+:::tip
+Align post-processing with destination capabilities to maximize performance and minimize storage costs.
+:::
+
+:::warning
+Heavy post-processing can impact delivery latency. Monitor and adjust based on performance requirements.
+:::
+
+:::note
+Post-processing is your last chance to optimize data before it reaches its destination. Choose optimizations that benefit downstream use cases.
+:::
