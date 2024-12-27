@@ -1,5 +1,3 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # Syslog
 
 ## Synopsis
@@ -44,25 +42,25 @@ Creates a Syslog server that accepts log messages over UDP or TCP connections. S
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|-|Unique identifier|
-|`name`|Y|-|Device name|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
 |`description`|N|-|Optional description|
-|`type`|Y|-|Must be `syslog`|
+|`type`|Y||Must be `syslog`|
 |`status`|N|`true`|Enable/disable the device|
 
-### Protocol Properties
+### Protocol
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`protocol`|N|`"udp"`|Transport protocol (`udp` or `tcp`)|
 |`address`|N|`"0.0.0.0"`|Listen address|
-|`port`|Y|-|Listen port|
+|`port`|Y||Listen port|
 
-### TCP Properties
+### TCP
 
 The following are only applicable when `protocol` is set to `tcp`.
 
@@ -71,15 +69,15 @@ The following are only applicable when `protocol` is set to `tcp`.
 |`framing`|N|`"delimiter"`|Framing mode for TCP (`delimiter` or `octet`)|
 |`line_delimiter`|N|`"\\n"`|Line separator for TCP delimiter framing|
 
-### TLS Properties
+### TLS
 
 The following are only applicable when `protocol` is set to `tcp`.
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`tls.status`|N|`false`|Enable TLS encryption|
-|`tls.cert_name`|Y|-|TLS certificate file path (required if TLS enabled)|
-|`tls.key_name`|Y|-|TLS private key file path (required if TLS enabled)|
+|`tls.cert_name`|Y||TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y||TLS private key file path (required if TLS enabled)|
 
 :::note
 The TLS certificate and key files must be placed in the service root directory.
@@ -87,7 +85,7 @@ The TLS certificate and key files must be placed in the service root directory.
 
 ## Advanced Configuration
 
-In order to tweak performance and data handling, the following settings are used.
+To enhance performance and achieve better data handling, the following settings are used.
 
 ### Performance Tuning
 
@@ -112,8 +110,8 @@ In order to tweak performance and data handling, the following settings are used
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`forwarding[].address`|Y|-|Forward destination address|
-|`forwarding[].port`|Y|`514`|Forward destination port|
+|`forwarding[].address`|Y||Forward destination address|
+|`forwarding[].port`|N|`514`|Forward destination port|
 |`forwarding[].type`|N|`"udp"`|Forward protocol (`udp` or `tcp`)|
 
 ## Examples

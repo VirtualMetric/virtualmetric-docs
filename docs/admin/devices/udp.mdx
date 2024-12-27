@@ -1,5 +1,3 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # UDP
 
 ## Synopsis
@@ -29,22 +27,22 @@ Creates a UDP server that accepts network messages over UDP connections. Support
 
 Basic configuration contains properties to define minimum requirements for the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|-|Unique identifier|
-|`name`|Y|-|Device name|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
 |`description`|N|-|Optional description|
-|`type`|Y|-|Must be `udp`|
+|`type`|Y||Must be `udp`|
 |`status`|N|`true`|Enable/disable the device|
 
-### Network Properties
+### Network
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`address`|N|`"0.0.0.0"`|Listen address|
-|`port`|Y|-|Listen port|
+|`port`|Y||Listen port|
 
 ## Advanced Configuration
 
@@ -69,6 +67,12 @@ Advanced configuration contains properties to tune performance and message handl
 
 ### Basic UDP Server
 
+The minimum configuration should use the defaults for:
+
+- address
+- buffer size
+- single worker process
+
 <ExampleGrid>
   <CommentCol>
     Create a simple UDP server...
@@ -82,15 +86,16 @@ Advanced configuration contains properties to tune performance and message handl
         port: 514
     ```
   </CodeCol>
-  <CommentCol>
-    Minimum required configuration using defaults:
-    - `address`: "0.0.0.0"
-    - Single worker process
-    - Default buffer sizes
-  </CommentCol>
 </ExampleGrid>
 
 ### High-Performance UDP Server
+
+To enhance performance, use:
+
+- multiple worker processes
+- a larger buffer size
+- a larger batch size
+- a longer queue interval
 
 <ExampleGrid>
   <CommentCol>
@@ -112,21 +117,19 @@ Advanced configuration contains properties to tune performance and message handl
           interval: 2
     ```
   </CodeCol>
-  <CommentCol>
-    Performance tuning:
-    - Multiple worker processes
-    - Larger buffer size
-    - Increased batch size
-    - Adjusted queue interval
-  </CommentCol>
 </ExampleGrid>
 
 :::note
-The worker count cannot be less than 1 or more than the maximum number of physical cores available on the system. 
-Otherwise, this setting will be automatically capped between 1 and the available CPU cores.
+The worker count cannot be less than 1 or more than the maximum number of physical cores available on the system. Otherwise, this setting will be automatically capped at the number of available CPU cores.
 :::
 
 ### Multi-Port UDP Server
+
+Multiple UDP servers can be used with:
+
+- different ports
+- separate worker processes
+- independent message queues
 
 <ExampleGrid>
   <CommentCol>
@@ -140,7 +143,7 @@ Otherwise, this setting will be automatically capped between 1 and the available
       properties:
         port: 514
         workers: 2
-        
+
     - id: 4
       name: udp_server_2
       type: udp
@@ -149,14 +152,8 @@ Otherwise, this setting will be automatically capped between 1 and the available
         workers: 2
     ```
   </CodeCol>
-  <CommentCol>
-    Multiple UDP servers:
-    - Different ports
-    - Separate worker processes
-    - Independent message queues
-  </CommentCol>
 </ExampleGrid>
 
 :::note
-When running multiple UDP servers, ensure each configuration has a unique port number and consider the total number of workers across all instances relative to available system resources.
+When running multiple UDP servers, ensure each configuration has a unique port number, and consider the total number of workers across all instances relative to the available system resources.
 :::
