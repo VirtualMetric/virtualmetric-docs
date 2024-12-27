@@ -1,21 +1,120 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # Windows
 
 ## Synopsis
 
-```ssml
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: windows
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    username: <string>
+    password: <string>
+    domain: <string>
+    timeout: <numeric>
+    debug:
+      simulator: <boolean>
+      audit: <boolean>
+    definitions:
+      os_version: <string>
+      interval: <numeric>
 ```
 
 ## Description
 
-## Parameters
+Creates a Windows device collector that connects to Windows servers to gather system metrics, performance counters, and event logs. Supports both local and domain authentication methods, with configurable connection parameters and debug options.
 
-<BasicConfig />
+## Basic Configuration
+
+The following are the minimum requirements to define the device.
+
+### Device Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `windows`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
+
+### Connection Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|Y|-|Target server address|
+|`port`|N|`135`|WMI port number|
+|`username`|Y|-|Windows username|
+|`password`|Y|-|Windows password|
+|`domain`|N|-|Domain name for domain authentication|
+
+### Debug Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.simulator`|N|`false`|Enable simulator mode for testing|
+|`debug.audit`|N|`false`|Enable audit mode for debugging|
+
+## Advanced Configuration
+
+The following settings can be used to tune the collector's behavior.
+
+### Performance Settings
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`definitions.interval`|N|`60`|Collection interval in seconds|
+
+### System Settings
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`definitions.os_version`|N|`auto`|Windows OS version override|
 
 ## Examples
 
-<Details summary="Click to see">
+### Basic Local Authentication
+
+The minimum configuration using local Windows authentication:
+
 ```yaml
+- id: 1
+  name: windows_server
+  type: windows
+  properties:
+    address: "192.168.1.100"
+    username: "Administrator"
+    password: "secret"
 ```
-</Details>
+
+### Domain Authentication
+
+Configuration using domain authentication:
+
+```yaml
+- id: 2
+  name: domain_windows
+  type: windows
+  properties:
+    address: "server1.domain.local"
+    username: "monitor"
+    password: "P@ssw0rd"
+    domain: "DOMAIN"
+    timeout: 60
+```
+
+:::warning
+The user account must have appropriate permissions to collect performance counters and event logs. For domain authentication, the format should be either "DOMAIN\\username" or "username@domain.local".
+:::
+
+:::note
+The collector implements automatic load balancing by adding a random delay (up to 20 seconds) before starting collection. This helps prevent overwhelming the target server when multiple collectors are deployed.
+:::

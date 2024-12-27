@@ -1,63 +1,240 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # TFTP
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: tftp
+  tags: <string[]>
+  pipelines: <pipeline[]>
   status: <boolean>
   properties:
     address: <string>
     port: <numeric>
-    device:
-      <ip-numeric>: <port-numeric>
-      ...
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    stats_frequency: <numeric>
 ```
 
 ## Description
 
-Represents the listener streaming data through the TFTP protocol.
+Creates a TFTP server that accepts file uploads using the TFTP protocol. Supports IP-based device mapping, multi-worker processing, and automatic file content processing.
 
-## Parameters
+## Basic Configuration
 
-<BasicConfig />
+The following are the minimum requirements to define the device.
 
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|Y||Listening port|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `tftp`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
 
-### `device:`
+### Server Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`<ip-address>`|N|`<post-number>`||
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y|-|Listen port (typically 69)|
+
+### Performance Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`false`|Enable multi-worker mode|
+|`workers`|N|`4`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Read buffer size in bytes|
+|`stats_frequency`|N|`300`|Statistics collection interval in seconds|
+
+## Advanced Features
+
+### IP-Based Device Mapping
+
+The server supports automatic device mapping based on client IP addresses:
+- Maps incoming client IPs to device IDs
+- Automatically associates uploads with devices
+- Supports dynamic device discovery
+- Maintains IP-to-device mapping cache
+
+### File Processing
+
+The server processes uploaded files:
+- Reads file content into memory
+- Records upload metadata (filename, timestamp)
+- Captures client information
+- Converts content to processable format
+
+### Multi-Worker Processing
+
+When `reuse` is enabled, the server uses multiple worker processes:
+- Each worker maintains its own TFTP listener
+- Workers process files independently
+- Files are automatically distributed
+- Worker count is capped at available CPU cores
 
 ## Examples
 
-* Fill in
+### Basic Configuration
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 386457759
-    name: 127.0.0.1
-    description: tftp
-    type: tftp
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 0
-      device:
-        127.0.0.1: 6942
-        1.2.3.4: 5683
-```
-</Details>
+The minimum required configuration:
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple TFTP server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_tftp
+      type: tftp
+      properties:
+        address: "0.0.0.0"
+        port: 69
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Device Mapping Configuration
+
+For automatic device association:
+
+<ExampleGrid>
+  <CommentCol>
+    Configure IP-based device mapping...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: mapped_tftp
+      type: tftp
+      properties:
+        address: "0.0.0.0"
+        port: 69
+        reuse: false
+        buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The server automatically maps client IP addresses to device IDs based on the configuration.
+:::
+
+### High-Performance Configuration
+
+For processing high file volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high upload volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: performance_tftp
+      type: tftp
+      properties:
+        address: "0.0.0.0"
+        port: 69
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
+:::
+
+### Multi-Device Configuration
+
+For handling uploads from multiple devices:
+
+<ExampleGrid>
+  <CommentCol>
+    Configure server for multiple devices...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: multi_device_tftp
+      type: tftp
+      properties:
+        address: "0.0.0.0"
+        port: 69
+        reuse: true
+        workers: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+Ensure all devices are configured to use the same TFTP server port.
+:::
+
+### Pipeline Configuration
+
+For file content processing:
+
+<ExampleGrid>
+  <CommentCol>
+    Apply custom processing to uploaded files...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: pipeline_tftp
+      type: tftp
+      pipelines:
+        - config_parser
+        - field_extractor
+      properties:
+        address: "0.0.0.0"
+        port: 69
+        buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed in order and can modify or drop content before ingestion.
+:::
+
+### Device Upload Protocol
+
+1. Client initiates TFTP upload:
+   ```
+   TFTP -> WRQ -> server:69
+   ```
+
+2. Server accepts connection:
+   ```
+   server -> ACK -> client
+   ```
+
+3. Client transfers file:
+   ```
+   client -> DATA -> server
+   server -> ACK -> client
+   ```
+
+4. Server processes content:
+   - Maps client IP to device
+   - Reads file content
+   - Applies pipelines
+   - Stores processed data
+
+:::tip
+Configure clients to use binary mode for file transfers to avoid data corruption.
+:::

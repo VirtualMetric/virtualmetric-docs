@@ -1,79 +1,247 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # SMTP
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: smtp
+  tags: <string[]>
+  pipelines: <pipeline[]>
   status: <boolean>
   properties:
-    address: <ip-string>
+    address: <string>
     port: <numeric>
     username: <string>
     password: <string>
+    timeout: <numeric>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    stats_frequency: <numeric>
     tls:
       status: <boolean>
       cert_name: <string>
       key_name: <string>
-    timeout: <numeric>
 ```
 
 ## Description
 
-Represents the listener streaming data via the SMTP protocol.
+Creates an SMTP server that receives email messages. Supports authentication, TLS encryption, and multi-worker processing with automatic message handling and JSON conversion.
 
-## Parameters
+## Basic Configuration
 
-<BasicConfig />
+The following are the minimum requirements to define the device.
 
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|Y||Listening port|
-|`username`|N|`""`|Required if authentication is used|
-|`password`|N|`""`|Required if authentication is used|
-|`timeout`|N|`15`|Connection timeout in sec|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `smtp`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
 
-### `tls:`
-
-Transport Layer Security settings.
+### Server Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`status`|N|`false`|Enable TLS connection|
-|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
-|`key_name`|N|`"key.pem"`|TLS key file path|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y|-|Listen port|
+|`username`|N|-|Authentication username|
+|`password`|N|-|Authentication password|
+|`timeout`|N|`15`|Connection timeout in seconds|
+
+### TLS Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y|-|TLS private key file path (required if TLS enabled)|
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
+### Performance Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`false`|Enable multi-worker mode|
+|`workers`|N|`4`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Read buffer size in bytes|
+|`stats_frequency`|N|`300`|Statistics collection interval in seconds|
+
+## Advanced Features
+
+### Email Processing
+
+The server captures and processes:
+- Email headers
+- Sender information
+- Recipient information
+- Message content
+- Attachments
+- Remote client information
+
+### JSON Conversion
+
+All email messages are automatically converted to JSON format with fields:
+- `from`: Sender address
+- `to`: Recipient addresses
+- `subject`: Email subject
+- `body`: Message body
+- `headers`: Email headers
+- `remoteAddr`: Client IP address
+
+### Multi-Worker Processing
+
+When `reuse` is enabled, the server uses multiple worker processes:
+- Each worker maintains a separate SMTP listener
+- Workers process messages independently
+- Messages are automatically converted to JSON
+- Worker count is capped at available CPU cores
 
 ## Examples
 
-* VM Example
+### Basic Configuration
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 324236543
-    name: 127.0.0.1
-    description: smtp
-    type: smtp
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 0
-      username: ""
-      password: ""
-      tls:
-        status: false
-        cert_name: ""
-        key_name: ""
-      reuse: false
-      timeout: 15
-```
-</Details>
+The minimum required configuration:
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple SMTP server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_smtp
+      type: smtp
+      properties:
+        address: "0.0.0.0"
+        port: 25
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure Configuration
+
+For secure email reception:
+
+<ExampleGrid>
+  <CommentCol>
+    Configure TLS and authentication...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: secure_smtp
+      type: smtp
+      properties:
+        address: "0.0.0.0"
+        port: 587
+        username: "mailuser"
+        password: "secret"
+        timeout: 30
+        tls:
+          status: true
+          cert_name: "smtp.crt"
+          key_name: "smtp.key"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Port 587 is commonly used for TLS-enabled SMTP (STARTTLS).
+:::
+
+### High-Performance Configuration
+
+For processing high email volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high message volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: performance_smtp
+      type: smtp
+      properties:
+        address: "0.0.0.0"
+        port: 25
+        timeout: 60
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
+:::
+
+### Submission Server Configuration
+
+For dedicated message submission:
+
+<ExampleGrid>
+  <CommentCol>
+    Configure message submission server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: submission_smtp
+      type: smtp
+      properties:
+        address: "0.0.0.0"
+        port: 587
+        username: "mailuser"
+        password: "secret"
+        timeout: 30
+        tls:
+          status: true
+          cert_name: "smtp.crt"
+          key_name: "smtp.key"
+        reuse: true
+        workers: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Pipeline Configuration
+
+For email pre-processing:
+
+<ExampleGrid>
+  <CommentCol>
+    Apply custom processing to emails...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: pipeline_smtp
+      type: smtp
+      pipelines:
+        - email_parser
+        - spam_filter
+      properties:
+        address: "0.0.0.0"
+        port: 25
+        timeout: 30
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed in order and can modify or drop messages before ingestion.
+:::

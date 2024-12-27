@@ -1,21 +1,103 @@
-import BasicConfig from "./_basic-config.mdx";
-
 # Linux
 
 ## Synopsis
 
 ```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: linux
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    protocol: <string>
+    address: <string>
+    port: <numeric>
+    username: <string>
+    password: <string>
+    private_key: <string>
+    passphrase: <string>
+    timeout: <numeric>
+    debug:
+      simulator: <boolean>
+      audit: <boolean>
 ```
 
 ## Description
 
-## Parameters
+Creates a Linux device collector that connects to Linux servers via SSH to gather system metrics and performance data. Supports both password and private key authentication methods, with configurable connection parameters and debug options.
 
-<BasicConfig />
+## Basic Configuration
+
+The following are the minimum requirements to define the device.
+
+### Device Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `linux`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
+
+### Connection Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`protocol`|N|`"ssh"`|Connection protocol (only `ssh` supported)|
+|`address`|Y|-|Target server address|
+|`port`|N|`22`|SSH port number|
+|`username`|Y|-|SSH username|
+|`password`|N|-|SSH password (if not using private key)|
+|`private_key`|N|-|Path to SSH private key file|
+|`passphrase`|N|-|Private key passphrase (if required)|
+
+## Advanced Configuration
+
+The following settings can be used to tune the collector's behavior.
+
+### Performance Settings
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`timeout`|N|`30`|SSH connection timeout in seconds|
 
 ## Examples
 
-<Details summary="Click to see">
+### Basic Password Authentication
+
+The minimum configuration using password authentication:
+
 ```yaml
+- id: 1
+  name: linux_server
+  type: linux
+  properties:
+    address: "192.168.1.100"
+    username: "admin"
+    password: "secret"
 ```
-</Details>
+
+### Private Key Authentication
+
+Configuration using SSH key authentication:
+
+```yaml
+- id: 2
+  name: secure_linux
+  type: linux
+  properties:
+    address: "10.0.0.50"
+    port: 2222
+    username: "monitor"
+    private_key: "/path/to/private_key"
+    passphrase: "key_password"
+```
+
+:::warning
+The private key file must be readable by the service user and have appropriate permissions (600 or more restrictive).
+:::
