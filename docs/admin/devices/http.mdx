@@ -4,134 +4,281 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Synopsis
 
-```ssml {5}
+```yaml
 - id: <numeric>
-  name: <ip-numeric>
-  description: <text>
+  name: <string>
+  description: <string>
   type: http
-  status: <logical>
+  status: <boolean>
   properties:
     address: <string>
     port: <numeric>
-    tls: <logical>
-    cert_name: <string>
-    key_name: <string>
     url: <string>
+    protocol: <string>
     content_type: <string>
+    reuse: <boolean>
+    workers: <numeric>
     response:
-      code: <enum-numeric>
+      code: <numeric>
       body: <string>
       content_type: <string>
-    flush_interval: <numeric>
+    tls:
+      status: <boolean>
+      cert_name: <string>
+      key_name: <string>
+    authentication:
+      type: <string>
+      username: <string>
+      password: <string>
+    header:
+      key: <string>
+      value: <string>
+    hmac:
+      type: <string>
+      header: <string>
+      key: <string>
+      prefix: <string>
     queue:
       interval: <numeric>
-    batch_size: <numeric>
 ```
 
 ## Description
 
-Represents the listener that delivers data from HTTP-based web data streams. Expects POST requests containing a JSON body, and the body to be an object or array of objects.
+Creates an HTTP server that accepts messages via HTTP POST requests. Supports multiple authentication methods, TLS encryption, and customizable response handling.
 
-Multiple HTTP devices can be assigned to a single addres and port since the device will resolve requests based on the URL configuration. All devices must, however, use the same TLS configuration, and be enabled or disabled as such.
+## Basic Configuration
 
-## Parameters
+Basic configuration contains properties to define minimum requirements for the device.
 
-<BasicConfig />
-
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|Y|N/A|Listening port|
-|`tls`|N|`false`|Enables TLS connection|
-|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
-|`key_name`|N|`"key.pem"`|TLS key file path|
-|`url`|N|`"/"`|Listening path|
-|`content_type`|N|`"application/json"`|Request content body MIME type|
-|`flush_interval`|N|`1`|Ingester flush time interval in sec|
-|`batch_size`|N|`1000`|Ingester batch size|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `http`|
+|`status`|N|`true`|Enable/disable the device|
 
-### `response:`
-
-HTTP response settings.
+### Network Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`code`|N|`200`|Response HTTP status code|
-|`body`|N|`"{\"message\":\"success\"}"`|Response content body|
-|`content_type`|N|`"application/json"`|Response content body MIME type|
+|`protocol`|N|`"tcp"`|Transport protocol (must be tcp)|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y|-|Listen port|
+|`url`|N|`"/"`|URL path to listen on|
+|`content_type`|N|`"application/json"`|Expected content type of incoming requests|
 
-### `queue:`
-
-Ingester queue settings.
+### Response Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`interval`|N|`1`|Ingester de-queue time interval in sec|
+|`response.code`|N|`200`|HTTP response status code|
+|`response.body`|N|`{"message":"success"}`|Response body content|
+|`response.content_type`|N|`"application/json"`|Response content type|
+
+### Authentication Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`authentication.type`|N|`"none"`|Authentication type (`basic`, `header`, or `hmac`)|
+|`username`|Y*|-|Username for basic auth (required if type is `basic`)|
+|`password`|Y*|-|Password for basic auth (required if type is `basic`)|
+|`header.key`|Y*|-|Header name for header auth (required if type is `header`)|
+|`header.value`|Y*|-|Header value for header auth (required if type is `header`)|
+|`hmac.type`|Y*|-|HMAC algorithm (`sha1`, `sha256`, or `sha512`)|
+|`hmac.header`|Y*|-|Header name for HMAC signature|
+|`hmac.key`|Y*|-|Secret key for HMAC calculation|
+|`hmac.prefix`|N|-|Optional prefix to strip from HMAC header value|
+
+### TLS Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y*|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y*|-|TLS private key file path (required if TLS enabled)|
+
+## Advanced Configuration
+
+Advanced configuration contains properties to tune performance and message handling.
+
+### Performance Tuning
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable socket address reuse|
+|`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
+
+### Message Processing
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`queue.interval`|N|`1`|Queue processing interval in seconds|
 
 ## Examples
 
-* Basic listening:
+### Basic HTTP Server
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id:
-    name: 127.0.0.1
-    type: http
-    status: true
-    properties:
-      address: "192.168.1.1"
-      port: 8080
-```
-</Details>
+<ExampleGrid>
+  <CommentCol>
+    Create a simple HTTP server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_http
+      type: http
+      properties:
+        port: 8080
+        url: "/logs"
+        content_type: "application/json"
+        response:
+          code: 200
+          body: '{"status":"ok"}'
+    ```
+  </CodeCol>
+  <CommentCol>
+    Minimum configuration:
+    - POST endpoint at /logs
+    - JSON content type
+    - Simple success response
+  </CommentCol>
+</ExampleGrid>
 
-* Basic response:
+### Basic Authentication Server
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id:
-    type: http
-    status: true
-    properties:
-      address: "192.168.1.1"
-      port: 8080
-    url: "/"
-    response:
-      code: 200
-      body: "{\"message\":\"success\"}"
-```
-</Details>
+<ExampleGrid>
+  <CommentCol>
+    HTTP server with basic auth...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: auth_http
+      type: http
+      properties:
+        port: 8080
+        url: "/api/logs"
+        authentication:
+          type: "basic"
+        username: "vmetric"
+        password: "${env:VMET_PASSWORD}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Basic authentication features:
+    - Username/password protection
+    - Environment variable for password
+  </CommentCol>
+</ExampleGrid>
 
-* Something else:
+### API Key Authentication
 
-<Details summary="Click to">
-```yaml
-devices:
-  - id: 324233249
-    name: 127.0.0.1
-    description: http
-    type: http
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 0
-      tls: false
-      cert_name: ""
-      key_name: ""
-      url: ""
-      content:
-        type: ""
-      response:
-        code: 200
-        body: ""
-      flush_interval: 1
-      queue:
-        interval: 1
-      batch_size: 1000
-```
-</Details>
+<ExampleGrid>
+  <CommentCol>
+    HTTP server with API key header auth...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: apikey_http
+      type: http
+      properties:
+        port: 8080
+        url: "/api/v1/logs"
+        authentication:
+          type: "header"
+        header:
+          key: "X-API-Key"
+          value: "${env:API_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Security features:
+    - Custom header-based authentication
+    - Configurable header name and value
+    - Environment variable for secure key storage
+  </CommentCol>
+</ExampleGrid>
+
+### HMAC Authentication
+
+<ExampleGrid>
+  <CommentCol>
+    HTTP server with HMAC signature verification...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: hmac_http
+      type: http
+      properties:
+        port: 8080
+        url: "/secure/logs"
+        authentication:
+          type: "hmac"
+        hmac:
+          type: "sha256"
+          header: "X-Signature"
+          key: "${HMAC_SECRET}"
+          prefix: "sha256="
+    ```
+  </CodeCol>
+  <CommentCol>
+    Secure HMAC authentication:
+    - SHA-256 signature verification
+    - Custom signature header
+    - Optional signature prefix
+  </CommentCol>
+</ExampleGrid>
+
+### Secure HTTPS Server
+
+<ExampleGrid>
+  <CommentCol>
+    HTTPS server with TLS and authentication...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: secure_http
+      type: http
+      properties:
+        port: 8443
+        url: "/api/ingest"
+        tls:
+          status: true
+          cert_name: "server.crt"
+          key_name: "server.key"
+        authentication:
+          type: "basic"
+        username: "ingest_user"
+        password: "${INGEST_PASSWORD}"
+        response:
+          code: 201
+          body: '{"status":"created"}'
+          content_type: "application/json"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Full security configuration:
+    - TLS encryption
+    - Basic authentication
+    - Custom response code
+    - Secure credentials handling
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+TLS certificate and key files must be placed in the service root directory.
+:::
+
+:::warning
+When using HMAC authentication, ensure the client calculates the signature using the same algorithm and key.
+:::
+
+:::warning
+For production deployments, always use TLS encryption when enabling authentication to protect credentials and tokens.
+:::
