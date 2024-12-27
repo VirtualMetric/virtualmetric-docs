@@ -4,102 +4,289 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Synopsis
 
-```ssml {5}
+```yaml {5}
 - id: <numeric>
-  name: <ip-address>
+  name: <string>
   description: <string>
-  type: http
-  status: <logical>
+  type: syslog
+  status: <boolean>
   properties:
-    network: <string>
     protocol: <string>
     address: <string>
     port: <numeric>
+    framing: <string>
+    line_delimiter: <string>
+    max_connections: <numeric>
+    timeout: <numeric>
     tls:
-      status: <logical>
+      status: <boolean>
       cert_name: <string>
       key_name: <string>
-    reuse: <logical>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    max_message_size: <numeric>
     flush_interval: <numeric>
+    batch_size: <numeric>
     queue:
       interval: <numeric>
-    batch_size: <numeric>
+    forwarding:
+      - address: <string>
+        port: <numeric>
+        type: <string>
 ```
 
 ## Description
 
-Represents the _syslog_ format which offers the flexibility to filter, analyze, and store logs in a centralized location for monitoring, troubleshooting, and compliance purposes.
+Creates a Syslog server that accepts log messages over UDP or TCP connections. Supports both plain and TLS-encrypted connections, with configurable framing and buffering options.
 
-## Parameters
+## Basic Configuration
 
-<BasicConfig />
+Basic configuration contains properties to define minimum requirements for the device.
 
-### `properties:`
-
-Device-specific settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`protocol`|N|`"udp"`|Listening protocol|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|Y|N/A|Listening port|
-|`reuse`|N|`true`|Enable reuse of same address and port|
-|`flush_interval`|N|`1`|Ingest flush interval in sec|
-|`batch_size`||`1000`|Ingest batch size|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `syslog`|
+|`status`|N|`true`|Enable/disable the device|
 
-### `tls:`
-
-Tranport Layer Security settings.
+### Protocol Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`status`|N|`false`|Enable TLS connection|
-|`cert_name`|N|`"cert.pem"`|TLS certificate file path|
-|`key_name`|N|`"key.pem"`|TLS key file path|
+|`protocol`|N|`"udp"`|Transport protocol (`udp` or `tcp`)|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y|-|Listen port|
 
-### `queue:`
+### TCP Properties
 
-Ingester queue settings.
+Following properties are only applicable when `protocol` is set to `tcp`.
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`interval`|N|`1`|Queue flush interval in sec|
+|`framing`|N|`"delimiter"`|Framing mode for TCP (`delimiter` or `octet`)|
+|`line_delimiter`|N|`"\\n"`|Line separator for TCP delimiter framing|
+
+### TLS Properties
+
+Following properties are only applicable when `protocol` is set to `tcp`.
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y*|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y*|-|TLS private key file path (required if TLS enabled)|
+
+## Advanced Configuration
+
+Advanced configuration contains properties to tweak performance and data handling.
+
+### Performance Tuning
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable socket address reuse|
+|`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
+|`max_connections`|N|`10000`|Maximum concurrent TCP connections| 
+|`max_message_size`|N|`20971520`|Maximum message size in bytes (20MB)|
+|`timeout`|N|`300`|Connection timeout in seconds|
+|`buffer_size`|N|`9000`|Network read buffer size in bytes|
+
+### Message Buffering
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`flush_interval`|N|`1`|Message flush interval in seconds|
+|`batch_size`|N|`1000`|Number of messages to batch before flushing|
+|`queue.interval`|N|`1`|Queue processing interval in seconds|
+
+### Message Forwarding
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`forwarding[].address`|Y|-|Forward destination address| 
+|`forwarding[].port`|Y|`514`|Forward destination port|
+|`forwarding[].type`|N|`"udp"`|Forward protocol (`udp` or `tcp`)|
 
 ## Examples
 
-The following use cases can be configured with `syslog.yaml`:
+### Basic UDP Server
 
-* Listen to **Syslog** over a regular **UDP** connection
+<ExampleGrid>
+  <CommentCol>
+    Create a simple UDP syslog server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_syslog
+      type: syslog  
+      properties:
+        port: 514
+    ```
+  </CodeCol>
+  <CommentCol>
+    Minimum required configuration using defaults:
+    - `protocol`: "udp"
+    - `address`: "0.0.0.0"
+  </CommentCol>
+</ExampleGrid>
 
-<Details summary="Click to see">
-```yaml
-devices:
-  id: {0..9}+
-  name: "<some-name>"
-  type: syslog
-  properties:
-    address: "0.0.0.0"
-    port: 514
-```
-</Details>
+### High-Performance UDP Server 
 
-* Listen to **Syslog** over a regular **UDP** connection
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high message volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: performance_syslog
+      type: syslog
+      properties:
+        protocol: udp
+        port: 514
+        reuse: true 
+        workers: 4
+        buffer_size: 32768
+        batch_size: 5000
+        flush_interval: 5
+        queue:
+          interval: 2
+    ```
+  </CodeCol>
+  <CommentCol>
+    Performance tuning:
+    - Multiple worker processes
+    - Larger buffer size
+    - Increased batch size
+    - Adjusted flush intervals
+  </CommentCol>
+</ExampleGrid>
 
-<Details summary="Click to see">
-```yaml
-```
-</Details>
+:::note
+The worker count cannot be less than 1 or more than the maximum number of physical cores available on the system. 
+Otherwise, this setting will be automatically capped between 1 and the available CPU cores.
+:::
 
-* Listen to **Syslog** over a regular **TCP** connection launched by a pre-processor pipeline
+### TCP with Framing
 
-<Details summary="Click to see">
-```yaml
-```
-</Details>
+<ExampleGrid>
+  <CommentCol>
+    TCP server with custom message framing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: tcp_syslog  
+      type: syslog
+      properties:
+        protocol: tcp
+        port: 1514
+        framing: delimiter
+        line_delimiter: "\r\n"
+        max_connections: 5000
+        timeout: 60
+    ```
+  </CodeCol>
+  <CommentCol>
+    TCP-specific settings:
+    - Custom frame delimiter
+    - Connection limits
+    - Idle timeout
+  </CommentCol>
+</ExampleGrid>
 
-* Collect data using **Syslog** with a **TCP** line parser
+:::warning
+When using TCP with delimiter framing, ensure the `line_delimiter` matches the client configuration.
+:::
 
-<Details summary="Click to see">
-```yaml
-```
-</Details>
+### TLS Encrypted with Forwarding
+
+<ExampleGrid>
+  <CommentCol>
+    Secure server that forwards messages...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: secure_syslog
+      type: syslog  
+      properties:
+        protocol: tcp
+        port: 6514
+        tls:
+          status: true
+          cert_name: cert.pem
+          key_name: key.pem
+        forwarding:
+          - address: "10.0.0.1"
+            port: 514
+            type: udp
+          - address: "10.0.0.2" 
+            port: 6514
+            type: tcp
+    ```
+  </CodeCol>
+  <CommentCol>
+    Security features:
+    - TLS encryption
+    - Multiple forward destinations
+    - Mixed protocols
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
+### Syslog Message Forwarding
+
+<ExampleGrid>
+  <CommentCol>
+    Forward incoming syslog messages to multiple destinations...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: forwarder_syslog
+      type: syslog
+      properties:
+        protocol: udp
+        port: 514
+        forwarding:
+          - address: "10.0.0.50"
+            port: 514
+            type: udp
+          - address: "10.0.0.51"
+            port: 1514
+            type: tcp
+          - address: "syslog.example.com"
+            port: 6514
+            type: tcp
+    ```
+  </CodeCol>
+  <CommentCol>
+    Use cases:
+    - Network devices with single syslog output
+    - Legacy systems needing multiple destinations
+    - Fan-out to different analysis tools
+    
+    Messages are forwarded exactly as received to:
+    - UDP server on port 514
+    - TCP server on port 1514  
+    - TCP server on port 6514
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+Syslog forwarding acts as a message replicator, forwarding exact copies of incoming messages to all configured destinations without any modification. This is particularly useful for network devices that can only send syslog to a single destination.
+:::
+
+:::warning
+When using TCP forwarding, ensure the destination servers can handle the connection load. Each TCP forward maintains a persistent connection.
+:::
