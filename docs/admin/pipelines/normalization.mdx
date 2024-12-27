@@ -1,170 +1,107 @@
 # Normalization
 
-The normalize processor converts fields between different log format standards, making it easier to work with logs from various sources.
+Normalization is a critical approach to standardizing log data from diverse sources, enabling more consistent and efficient log analysis across different systems and formats.
 
-## Supported Formats
-
-The processor supports three major log format standards:
+## Log Format Standards
 
 ### ECS (Elastic Common Schema)
-- Uses dot notation (e.g., `source.ip`)
-- Identifier field: `@timestamp`
-- Example: `network.direction`
+The Elastic Common Schema provides a standardized approach to log representation:
+- **Notation**: Dot notation (e.g., `source.ip`)
+- **Key Identifier**: `@timestamp`
+- **Characteristics**:
+  - Hierarchical structure
+  - Nested field representation
+  - Example fields: `network.direction`, `host.hostname`
 
 ### CIM (Splunk Common Information Model)
-- Uses underscores (e.g., `src_ip`)
-- Identifier field: `_time`
-- Example: `network_direction`
+Splunk's Common Information Model focuses on:
+- **Notation**: Underscore-based (e.g., `src_ip`)
+- **Key Identifier**: `_time`
+- **Characteristics**:
+  - Flat, simplified naming
+  - Concise field names
+  - Example fields: `network_direction`, `src_port`
 
 ### ASIM (Azure Sentinel Information Model)
-- Uses PascalCase (e.g., `SourceIp`)
-- Identifier field: `TimeGenerated`
-- Example: `NetworkDirection`
+Azure's log normalization approach uses:
+- **Notation**: PascalCase (e.g., `SourceIp`)
+- **Key Identifier**: `TimeGenerated`
+- **Characteristics**:
+  - Camel-case naming convention
+  - Explicit, verbose field names
+  - Example fields: `NetworkDirection`, `DstPort`
 
-## Field Mappings
+## Standard Field Mappings
 
-### Network Fields
-|ECS|CIM|ASIM|
-|---|---|---|
-|`source.ip`|`src`|`SrcIp`|
-|`destination.ip`|`dest`|`DstIp`|
-|`network.direction`|`direction`|`NetworkDirection`|
+### Common Network Fields
 
-## Format Detection
+| Context | Source IP | Destination IP | Network Direction |
+|---------|-----------|----------------|-------------------|
+| ECS | `source.ip` | `destination.ip` | `network.direction` |
+| CIM | `src` | `dest` | `direction` |
+| ASIM | `SrcIp` | `DstIp` | `NetworkDirection` |
 
-When `source_format` is not specified, the processor attempts to auto-detect the format based on characteristic fields:
+## Format Detection Strategies
 
-- Presence of `@timestamp` indicates ECS format
-- Presence of `_time` indicates CIM format
-- Presence of `TimeGenerated` indicates ASIM format
+Different log formats can be identified through characteristic fields:
 
-## Examples
+### Automatic Format Identification
+Logs can be recognized by their unique identifying fields:
+- `@timestamp`: Typically indicates ECS format
+- `_time`: Characteristic of CIM format
+- `TimeGenerated`: Signature of ASIM format
 
-### ECS to CIM Conversion
+## Challenges in Log Normalization
 
-```yaml
-- normalize:
-    description: "Convert ECS to CIM format"
-    source_format: "ecs"
-    target_format: "cim"
-    tag: "format_conversion"
-```
+### Variability Across Systems
+- Different systems generate logs with unique structures
+- No universal standard covers all use cases
+- Context-specific nuances in log generation
 
-Input:
-```json
-{
-  "source": {
-    "ip": "128.232.110.120"
-  },
-  "destination": {
-    "ip": "192.168.1.1"
-  },
-  "network": {
-    "direction": "inbound"
-  }
-}
-```
+### Common Normalization Challenges
+- Field name inconsistencies
+- Varying timestamp formats
+- Nested vs. flat data structures
+- Different units and measurements
 
-Output:
-```json
-{
-  "src": "128.232.110.120",
-  "dest": "192.168.1.1",
-  "direction": "inbound"
-}
-```
+## Normalization Approaches
 
-### CIM to ASIM Conversion
+### Field Mapping
+- Translate field names between different conventions
+- Preserve original data semantics
+- Create consistent data model
 
-```yaml
-- normalize:
-    description: "Convert CIM to ASIM format"
-    source_format: "cim"
-    target_format: "asim"
-```
+### Timestamp Standardization
+- Convert timestamps to a unified format
+- Ensure consistent time representation
+- Handle timezone variations
 
-Input:
-```json
-{
-  "src": "128.232.110.120",
-  "dest": "192.168.1.1",
-  "direction": "outbound"
-}
-```
+### Data Type Harmonization
+- Standardize numeric representations
+- Normalize boolean and categorical values
+- Ensure consistent data typing
 
-Output:
-```json
-{
-  "SrcIp": "128.232.110.120",
-  "DstIp": "192.168.1.1",
-  "NetworkDirection": "outbound"
-}
-```
+## Best Practices
 
-### Auto-detection with Error Handling
+1. **Consistency is Key**
+   - Choose a primary log format
+   - Define clear mapping rules
+   - Document transformation logic
 
-```yaml
-- normalize:
-    description: "Convert to ASIM with error handling"
-    target_format: "asim"
-    ignore_failure: true
-    on_failure:
-      - set:
-          field: "error.message"
-          value: "Format conversion failed"
-```
+2. **Preserve Original Data**
+   - Keep original fields when possible
+   - Add metadata about transformations
+   - Allow traceability
 
-## Error Handling
-
-The processor provides several ways to handle conversion errors:
-
-### Ignore Failures
-Set `ignore_failure: true` to continue processing even if normalization fails:
-
-```yaml
-- normalize:
-    target_format: "asim"
-    ignore_failure: true
-```
-
-### Failure Processing
-Use `on_failure` to handle conversion errors:
-
-```yaml
-- normalize:
-    target_format: "cim"
-    on_failure:
-      - set:
-          field: "normalize_error"
-          value: true
-```
-
-### Success Processing
-Use `on_success` to perform actions after successful conversion:
-
-```yaml
-- normalize:
-    target_format: "ecs"
-    on_success:
-      - set:
-          field: "normalized"
-          value: true
-```
-
-## Conditional Execution
-
-Use the `if` field to normalize conditionally:
-
-```yaml
-- normalize:
-    if: "ctx.format_version != 'latest'"
-    target_format: "ecs"
-```
+3. **Handle Edge Cases**
+   - Develop robust error handling
+   - Create fallback mechanisms
+   - Test with diverse log samples
 
 :::note
-All normalization is case-insensitive. The format names "ECS", "ecs", and "Ecs" are equivalent.
+Log normalization is an ongoing process. No single approach fits all scenarios perfectly.
 :::
 
 :::warning
-Normalization may lose information if the target format doesn't have equivalent fields. Always test your normalization rules with sample data.
+Normalization can potentially lose nuanced information. Always validate transformed logs against original sources.
 :::
