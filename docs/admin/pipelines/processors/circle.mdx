@@ -9,8 +9,8 @@ circle:
   - shape_type: <shape>
   - description: <text>
   - if: <script>
-  - ignore_failure: <logical>
-  - ignore_missing: <logical>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
   - on_failure: <processors...>
   - on_success: <processors...>
   - tag: <string>
@@ -41,27 +41,203 @@ Circles containing poles cannot be converted.
 |`tag`|N|-|Identifier|
 |`target_field`|N|-|Field to assign the converted shape to. If omitted, the circle is converted in place|
 
+## Supported Units
+
+The radius can be specified in these units:
+- `m` - meters (default if no unit specified)
+- `km` - kilometers
+- `cm` - centimeters  
+- `mm` - millimeters
+- `mi` - miles
+- `yd` - yards
+- `ft` - feet
+- `in` - inches
+- `nmi` - nautical miles
+
 ## Examples
 
-{/* FIXME: Shall we draw a circle? */}
+### Custom Format
 
 <ExampleGrid>
   <CommentCol>
-    Define a circle
+    Using center coordinates and radius...
   </CommentCol>
   <CodeCol>
+    ```json
+    {
+      "vmetric": {
+        "center": "40.7128,-74.0060",
+        "radius": "40m"
+      }
+    }
+    ```
     ```yaml
-    mapping:
-      properties:
-        - circle:
-          type: geo_shape
-    processors:
-      - circle:
-        - field: circle
-        - error_distance: 5.0
-        - shape_type: geo_shape
+    circle:
+      - field: vmetric
+      - error_distance: 28.0
+      - shape_type: geo_shape
+      - target_field: geo_shape.vmetric
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to polygon:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "geo_shape": {
+        "vmetric": {
+          "type": "Polygon",
+          "coordinates": [[[
+            [-74.00564067388635, 40.7128],
+            [-74.00588896212435, 40.71314404260343],
+            [-74.00629070093247, 40.7130126300225],
+            [-74.00629070093247, 40.712587369977506],
+            [-74.00588896212435, 40.71245595739657],
+            [-74.00564067388635, 40.7128]
+          ]]]
+        }
+      }
+    }
     ```
   </CodeCol>
 </ExampleGrid>
 
-With this pipeline, data containing a circle, represented in **GeoJSON**, can be assigned to the `circles` index and tranformed into a polygon in the source format.
+### WKT Format
+
+<ExampleGrid>
+  <CommentCol>
+    Using WKT circle definition...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "circle": "CIRCLE (30 10 40)"
+    }
+    ```
+    ```yaml
+    circle:
+      - field: circle
+      - error_distance: 28.0
+      - shape_type: geo_shape
+      - target_field: polygon
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to GeoJSON polygon:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "polygon": {
+        "type": "Polygon",
+        "coordinates": [[[
+          [30.00035932611365, 10.0],
+          [30.00011103787564, 10.000344042603427],
+          [29.999709299067536, 10.000212630022496],
+          [29.999709299067536, 9.999787369977504],
+          [30.00011103787564, 9.999655957396573],
+          [30.00035932611365, 10.0]
+        ]]]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### GeoJSON Format
+
+<ExampleGrid>
+  <CommentCol>
+    Using GeoJSON circle definition...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "circle": {
+        "type": "circle",
+        "radius": "40m",
+        "coordinates": [30.0, 10.0]
+      }
+    }
+    ```
+    ```yaml
+    circle:
+      - field: circle
+      - error_distance: 28.0
+      - shape_type: geo_shape
+      - target_field: polygon
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to GeoJSON polygon:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "polygon": {
+        "type": "Polygon", 
+        "coordinates": [[[
+          [30.00035932611365, 10],
+          [30.00011103787564, 10.000344042603427],
+          [29.999709299067536, 10.000212630022496],
+          [29.999709299067536, 9.999787369977504],
+          [30.00011103787564, 9.999655957396573],
+          [30.00035932611365, 10]
+        ]]]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Different Units
+
+<ExampleGrid>
+  <CommentCol>
+    Using kilometers for large circles...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "vmetric": {
+        "center": "40.7128,-74.0060",
+        "radius": "40km"
+      }
+    }
+    ```
+    ```yaml  
+    circle:
+      - field: vmetric
+      - error_distance: 28000.0
+      - shape_type: geo_shape
+      - target_field: geo_shape.vmetric
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to large polygon:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "geo_shape": {
+        "vmetric": {
+          "type": "Polygon",
+          "coordinates": [[[
+            [-73.64667388635219, 40.7128],
+            [-73.89496212436013, 41.05684260342746],
+            [-74.29670093246378, 40.92543002249617],
+            [-74.29670093246378, 40.50016997750383],
+            [-73.89496212436013, 40.36875739657254],
+            [-73.64667388635219, 40.7128]
+          ]]]
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor automatically calculates the optimal number of points to use when approximating the circle as a polygon, based on the radius and error_distance parameters. The number of points is capped at 1000 for performance.
+:::
