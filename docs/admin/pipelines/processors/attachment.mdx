@@ -4,36 +4,33 @@
 
 ```yaml {2}
 attachment:
-  - field: <ident>
   - description: <text>
+  - field: <ident>
   - target_field: <ident>
   - if: <script>
   - indexed_chars_field: <ident>
-  - indexed_chars: <string>
-  - ignore_failure: <logical>
-  - ignore_missing: <logical>
+  - indexed_chars: <number>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
   - on_failure: <processors...>
   - on_success: <processors...>
-  - properties: <enum>
-  - remove_binary: <logical>
+  - properties: <array>
+  - remove_binary: <boolean>
   - resource_name: <string>
   - tag: <string>
 ```
 
 ## Description
 
-**Functionality**: Allows **Director** to extract widely used file formats like **DOC**, **XLS**, **PDF**, etc. using **Apache**'s **Tika** library.
+**Functionality**: Extracts content and metadata from common document formats like **XLSX**, **DOCX**, **PDF**, **RTF**, and **ODT** using native format libraries.
 
-
-The source field must point to a base64-encoded binary file which will be converted to **JSON**. To avoid the overhead of back and forth conversions, use **CBOR** and specify the field as a byte array.
-
-{/* FIXME: What is COBR? Do we use it? */}
+The source field must contain base64-encoded binary data of the document to be processed. For optimal performance with large binary files, consider using binary data formats instead of base64 encoding.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|N/A|Field to get the base64-encoded data from|
+|`field`|Y|-|Field to get the base64-encoded data from|
 |`description`|N|-|Explanatory text|
 |`if`|N|-|Condition to run|
 |`indexed_chars_field`|N|`null`|Field to override the value in the `indexed_chars` field|
@@ -54,77 +51,51 @@ The following fields can be extracted from a document:
 
 > `altitude` `author` `comments` `content` `content_length` `content_type` `contributor` `coverage` `creator_tool` `date` `description` `format` `identifier` `keywords` `language` `latitude` `longitude` `metadata_date` `modified` `modifier` `print_date` `publisher` `rating` `relation` `rights` `source` `title` `type`
 
+## Supported Formats
+
+The processor supports these formats using the following libraries:
+- Microsoft Excel (XLSX)
+- Microsoft Word (DOCX)
+- PDF documents
+- Rich Text Format (RTF)
+- OpenDocument Text (ODT)
+- Plain text (TXT)
+
 ## Examples
 
-### Encoding data
+### Basic extraction
 
 The files to be attached to the JSON documents must first be encoded as `base64` strings. Then, to decode the string the processor can be used:
 
 <ExampleGrid>
-	<CommentCol>
-    The field contains the attachment as a base64-encoded string.
-	</CommentCol>
-	<CodeCol>
-    ```json
-    {
-      "data": "<base64-encoded string>"
-    }
-    ```
-    ```yaml
-    attachment:
-      - field: data
-    ```
-	</CodeCol>
-	<CommentCol>
-    The content is extracted and decoded:
-	</CommentCol>
-	<CodeCol>
-    ```json
-    {
-      "data": "<base64-encoded string>",
-      "attachment": {
-        "content_type": "application/txt",
-        "content": "foo bar baz qux"
-      }
-    }
-    ```
-	</CodeCol>
-</ExampleGrid>
-
-### Property extraction
-
-The exported fields listed above can be used to drill down to the properties of the document:
-
-<ExampleGrid>
-	<CommentCol>
-    With the `properties` array, relevant fragments of information...
-	</CommentCol>
-	<CodeCol>
-    ```json
-    {
-      "data": "<base64-encoded string>"
-    }
-    ```
-    ```yaml
-    attachment:
-      - field: data
-      - properties:
-        - title
-        - content
-    ```
-	</CodeCol>
   <CommentCol>
-    can be extracted separately:
+    Extract content from an Excel file...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "data": "<base64-encoded string>",
+      "data": "<base64-encoded XLSX>"
+    }
+    ```
+    ```yaml
+    attachment:
+      - field: data
+    ```
+  </CodeCol>
+  <CommentCol>
+    Get the sheet content and metadata:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "<base64-encoded XLSX>",
       "attachment": {
-        "properties": {
-          "title": "ABC",
-          "content": 123
-        }
+        "content": "Sheet1\nName Lastname Age\nJohn Smith 25\nJane Doe 30",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "content_length": 55,
+        "author": "John Smith",
+        "sheets": "Sheet1",
+        "application_name": "Microsoft Excel"
       }
     }
     ```
@@ -133,38 +104,108 @@ The exported fields listed above can be used to drill down to the properties of 
 
 ### Character limits
 
-In order not to overload the _node cache_, the number of characters that can be extracted is limited to `100,000`. The value can be set with the `indexed_chars` field. For no limits, `-1` can be specified, although this should not be used without verifying that there is enough memory to extract very large documents.
-
-To override the default limit, `indexed_chars_field` can be used to set limits per document.
-
 <ExampleGrid>
   <CommentCol>
-    Specifying an upper limit...
+    Limit extracted content length...
   </CommentCol>
   <CodeCol>
+    ```json
+    {
+      "data": "<base64-encoded PDF>",
+      "max_size": 50
+    }
+    ```
     ```yaml
     attachment:
       - field: data
-      - indexed_chars: 15
       - indexed_chars_field: max_size
     ```
-    ```json
-    {
-      "data": "<base64-encoded string>"
-    }
-    ```
-</CodeCol>
+  </CodeCol>
   <CommentCol>
-    extracts only the required amount of data:
+    to prevent memory issues with large documents:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "data": "<base64-encoded string>",
+      "data": "<base64-encoded PDF>",
+      "max_size": 50,
+      "attachment": {
+        "content": "This is the first 50 characters of the document...",
+        "content_type": "application/pdf",
+        "content_length": 50
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Metadata Extraction 
+
+<ExampleGrid>
+  <CommentCol>
+    Extract specific metadata properties from a Word document...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "<base64-encoded DOCX>"
+    }
+    ```
+    ```yaml
+    attachment:
+      - field: data
+      - properties:
+        - author
+        - title
+        - content_status
+    ```
+  </CodeCol>
+  <CommentCol>
+    only the requested properties are returned:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "<base64-encoded DOCX>",
+      "attachment": {
+        "author": "Jane Doe", 
+        "title": "Project Report",
+        "content_status": "Final"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Content Type Detection
+
+<ExampleGrid>
+  <CommentCol>
+    The processor auto-detects content type using MIME detection, but you can help with resource_name...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "<base64-encoded data>"
+    }
+    ```
+    ```yaml
+    attachment:
+      - field: data
+      - resource_name: document.rtf
+    ```
+  </CodeCol>
+  <CommentCol>
+    which aids in format identification:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "<base64-encoded data>",
       "attachment": {
         "content_type": "application/rtf",
-        "content": "foo bar baz qux",
-        "content_length": 15
+        "content": "Document content...",
+        "content_length": 17
       }
     }
     ```
@@ -172,5 +213,5 @@ To override the default limit, `indexed_chars_field` can be used to set limits p
 </ExampleGrid>
 
 :::note
-Processing multiple attachments requires using [`foreach`](foreach.mdx).
+For multiple attachments, use the [`foreach`](foreach.mdx) processor.
 :::
