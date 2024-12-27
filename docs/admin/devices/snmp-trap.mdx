@@ -4,88 +4,242 @@ import BasicConfig from "./_basic-config.mdx";
 
 ## Synopsis
 
-```ssml {5}
-devices:
-  - id: <numeric>
-    name: <ip-numeric>
-    description: <text>
-    type: snmptrap
-    status: <logical>
-    properties:
-      address: <ip-string>
-      port: <numeric>
-      community: <string>
-      username: <string>
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: snmptrap
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    reuse: <boolean>
+    workers: <numeric>
+    community: <string>
+    authentication:
+      status: <boolean>
+      protocol: <numeric>
       password: <string>
-      authentication:
-        status: <logical>
-        protocol: <numeric>
-        password: <string>
-      privacy:
-        protocol: <numeric>
-        passphrase: <string>
+    privacy:
+      protocol: <numeric>
+      passphrase: <string>
+    username: <string>
+    debug:
+      console:
+        status: <boolean>
+    batch_size: <numeric>
+    queue:
+      interval: <numeric>
 ```
 
 ## Description
 
-## Parameters
+Creates an SNMP trap receiver that listens for SNMP trap messages. Supports SNMPv2c and SNMPv3 with various authentication and privacy protocols, MIB integration, and high-performance message processing.
 
-<BasicConfig />
+## Basic Configuration
 
-### `properties:`
+Basic configuration contains properties to define minimum requirements for the device.
 
-Device-specific settings.
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listening address|
-|`port`|Y|N/A|Listening port|
-|`community`|N|`""`|Community string. Required if authentication v2 is used|
-|`username`|N|`""`|Authentication username|
-|`password`|N|`""`|Authentication password|
-
-### `authentication:`
-
-Authentication settings.
+### Device Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`status`|N|`false`|Enable authentication v3. Required if authentication v3 is used|
-|`protocol`|N|`1`|Authentication protocol. Required if authentication v3 is used|
-|`password`|N|`""`|Authentication password. Required if authentication v3 is used|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Device name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `snmptrap`|
+|`status`|N|`true`|Enable/disable the device|
 
-### `privacy:`
+### Network Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`protocol`|N|-|Privacy protocol. Required if authentication v3 is used. Valid options: TODO:|
-|`passphrase`|N|`""`|Privacy passphrase. Required if authentication v3 is used|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y|`162`|Listen port for SNMP traps|
+|`community`|Y*|-|Community string for SNMPv2c (required if not using v3)|
+
+### SNMPv3 Authentication Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`authentication.status`|N|`false`|Enable SNMPv3 authentication|
+|`authentication.protocol`|N|`1`|Authentication protocol ID|
+|`authentication.password`|Y*|-|Authentication password (required if auth enabled)|
+|`username`|Y*|-|SNMPv3 username|
+
+#### Authentication Protocols
+
+|ID|Protocol|Description|
+|---|---|---|
+|`1`|`NoAuth`|No authentication|
+|`2`|`MD5`|HMAC-MD5-96 authentication|
+|`3`|`SHA`|HMAC-SHA-96 authentication|
+|`4`|`SHA224`|HMAC-SHA-224 authentication|
+|`5`|`SHA256`|HMAC-SHA-256 authentication|
+|`6`|`SHA384`|HMAC-SHA-384 authentication|
+|`7`|`SHA512`|HMAC-SHA-512 authentication|
+
+### Privacy Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`privacy.protocol`|N|`1`|Privacy protocol ID|
+|`privacy.passphrase`|Y*|-|Privacy passphrase (required if protocol > 1)|
+
+#### Privacy Protocols
+
+|ID|Protocol|Description|
+|---|---|---|
+|`1`|`NoPriv`|No privacy|
+|`2`|`DES`|DES privacy|
+|`3`|`AES`|AES-128 privacy|
+|`4`|`AES192`|AES-192 privacy|
+|`5`|`AES256`|AES-256 privacy|
+|`6`|`AES192C`|AES-192 with 3DES key padding|
+|`7`|`AES256C`|AES-256 with 3DES key padding|
+
+## Advanced Configuration
+
+Advanced configuration contains properties to tune performance and message handling.
+
+### Performance Tuning
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`false`|Enable socket address reuse|
+|`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
+|`batch_size`|N|`1000`|Number of messages to batch before processing|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.console.status`|N|`false`|Enable console debugging output|
 
 ## Examples
 
-* VM example
+### Basic SNMPv2c Trap Receiver
 
-<Details summary="Click to see">
-```yaml
-devices:
-  - id: 341548974
-    name: 127.0.0.1
-    description: snmptrap
-    type: snmptrap
-    status: false
-    properties:
-      address: "0.0.0.0"
-      port: 0
-      community: ""
-      username: ""
-      password: ""
-      channel: ""
-      authentication:
-        status: false
-        protocol: 1
-        password: ""
-      privacy:
-        protocol: 1
-        passphrase: ""
-```
-</Details>
+<ExampleGrid>
+  <CommentCol>
+    Create a simple SNMPv2c trap receiver...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_trap
+      type: snmptrap
+      properties:
+        port: 162
+        community: "public"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Basic configuration:
+    - Default listen address
+    - Standard SNMP trap port
+    - Public community string
+  </CommentCol>
+</ExampleGrid>
+
+### Secure SNMPv3 Trap Receiver
+
+<ExampleGrid>
+  <CommentCol>
+    SNMPv3 with authentication and privacy...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: secure_trap
+      type: snmptrap
+      properties:
+        port: 162
+        authentication:
+          status: true
+          protocol: 5
+          password: "${env:SNMP_AUTH_PASS}"
+        privacy:
+          protocol: 5
+          passphrase: "${env:SNMP_PRIV_PASS}"
+        username: "trapuser"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Security features:
+    - SHA256 authentication
+    - AES-256 privacy
+    - Secure credential storage
+  </CommentCol>
+</ExampleGrid>
+
+### High-Performance Trap Receiver
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high message volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: performance_trap
+      type: snmptrap
+      properties:
+        port: 162
+        reuse: true
+        workers: 4
+        batch_size: 5000
+        queue:
+          interval: 2
+        authentication:
+          status: true
+          protocol: 3
+        username: "trapuser"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Performance tuning:
+    - Multiple worker processes
+    - Increased batch size
+    - Optimized queue processing
+    - Basic SHA authentication
+  </CommentCol>
+</ExampleGrid>
+
+### Debug-Enabled Trap Receiver
+
+<ExampleGrid>
+  <CommentCol>
+    Configuration with debug logging...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: debug_trap
+      type: snmptrap
+      properties:
+        port: 162
+        community: "public"
+        debug:
+          console:
+            status: true
+        batch_size: 100
+        queue:
+          interval: 1
+    ```
+  </CodeCol>
+  <CommentCol>
+    Troubleshooting setup:
+    - Console debug output enabled
+    - Smaller batch size
+    - Frequent queue processing
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+The MIB database is automatically loaded from both the service root directory and package directory.
+:::
+
+:::warning
+When using SNMPv3 with privacy, ensure both authentication and privacy passwords meet minimum length requirements for the selected protocols.
+:::
