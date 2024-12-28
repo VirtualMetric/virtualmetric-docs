@@ -33,7 +33,7 @@ Creates a Windows device collector that connects to Windows servers to gather sy
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -45,7 +45,7 @@ The following are the minimum requirements to define the device.
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
-### Connection Properties
+### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -55,7 +55,7 @@ The following are the minimum requirements to define the device.
 |`password`|Y||Windows password|
 |`domain`|N|-|Domain name for domain authentication|
 
-### Debug Properties
+### Debug
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -66,14 +66,14 @@ The following are the minimum requirements to define the device.
 
 The following settings can be used to tune the collector's behavior.
 
-### Performance Settings
+### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`timeout`|N|`30`|Connection timeout in seconds|
 |`definitions.interval`|N|`60`|Collection interval in seconds|
 
-### System Settings
+### System
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -81,7 +81,7 @@ The following settings can be used to tune the collector's behavior.
 
 ## Examples
 
-### Basic Local Authentication
+### Local
 
 The minimum configuration using local Windows authentication:
 
@@ -95,9 +95,13 @@ The minimum configuration using local Windows authentication:
     password: "secret"
 ```
 
-### Domain Authentication
+### Domain-Level
 
-Configuration using domain authentication:
+Configuration using domain-level authentication:
+
+:::warning
+The user account must have appropriate permissions to collect performance counters and event logs. For domain authentication, the format should be either "DOMAIN\\username" or "username@domain.local".
+:::
 
 ```yaml
 - id: 2
@@ -111,10 +115,6 @@ Configuration using domain authentication:
     timeout: 60
 ```
 
-:::warning
-The user account must have appropriate permissions to collect performance counters and event logs. For domain authentication, the format should be either "DOMAIN\\username" or "username@domain.local".
-:::
-
 :::note
-The collector implements automatic load balancing by adding a random delay (up to 20 seconds) before starting collection. This helps prevent overwhelming the target server when multiple collectors are deployed.
+When multiple collectors are deployed, the collector adds a random delay (up to 20 seconds) before initiating the collection to help prevent overwhelming the target server.
 :::

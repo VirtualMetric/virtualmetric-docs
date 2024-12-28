@@ -36,7 +36,7 @@ Creates a NATS JetStream consumer that connects to NATS servers and processes me
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -48,7 +48,7 @@ The following are the minimum requirements to define the device.
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
-### Connection Properties
+### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -60,7 +60,7 @@ The following are the minimum requirements to define the device.
 |`consumer`|Y|`"vmetric"`|JetStream consumer name|
 |`subject`|Y||Subject pattern to subscribe to|
 
-### TLS Properties
+### TLS
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -72,7 +72,7 @@ The following are the minimum requirements to define the device.
 The TLS certificate and key files must be placed in the service root directory.
 :::
 
-### Performance Properties
+### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -83,7 +83,7 @@ The TLS certificate and key files must be placed in the service root directory.
 
 ## Advanced Features
 
-### Multi-Worker Processing
+### Multi-Worker Use
 
 When `reuse` is enabled, the collector uses multiple worker processes:
 - Each worker maintains its own NATS consumer
@@ -91,7 +91,7 @@ When `reuse` is enabled, the collector uses multiple worker processes:
 - Messages are automatically acknowledged
 - Worker count is capped at available CPU cores
 
-### Message Processing
+### Messages
 
 The collector supports:
 - JetStream persistent message storage
@@ -210,9 +210,7 @@ For targeted message processing:
 </ExampleGrid>
 
 :::tip
-NATS subjects support wildcards:
-- Single token wildcard: `*`
-- Multiple token wildcard: `>`
+NATS subjects support `*` and `>` as wildcards for single and multiple tokens respectively.
 :::
 
 ### Message Pipeline Configuration
@@ -242,5 +240,5 @@ For message pre-processing:
 </ExampleGrid>
 
 :::note
-Pipelines are processed in order and can modify or drop messages before ingestion.
+Pipelines are processed sequentially and can modify or drop messages before ingestion.
 :::

@@ -1,4 +1,4 @@
-# SMTP
+# Kafka
 
 ## Synopsis
 
@@ -6,7 +6,7 @@
 - id: <numeric>
   name: <string>
   description: <string>
-  type: smtp
+  type: kafka
   tags: <string[]>
   pipelines: <pipeline[]>
   status: <boolean>
@@ -15,7 +15,9 @@
     port: <numeric>
     username: <string>
     password: <string>
-    timeout: <numeric>
+    group: <string>
+    topic: <string>
+    balancer: <string>
     reuse: <boolean>
     workers: <numeric>
     buffer_size: <numeric>
@@ -28,35 +30,37 @@
 
 ## Description
 
-Creates an SMTP server that receives email messages. Supports authentication, TLS encryption, and multi-worker processing with automatic message handling and JSON conversion.
+Creates a Kafka consumer that connects to Kafka brokers and consumes messages from specified topics. Supports authentication, TLS encryption, and multi-worker processing.
 
 ## Basic Configuration
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`id`|Y||Unique identifier|
 |`name`|Y||Device name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `smtp`|
+|`type`|Y||Must be `kafka`|
 |`tags`|N|-|Optional tags|
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
-### Server Properties
+### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Listen address|
-|`port`|Y||Listen port|
-|`username`|N|-|Authentication username|
-|`password`|N|-|Authentication password|
-|`timeout`|N|`15`|Connection timeout in seconds|
+|`address`|N|`"0.0.0.0"`|Kafka broker address|
+|`port`|Y||Kafka broker port|
+|`username`|N|-|SASL username|
+|`password`|N|-|SASL password|
+|`group`|N|`"vmetric"`|Consumer group ID|
+|`topic`|Y||Topic to consume from|
+|`balancer`|N|`"roundrobin"`|Partition balancing strategy|
 
-### TLS Properties
+### TLS
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -68,44 +72,34 @@ The following are the minimum requirements to define the device.
 The TLS certificate and key files must be placed in the service root directory.
 :::
 
-### Performance Properties
+### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`reuse`|N|`false`|Enable multi-worker mode|
+|`reuse`|N|`true`|Enable multi-worker mode|
 |`workers`|N|`4`|Number of worker processes when reuse enabled|
 |`buffer_size`|N|`9000`|Read buffer size in bytes|
 |`stats_frequency`|N|`300`|Statistics collection interval in seconds|
 
 ## Advanced Features
 
-### Email Processing
-
-The server captures and processes:
-- Email headers
-- Sender information
-- Recipient information
-- Message content
-- Attachments
-- Remote client information
-
-### JSON Conversion
-
-All email messages are automatically converted to JSON format with fields:
-- `from`: Sender address
-- `to`: Recipient addresses
-- `subject`: Email subject
-- `body`: Message body
-- `headers`: Email headers
-- `remoteAddr`: Client IP address
-
 ### Multi-Worker Processing
 
-When `reuse` is enabled, the server uses multiple worker processes:
-- Each worker maintains a separate SMTP listener
+When `reuse` is enabled, the collector uses multiple worker processes:
+- Each worker maintains its own Kafka consumer in the consumer group
 - Workers process messages independently
-- Messages are automatically converted to JSON
+- Messages are automatically balanced across workers
 - Worker count is capped at available CPU cores
+
+### Message Processing
+
+The collector supports:
+- Message offset tracking and commits
+- Automatic consumer group rebalancing
+- Multiple topic subscriptions
+- TLS encrypted connections
+- SASL authentication
+- Custom message processing pipelines
 
 ## Examples
 
@@ -115,68 +109,66 @@ The minimum required configuration:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple SMTP server...
+    Create a simple Kafka consumer...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 1
-      name: basic_smtp
-      type: smtp
+      name: basic_kafka
+      type: kafka
       properties:
-        address: "0.0.0.0"
-        port: 25
+        address: "kafka.example.com"
+        port: 9092
+        topic: "logs"
     ```
   </CodeCol>
 </ExampleGrid>
 
 ### Secure Configuration
 
-For secure email reception:
+For connecting to secured Kafka brokers:
 
 <ExampleGrid>
   <CommentCol>
-    Configure TLS and authentication...
+    Connect with authentication and encryption...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 2
-      name: secure_smtp
-      type: smtp
+      name: secure_kafka
+      type: kafka
       properties:
-        address: "0.0.0.0"
-        port: 587
-        username: "mailuser"
+        address: "kafka.example.com"
+        port: 9093
+        username: "consumer"
         password: "secret"
-        timeout: 30
+        topic: "secure-logs"
         tls:
           status: true
-          cert_name: "smtp.crt"
-          key_name: "smtp.key"
+          cert_name: "kafka.crt"
+          key_name: "kafka.key"
     ```
   </CodeCol>
 </ExampleGrid>
 
-:::note
-Port 587 is commonly used for TLS-enabled SMTP (STARTTLS).
-:::
-
 ### High-Performance Configuration
 
-For processing high email volumes:
+For processing high message volumes:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high message volumes...
+    Optimized for high throughput...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 3
-      name: performance_smtp
-      type: smtp
+      name: performance_kafka
+      type: kafka
       properties:
-        address: "0.0.0.0"
-        port: 25
-        timeout: 60
+        address: "kafka.example.com"
+        port: 9092
+        topic: "high-volume-logs"
+        group: "high-perf-group"
         reuse: true
         workers: 4
         buffer_size: 32768
@@ -189,59 +181,60 @@ For processing high email volumes:
 When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
 :::
 
-### Submission Server Configuration
+### Consumer Group Configuration
 
-For dedicated message submission:
+For coordinated message consumption:
 
 <ExampleGrid>
   <CommentCol>
-    Configure message submission server...
+    Configure consumer group behavior...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 4
-      name: submission_smtp
-      type: smtp
+      name: group_kafka
+      type: kafka
       properties:
-        address: "0.0.0.0"
-        port: 587
-        username: "mailuser"
-        password: "secret"
-        timeout: 30
-        tls:
-          status: true
-          cert_name: "smtp.crt"
-          key_name: "smtp.key"
+        address: "kafka.example.com"
+        port: 9092
+        topic: "shared-logs"
+        group: "processing-group"
+        balancer: "roundrobin"
         reuse: true
         workers: 2
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Pipeline Configuration
+:::warning
+All consumers in the same group must use compatible configuration settings.
+:::
 
-For email pre-processing:
+### Message Pipeline Configuration
+
+For message pre-processing:
 
 <ExampleGrid>
   <CommentCol>
-    Apply custom processing to emails...
+    Apply custom processing to messages...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 5
-      name: pipeline_smtp
-      type: smtp
+      name: pipeline_kafka
+      type: kafka
       pipelines:
-        - email_parser
-        - spam_filter
+        - json_parser
+        - field_extractor
       properties:
-        address: "0.0.0.0"
-        port: 25
-        timeout: 30
+        address: "kafka.example.com"
+        port: 9092
+        topic: "raw-logs"
+        group: "processing-group"
     ```
   </CodeCol>
 </ExampleGrid>
 
 :::note
-Pipelines are processed in order and can modify or drop messages before ingestion.
+Pipelines are processed sequentially and can modify or drop messages before ingestion.
 :::

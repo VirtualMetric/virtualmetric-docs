@@ -1,4 +1,4 @@
-# IPFix
+# sFlow
 
 ## Synopsis
 
@@ -6,7 +6,7 @@
 - id: <numeric>
   name: <string>
   description: <string>
-  type: ipfix
+  type: sflow
   tags: <string[]>
   pipelines: <pipeline[]>
   status: <boolean>
@@ -20,33 +20,33 @@
 
 ## Description
 
-Creates an IPFix collector that accepts flow data over UDP connections. Supports high-performance collection with multiple worker processes and configurable buffer sizes.
+Creates an sFlow collector that accepts flow sampling data over UDP connections. Supports high-performance collection with multiple worker processes and configurable buffer sizes.
 
 ## Basic Configuration
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`id`|Y||Unique identifier|
 |`name`|Y||Device name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `ipfix`|
+|`type`|Y||Must be `sflow`|
 |`tags`|N|-|Optional tags|
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
-### Network Properties
+### Network
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`address`|N|`"0.0.0.0"`|Listen address|
-|`port`|N|`4739`|Listen port|
+|`port`|N|`6343`|Listen port|
 |`reuse`|N|`true`|Enable socket address reuse|
 
-### Performance Properties
+### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -55,44 +55,47 @@ The following are the minimum requirements to define the device.
 
 ## Advanced Features
 
-### Multi-Worker Processing
+### Multi-Worker Use
 
 When `reuse` is enabled, the collector automatically scales to use multiple worker processes based on available CPU cores. Each worker:
-- Maintains its own UDP listener
-- Processes flows independently
-- Writes to a dedicated queue file
 
-### Flow Processing
+- maintains its own UDP listener
+- processes flows independently
+- writes to a dedicated queue file
+
+### Flows
 
 The collector supports:
-- Template management for NetFlow v9/IPFix
-- Application identification
-- Port-based protocol mapping
-- Flow state tracking
-- Statistics aggregation
+
+- interface-counter sampling
+- packet-flow sampling
+- application identification
+- port-based protocol mapping
+- flow-state tracking
+- statistical aggregation
 
 ## Examples
 
-### Basic Configuration
+### Basic
 
 The minimum required configuration using defaults:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple IPFix collector...
+    Create a simple sFlow collector...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 1
-      name: basic_ipfix
-      type: ipfix
+      name: basic_sflow
+      type: sflow
       properties:
-        port: 4739
+        port: 6343
     ```
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance Configuration
+### High-Performance
 
 For enhanced performance with high flow volumes:
 
@@ -103,11 +106,11 @@ For enhanced performance with high flow volumes:
   <CodeCol>
     ```yaml
     - id: 2
-      name: performance_ipfix
-      type: ipfix
+      name: performance_sflow
+      type: sflow
       properties:
         address: "0.0.0.0"
-        port: 4739
+        port: 6343
         reuse: true
         buffer_size: 32768
     ```
@@ -118,22 +121,22 @@ For enhanced performance with high flow volumes:
 When `reuse` is enabled, the collector automatically scales to use all available CPU cores for processing.
 :::
 
-### Multiple Flow Types
+### Multiple Agents
 
-For collecting different flow types on a single device:
+For collecting from multiple sFlow agents:
 
 <ExampleGrid>
   <CommentCol>
-    Collect multiple flow types...
+    Collect from multiple network devices...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 3
-      name: multi_flow
-      type: ipfix
+      name: multi_agent_sflow
+      type: sflow
       properties:
         address: "0.0.0.0"
-        port: 4739
+        port: 6343
         reuse: true
         buffer_size: 16384
         stats_frequency: 60
@@ -142,21 +145,26 @@ For collecting different flow types on a single device:
 </ExampleGrid>
 
 :::warning
-Each flow type requires its own port. Ensure no port conflicts exist between different collectors.
+All sFlow agents must be configured to send to the same collector port.
 :::
 
 ### Application Protocol Identification
 
-The collector supports application protocol identification through multiple methods:
+The collector supports application protocol identification using a variety of methods:
 
-1. Application-based identification using app-definitions.csv
-2. TCP port mapping using tcp-definitions.csv
-3. UDP port mapping using udp-definitions.csv
+1. application-based identification using `app-definitions.csv`
+2. TCP port mapping using `tcp-definitions.csv`
+3. UDP port mapping using `udp-definitions.csv`
 
-The definition files can be placed in three locations, checked in the following order:
+The definition files can be placed in three locations, in the following order:
+
 1. `/definitions/app-definitions-{device-id}.csv` (device-specific)
 2. `/definitions/app-definitions.csv` (user-defined)
 3. `/package/definitions/app-definitions.csv` (system defaults)
+
+:::warning
+Definition files must be in CSV format with exactly two columns per row.
+:::
 
 <ExampleGrid>
   <CommentCol>
@@ -165,19 +173,20 @@ The definition files can be placed in three locations, checked in the following 
   <CodeCol>
     ```yaml
     - id: 4
-      name: app_aware_ipfix
-      type: ipfix
+      name: app_aware_sflow
+      type: sflow
       properties:
-        port: 4739
+        port: 6343
         reuse: true
         buffer_size: 16384
     ```
   </CodeCol>
 </ExampleGrid>
 
-Definition files use CSV format:
+Definition files use the CSV format:
 
-app-definitions.csv:
+`app-definitions.csv`:
+
 ```csv
 SSH,Secure Shell
 RDP,Remote Desktop
@@ -185,7 +194,8 @@ HTTP,Web Browsing
 HTTPS,Secure Web
 ```
 
-tcp-definitions.csv:
+`tcp-definitions.csv`:
+
 ```csv
 22,SSH
 3389,RDP
@@ -193,7 +203,8 @@ tcp-definitions.csv:
 443,HTTPS
 ```
 
-udp-definitions.csv:
+`udp-definitions.csv`:
+
 ```csv
 53,DNS
 67,DHCP
@@ -203,8 +214,4 @@ udp-definitions.csv:
 
 :::note
 The collector will fall back to system defaults if custom definition files are not found.
-:::
-
-:::warning
-Definition files must be in CSV format with exactly two columns per row.
 :::

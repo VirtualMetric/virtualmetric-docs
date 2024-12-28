@@ -1,4 +1,4 @@
-# Redis
+# SMTP
 
 ## Synopsis
 
@@ -6,7 +6,7 @@
 - id: <numeric>
   name: <string>
   description: <string>
-  type: redis
+  type: smtp
   tags: <string[]>
   pipelines: <pipeline[]>
   status: <boolean>
@@ -15,7 +15,7 @@
     port: <numeric>
     username: <string>
     password: <string>
-    channel: <string>
+    timeout: <numeric>
     reuse: <boolean>
     workers: <numeric>
     buffer_size: <numeric>
@@ -28,35 +28,35 @@
 
 ## Description
 
-Creates a Redis Pub/Sub subscriber that connects to Redis servers and processes messages from specified channels. Supports authentication, TLS encryption, and multi-worker processing with automatic message handling.
+Creates an SMTP server that receives email messages. Supports authentication, TLS encryption, and multi-worker processing with automatic message handling and JSON conversion.
 
 ## Basic Configuration
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`id`|Y||Unique identifier|
 |`name`|Y||Device name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `redis`|
+|`type`|Y||Must be `smtp`|
 |`tags`|N|-|Optional tags|
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
-### Connection Properties
+### Server
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Redis server address|
-|`port`|Y||Redis server port|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y||Listen port|
 |`username`|N|-|Authentication username|
 |`password`|N|-|Authentication password|
-|`channel`|Y||Channel pattern to subscribe to|
+|`timeout`|N|`15`|Connection timeout in seconds|
 
-### TLS Properties
+### TLS
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -68,7 +68,7 @@ The following are the minimum requirements to define the device.
 The TLS certificate and key files must be placed in the service root directory.
 :::
 
-### Performance Properties
+### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -79,97 +79,104 @@ The TLS certificate and key files must be placed in the service root directory.
 
 ## Advanced Features
 
-### Channel Patterns
+### Emails
 
-The collector supports Redis Pub/Sub channel patterns:
-- Exact channel names: `logs`
-- Pattern matching: `logs.*`
-- Multiple patterns: `logs.* app.*`
+The server captures and processes:
+- Email headers
+- Sender information
+- Recipient information
+- Message content
+- Attachments
+- Remote client information
 
-### Multi-Worker Processing
+### JSON Conversion
 
-When `reuse` is enabled, the collector uses multiple worker processes:
-- Each worker maintains its own Redis subscription
+All email messages are automatically converted to JSON format with fields:
+- `from`: Sender address
+- `to`: Recipient addresses
+- `subject`: Email subject
+- `body`: Message body
+- `headers`: Email headers
+- `remoteAddr`: Client IP address
+
+### Multi-Worker Use
+
+When `reuse` is enabled, the server uses multiple worker processes:
+- Each worker maintains a separate SMTP listener
 - Workers process messages independently
-- Messages are automatically distributed
+- Messages are automatically converted to JSON
 - Worker count is capped at available CPU cores
-
-### Message Processing
-
-The collector supports:
-- Pattern-based subscriptions
-- Multiple channel subscriptions
-- TLS encrypted connections
-- Authentication methods
-- Custom message processing pipelines
 
 ## Examples
 
-### Basic Configuration
+### Basic
 
 The minimum required configuration:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple Redis subscriber...
+    Create a simple SMTP server...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 1
-      name: basic_redis
-      type: redis
+      name: basic_smtp
+      type: smtp
       properties:
-        address: "redis.example.com"
-        port: 6379
-        channel: "logs"
+        address: "0.0.0.0"
+        port: 25
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Secure Configuration
+### Secure
 
-For connecting to secured Redis servers:
+For secure email reception:
 
 <ExampleGrid>
   <CommentCol>
-    Connect with authentication and encryption...
+    Configure TLS and authentication...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 2
-      name: secure_redis
-      type: redis
+      name: secure_smtp
+      type: smtp
       properties:
-        address: "redis.example.com"
-        port: 6379
-        username: "subscriber"
+        address: "0.0.0.0"
+        port: 587
+        username: "mailuser"
         password: "secret"
-        channel: "secure.logs"
+        timeout: 30
         tls:
           status: true
-          cert_name: "redis.crt"
-          key_name: "redis.key"
+          cert_name: "smtp.crt"
+          key_name: "smtp.key"
     ```
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance Configuration
+:::note
+Port 587 is commonly used for TLS-enabled SMTP (STARTTLS).
+:::
 
-For processing high message volumes:
+### High-Performance
+
+For processing high email volumes:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high throughput...
+    Optimized for high message volumes...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 3
-      name: performance_redis
-      type: redis
+      name: performance_smtp
+      type: smtp
       properties:
-        address: "redis.example.com"
-        port: 6379
-        channel: "high-volume"
+        address: "0.0.0.0"
+        port: 25
+        timeout: 60
         reuse: true
         workers: 4
         buffer_size: 32768
@@ -182,57 +189,59 @@ For processing high message volumes:
 When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
 :::
 
-### Pattern Subscription Configuration
+### Submission Server
 
-For pattern-based message filtering:
+For dedicated message submission:
 
 <ExampleGrid>
   <CommentCol>
-    Configure pattern-based subscriptions...
+    Configure message submission server...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 4
-      name: pattern_redis
-      type: redis
+      name: submission_smtp
+      type: smtp
       properties:
-        address: "redis.example.com"
-        port: 6379
-        channel: "logs.*"
+        address: "0.0.0.0"
+        port: 587
+        username: "mailuser"
+        password: "secret"
+        timeout: 30
+        tls:
+          status: true
+          cert_name: "smtp.crt"
+          key_name: "smtp.key"
         reuse: true
         workers: 2
     ```
   </CodeCol>
 </ExampleGrid>
 
-:::tip
-Redis channel patterns support the `*` wildcard character for matching multiple channels.
-:::
+### Pipelines
 
-### Pipeline Configuration
-
-For message pre-processing:
+For email pre-processing:
 
 <ExampleGrid>
   <CommentCol>
-    Apply custom processing to messages...
+    Apply custom processing to emails...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 5
-      name: pipeline_redis
-      type: redis
+      name: pipeline_smtp
+      type: smtp
       pipelines:
-        - json_parser
-        - field_extractor
+        - email_parser
+        - spam_filter
       properties:
-        address: "redis.example.com"
-        port: 6379
-        channel: "raw.logs"
+        address: "0.0.0.0"
+        port: 25
+        timeout: 30
     ```
   </CodeCol>
 </ExampleGrid>
 
 :::note
-Pipelines are processed in order and can modify or drop messages before ingestion.
+Pipelines are processed sequentially and can modify or drop messages before ingestion.
 :::
