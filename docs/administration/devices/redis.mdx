@@ -1,4 +1,4 @@
-# Kafka
+# Redis
 
 ## Synopsis
 
@@ -6,7 +6,7 @@
 - id: <numeric>
   name: <string>
   description: <string>
-  type: kafka
+  type: redis
   tags: <string[]>
   pipelines: <pipeline[]>
   status: <boolean>
@@ -15,9 +15,7 @@
     port: <numeric>
     username: <string>
     password: <string>
-    group: <string>
-    topic: <string>
-    balancer: <string>
+    channel: <string>
     reuse: <boolean>
     workers: <numeric>
     buffer_size: <numeric>
@@ -30,37 +28,35 @@
 
 ## Description
 
-Creates a Kafka consumer that connects to Kafka brokers and consumes messages from specified topics. Supports authentication, TLS encryption, and multi-worker processing.
+Creates a Redis Pub/Sub subscriber that connects to Redis servers and processes messages from specified channels. Supports authentication, TLS encryption, and multi-worker processing with automatic message handling.
 
 ## Basic Configuration
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`id`|Y||Unique identifier|
 |`name`|Y||Device name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `kafka`|
+|`type`|Y||Must be `redis`|
 |`tags`|N|-|Optional tags|
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
-### Connection Properties
+### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|N|`"0.0.0.0"`|Kafka broker address|
-|`port`|Y||Kafka broker port|
-|`username`|N|-|SASL username|
-|`password`|N|-|SASL password|
-|`group`|N|`"vmetric"`|Consumer group ID|
-|`topic`|Y||Topic to consume from|
-|`balancer`|N|`"roundrobin"`|Partition balancing strategy|
+|`address`|N|`"0.0.0.0"`|Redis server address|
+|`port`|Y||Redis server port|
+|`username`|N|-|Authentication username|
+|`password`|N|-|Authentication password|
+|`channel`|Y||Channel pattern to subscribe to|
 
-### TLS Properties
+### TLS
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -72,61 +68,67 @@ The following are the minimum requirements to define the device.
 The TLS certificate and key files must be placed in the service root directory.
 :::
 
-### Performance Properties
+### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`reuse`|N|`true`|Enable multi-worker mode|
+|`reuse`|N|`false`|Enable multi-worker mode|
 |`workers`|N|`4`|Number of worker processes when reuse enabled|
 |`buffer_size`|N|`9000`|Read buffer size in bytes|
 |`stats_frequency`|N|`300`|Statistics collection interval in seconds|
 
 ## Advanced Features
 
-### Multi-Worker Processing
+### Channel Patterns
+
+The collector supports Redis Pub/Sub channel patterns:
+- Exact channel names: `logs`
+- Pattern matching: `logs.*`
+- Multiple patterns: `logs.* app.*`
+
+### Multi-Worker Use
 
 When `reuse` is enabled, the collector uses multiple worker processes:
-- Each worker maintains its own Kafka consumer in the consumer group
+- Each worker maintains its own Redis subscription
 - Workers process messages independently
-- Messages are automatically balanced across workers
+- Messages are automatically distributed
 - Worker count is capped at available CPU cores
 
-### Message Processing
+### Messages
 
 The collector supports:
-- Message offset tracking and commits
-- Automatic consumer group rebalancing
-- Multiple topic subscriptions
+- Pattern-based subscriptions
+- Multiple channel subscriptions
 - TLS encrypted connections
-- SASL authentication
+- Authentication methods
 - Custom message processing pipelines
 
 ## Examples
 
-### Basic Configuration
+### Basic
 
 The minimum required configuration:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple Kafka consumer...
+    Create a simple Redis subscriber...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 1
-      name: basic_kafka
-      type: kafka
+      name: basic_redis
+      type: redis
       properties:
-        address: "kafka.example.com"
-        port: 9092
-        topic: "logs"
+        address: "redis.example.com"
+        port: 6379
+        channel: "logs"
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Secure Configuration
+### Secure
 
-For connecting to secured Kafka brokers:
+For connecting to secured Redis servers:
 
 <ExampleGrid>
   <CommentCol>
@@ -135,23 +137,23 @@ For connecting to secured Kafka brokers:
   <CodeCol>
     ```yaml
     - id: 2
-      name: secure_kafka
-      type: kafka
+      name: secure_redis
+      type: redis
       properties:
-        address: "kafka.example.com"
-        port: 9093
-        username: "consumer"
+        address: "redis.example.com"
+        port: 6379
+        username: "subscriber"
         password: "secret"
-        topic: "secure-logs"
+        channel: "secure.logs"
         tls:
           status: true
-          cert_name: "kafka.crt"
-          key_name: "kafka.key"
+          cert_name: "redis.crt"
+          key_name: "redis.key"
     ```
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance Configuration
+### High-Performance
 
 For processing high message volumes:
 
@@ -162,13 +164,12 @@ For processing high message volumes:
   <CodeCol>
     ```yaml
     - id: 3
-      name: performance_kafka
-      type: kafka
+      name: performance_redis
+      type: redis
       properties:
-        address: "kafka.example.com"
-        port: 9092
-        topic: "high-volume-logs"
-        group: "high-perf-group"
+        address: "redis.example.com"
+        port: 6379
+        channel: "high-volume"
         reuse: true
         workers: 4
         buffer_size: 32768
@@ -181,36 +182,34 @@ For processing high message volumes:
 When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
 :::
 
-### Consumer Group Configuration
+### Pattern Subscription
 
-For coordinated message consumption:
+For pattern-based message filtering:
 
 <ExampleGrid>
   <CommentCol>
-    Configure consumer group behavior...
+    Configure pattern-based subscriptions...
   </CommentCol>
   <CodeCol>
     ```yaml
     - id: 4
-      name: group_kafka
-      type: kafka
+      name: pattern_redis
+      type: redis
       properties:
-        address: "kafka.example.com"
-        port: 9092
-        topic: "shared-logs"
-        group: "processing-group"
-        balancer: "roundrobin"
+        address: "redis.example.com"
+        port: 6379
+        channel: "logs.*"
         reuse: true
         workers: 2
     ```
   </CodeCol>
 </ExampleGrid>
 
-:::warning
-All consumers in the same group must use compatible configuration settings.
+:::tip
+Redis channel patterns support the `*` wildcard character for matching multiple channels.
 :::
 
-### Message Pipeline Configuration
+### Pipelines
 
 For message pre-processing:
 
@@ -221,20 +220,19 @@ For message pre-processing:
   <CodeCol>
     ```yaml
     - id: 5
-      name: pipeline_kafka
-      type: kafka
+      name: pipeline_redis
+      type: redis
       pipelines:
         - json_parser
         - field_extractor
       properties:
-        address: "kafka.example.com"
-        port: 9092
-        topic: "raw-logs"
-        group: "processing-group"
+        address: "redis.example.com"
+        port: 6379
+        channel: "raw.logs"
     ```
   </CodeCol>
 </ExampleGrid>
 
 :::note
-Pipelines are processed in order and can modify or drop messages before ingestion.
+Pipelines are processed sequentially and can modify or drop messages before ingestion.
 :::

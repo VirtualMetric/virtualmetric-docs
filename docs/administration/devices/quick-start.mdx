@@ -16,11 +16,12 @@ Director searches recursively through the `config` directory for configuration f
 <director_root>/config/device/listeners/syslog.yaml    # Categorized structure
 ```
 
-Choose the organization that best fits your needs - Director will find the configurations regardless of subfolder structure.
+Choose the groupings that best fit your needs&mdash;**Director** will find them regardless of the folder structure.
 
 ## Basic UDP Syslog Setup
 
 ### 1. Create Configuration File
+
 Create a syslog configuration in your preferred location (e.g., `config/devices/syslog.yaml`):
 
 ```yaml
@@ -34,15 +35,18 @@ Create a syslog configuration in your preferred location (e.g., `config/devices/
 ```
 
 ### 2. Test Configuration
+
 You can test using VirtualMetric Generator (cross-platform) or traditional tools:
 
 **Using VirtualMetric Generator**
+
 ```bash
 vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"     # Linux
 vmetric-generator.exe -mode=syslog -address=127.0.0.1:514 -message="Test Message" # Windows
 ```
 
 **Using System Logger (Unix/Linux)**
+
 ```bash
 logger -n 127.0.0.1 -P 514 "Test message"
 ```
@@ -52,6 +56,7 @@ logger -n 127.0.0.1 -P 514 "Test message"
 ### 1. Prepare TLS Certificates
 
 **Using VirtualMetric Director (Cross-Platform)**
+
 ```bash
 vmetric-director -pfx2pem=./mycert.pfx     # Linux
 vmetric-director.exe -pfx2pem=./mycert.pfx # Windows
@@ -59,12 +64,14 @@ vmetric-director.exe -pfx2pem=./mycert.pfx # Windows
 ```
 
 **Using OpenSSL (Unix/Linux)**
+
 ```bash
 openssl genrsa -out server.key 2048
 openssl req -new -x509 -key server.key -out server.crt -days 365
 ```
 
 ### 2. Create Secure Configuration
+
 Update or create your configuration file (e.g., `config/devices/secure_syslog.yaml`):
 
 ```yaml
@@ -88,13 +95,17 @@ Update or create your configuration file (e.g., `config/devices/secure_syslog.ya
 ```
 
 ### 3. Place TLS Certificates
-Copy the certificate files to your Director root directory:
+
+Copy the certificate files to your **Director** root directory:
+
 ```bash
 cp cert.pem key.pem <director_root>/
 ```
 
 ### 4. Test Secure Configuration
+
 Test the secure connection:
+
 ```bash
 echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
 ```
@@ -112,10 +123,11 @@ For high-volume environments, add these settings to your configuration:
 
 ## Monitoring
 
-Watch Director's logs for:
+Watch **Director**'s logs for:
+
 - "... is successfully started"
-- Connection acceptance messages
-- Configuration validation messages
+- connection acceptance messages
+- configuration validation messages
 
 ## Next Steps
 

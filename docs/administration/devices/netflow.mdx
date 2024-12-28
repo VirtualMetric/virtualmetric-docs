@@ -26,7 +26,7 @@ Creates a NetFlow v5 collector that accepts flow data over UDP connections. Supp
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -38,7 +38,7 @@ The following are the minimum requirements to define the device.
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
-### Network Properties
+### Network
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -46,7 +46,7 @@ The following are the minimum requirements to define the device.
 |`port`|N|`2055`|Listen port|
 |`reuse`|N|`true`|Enable socket address reuse|
 
-### Performance Properties
+### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -55,14 +55,14 @@ The following are the minimum requirements to define the device.
 
 ## Advanced Features
 
-### Multi-Worker Processing
+### Multi-Worker Use
 
 When `reuse` is enabled, the collector automatically scales to use multiple worker processes based on available CPU cores. Each worker:
 - Maintains its own UDP listener
 - Processes flows independently
 - Writes to a dedicated queue file
 
-### Flow Processing
+### Flows
 
 The collector supports:
 - Fixed format NetFlow v5 records
@@ -147,16 +147,21 @@ This collector only supports NetFlow v5. For NetFlow v9 or IPFIX, use the `ipfix
 
 ### Application Protocol Identification
 
-The collector supports application protocol identification through multiple methods:
+The collector supports application protocol identification using a variety of methods:
 
 1. Application-based identification using app-definitions.csv
 2. TCP port mapping using tcp-definitions.csv
 3. UDP port mapping using udp-definitions.csv
 
-The definition files can be placed in three locations, checked in the following order:
+The definition files can be placed in three locations, in the following order:
+
 1. `/definitions/app-definitions-{device-id}.csv` (device-specific)
 2. `/definitions/app-definitions.csv` (user-defined)
 3. `/package/definitions/app-definitions.csv` (system defaults)
+
+:::warning
+Definition files must be in CSV format with exactly two columns per row.
+:::
 
 <ExampleGrid>
   <CommentCol>
@@ -175,9 +180,10 @@ The definition files can be placed in three locations, checked in the following 
   </CodeCol>
 </ExampleGrid>
 
-Definition files use CSV format:
+Definition files use the CSV format:
 
-app-definitions.csv:
+`app-definitions.csv`:
+
 ```csv
 SSH,Secure Shell
 RDP,Remote Desktop
@@ -185,7 +191,8 @@ HTTP,Web Browsing
 HTTPS,Secure Web
 ```
 
-tcp-definitions.csv:
+`tcp-definitions.csv`:
+
 ```csv
 22,SSH
 3389,RDP
@@ -193,7 +200,8 @@ tcp-definitions.csv:
 443,HTTPS
 ```
 
-udp-definitions.csv:
+`udp-definitions.csv`:
+
 ```csv
 53,DNS
 67,DHCP
@@ -203,10 +211,6 @@ udp-definitions.csv:
 
 :::note
 The collector will fall back to system defaults if custom definition files are not found.
-:::
-
-:::warning
-Definition files must be in CSV format with exactly two columns per row.
 :::
 
 ### Version Compatibility
@@ -225,5 +229,5 @@ Definition files must be in CSV format with exactly two columns per row.
 |v10 (IPFIX)|No|Use `ipfix` type|
 
 :::warning
-For NetFlow v9 or IPFIX support, configure your collector using the `ipfix` type instead of `netflow`.
+For NetFlow v9 or IPFIX support, configure your collector for the `ipfix` type instead of the `netflow` type.
 :::

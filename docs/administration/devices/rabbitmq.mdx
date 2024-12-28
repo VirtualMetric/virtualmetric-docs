@@ -40,7 +40,7 @@ Creates a RabbitMQ consumer that connects to RabbitMQ servers and consumes messa
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -52,7 +52,7 @@ The following are the minimum requirements to define the device.
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
-### Connection Properties
+### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -62,21 +62,21 @@ The following are the minimum requirements to define the device.
 |`password`|N|-|Authentication password|
 |`authentication`|Y||Auth type (`plain`, `amqplain`)|
 
-### Exchange Properties
+### Exchange
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`exchange.name`|Y||Exchange name|
 |`exchange.type`|Y||Exchange type (`direct`, `fanout`, `topic`, `x-custom`)|
 
-### Queue Properties
+### Queue
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`queue.name`|Y||Queue name|
 |`queue.key`|Y||Routing key pattern|
 
-### TLS Properties
+### TLS
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -88,7 +88,7 @@ The following are the minimum requirements to define the device.
 The TLS certificate and key files must be placed in the service root directory.
 :::
 
-### Performance Properties
+### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -107,7 +107,7 @@ The collector supports various exchange types:
 - `topic`: Pattern-based routing using wildcards
 - `x-custom`: Custom exchange types (if supported by server)
 
-### Multi-Worker Processing
+### Multi-Worker Use
 
 When `reuse` is enabled, the collector uses multiple worker processes:
 - Each worker maintains its own RabbitMQ consumer
@@ -115,9 +115,10 @@ When `reuse` is enabled, the collector uses multiple worker processes:
 - Messages are automatically acknowledged
 - Worker count is capped at available CPU cores
 
-### Message Processing
+### Messages
 
 The collector supports:
+
 - Multiple exchange types
 - Pattern-based routing
 - Message acknowledgment and rejection
@@ -128,7 +129,9 @@ The collector supports:
 
 ## Examples
 
-### Basic Configuration
+The following configuration types must be considered.
+
+### Basic
 
 The minimum required configuration:
 
@@ -155,7 +158,7 @@ The minimum required configuration:
   </CodeCol>
 </ExampleGrid>
 
-### Secure Configuration
+### Secure
 
 For connecting to secured RabbitMQ servers:
 
@@ -188,7 +191,7 @@ For connecting to secured RabbitMQ servers:
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance Configuration
+### High-Performance
 
 For processing high message volumes:
 
@@ -223,7 +226,7 @@ For processing high message volumes:
 When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
 :::
 
-### Topic Exchange Configuration
+### Topic Exchange
 
 For pattern-based message routing:
 
@@ -251,12 +254,10 @@ For pattern-based message routing:
 </ExampleGrid>
 
 :::tip
-Topic routing keys support wildcards:
-- Single word wildcard: `*`
-- Multiple word wildcard: `#`
+Topic routing keys support `*` and `#` wildards for single and multiple words respectively.
 :::
 
-### Pipeline Configuration
+### Pipelines
 
 For message pre-processing:
 
@@ -287,5 +288,5 @@ For message pre-processing:
 </ExampleGrid>
 
 :::note
-Pipelines are processed in order and can modify or drop messages before ingestion.
+Pipelines are processed sequentially and can modify or drop messages before ingestion.
 :::

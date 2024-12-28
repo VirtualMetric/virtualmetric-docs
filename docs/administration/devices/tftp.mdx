@@ -27,7 +27,7 @@ Creates a TFTP server that accepts file uploads using the TFTP protocol. Support
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -39,14 +39,14 @@ The following are the minimum requirements to define the device.
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
 
-### Server Properties
+### Server
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`address`|N|`"0.0.0.0"`|Listen address|
 |`port`|Y||Listen port (typically 69)|
 
-### Performance Properties
+### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -69,25 +69,27 @@ The server supports automatic device mapping based on client IP addresses:
 - Supports dynamic device discovery
 - Maintains IP-to-device mapping cache
 
-### File Processing
+### Files
 
 The server processes uploaded files:
-- Reads file content into memory
-- Records upload metadata (filename, timestamp)
-- Captures client information
-- Converts content to processable format
 
-### Multi-Worker Processing
+- reads file content into memory
+- records upload metadata (filename, timestamp)
+- captures client information
+- converts content to processable format
+
+### Multi-Worker Use
 
 When `reuse` is enabled, the server uses multiple worker processes:
-- Each worker maintains its own TFTP listener
-- Workers process files independently
-- Files are automatically distributed
-- Worker count is capped at available CPU cores
+
+- each worker maintains its own TFTP listener
+- workers process files independently
+- files are automatically distributed
+- worker count is capped at available CPU cores
 
 ## Examples
 
-### Basic Configuration
+### Basic
 
 The minimum required configuration:
 
@@ -107,7 +109,7 @@ The minimum required configuration:
   </CodeCol>
 </ExampleGrid>
 
-### Device Mapping Configuration
+### Device Mapping
 
 For automatic device association:
 
@@ -133,7 +135,7 @@ For automatic device association:
 The server automatically maps client IP addresses to device IDs based on the configuration.
 :::
 
-### High-Performance Configuration
+### High Performance
 
 For processing high file volumes:
 
@@ -161,7 +163,7 @@ For processing high file volumes:
 When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
 :::
 
-### Multi-Device Configuration
+### Multi-Device
 
 For handling uploads from multiple devices:
 
@@ -187,7 +189,7 @@ For handling uploads from multiple devices:
 Ensure all devices are configured to use the same TFTP server port.
 :::
 
-### Pipeline Configuration
+### Pipelines
 
 For file content processing:
 
@@ -212,32 +214,36 @@ For file content processing:
 </ExampleGrid>
 
 :::note
-Pipelines are processed in order and can modify or drop content before ingestion.
+Pipelines are processed sequentially and can modify or drop content before ingestion.
 :::
 
 ### Device Upload Protocol
 
 1. Client initiates TFTP upload:
+
    ```
    TFTP -> WRQ -> server:69
    ```
 
 2. Server accepts connection:
+
    ```
    server -> ACK -> client
    ```
 
 3. Client transfers file:
+
    ```
    client -> DATA -> server
    server -> ACK -> client
    ```
 
 4. Server processes content:
-   - Maps client IP to device
-   - Reads file content
-   - Applies pipelines
-   - Stores processed data
+
+   - maps client IP to device
+   - reads file content
+   - applies pipelines
+   - stores processed data
 
 :::tip
 Configure clients to use binary mode for file transfers to avoid data corruption.
