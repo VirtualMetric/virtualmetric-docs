@@ -35,32 +35,30 @@ Creates an eStreamer client that connects to an eStreamer server to receive vari
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|-|Unique identifier|
-|`name`|Y|-|Device name|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
 |`description`|N|-|Optional description|
-|`type`|Y|-|Must be `estreamer`|
-|`tags`|N|-|Optional tags|
-|`pipelines`|N|-|Optional pre-processor pipelines|
+|`type`|Y||Must be `estreamer`|
 |`status`|N|`true`|Enable/disable the device|
 
-### Network Properties
+### Network
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`address`|N|`"0.0.0.0"`|Server address to connect to|
 |`port`|N|`8302`|Server port|
 
-### TLS Properties
+### TLS
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`tls.status`|Y|`true`|Enable TLS encryption (always required)|
-|`tls.cert_name`|Y|-|Client certificate file path|
-|`tls.key_name`|Y|-|Client private key file path|
+|`tls.cert_name`|Y||Client certificate file path|
+|`tls.key_name`|Y||Client private key file path|
 |`tls.non_secure`|N|`false`|Allow less secure TLS versions|
 
 :::note
@@ -69,36 +67,38 @@ The client certificate and private key files must be placed in the service root 
 
 ## Advanced Configuration
 
-In order to tune up performance and event handling, the following settings are used.
+To enhance performance and achieve better event handling, the following settings are used.
 
-### Event Processing
+### Events
+
+The following settings are used for **event processing**:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`batch_size`|N|`1000`|Number of events to batch before processing|
 |`flush_interval`|N|`60`|Event flush interval in seconds|
 
-### Event Types
+**Event types** are specified with the following:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`inputs[].id`|N|-|Event type ID to process|
 |`inputs[].status`|N|`true`|Enable/disable specific event type|
 
-#### Available Event Types
+The available event types are:
 
-|ID|Default|Description|
-|---|---|---|
-|`102`|Enabled|Connection Events|
-|`103`|Enabled|File Events|
-|`104`|Enabled|Malware Events|
-|`106`|Enabled|Intrusion Events|
+|ID|Description|
+|---|---|
+|`102`|Connection events|
+|`103`|File events|
+|`104`|Malware events|
+|`106`|Intrusion events|
 
 ## Examples
 
 ### Basic eStreamer Client
 
-For a basic configuration:
+For a basic client, you must:
 
 - enable TLS encryption
 - use default event types and settings
@@ -122,7 +122,7 @@ For a basic configuration:
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance Processing
+### High-Performance Tweaks
 
 For performance tuning, make sure that:
 

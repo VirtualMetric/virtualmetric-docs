@@ -50,29 +50,27 @@ Creates an HTTP server that accepts messages via HTTP POST requests. Supports mu
 
 The following are the minimum requirements to define the device.
 
-### Device Properties
+### Device
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y|-|Unique identifier|
-|`name`|Y|-|Device name|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
 |`description`|N|-|Optional description|
-|`type`|Y|-|Must be `http`|
-|`tags`|N|-|Optional tags|
-|`pipelines`|N|-|Optional pre-processor pipelines|
+|`type`|Y||Must be `http`|
 |`status`|N|`true`|Enable/disable the device|
 
-### Network Properties
+### Network
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`protocol`|N|`"tcp"`|Transport protocol (must be tcp)|
 |`address`|N|`"0.0.0.0"`|Listen address|
-|`port`|Y|-|Listen port|
+|`port`|Y||Listen port|
 |`url`|N|`"/"`|URL path to listen on|
 |`content_type`|N|`"application/json"`|Expected content type of incoming requests|
 
-### Response Properties
+### Response
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -80,27 +78,27 @@ The following are the minimum requirements to define the device.
 |`response.body`|N|`{"message":"success"}`|Response body content|
 |`response.content_type`|N|`"application/json"`|Response content type|
 
-### Authentication Properties
+### Authentication
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`authentication.type`|N|`"none"`|Authentication type (`basic`, `header`, or `hmac`)|
-|`username`|Y*|-|Username for basic auth (required if type is `basic`)|
-|`password`|Y*|-|Password for basic auth (required if type is `basic`)|
-|`header.key`|Y*|-|Header name for header auth (required if type is `header`)|
-|`header.value`|Y*|-|Header value for header auth (required if type is `header`)|
-|`hmac.type`|Y*|-|HMAC algorithm (`sha1`, `sha256`, or `sha512`)|
-|`hmac.header`|Y*|-|Header name for HMAC signature|
-|`hmac.key`|Y*|-|Secret key for HMAC calculation|
+|`username`|Y||Username for basic auth (required if type is `basic`)|
+|`password`|Y||Password for basic auth (required if type is `basic`)|
+|`header.key`|Y||Header name for header auth (required if type is `header`)|
+|`header.value`|Y||Header value for header auth (required if type is `header`)|
+|`hmac.type`|Y||HMAC algorithm (`sha1`, `sha256`, or `sha512`)|
+|`hmac.header`|Y||Header name for HMAC signature|
+|`hmac.key`|Y||Secret key for HMAC calculation|
 |`hmac.prefix`|N|-|Optional prefix to strip from HMAC header value|
 
-### TLS Properties
+### TLS
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`tls.status`|N|`false`|Enable TLS encryption|
-|`tls.cert_name`|Y*|-|TLS certificate file path (required if TLS enabled)|
-|`tls.key_name`|Y*|-|TLS private key file path (required if TLS enabled)|
+|`tls.cert_name`|Y||TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y||TLS private key file path (required if TLS enabled)|
 
 :::note
 TLS certificate and key files must be placed in the service root directory.
@@ -108,7 +106,7 @@ TLS certificate and key files must be placed in the service root directory.
 
 ## Advanced Configuration
 
-In order to tune up performance and message handling, the following settings are used.
+To enhance performance and achieve better message handling, the following settings are used.
 
 ### Performance Tuning
 
@@ -127,7 +125,7 @@ In order to tune up performance and message handling, the following settings are
 
 ### Basic HTTP Server
 
-The minimum configuration settings are:
+The minimum required settings for a basic server are:
 
 - POST endpoint at `/logs`
 - JSON content type
@@ -155,7 +153,7 @@ The minimum configuration settings are:
 
 ### Basic Authentication Server
 
-For basic authentication, use:
+For authentication, the minimum required settings use:
 
 - username/password protection
 - an environment variable for the password
@@ -182,11 +180,11 @@ For basic authentication, use:
 
 ### API Key Authentication
 
-To enable this, make sure to use:
+To enable API key authentication, use:
 
-- custom header-based authentication
-- configurable header name and value
-- environment variable for secure key storage
+- a custom header-based authentication
+- a configurable header name and value
+- an environment variable for secure key storage
 
 <ExampleGrid>
   <CommentCol>
@@ -211,7 +209,7 @@ To enable this, make sure to use:
 
 ### HMAC Authentication
 
-For secure HMAC authentication, use:
+For a secure HMAC authentication, use:
 
 - SHA-256 signature verification
 - custom signature header
@@ -241,16 +239,16 @@ For secure HMAC authentication, use:
 </ExampleGrid>
 
 :::warning
-When using HMAC authentication, ensure the client calculates the signature using the same algorithm and key.
+When using HMAC authentication, ensure that the client calculates the signature using the same algorithm and key.
 :::
 
 ### Secure HTTPS Server
 
-For full security configuration, the following are required:
+For a full security configuration, the following are necessary:
 
 - TLS encryption
 - basic authentication
-- custom response code
+- a custom response code
 - secure credentials handling
 
 <ExampleGrid>
