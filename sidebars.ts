@@ -2,8 +2,8 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 
 const sidebars: SidebarsConfig = {
   userDocs: [
-    "intro",
-    "product-info",
+    "introduction",
+    "product-information",
 
     {
       type: "category",
