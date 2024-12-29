@@ -22,9 +22,6 @@
       protocol: <numeric>
       passphrase: <string>
     username: <string>
-    debug:
-      console:
-        status: <boolean>
     batch_size: <numeric>
     queue:
       interval: <numeric>
@@ -34,8 +31,38 @@
 
 Creates an SNMP trap receiver that listens for SNMP trap messages. Supports SNMPv2c and SNMPv3 with various authentication and privacy protocols, MIB integration, and high-performance message processing.
 
+## MIB Configuration
+
+The SNMP trap receiver automatically loads and integrates MIB files for translating SNMP trap messages. MIB files are essential for proper interpretation of vendor-specific or custom SNMP traps.
+
+### MIB File Locations
+
+The system looks for MIB files in two locations:
+
+1. User Directory (`<director_root>/user/mibs/`)
+   - Primary location for custom MIB files
+   - Supports nested directory structure
+   - All user-specific MIB files should be placed here
+
+2. Package Directory (`<director_root>/package/mibs/`)
+   - Contains default/standard MIB files
+   - Bundled with the installation
+   - Should not be modified directly
+
+### MIB Loading Process
+
+The system will:
+1. Recursively scan both MIB directories
+2. Load all discovered MIB modules
+3. Automatically resolve MIB dependencies
+4. Use loaded MIBs for trap translation
+
 :::note
-The MIB database is automatically loaded from both the service root directory and package directory.
+Custom MIB files in the user directory take precedence over similarly named files in the package directory.
+:::
+
+:::warning
+If MIB loading fails, the system will still receive traps but may not translate vendor-specific OIDs correctly.
 :::
 
 ## Basic Configuration
@@ -112,12 +139,6 @@ Advanced configuration involves the following properties to tune performance and
 |`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
 |`batch_size`|N|`1000`|Number of messages to batch before processing|
 
-### Debug Options
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`debug.console.status`|N|`false`|Enable console debugging output|
-
 ## Examples
 
 The following are examples for the use of the SNMPv2c Trap Receiver.
@@ -146,6 +167,34 @@ This is achieved with the following configuration:
   </CodeCol>
 </ExampleGrid>
 
+### Basic with Custom MIBs
+
+This configuration demonstrates:
+- Standard SNMP trap listening
+- Custom MIB file integration
+- Basic trap handling
+
+<ExampleGrid>
+  <CommentCol>
+    Basic trap receiver with custom MIB support...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: mib_enabled_trap
+      type: snmptrap
+      description: "Trap receiver with custom MIB support"
+      properties:
+        port: 162
+        community: "public"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Place your custom MIB files in the `<director_root>/user/mibs/` directory before starting the trap receiver. The system will automatically load and use them for trap translation.
+:::
+
 ### Secure
 
 The following features must be present for enhanced security:
@@ -172,10 +221,10 @@ When using SNMPv3 with privacy, ensure both authentication and privacy passwords
         authentication:
           status: true
           protocol: 5
-          password: "${env:SNMP_AUTH_PASS}"
+          password: "${SNMP_AUTH_PASS}"
         privacy:
           protocol: 5
-          passphrase: "${env:SNMP_PRIV_PASS}"
+          passphrase: "${SNMP_PRIV_PASS}"
         username: "trapuser"
     ```
   </CodeCol>
@@ -210,36 +259,6 @@ The following key aspects must be observed for performance tuning:
           status: true
           protocol: 3
         username: "trapuser"
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Debug-Enabled
-
-For a troubleshooting setup, the following is recommended:
-
-- Enabling console debug output
-- Smaller batch size
-- Frequent queue processing
-
-<ExampleGrid>
-  <CommentCol>
-    Configuration with debug logging...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - id: 4
-      name: debug_trap
-      type: snmptrap
-      properties:
-        port: 162
-        community: "public"
-        debug:
-          console:
-            status: true
-        batch_size: 100
-        queue:
-          interval: 1
     ```
   </CodeCol>
 </ExampleGrid>
