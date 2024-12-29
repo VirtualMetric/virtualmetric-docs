@@ -2,128 +2,195 @@
 
 ## Synopsis
 
-```yaml
+```yaml {2-4}
 script:
+  - source: <string>
+  - lang: <string>
+  - params: <map[string]any>
+  - function: <string>
   - description: <text>
-  - function: <script>
   - if: <script>
   - id: <ident>
   - ignore_failure: <boolean>
-  - lang: <string>
   - on_failure: <processor[]>
   - on_success: <processor[]>
-  - params: <string[]>
-  - source: <string>
   - tag: <string>
 ```
 
-## Definition
+## Description
 
-**Functionality**: Runs an inline or stored script on the documents.
+**Functionality**: Executes custom scripts and optimized built-in functions to transform and manipulate log data. The processor supports three scripting modes:
 
-A scripting cache is used to avoid re-compiling the script for each document. To improve performance, ensure the scripting cache is properly sized.
+1. **Native Go Scripting**: Direct execution of Go code using an interpreter
+2. **Painless Compatibility**: Basic support for Elasticsearch Painless-style syntax (converted to Go)
+3. **Built-in VirtualMetric Functions**: Optimized implementations of common log processing operations
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
+|`source`|Y|-|Inline script code|
+|`lang`|N|`"painless"`|Scripting language (`"painless"`, `"golang"`, or `"vmetric"`)|
+|`params`|N|-|Map of parameters available to the script|
+|`function`|N|-|Name of predefined function for `vmetric` mode|
 |`description`|N|-|Explanatory note|
-|`function`|N|-|The scripted function to be executed|
 |`if`|N|-|Condition to run|
-|`id`|N|-|The id of the stored script. Required if no `source` is specified|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`lang`|N|-|The scripting language used|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`params`|N|-|Object with the parameters of the script|
-|`source`|N|-|Inline script. Required if no `id` is specified|
 |`tag`|N|-|Identifier|
 
-## Source Fields
+## Scripting Languages
 
-The fields of each document's JSON is parsed from which primitives, lists, and maps are created. To access the fields, the access operator: `index['field']`, or its shorthand: `index.<field>` should be used.
+### Native Go (Recommended)
 
-:::note
-The `index['_source']['field']` or `index._souce.field` syntaxes are not supported.
+Go scripts are executed using an interpreter, providing full access to Go language features:
+
+```yaml
+script:
+  - lang: golang
+    source: |
+      package main
+      
+      func main() {
+        if val, ok := logEntry["field"].(string); ok {
+          logEntry["normalized"] = strings.ToLower(val)
+        }
+      }
+```
+
+### Painless Compatibility
+
+While basic Painless syntax is supported through conversion to Go, it's recommended to use native Go for complex scripts:
+
+```yaml
+script:
+  - lang: painless
+    source: |
+      ctx.normalized = ctx.field.toLowerCase()
+```
+
+:::warning
+Painless support is provided for convenience but may not support all Elasticsearch Painless features. Complex scripts should use native Go syntax.
 :::
 
-Scripting can also be used to access _metadata_ fields such as `_ingest` or `_source`.
+### Built-in VirtualMetric Functions
+
+Optimized implementations of common operations that bypass script interpretation:
+
+```yaml
+script:
+  - lang: vmetric
+    function: getNetworkTransport()
+```
+
+## Built-in VirtualMetric Functions
+
+|Function|Description|
+|---|---|
+|`getNetworkTransport()`|Resolves IANA protocol numbers to transport names|
+|`sumFields(targetField, firstField, secondField)`|Adds numeric fields with type handling|
+|`sumNetworkBytes()`|Calculates total network bytes|
+|`sumNetworkPackets()`|Calculates total network packets|
 
 ## Examples
 
-### Library code
+### Native Go Script
 
 <ExampleGrid>
   <CommentCol>
-    The data:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "foo": {
-        "bar": ["A", "B", "C"]
-      }
-    }
-    ```
-  </CodeCol>
-
-  <CommentCol>
-    Extract the `bar` field from the `foo` field:
+    Process nested fields with Go...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - script:
-      lang: golang
-      source: package.Function
-      """
-    ```
-    ```json
-    {
-      "foo.bar": ["A", "B", "C"]
-    }
+    script:
+      - lang: golang
+        source: |
+          package main
+          
+          func main() {
+            val, err := getField(logEntry, "threat.indicator.confidence")
+            if err == nil {
+              if confidence, ok := val.(float64); ok {
+                if confidence > 70 {
+                  setField(logEntry, "threat.level", "high")
+                }
+              }
+            }
+          }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Inline code
+### Using Built-in Functions
 
 <ExampleGrid>
   <CommentCol>
-    The dataset is from a specific locale:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "dataset": "foo",
-      "locale": "aa-BB"
-    }
-    ```
-  </CodeCol>
-
-  <CommentCol>
-    Use the locale and the dataset name...
+    Process time fields efficiently...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - script:
-      locale: "aa-BB"
-      source: """
-        log['index'] = log['locale'] + '-' + params['dataset'];
-      """
-      params:
-        - dataset: "foo"
-  ```
-  </CodeCol>
-  <CommentCol>
-     to create an index:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "log": {
-        "index": "aa-BB-foo"
-      }
-    }
+    script:
+      - lang: vmetric
+        function: processTimeFields("log.time", "log.timestamp", "log.times")
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Composite Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Combine built-in functions with custom logic...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - script:
+          lang: vmetric
+          function: getNetworkTransport()
+      - script:
+          lang: golang
+          source: |
+            package main
+            func main() {
+              if transport, ok := logEntry["network.transport"].(string); ok {
+                if transport == "tcp" || transport == "udp" {
+                  logEntry["network.type"] = "ip_traffic"
+                }
+              }
+            }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+1. Built-in VirtualMetric functions are optimized for performance and should be preferred over equivalent custom scripts.
+2. Scripts are cached using xxHash for performance, reusing compiled versions.
+3. Go scripts can use all standard library functions supported by our interpreter.
+4. The processor provides helper functions like `getField` and `setField` for safe field access.
+:::
+
+:::warning
+1. While Painless syntax is supported, it's converted to Go and may not be 100% compatible.
+2. Complex logic should be implemented in native Go to ensure predictable behavior.
+3. Large script caches can consume significant memory.
+4. Built-in functions are being gradually converted to dedicated processors for better performance.
+:::
+
+## Performance Considerations
+
+1. **Built-in Functions**: 
+   - Use VirtualMetric built-in functions when available
+   - Fastest execution as they bypass script interpretation
+   - Optimized for common log processing tasks
+
+2. **Native Go Scripts**:
+   - Preferred for custom logic
+   - Compiled and cached for reuse
+   - Full access to Go standard library via our interpreter
+
+3. **Painless Compatibility**:
+   - Additional overhead due to syntax conversion
+   - Limited feature support
+   - Best for simple operations when maintaining Elasticsearch compatibility
