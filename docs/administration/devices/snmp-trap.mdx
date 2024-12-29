@@ -22,9 +22,6 @@
       protocol: <numeric>
       passphrase: <string>
     username: <string>
-    debug:
-      console:
-        status: <boolean>
     batch_size: <numeric>
     queue:
       interval: <numeric>
@@ -142,12 +139,6 @@ Advanced configuration involves the following properties to tune performance and
 |`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
 |`batch_size`|N|`1000`|Number of messages to batch before processing|
 
-### Debug Options
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`debug.console.status`|N|`false`|Enable console debugging output|
-
 ## Examples
 
 The following are examples for the use of the SNMPv2c Trap Receiver.
@@ -196,9 +187,6 @@ This configuration demonstrates:
       properties:
         port: 162
         community: "public"
-        debug:
-          console:
-            status: true
     ```
   </CodeCol>
 </ExampleGrid>
@@ -271,36 +259,6 @@ The following key aspects must be observed for performance tuning:
           status: true
           protocol: 3
         username: "trapuser"
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Debug-Enabled
-
-For a troubleshooting setup, the following is recommended:
-
-- Enabling console debug output
-- Smaller batch size
-- Frequent queue processing
-
-<ExampleGrid>
-  <CommentCol>
-    Configuration with debug logging...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - id: 4
-      name: debug_trap
-      type: snmptrap
-      properties:
-        port: 162
-        community: "public"
-        debug:
-          console:
-            status: true
-        batch_size: 100
-        queue:
-          interval: 1
     ```
   </CodeCol>
 </ExampleGrid>
