@@ -5,78 +5,229 @@
 ```yaml {2}
 fingerprint:
   - fields: <ident[]>
+  - method: <string>
+  - target_field: <ident>
+  - salt: <string>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
   - ignore_missing: <boolean>
-  - method: <enum>
   - on_failure: <processor[]>
   - on_success: <processor[]>
-  - salt: <string>
   - tag: <string>
-  - target_field: <ident>
 ```
 
 ## Description
 
-**Functionality**: Computes a hash of the document which can be used for content fingerprinting.
+**Functionality**: Generates a cryptographic hash of specified document fields to create a unique fingerprint. Supports multiple hash algorithms and can handle complex data types including nested objects and arrays. The processor ensures consistent hashing by:
+- Sorting object keys before hashing
+- Using delimiters between values
+- Converting various data types to bytes consistently
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`fields`|Y||List of fields to include in the fingerprint. For fields containing objects, both keys and values are hashed. For other fields, only the values are hashed|
+|`fields`|Y|-|Array of field names to include in the fingerprint|
+|`method`|N|`SHA-1`|Hash algorithm: `MD5`, `SHA-1`, `SHA-256`, or `SHA-512`|
+|`target_field`|N|`fingerprint`|Field to store the generated hash|
+|`salt`|N|-|Additional value to include in the hash calculation|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`method`|N|`SHA-1`|Hash method used. Valid options: `MD5, `SHA-1, `SHA-256, `SHA-512, or `MurmurHash3`|
+|`ignore_failure`|N|`false`|If `true`, errors are ignored|
+|`ignore_missing`|N|`false`|If `true`, missing fields are skipped|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|*|See [Handling Success](../handling-success.mdx)|
-|`salt`|N|-|Salt value for the hash|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
-|`target_field`|N|`fingerprint`|Field to write the hash|
 
 ## Examples
 
+### Basic Field Fingerprinting
+
 <ExampleGrid>
   <CommentCol>
-    The data contains information about a user
+    Hash simple field values...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "user": {
-        "first_name": "John",
-        "last_name": "Doe",
-        "date_of_birth": "1975-05-15"
-      }
+      "field1": "value1",
+      "field2": "value2"
     }
     ```
-  </CodeCol>
-
-  <CommentCol>
-    We will use _SHA-1_:
-  </CommentCol>
-  <CodeCol>
     ```yaml
     fingerprint:
-      - fields: [user]
-      - method: SHA-1
+      - fields: ["field1", "field2"]
+      - method: SHA-256
+      - target_field: doc_hash
     ```
   </CodeCol>
-
   <CommentCol>
-    A hash is generated as a fingerprint:
+    creates base64 encoded hash:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "fingerprint": "f5fd21f2e54bf74f16ad2ded58b6ae7a9fb0c8ea",
-      "user": {
-        ...
-      }
+      "field1": "value1",
+      "field2": "value2",
+      "doc_hash": "vjAQ3j4wF3T7LdCXFNgBYAlpYAFBH5qgy5najgPpEyE="
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Nested Object Fingerprinting
+
+<ExampleGrid>
+  <CommentCol>
+    Hash nested object fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "name": "Smith",
+        "first_name": "John",
+        "date_of_birth": "1980-01-15"
+      }
+    }
+    ```
+    ```yaml
+    fingerprint:
+      - fields: ["user"]
+      - method: SHA-1
+      - target_field: user_hash
+    ```
+  </CodeCol>
+  <CommentCol>
+    includes all nested values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "name": "Smith",
+        "first_name": "John",
+        "date_of_birth": "1980-01-15"
+      },
+      "user_hash": "TNN0UCl8wwOsdXK3R24U+ARZo0g="
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Salt
+
+<ExampleGrid>
+  <CommentCol>
+    Add salt to hash calculation...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "email": "user@example.com",
+      "timestamp": "2024-01-01T00:00:00Z"
+    }
+    ```
+    ```yaml
+    fingerprint:
+      - fields: ["email", "timestamp"]
+      - method: SHA-512
+      - salt: "my-secret-salt"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates salted hash:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "email": "user@example.com",
+      "timestamp": "2024-01-01T00:00:00Z",
+      "fingerprint": "hX9cW+YKDvE/R1k..."  # truncated for brevity
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Handling Missing Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Skip missing fields in calculation...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "field1": "value1"
+    }
+    ```
+    ```yaml
+    fingerprint:
+      - fields: ["field1", "field2"]
+      - ignore_missing: true
+      - method: SHA-256
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates hash from available fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "field1": "value1",
+      "fingerprint": "19o6lchfZXPT5hG6xb40xHikt3EOnrCVWrmSOPVMy0U="
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Supported Data Types
+
+The processor handles various data types consistently:
+- **Strings**: Direct byte conversion
+- **Numbers**: Binary representation
+- **Booleans**: `1` for true, `2` for false
+- **Arrays**: All elements in order
+- **Objects**: Keys sorted alphabetically
+- **Dates**: RFC3339Nano format
+- **Null**: Empty bytes
+
+## Common Use Cases
+
+1. **Document Deduplication**
+   ```yaml
+   fingerprint:
+     - fields: ["content", "metadata"]
+     - method: SHA-256
+     - target_field: content_hash
+   ```
+
+2. **Change Detection**
+   ```yaml
+   fingerprint:
+     - fields: ["user.profile", "user.settings"]
+     - method: SHA-1
+     - target_field: profile_hash
+   ```
+
+3. **Data Integrity**
+   ```yaml
+   fingerprint:
+     - fields: ["payload"]
+     - method: SHA-512
+     - salt: "verification-key"
+   ```
+
+:::warning
+- Object keys are included in hash calculation for nested objects
+- Field order in the `fields` array doesn't affect the hash
+- Missing fields with `ignore_missing: false` cause processor failure
+:::
+
+:::note
+For consistent hashing:
+- Use the same `method` and `salt` across comparisons
+- Consider field presence/absence with `ignore_missing`
+- Remember that object key order is normalized
+:::

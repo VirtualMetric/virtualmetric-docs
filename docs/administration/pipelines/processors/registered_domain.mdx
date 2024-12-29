@@ -17,69 +17,174 @@ registered_domain:
 
 ## Description
 
-**Functionality**: Extracts the registered domain (a.k.a. the effective top-level domain or **eTLD**), sub-domain, and top-level domain from a **Fully Qualified Domain Name** (FQDN).
+**Functionality**: Extracts domain components from URLs or Fully Qualified Domain Names (FQDNs). Uses the Mozilla Public Suffix List to accurately identify the registered domain (eTLD), subdomain, and top-level domain parts.
 
-Uses the registered domains defined in the **Mozilla Public Suffix List**.
+The processor can handle both full URLs and plain domain names, automatically parsing and extracting the following components:
+- Full domain name
+- Registered domain (effective TLD + one level)
+- Top-level domain
+- Subdomain (if present)
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field containing the source **FQDN**|
+|`field`|Y|-|Field containing the URL or domain name|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`ignore_missing`|N|`false`|If `true`, continue silently if field doesn't exist|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
-|`target_field`|N|-|Field to assign the extracted domain components. If blank, components are added to the document's root|
+|`target_field`|N|-|Field to store extracted components. If omitted, components are added to root|
 
 ## Examples
 
-Parse the various level domains for `www.example.com`:
+### Basic Domain Parsing
 
 <ExampleGrid>
   <CommentCol>
-    The _visitor_ field contains a URL.
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    {
-      "visitor": {
-        "fqdn": "www.example.com"
-      }
-    }
-    ```
-  </CodeCol>
-
-  <CommentCol>
-    Extract the domain info from the URL...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - registered_domain:
-        field: visitor.fqdn
-        target_field: visitor.url
-    ```
-  </CodeCol>
-
-  <CommentCol>
-    and place the results in the target field:
+    Parse a simple domain name...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "visitor": {
-        "fqdn": "www.example.com",
-        "url": {
-          "domain": "www.example.com",
-          "registered_domain": "example.com",
-          "top_level_domain": "com",
-          "subdomain": "www"
-        }
+      "domain": "www.example.com"
+    }
+    ```
+    ```yaml
+    registered_domain:
+      - field: domain
+      - target_field: url_parts
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracting all components:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "www.example.com",
+      "url_parts": {
+        "domain": "www.example.com",
+        "registered_domain": "example.com",
+        "top_level_domain": "com",
+        "subdomain": "www"
       }
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### URL Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Extract domains from full URLs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "https://blog.example.co.uk/path?param=value"
+    }
+    ```
+    ```yaml
+    registered_domain:
+      - field: url
+    ```
+  </CodeCol>
+  <CommentCol>
+    handling complex TLDs:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "https://blog.example.co.uk/path?param=value",
+      "domain": "blog.example.co.uk",
+      "registered_domain": "example.co.uk",
+      "top_level_domain": "co.uk",
+      "subdomain": "blog"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Level Subdomains
+
+<ExampleGrid>
+  <CommentCol>
+    Process domains with multiple subdomains...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "host": "dev.api.company.com"
+    }
+    ```
+    ```yaml
+    registered_domain:
+      - field: host
+      - target_field: domain_info
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserving full subdomain structure:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "host": "dev.api.company.com",
+      "domain_info": {
+        "domain": "dev.api.company.com",
+        "registered_domain": "company.com",
+        "top_level_domain": "com",
+        "subdomain": "dev.api"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle invalid domains gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "http://invalid-url^%.com"
+    }
+    ```
+    ```yaml
+    registered_domain:
+      - field: url
+      - ignore_failure: true
+      - on_failure:
+          - append:
+              field: tags
+              value: invalid_domain
+    ```
+  </CodeCol>
+  <CommentCol>
+    with appropriate error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "http://invalid-url^%.com",
+      "tags": ["invalid_domain"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor uses the Mozilla Public Suffix List to accurately identify domain components, ensuring correct handling of special cases like `co.uk` or `com.au`.
+:::
+
+:::warning
+Processing very large numbers of domains may impact performance. Consider batching or limiting concurrent processing in high-volume scenarios.
+:::

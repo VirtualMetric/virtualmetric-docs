@@ -18,55 +18,124 @@ contains:
 
 ## Description
 
-**Functionality**: Checks the existence of a value in a list of values.
+**Functionality**: Checks if a specified field value exists within a list of values. The list can be provided directly or referenced from another field.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field that contains the value to check|
+|`field`|Y|-|Field containing the value to check|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`list`|N|-|List of values to check|
-|`list_field`|N|-|Field containing the list of values to check|
+|`ignore_missing`|N|`false`|If `true` and `field` does not exist, exit quietly without making any modifications|
+|`list`|N|-|Static list of values to check against|
+|`list_field`|N|-|Field containing the dynamic list of values to check against|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
 ## Examples
 
+### Basic Usage with Static List
+
 <ExampleGrid>
   <CommentCol>
-    The field contains 3 items:
+    Check if a value exists in a static list...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "data": ["foo", "bar", "baz"]
+      "status": "active"
     }
     ```
-  </CodeCol>
-  <CommentCol>
-    The value _foo_ is among them:
-  </CommentCol>
-  <CodeCol>
     ```yaml
     contains:
-      - field: "foo"
-      - list: data
+      - field: status
+      - list: ["active", "pending", "completed"]
     ```
   </CodeCol>
-
   <CommentCol>
-    The value _qux_ is _not_ among them:
+    returns success because "active" is in the list
   </CommentCol>
-  <CodeCol>
-    ```yaml
-    contains:
-      - field: "qux"
-      - list: data
-    ```
-  </CodeCol>
 </ExampleGrid>
+
+### Using Dynamic List Field
+
+<ExampleGrid>
+  <CommentCol>
+    Check against a list stored in another field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_type": "admin",
+      "allowed_types": ["user", "moderator", "admin"]
+    }
+    ```
+    ```yaml
+    contains:
+      - field: user_type
+      - list_field: allowed_types
+    ```
+  </CodeCol>
+  <CommentCol>
+    returns success because "admin" is in allowed_types
+  </CommentCol>
+</ExampleGrid>
+
+### Handling Missing Fields
+
+<ExampleGrid>
+  <CommentCol>
+    When the field is missing and ignore_missing is true...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "other_field": "value"
+    }
+    ```
+    ```yaml
+    contains:
+      - field: status
+      - list: ["active", "pending"]
+      - ignore_missing: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    processor exits quietly without modification
+  </CommentCol>
+</ExampleGrid>
+
+### Using Templates
+
+<ExampleGrid>
+  <CommentCol>
+    List values can use template syntax...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "org_id": "123",
+      "role": "role_123_admin"
+    }
+    ```
+    ```yaml
+    contains:
+      - field: role
+      - list: ["role_{{{org_id}}}_admin", "role_{{{org_id}}}_user"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    templates are evaluated before checking
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+The processor requires either `list` or `list_field` to be specified, but not both. The field being checked must contain a string value.
+:::
+
+:::warning
+The processor will fail if neither `list` nor `list_field` is provided, or if the specified field contains a non-string value.
+:::

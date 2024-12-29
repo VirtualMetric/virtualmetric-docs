@@ -10,11 +10,12 @@ compact:
   - on_failure: <processor[]>
   - on_success: <processor[]>
   - tag: <string>
+  - values: <array>
 ```
 
 ## Description
 
-**Functionality**: Removes all nested fields containing empty arrays or objects from a specified field recursively.
+**Functionality**: Removes all empty fields from a document recursively. Empty fields include null values, empty strings, empty arrays `[]`, and empty objects `{}`. This helps reduce document size and improve readability by eliminating unnecessary empty fields.
 
 ## Parameters
 
@@ -26,39 +27,161 @@ compact:
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
+|`values`|N|-|Array of values to be removed when found, in addition to empty fields|
 
 ## Examples
 
+### Basic Usage
+
 <ExampleGrid>
   <CommentCol>
-    These fields:
+    Remove empty fields from document...
   </CommentCol>
   <CodeCol>
-  ```json
-  {
-    "foo": "A",
-    "bar": "",
-    "baz": [],
-      "quw": {},
-      "qux": 1
-  }
-  ```
+    ```json
+    {
+      "name": "document1",
+      "tags": [],
+      "metadata": {},
+      "description": "",
+      "status": null,
+      "value": 42
+    }
+    ```
+    ```yaml
+    compact:
+      - description: "Remove empty fields"
+    ```
   </CodeCol>
   <CommentCol>
-    ...are compacted as:
+    resulting in only non-empty fields:
   </CommentCol>
   <CodeCol>
-  ```yaml
-  processors:
-    - compact:
-  ```
-  ```json
-  {
-    "foo": "A",
-    "baz": {
-      "qux": 1
+    ```json
+    {
+      "name": "document1",
+      "value": 42
     }
-  }
-  ```
+    ```
   </CodeCol>
 </ExampleGrid>
+
+### Nested Objects
+
+<ExampleGrid>
+  <CommentCol>
+    Process nested objects recursively...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "name": "John",
+        "settings": {
+          "theme": "",
+          "notifications": {},
+          "preferences": {
+            "language": "en"
+          }
+        },
+        "groups": []
+      }
+    }
+    ```
+    ```yaml
+    compact:
+      - description: "Clean user data"
+    ```
+  </CodeCol>
+  <CommentCol>
+    removing empty fields at all levels:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "name": "John",
+        "settings": {
+          "preferences": {
+            "language": "en"
+          }
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Remove Specific Values
+
+<ExampleGrid>
+  <CommentCol>
+    Remove empty fields and specific values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status": "pending",
+      "priority": "low",
+      "tags": ["draft", "review", ""],
+      "metadata": {}
+    }
+    ```
+    ```yaml
+    compact:
+      - values: ["low", "draft"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    removing both empty fields and specified values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status": "pending",
+      "tags": ["review"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Execution
+
+<ExampleGrid>
+  <CommentCol>
+    Only compact when a condition is met...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "type": "user",
+      "data": {
+        "id": "123",
+        "roles": [],
+        "settings": {}
+      }
+    }
+    ```
+    ```yaml
+    compact:
+      - if: "ctx.type == 'user'"
+    ```
+  </CodeCol>
+  <CommentCol>
+    compacting only user documents:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "type": "user",
+      "data": {
+        "id": "123"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The compact processor is particularly useful for cleaning up documents before storage or transmission, reducing storage space and network bandwidth usage.
+:::

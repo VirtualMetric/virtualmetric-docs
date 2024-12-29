@@ -1,59 +1,159 @@
-# Date Index
+# Date Index Name
 
 ## Synopsis
 
 ```yaml {2,3}
-date_index:
-  - date_rounding: <enum>
+date_index_name:
   - field: <ident>
-  - date_formats: <enum>
+  - date_rounding: <enum>
+  - date_formats: <string[]>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
   - ignore_missing: <boolean>
-  - index_name_format: <boolean>
+  - index_name_format: <string>
   - index_name_prefix: <string>
-  - locale: <enum>
+  - locale: <string>
   - on_failure: <processor[]>
   - on_success: <processor[]>
   - tag: <string>
-  - time_zone: <enum>
+  - time_zone: <string>
 ```
 
 ## Description
 
-**Functionality**: Points events to the right time-based index according to the date or timestamp field in an event.
+**Functionality**: Creates dynamic index names based on date fields in documents. The processor extracts a date from a specified field, applies configured rounding, and generates an index name by combining a prefix with the formatted date.
 
-The `_index` metadata value is set with a date index expression based on the specified index prefix, a date or timestamp field in the document being processed, and the specified date rounding.
-
-A date formatting can be configured to specify how the field's value should be parsed. Based on this, the specified index prefix and date rounding get formatted into an date index expression.
+The date can be rounded to various time units (year, month, week, day, hour, minute, second) and formatted according to specified patterns. This is particularly useful for time-series data where you want to organize documents into time-based indices.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`date_rounding`|Y||Rounding logic. Valid values: `y`, `M`, `w`, `d`, `h`, `m`, `s` (year, month, week, day, hour, minute, second)|
-|`field`|Y||Field to get the date or timestamp from|
-|`date_formats`|N|`yyyy-MM-dd'T'HH:mm:ss.SSSXX`|Expected date format for parsing dates/timestamps. Valid formats: Java time pattern, ISO8601, UNIX, UNIX_MS, or TAI64N|
+|`field`|Y|-|Field containing the date/timestamp to process|
+|`date_rounding`|Y|-|Time unit to round to: `y` (year), `M` (month), `w` (week), `d` (day), `h` (hour), `m` (minute), `s` (second)|
+|`date_formats`|N|`[RFC3339]`|Array of date format patterns to try when parsing the date field|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|||
-|`index_name_format`|N|`yyyy-MM-dd`|Format to use to print the parsed date. Expects a valid Java pattern.|
-|`index_name_prefix`|N|-|Prefix of the index to be prepended to the printed date|
-|`locale`|N|`ENGLISH`|Locale to use to parse the date|
+|`ignore_failure`|N|`false`|Continue processing if parsing fails|
+|`ignore_missing`|N|`false`|Skip if the date field is missing|
+|`index_name_format`|N|`2006-01-02`|Go time format pattern for the output date|
+|`index_name_prefix`|N|-|String to prepend to the formatted date|
+|`locale`|N|-|Locale for date parsing|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
-|`time_zone`|N|`UTC`|Timezone to use to parse the date|
+|`time_zone`|N|`UTC`|Timezone for date parsing|
 
 ## Examples
 
-Using the date in the field, point the data to a monthly index:
+### Monthly Index
 
-```yaml
-date_index:
-  - field: foo
-  - index_name_prefix: "bar-"
-  - date_rounding: "M"
-```
+<ExampleGrid>
+  <CommentCol>
+    Round date to month...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "date1": "2016-04-25T12:02:01.789Z"
+    }
+    ```
+    ```yaml
+    date_index_name:
+      - field: date1
+      - date_rounding: "M"
+      - index_name_prefix: "my-index-"
+      - index_name_format: "2006-01-02"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates monthly index name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "date1": "2016-04-25T12:02:01.789Z",
+      "_index": "my-index-2016-04-01"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Daily Index with Nested Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Process date from nested field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "login": "2016-04-25T12:02:01.789Z"
+      }
+    }
+    ```
+    ```yaml
+    date_index_name:
+      - field: "user.login"
+      - date_rounding: "d"
+      - index_name_prefix: "logins-"
+      - index_name_format: "2006-01-02"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates daily index name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "login": "2016-04-25T12:02:01.789Z"
+      },
+      "_index": "logins-2016-04-25"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Weekly Index
+
+<ExampleGrid>
+  <CommentCol>
+    Round to start of ISO week...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": "2016-04-25T12:02:01.789Z"
+    }
+    ```
+    ```yaml
+    date_index_name:
+      - field: timestamp
+      - date_rounding: "w"
+      - index_name_prefix: "weekly-"
+      - index_name_format: "2006-01-02"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates weekly index name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": "2016-04-25T12:02:01.789Z",
+      "_index": "weekly-2016-04-25"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When using weekly rounding (`w`), the date is rounded to the start of the ISO week (Monday).
+:::
+
+:::warning
+The date parsing will fail if none of the specified date formats match the input. Consider using `ignore_failure: true` if date parsing errors should be tolerated.
+:::

@@ -7,7 +7,7 @@ decrypt:
   - algorithm: <ident>
   - encryption_key: <string>
   - field: <ident>
-  - iv_field: <hash>
+  - iv_field: <ident>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
@@ -20,16 +20,20 @@ decrypt:
 
 ## Description
 
-**Functionality**: Decrypts a single encrypted string using a defined secret and a specified _Initialization Vector_ field.
+**Functionality**: Decrypts encrypted string values using AES encryption with a specified key and initialization vector (IV). Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation.
+
+:::warning
+The encryption key must be exactly 32 bytes long for AES-256 encryption.
+:::
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`algorithm`|Y||The algorithm used to encrypt the value in the field. Determines the number of characters to use for the encryption key and the initialization vector|
-|`encryption_key`|Y||The key used to encrypt the field|
-|`field`|Y||Field to be decrypted|
-|`iv_field`|Y||The value to be used by the algorithm as the initialization vector|
+|`algorithm`|Y|-|Encryption algorithm to use. Valid values: `AES-256-GCM` or `AES-256-CFB`|
+|`encryption_key`|Y|-|32-byte key used for decryption|
+|`field`|Y|-|Field containing the encrypted value to be decrypted|
+|`iv_field`|Y|-|Field containing the initialization vector|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
@@ -37,43 +41,137 @@ decrypt:
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
-|`with_compression`|N|`false`|Flag to use compression|
+|`with_compression`|N|`false`|Enable compression during decryption|
+
+## Supported Algorithms
+
+The processor supports two AES-256 modes:
+
+1. **AES-256-GCM** (Galois/Counter Mode)
+   - Provides both confidentiality and authenticity
+   - More secure against tampering
+   - Slightly slower than CFB mode
+
+2. **AES-256-CFB** (Cipher Feedback)
+   - Provides confidentiality
+   - Faster than GCM mode
+   - No built-in authentication
 
 ## Examples
 
+### Basic AES-256-CFB Decryption
+
 <ExampleGrid>
   <CommentCol>
-    When the encrypted field...
+    When decrypting with CFB mode...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "qux": "FmXUb0OPOWm1A2kw6diKYw==",
-      "foo": "vFza"
+      "encrypted_value": "vFza",
+      "iv": "FmXUb0OPOWm1A2kw6diKYw=="
     }
     ```
-  </CodeCol>
-  <CommentCol>
-    is used with...
-  </CommentCol>
-  <CodeCol>
     ```yaml
     decrypt:
-      - field: foo
-      - iv_field: qux
+      - field: encrypted_value
+      - iv_field: iv
       - encryption_key: 6B58703273357638792F423F4528482B
-      - algorithm: AES-256-CFB (key=32 chars., iv=16 chars.)
+      - algorithm: AES-256-CFB
     ```
   </CodeCol>
-
   <CommentCol>
-    we get:
+    the decrypted value is stored in place:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "foo": "bar"
+      "encrypted_value": "bar",
+      "iv": "FmXUb0OPOWm1A2kw6diKYw=="
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### AES-256-GCM with Compression
+
+<ExampleGrid>
+  <CommentCol>
+    Using GCM mode with compression...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "secret": "KZh/JR2baS2MkZpseKZYoBN2tQ==",
+      "vector": "F+e8YorshrvFiFTC"
+    }
+    ```
+    ```yaml
+    decrypt:
+      - field: secret
+      - iv_field: vector
+      - encryption_key: 6B58703273357638792F423F4528482B
+      - algorithm: AES-256-GCM
+      - with_compression: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    decompresses after decryption:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "secret": "bar",
+      "vector": "F+e8YorshrvFiFTC"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    When using an invalid key length...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "encrypted_string",
+      "iv": "initialization_vector"
+    }
+    ```
+    ```yaml
+    decrypt:
+      - field: data
+      - iv_field: iv
+      - encryption_key: too_short
+      - algorithm: AES-256-CFB
+      - ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    the error is captured:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "encrypted_string",
+      "iv": "initialization_vector",
+      "error": {
+        "message": "encryption key must be 32 bytes for AES-256"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor automatically caches cipher instances for repeated use with the same encryption key to improve performance.
+:::
+
+:::warning
+- The encryption key must be exactly 32 bytes for AES-256 encryption
+- Both the encrypted value and IV must be base64 encoded strings
+- Unsupported algorithms will result in an error
+:::

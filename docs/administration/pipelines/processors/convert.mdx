@@ -5,79 +5,215 @@
 ```yaml {2,3}
 convert:
   - field: <ident>
-  - precision: <numeric>
+  - type: <enum>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
   - ignore_missing: <boolean>
   - on_failure: <processor[]>
   - on_success: <processor[]>
+  - precision: <numeric>
   - tag: <string>
   - target_field: <ident>
-  - type: <enum>
 ```
 
 ## Description
 
-**Functionality**: Converts a field value to a different type.
+**Functionality**: Converts field values from one data type to another. Supports single values and arrays, with the ability to specify precision for floating-point numbers.
 
-If the field contains an array, all values will be converted. Supported types: `boolean`, `float`, `double`, `ip`, `integer`, `long`, `string`, and `auto`.
+Supported conversion types:
+- `integer`: Converts to whole number
+- `long`: Converts to 64-bit integer
+- `float`: Converts to floating-point with specified precision
+- `double`: Converts to double-precision floating-point
+- `string`: Converts to text representation
+- `boolean`: Converts to true/false value
+- `ip`: Validates and standardizes IP address format
+- `auto`: Automatically determines the most appropriate type
 
-If `boolean` is specified, the `field` is set to `true` provided that its string value (ignoring case) is a valid boolean constant. Eitherwise, an exception will be thrown.
-
-If `ip` is specified, the target field is set to the value of `field` if its a valid **IPv4** or **IPv6** address assignable to an IP field type.
-
-If `auto` is specified, an attempt will be made to convert the string value in the field to the closest matching non-string and non-IP type. **Note** `float` has a precedence over `double`.
-
-If the value cannot be converted to a matching type, the process still completes successfully and the field value remains untouched. In that case, the `target_field` will be set to the unconverted `field` value.
+When converting arrays, all elements in the array will be converted to the specified type. For floating-point conversions, the precision parameter controls decimal places.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field to be converted|
-|`precision`|Y||The precision to achieve if the field contains a real value|
+|`field`|Y|-|Field containing the value to convert|
+|`type`|Y|-|Target conversion type (`integer`, `long`, `float`, `double`, `string`, `boolean`, `ip`, `auto`)|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist, exit quietly without making any modifications|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip processing if field doesn't exist|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`precision`|N|3|Number of decimal places for floating-point numbers|
 |`tag`|N|-|Identifier|
-|`target_field`|N|`field`|Field to assign the converted value|
-|`type`|Conversion|Y||The type to convert the `field` value to|
+|`target_field`|N|`field`|Field to store the converted value. If not specified, overwrites the source field|
 
 ## Examples
 
+### Basic Type Conversion
+
 <ExampleGrid>
   <CommentCol>
-    Convert the string in the field to...
+    Convert string to integer...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "foo": "15"
+      "stringToInt": "123"
     }
     ```
-  </CodeCol>
-
-  <CommentCol>
-    an integer and place it in the target field:
-  </CommentCol>
-  <CodeCol>
     ```yaml
     convert:
-      - field: foo
+      - field: stringToInt
       - type: integer
-      - target_field: bar
     ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
     ```json
     {
-      "data": {
-        "foo": "15",
-        "bar": 15
-      }
+      "stringToInt": 123
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Floating Point with Precision
+
+<ExampleGrid>
+  <CommentCol>
+    Convert to float with precision...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": "3.14159"
+    }
+    ```
+    ```yaml
+    convert:
+      - field: value
+      - type: float
+      - precision: 3
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": 3.142
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Convert all elements in array...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "numbers": ["1", "2", "3", "4", "5"]
+    }
+    ```
+    ```yaml
+    convert:
+      - field: numbers
+      - type: integer
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "numbers": [1, 2, 3, 4, 5]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Target Field
+
+<ExampleGrid>
+  <CommentCol>
+    Convert to different field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": "42"
+    }
+    ```
+    ```yaml
+    convert:
+      - field: source
+      - type: integer
+      - target_field: target
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": "42",
+      "target": 42
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Auto Type Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Automatically determine type...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value1": "42",
+      "value2": "3.14",
+      "value3": "true",
+      "value4": "hello"
+    }
+    ```
+    ```yaml
+    convert:
+      - field: value1
+      - type: auto
+    ```
+  </CodeCol>
+  <CommentCol>
+    results in appropriate types:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value1": 42,
+      "value2": 3.14,
+      "value3": true,
+      "value4": "hello"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When using `auto` type, the processor attempts conversion in this order: integer, float, boolean, and finally falls back to string if no other type matches.
+:::
+
+:::warning
+IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Use `ignore_failure: true` to skip invalid IPs.
+:::

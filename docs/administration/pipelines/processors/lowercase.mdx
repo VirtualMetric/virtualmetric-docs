@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-```yaml
+```yaml {2}
 lowercase:
   - field: <ident>
   - description: <text>
@@ -17,30 +17,194 @@ lowercase:
 
 ## Description
 
-**Functionality**: Converts a string to its lowercase equivalent.
-
-If the field is an array of strings, all members are converted.
+**Functionality**: Converts string values to lowercase. The processor can handle both single strings and arrays of strings, applying the transformation to all string elements. Non-string values will trigger an error unless error handling is configured.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field to conver to lowercase|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`tag`|N|-|Identifier|
-|`target_field`|N|`field`|Field to assign the converted strings to|
+|`field`|Y|-|Source field containing strings to convert|
+|`description`|N|-|Documentation note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Skip processing errors|
+|`ignore_missing`|N|`false`|Skip if input field missing|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier for logging|
+|`target_field`|N|`field`|Output field for converted strings|
 
 ## Examples
 
-Convert the values in field to lowercase:
+### Basic String Conversion
 
-```yaml
-processors:
-  - lowercase:
-    field: foo
-```
+<ExampleGrid>
+  <CommentCol>
+    Convert single string to lowercase...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "JohnDoe"
+    }
+    ```
+    ```yaml
+    lowercase:
+      - field: username
+    ```
+  </CodeCol>
+  <CommentCol>
+    transforms the string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "johndoe"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Convert array of strings...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["User", "Admin", "MANAGER"]
+    }
+    ```
+    ```yaml
+    lowercase:
+      - field: tags
+    ```
+  </CodeCol>
+  <CommentCol>
+    transforms all elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["user", "admin", "manager"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Different Target Field
+
+<ExampleGrid>
+  <CommentCol>
+    Store result in new field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "HELLO WORLD"
+    }
+    ```
+    ```yaml
+    lowercase:
+      - field: original
+      - target_field: lowercase_text
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves original value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "HELLO WORLD",
+      "lowercase_text": "hello world"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle non-string values gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "id": 12345,
+      "name": "USER"
+    }
+    ```
+    ```yaml
+    lowercase:
+      - field: id
+      - ignore_failure: true
+      - on_failure:
+          - set:
+              - field: error
+              - value: "Non-string field encountered"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing with error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "id": 12345,
+      "name": "USER",
+      "error": "Non-string field encountered"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Convert only when condition met...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "level": "DEBUG",
+      "should_convert": true
+    }
+    ```
+    ```yaml
+    lowercase:
+      - field: level
+      - if: "ctx.should_convert == true"
+    ```
+  </CodeCol>
+  <CommentCol>
+    processes when condition is true:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "level": "debug",
+      "should_convert": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Common Use Cases
+
+1. **Normalization**: Standardize text fields for consistent processing
+2. **Case-Insensitive Matching**: Prepare fields for case-insensitive comparisons
+3. **Data Cleaning**: Normalize user input or imported data
+4. **Tag Management**: Standardize tags or categories
+5. **Email Addresses**: Normalize email addresses for consistency
+
+:::note
+The processor maintains the original field structure - single strings remain single strings, and arrays remain arrays.
+:::
+
+:::warning
+Non-string values in the input field will cause processing errors unless `ignore_failure` is set to true.
+:::
