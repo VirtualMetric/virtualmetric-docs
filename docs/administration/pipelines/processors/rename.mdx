@@ -2,10 +2,12 @@
 
 ## Synopsis
 
-```yaml {2-4}
+```yaml
 rename:
   - field: <ident>
-  - fields: <ident[]>
+  - fields:
+      - from: <ident>
+        to: <ident>
   - target_field: <ident>
   - description: <text>
   - if: <script>
@@ -18,52 +20,179 @@ rename:
 
 ## Description
 
-**Functionality**: Renames fields.
+**Functionality**: Renames one or more fields in the document. Supports both single field renaming and bulk field renaming operations.
 
-If a field does not exist or the new name is already in use, an exception will be raised.
+The processor can handle nested fields using dot notation and supports template variables in field names. If a target field already exists or the source field is missing, an exception is raised unless appropriate error handling is configured.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field to rename|
-|`fields`|Fields|Y||The list of fields to rename|
-|`target_field`|Y||The name of the field|
+|`field`|N|-|Single field to rename (mutually exclusive with `fields`)|
+|`target_field`|N|-|New name for the field (required if `field` is used)|
+|`fields`|N|-|Array of field rename operations (mutually exclusive with `field`)|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`ignore_missing`|N|`false`|If `true`, continue silently if field doesn't exist|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
 ## Examples
 
+### Single Field Rename
+
 <ExampleGrid>
   <CommentCol>
-    There is a field named _bar_:
+    Rename a single field...
   </CommentCol>
   <CodeCol>
-  ```json
-  {
-    "bar": ["A", "B", "C"]
-  }
-  ```
-  </CodeCol>
-
-  <CommentCol>
-    Rename it as _foo_:
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - rename:
-      field: bar
-      target_field: foo
-    ```
     ```json
     {
-      "foo": ["A", "B", "C"]
+      "old_name": "John Smith",
+      "age": 30
+    }
+    ```
+    ```yaml
+    rename:
+      - field: old_name
+        target_field: full_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    to its new name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "full_name": "John Smith",
+      "age": 30
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Multiple Field Rename
+
+<ExampleGrid>
+  <CommentCol>
+    Rename multiple fields at once...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "src_ip": "192.168.1.1",
+      "dst_ip": "10.0.0.1",
+      "src_port": 8080
+    }
+    ```
+    ```yaml
+    rename:
+      - fields:
+          - from: src_ip
+            to: source.ip
+          - from: dst_ip
+            to: destination.ip
+          - from: src_port
+            to: source.port
+    ```
+  </CodeCol>
+  <CommentCol>
+    creating a nested structure:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "ip": "192.168.1.1",
+        "port": 8080
+      },
+      "destination": {
+        "ip": "10.0.0.1"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Templates
+
+<ExampleGrid>
+  <CommentCol>
+    Rename using template variables...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "type": "user",
+      "user_id": "12345",
+      "user_name": "john"
+    }
+    ```
+    ```yaml
+    rename:
+      - field: "{{{type}}}_name"
+        target_field: name
+    ```
+  </CodeCol>
+  <CommentCol>
+    evaluating the template:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "type": "user",
+      "user_id": "12345",
+      "name": "john"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle missing fields gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "existing_field": "value"
+    }
+    ```
+    ```yaml
+    rename:
+      - fields:
+          - from: existing_field
+            to: new_field
+          - from: missing_field
+            to: other_field
+      - ignore_missing: true
+      - on_failure:
+          - append:
+              field: tags
+              value: rename_incomplete
+    ```
+  </CodeCol>
+  <CommentCol>
+    continuing despite missing fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "new_field": "value",
+      "tags": ["rename_incomplete"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When using multiple field renames, the operations are processed sequentially. Each field is removed after being renamed unless the source and target names are identical.
+:::
+
+:::warning
+Be careful when renaming fields that are part of a nested structure. The processor creates intermediate objects as needed, but this might affect existing field paths.
+:::

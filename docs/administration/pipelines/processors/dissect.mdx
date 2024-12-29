@@ -18,70 +18,194 @@ dissect:
 
 ## Description
 
-**Functionality**: Matches a text field against a pre-defined pattern, but without using regular expressions.
+**Functionality**: Extracts values from strings using predefined patterns without regular expressions. The processor splits input strings on delimiters and assigns values to named keys specified in the pattern.
 
-As an example, the pattern:
-
-```cli
-%{clientip} %{ident} %{auth} [%{@timestamp}] %{size}
-```
-
-will match the following log line:
-
-```cli
-127.0.0.1 50 JD [25/05/2024:15:12:40 +0000] 512
-```
-
-and create a document with the following fields:
-
-```yaml
-source:
-  clientip: "127.0.0.1"
-  ident: 50
-  auth: "JD"
-  "@timestamp": "25/05/2024:15:12:40 +0000"
-  size: 512
-```
-
-Dissection patterns are lexed using the parts of the strings that will be discarded, and these can be spaces, separators, parentheses, etc.
-
-In order for `dissect` to succeed, all {`keyname`} parts in the pattern must exist, i.e. have a value. Otherwise an exception is raised. All matches are represented as strings.
+:::note
+Unlike regular expressions, dissect patterns require exact matching of separators and spacing. Use pattern modifiers to handle variable whitespace.
+:::
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field to dissect|
-|`pattern`|Y||The pattern to apply|
-|`append_separator`|N|`""`|The characters that separate the fields to parse|
+|`field`|Y|-|Field containing the string to dissect|
+|`pattern`|Y|-|Pattern with named capture groups using `%{key}` syntax|
+|`append_separator`|N|`" "`|Single character used as separator when appending fields|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` doesn't exist or is `null`, exit quietly without making any modifications|
+|`ignore_missing`|N|`false`|If `true` and `field` doesn't exist or is `null`, exit quietly|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
-## Key Modifiers
+## Pattern Syntax
 
-The default behavior of `dissect` can be changed with key modifiers like `%{+keyname->}`.
+### Basic Syntax
+- Use `%{keyname}` to capture values into named fields
+- Text outside capture groups must match exactly
+- All captured values are stored as strings
+- All named groups must capture a value for successful matching
 
-|Modifier|Position|Action|Example|Description|
-|---|---|---|---|---|
-|`->`|RHS|Skip right padding|`%{keyname->}`|Skips repeated characters on the RHS|
-|`+`|LHS|Append|`%{+keyname} %{+keyname}`|Appends two or more fields|
-|`+...<number>/`|LHS and RHS|Append in order|`%{+keyname/2} %{+keyname/1}`|Appends the fields using `<number>` for ordering|
-|`?`|LHS|Skip field|`%{?keyname}`|Skips the field|
-|`*` and `&`|LHS|Key-value pairing|`%{?keyname}`|Uses the `*` field as key and the `&` as value|
-
-The first of the above, i.e. right padding modifier, can be especifally useful to avoid unnecessary errors since dissect uses a verbatim match. That is, if the pattern specifies, for example, one space between two fields but the fields are separated by multiple spaces, the match will fail. The right padding modifier can be used to alleviate this issue. It can even be used without a keyname to skip certain fields.
+### Pattern Rules
+1. Patterns are matched verbatim - spaces and delimiters must match exactly
+2. All named capture groups (`%{keyname}`) must capture a value
+3. The input string must be fully consumed by the pattern
+4. Values are always captured as strings, even if they look numeric
+5. Nested fields can be created using dot notation in key names
 
 ## Examples
 
-|Input|Pattern|Output|
-|---|---|---|
-|A&blank;&blank;&blank;B|`%{foo}%{->}%{bar}`|`foo: A, bar: B`|
-|A C B|`%{foo/1} %{baz/3} %{bar/2}`|`foo: A, bar: B, baz: C`|
-|A C B|`%{foo} %{?baz} %{bar}`|`foo: A, bar: B`|
-|A B C|`%{+foo} %{+foo} %{foo}`|`foo: A B C`|
-|A B C D|`%{*foo} %{&bar} %{*baz} %{&qux}`|`A: B, C: D`|
+### Basic Field Extraction
+
+<ExampleGrid>
+  <CommentCol>
+    Extract first name, last name and age...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "John Doe 28"
+    }
+    ```
+    ```yaml
+    dissect:
+      - field: message
+      - pattern: "%{firstname} %{lastname} %{age}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates separate fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "John Doe 28",
+      "firstname": "John",
+      "lastname": "Doe",
+      "age": "28"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Nested Field Extraction
+
+<ExampleGrid>
+  <CommentCol>
+    Extract error details from a log message...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "checkpoint": {
+        "additional_info": "Administrator failed to log in: Wrong Password",
+        "operation": "Log In",
+        "audit_status": "Failure"
+      }
+    }
+    ```
+    ```yaml
+    dissect:
+      - field: checkpoint.additional_info
+      - pattern: "Administrator failed to log in: %{event.reason}"
+      - if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure'
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates nested event structure:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "checkpoint": {
+        "additional_info": "Administrator failed to log in: Wrong Password",
+        "operation": "Log In", 
+        "audit_status": "Failure"
+      },
+      "event": {
+        "reason": "Wrong Password"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    When pattern doesn't match...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "John Doe"
+    }
+    ```
+    ```yaml
+    dissect:
+      - field: message
+      - pattern: "%{firstname} %{lastname} %{age}"
+      - ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    error can be ignored:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "John Doe",
+      "error": {
+        "message": "pattern and string value do not match"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Non-String Field Handling
+
+<ExampleGrid>
+  <CommentCol>
+    When field is not a string...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": 12345
+    }
+    ```
+    ```yaml
+    dissect:
+      - field: message
+      - pattern: "%{data}"
+      - ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    error is captured:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": 12345,
+      "error": {
+        "message": "field value is not a string"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+- The separator in `append_separator` must be a single character
+- All named capture groups must extract a non-empty value
+- The input field must be a string value
+- Patterns are matched exactly, including spaces
+:::
+
+:::note
+Use the `ignore_missing` flag when the field may not always exist, and `ignore_failure` when pattern matching failures should be tolerated.
+:::

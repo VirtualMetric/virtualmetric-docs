@@ -1,36 +1,203 @@
 # Normalize
 
 ## Synopsis
-```yaml
+
+```yaml {3}
 normalize:
+  - source_format: <string>
+  - target_format: <string>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
   - on_failure: <processor[]>
   - on_success: <processor[]>
-  - source_format: <ident>
   - tag: <string>
-  - target_format: <ident>
 ```
 
 ## Description
 
-**Functionality**: Converts the source type fields to the target type fields such as [**ECS**](/docs/reference/ecs.mdx) to [**CIM**](/docs/reference/cim.mdx) or [**ASIM**](/docs/reference/asim.mdx), or vice versa.
+**Functionality**: Converts log field names between different normalization formats (ECS, CIM, ASIM). The processor automatically detects source formats when not specified and handles field name transformations while preserving values.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`source_format`|N|-|Field containing the source type|
-|`tag`|N|-|Identifier|
-|`target_format`|N|-|Field to assign converted type|
+|`source_format`|N|auto-detect|Source format (`ecs`, `cim`, `asim`)|
+|`target_format`|Y|-|Target format to convert to|
+|`description`|N|-|Documentation note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Skip processing errors|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier for logging|
 
-## Field Mappings
+## Format Detection
+
+The processor automatically detects the source format based on characteristic fields:
+
+|Format|Indicator Field|
+|---|---|
+|ECS|`@timestamp`|
+|CIM|`_time`|
+|ASIM|`TimeGenerated`|
+
+## Examples
+
+### ECS to CIM Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Convert ECS format to CIM...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "ip": "128.232.110.120"
+      },
+      "destination": {
+        "ip": "192.168.1.1"
+      },
+      "network": {
+        "direction": "inbound"
+      }
+    }
+    ```
+    ```yaml
+    normalize:
+      - source_format: ecs
+      - target_format: cim
+    ```
+  </CodeCol>
+  <CommentCol>
+    maps to CIM fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "src": "128.232.110.120",
+      "dest": "192.168.1.1",
+      "direction": "inbound"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### CIM to ECS Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Convert CIM format to ECS...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "src": "128.232.110.120",
+      "dest": "192.168.1.1",
+      "direction": "outbound"
+    }
+    ```
+    ```yaml
+    normalize:
+      - source_format: cim
+      - target_format: ecs
+    ```
+  </CodeCol>
+  <CommentCol>
+    maps to ECS fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "ip": "128.232.110.120"
+      },
+      "destination": {
+        "ip": "192.168.1.1"
+      },
+      "network": {
+        "direction": "outbound"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Auto-detected Format to ASIM
+
+<ExampleGrid>
+  <CommentCol>
+    Auto-detect source format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "_time": "2023-01-01T00:00:00Z",
+      "src": "128.232.110.120",
+      "dest": "192.168.1.1",
+      "direction": "outbound"
+    }
+    ```
+    ```yaml
+    normalize:
+      - target_format: asim
+    ```
+  </CodeCol>
+  <CommentCol>
+    detects CIM and converts to ASIM:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "TimeGenerated": "2023-01-01T00:00:00Z",
+      "SrcIp": "128.232.110.120",
+      "DstIp": "192.168.1.1",
+      "NetworkDirection": "outbound"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle conversion errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "invalid": true
+      }
+    }
+    ```
+    ```yaml
+    normalize:
+      - target_format: cim
+      - ignore_failure: true
+      - on_failure:
+          - set:
+              - field: error
+              - value: "Conversion failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    captures error information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "invalid": true
+      },
+      "error": "Conversion failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Common Field Mappings
 
 ### Network Fields
 
@@ -40,144 +207,26 @@ normalize:
 |`destination.ip`|`dest`|`DstIp`|
 |`network.direction`|`direction`|`NetworkDirection`|
 
-## Format Detection
+### Event Fields
 
-When `source_format` is not specified, the processor attempts to auto-detect the format based on characteristic fields:
+|ECS|CIM|ASIM|
+|---|---|---|
+|`@timestamp`|`_time`|`TimeGenerated`|
+|`event.type`|`action`|`EventType`|
+|`event.category`|`category`|`EventCategory`|
 
-- Presence of `@timestamp` indicates ECS format
-- Presence of `_time` indicates CIM format
-- Presence of `TimeGenerated` indicates ASIM format
+### User Fields
 
-## Examples
-
-### ECS to CIM Conversion
-
-```yaml
-- normalize:
-    description: "Convert ECS to CIM format"
-    source_format: "ecs"
-    target_format: "cim"
-    tag: "format_conversion"
-```
-
-Input:
-```json
-{
-  "source": {
-    "ip": "128.232.110.120"
-  },
-  "destination": {
-    "ip": "192.168.1.1"
-  },
-  "network": {
-    "direction": "inbound"
-  }
-}
-```
-
-Output:
-```json
-{
-  "src": "128.232.110.120",
-  "dest": "192.168.1.1",
-  "direction": "inbound"
-}
-```
-
-### CIM to ASIM Conversion
-
-```yaml
-- normalize:
-    description: "Convert CIM to ASIM format"
-    source_format: "cim"
-    target_format: "asim"
-```
-
-Input:
-```json
-{
-  "src": "128.232.110.120",
-  "dest": "192.168.1.1",
-  "direction": "outbound"
-}
-```
-
-Output:
-```json
-{
-  "SrcIp": "128.232.110.120",
-  "DstIp": "192.168.1.1",
-  "NetworkDirection": "outbound"
-}
-```
-
-### Auto-detection with Error Handling
-
-```yaml
-- normalize:
-    description: "Convert to ASIM with error handling"
-    target_format: "asim"
-    ignore_failure: true
-    on_failure:
-      - set:
-          field: "error.message"
-          value: "Format conversion failed"
-```
-
-## Error Handling
-
-The processor provides several ways to handle conversion errors:
-
-### Ignore Failures
-
-Set `ignore_failure: true` to continue processing even if normalization fails:
-
-```yaml
-- normalize:
-    target_format: "asim"
-    ignore_failure: true
-```
-
-### Failure Processing
-
-Use `on_failure` to handle conversion errors:
-
-```yaml
-- normalize:
-    target_format: "cim"
-    on_failure:
-      - set:
-          field: "normalize_error"
-          value: true
-```
-
-### Success Processing
-
-Use `on_success` to perform actions after successful conversion:
-
-```yaml
-- normalize:
-    target_format: "ecs"
-    on_success:
-      - set:
-          field: "normalized"
-          value: true
-```
-
-## Conditional Execution
-
-Use the `if` field to normalize conditionally:
-
-```yaml
-- normalize:
-    if: "ctx.format_version != 'latest'"
-    target_format: "ecs"
-```
+|ECS|CIM|ASIM|
+|---|---|---|
+|`user.name`|`user`|`ActorUsername`|
+|`user.id`|`user_id`|`ActorUserId`|
+|`user.domain`|`user_domain`|`ActorUserDomain`|
 
 :::note
-All normalization is case-insensitive. The format names "ECS", "ecs", and "Ecs" are equivalent.
+Format detection is case-insensitive - "ECS", "ecs", and "Ecs" are equivalent.
 :::
 
 :::warning
-Normalization may lose information if the target format doesn't have equivalent fields. Always test your normalization rules with sample data.
+Field mapping is non-reversible if the target format doesn't have equivalent fields. Test conversions with sample data.
 :::

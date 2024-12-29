@@ -15,28 +15,198 @@ fail:
 
 ## Description
 
-**Functionality**: Raises an exception.
-
-Useful to display a specific message to the requester when a pipeline is expected to fail.
+**Functionality**: Intentionally fails the pipeline with a custom error message. The message can include templates that reference document fields. This processor is particularly useful for:
+- Validation with context-specific error messages
+- Business rule enforcement
+- Conditional pipeline termination
+- Debug and testing scenarios
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`message`|Y||Error message displayed|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`message`|Y|-|Error message to display. Supports templates using `{{field}}` syntax|
+|`description`|N|-|Explanatory note for documentation|
+|`if`|N|-|Condition determining when to fail|
+|`ignore_failure`|N|`false`|If `true`, the failure is logged but processing continues|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|||
-|`tag`|N|-|Identifier|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier for the failure point|
 
 ## Examples
 
-Notify the user if a tag was not found:
+### Basic Failure
 
-```yaml
-fail:
-  if: "! tags.contains('foo')"
-  message: "The 'foo' tag not found"
-```
+<ExampleGrid>
+  <CommentCol>
+    Simple failure with static message...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "field": "value"
+    }
+    ```
+    ```yaml
+    fail:
+      - message: "Intentional failure"
+      - tag: "test"
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces error:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error": {
+        "message": "Intentional failure",
+        "tag": "test"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Templated Messages
+
+<ExampleGrid>
+  <CommentCol>
+    Use document fields in error message...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "id": "12345",
+        "role": "guest"
+      },
+      "resource": "admin_panel"
+    }
+    ```
+    ```yaml
+    fail:
+      - message: "User {{user.id}} with role {{user.role}} cannot access {{resource}}"
+      - if: "ctx.user.role != 'admin'"
+      - tag: "access_control"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates detailed error:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error": {
+        "message": "User 12345 with role guest cannot access admin_panel",
+        "tag": "access_control"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Failure
+
+<ExampleGrid>
+  <CommentCol>
+    Fail based on document content...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "condition": true
+    }
+    ```
+    ```yaml
+    fail:
+      - message: "Conditional failure triggered"
+      - if: "ctx.condition == true"
+      - description: "Fail when condition is true"
+    ```
+  </CodeCol>
+  <CommentCol>
+    fails when condition met:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error": {
+        "message": "Conditional failure triggered"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Ignored Failure
+
+<ExampleGrid>
+  <CommentCol>
+    Continue processing despite failure...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status": "warning"
+    }
+    ```
+    ```yaml
+    fail:
+      - message: "Warning status detected"
+      - ignore_failure: true
+      - tag: "status_check"
+    ```
+  </CodeCol>
+  <CommentCol>
+    logs error but continues:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status": "warning",
+      "error": {
+        "message": "Warning status detected",
+        "tag": "status_check"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Common Use Cases
+
+1. **Validation with Context**
+   ```yaml
+   fail:
+     - message: "Invalid amount {{amount}} for currency {{currency}}"
+     - if: "ctx.amount <= 0"
+   ```
+
+2. **Access Control**
+   ```yaml
+   fail:
+     - message: "User {{user.name}} lacks required permission: {{required_permission}}"
+     - if: "!ctx.user.permissions.contains(ctx.required_permission)"
+   ```
+
+3. **Data Quality**
+   ```yaml
+   fail:
+     - message: "Field {{field_name}} exceeds maximum length of {{max_length}}"
+     - if: "ctx.field_name.length() > ctx.max_length"
+   ```
+
+:::warning
+- Template fields must exist in the document or the processor will fail
+- When `ignore_failure` is true, errors are still logged but don't stop processing
+- Complex conditions should be tested thoroughly as they can lead to unexpected failures
+:::
+
+:::note
+Best practices:
+- Use templates to create clear, context-specific error messages
+- Include relevant field values in error messages for debugging
+- Use `tag` for error categorization
+- Add `description` to document failure conditions
+:::

@@ -1,4 +1,4 @@
-# KV
+# KV (Key-Value)
 
 ## Synopsis
 
@@ -27,71 +27,215 @@ kv:
 
 ## Description
 
-**Functionality**: Helps automatically parse messages (or specific event fields) that occur as `key-value` pairs.
+**Functionality**: Parses strings containing key-value pairs into structured fields. The processor supports various delimiter patterns, key filtering, value formatting, and automatic type casting.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field to be parsed|
-|`field_split`|Y||Regular expression for splitting key-value pairs|
-|`value_split`|Y||Regular expression for splitting the key from the value|
-|`description`|N|-|Explanatory note|
-|`exclude_keys`|N|`null`|List of keys to exclude from the document|
-|`if`|N|-|Condition to run|
-|`ignore_casting`|N|`false`| ??? |
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`include_keys`|N|`null`|List of keys to include in the document|
-|`lowercase_keys`|N|`false`|Convert keys to lowercase|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`prefix`|N|`null`|Prefix to prepend to the extracted keys|
-|`strip_brackets`|N|`false`|If `true`, bracket pairs `()`, `<>`, and `[]` as well as the `'` and `"` quote characters are stripped from the values|
-|`tag`|N|-|Identifier|
-|`target_field`|N|`null`|Field to assign keys to. Default is the root of the document|
-|`trim_key`|N|`null`|List of characters to trim from the keys|
-|`trim_value`|N|`null`|List of characters to trim from the values|
+|`field`|Y|-|Source field containing key-value pairs|
+|`field_split`|Y|-|Delimiter between key-value pairs|
+|`value_split`|Y|-|Delimiter between keys and values|
+|`description`|N|-|Documentation note|
+|`exclude_keys`|N|-|Keys to exclude from output|
+|`if`|N|-|Conditional expression|
+|`ignore_casting`|N|`false`|Disable automatic type conversion|
+|`ignore_failure`|N|`false`|Skip processing errors|
+|`ignore_missing`|N|`false`|Skip if input field missing|
+|`include_keys`|N|-|Only include specified keys|
+|`lowercase_keys`|N|`false`|Convert all keys to lowercase|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`prefix`|N|-|Prefix for extracted keys|
+|`strip_brackets`|N|`false`|Remove brackets from values|
+|`tag`|N|-|Identifier for logging|
+|`target_field`|N|-|Output field for parsed data|
+|`trim_key`|N|-|Characters to trim from keys|
+|`trim_value`|N|-|Characters to trim from values|
 
 ## Examples
 
+### Basic Key-Value Parsing
+
 <ExampleGrid>
   <CommentCol>
-    The field contains a string...
+    Parse semicolon-separated pairs...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "data": "foo: 'A', bar: 1"
+      "message": "key1=value1;key2=value2;key3=value3"
+    }
+    ```
+    ```yaml
+    kv:
+      - field: message
+      - field_split: ";"
+      - value_split: "="
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts structured fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "key1=value1;key2=value2;key3=value3",
+      "key1": "value1",
+      "key2": "value2",
+      "key3": "value3"
     }
     ```
   </CodeCol>
+</ExampleGrid>
+
+### Target Field Usage
+
+<ExampleGrid>
   <CommentCol>
-    pairs are separated by commas and keys are separated by colons:
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - kv:
-      field: data
-      field_split: ","
-      value_split: ":"
-      target_field: pairs
-    ```
-  </CodeCol>
-  <CommentCol>
-    They are parsed and placed in the target field:
+    Store parsed values in separate object...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "data": "foo: 'A', bar: 1",
-      "pairs": {
-        "foo": "A",
-        "bar": 1
+      "data": "host=localhost:8080, status=200, method=GET"
+    }
+    ```
+    ```yaml
+    kv:
+      - field: data
+      - field_split: ","
+      - value_split: "="
+      - target_field: request_info
+    ```
+  </CodeCol>
+  <CommentCol>
+    groups related fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "host=localhost:8080, status=200, method=GET",
+      "request_info": {
+        "host": "localhost:8080",
+        "status": "200",
+        "method": "GET"
       }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-{/* TODO: Complete */}
+### Key Filtering
+
+<ExampleGrid>
+  <CommentCol>
+    Include only specific keys...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log": "user=admin role=sudo group=wheel status=active"
+    }
+    ```
+    ```yaml
+    kv:
+      - field: log
+      - field_split: " "
+      - value_split: "="
+      - include_keys: ["user", "role"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts selected keys:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log": "user=admin role=sudo group=wheel status=active",
+      "user": "admin",
+      "role": "sudo"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Value Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Clean up and format values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "name=[John], age='25', city=<New York>"
+    }
+    ```
+    ```yaml
+    kv:
+      - field: data
+      - field_split: ","
+      - value_split: "="
+      - strip_brackets: true
+      - trim_value: "'"
+      - lowercase_keys: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    standardizes output format:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "name=[John], age='25', city=<New York>",
+      "name": "John",
+      "age": "25",
+      "city": "New York"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Key Prefixing
+
+<ExampleGrid>
+  <CommentCol>
+    Add prefix to extracted keys...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": "cpu=80,mem=60,disk=45"
+    }
+    ```
+    ```yaml
+    kv:
+      - field: metrics
+      - field_split: ","
+      - value_split: "="
+      - prefix: "system_"
+    ```
+  </CodeCol>
+  <CommentCol>
+    namespaces the fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": "cpu=80,mem=60,disk=45",
+      "system_cpu": "80",
+      "system_mem": "60",
+      "system_disk": "45"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Whitespace around field and value delimiters is automatically trimmed during processing.
+:::
+
+:::warning
+The processor assumes well-formed key-value pairs. Malformed input may result in missing or incomplete parsing.
+:::

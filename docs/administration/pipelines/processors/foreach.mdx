@@ -1,11 +1,11 @@
-# For Each
+# Foreach
 
 ## Synopsis
 
 ```yaml {2-3}
 foreach:
   - field: <ident>
-  - processor: <ident>
+  - processor: <processor>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
@@ -17,196 +17,224 @@ foreach:
 
 ## Description
 
-**Functionality**: Runs a processor on each element of an array or object when the number of elements is unknown.
+**Functionality**: Runs a processor on each element of an array or object when the number of elements is unknown. The processor supports both arrays and maps (objects) as input, and can execute any valid processor on each element.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field containing the array or object with two or more elements|
-|`processor`|Y||The processor to run on each element|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Execute on this condition|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|||
-|`tag`|N|-|Identifier|
+|`field`|Y|-|Field containing the array or object to iterate over|
+|`processor`|Y|-|The processor configuration to run on each element|
+|`description`|N|-|Explanatory note for documentation|
+|`if`|N|-|Conditional expression determining if the processor should run|
+|`ignore_failure`|N|`false`|If `true`, individual element processing failures are ignored|
+|`ignore_missing`|N|`false`|If `true` and `field` does not exist, exits quietly without modifications|
+|`on_failure`|N|-|Processors to run if an error occurs during iteration|
+|`on_success`|N|-|Processors to run after successful iteration completion|
+|`tag`|N|-|Identifier for logging and debugging|
 
-## Accessors
+## Processing Model
 
-During iteration over an array, the current element's value is stored in the `_ingest._value` metadata field which contains the element along with its child fields, if any. These can be accessed using dot notation on this metadata field.
+The foreach processor operates by:
 
-During iteration over an object, the current element's key is also stored as a string in `_ingest._key`.
+1. Locating the specified field in the document
+2. Determining if the field contains an array or map
+3. For each element:
+   - Storing the current value in `_ingest._value`
+   - Storing the current key/index in `_ingest._key` 
+   - Executing the specified processor
+   - Capturing any errors for failure handling
+4. Cleaning up temporary `_ingest` fields
+5. Running success/failure processors as appropriate
 
-Both of these can be accessed and modified during iteration.
+## Error Handling
 
-## Failure Handling
+The processor provides several error handling mechanisms:
 
-If an element cannot be processed and no `on_failure` processor is specified, `foreach` exits silently leaving the entire array or object unmodified.
+- `ignore_failure`: Skip individual element failures
+- `ignore_missing`: Skip missing input fields
+- `on_failure`: Execute recovery processors on error
+- `on_success`: Execute follow-up processors on success
 
-As this processor has to iterate multiple elements to perform its job, and as there is always the likelihood that one of them is in an invalid state, there is always the possibility of failure. Therefore, it is good practice to not leave the `on_failure` field undefined.
-
-:::note
-In the event of such a failure, elements processed thus far will remain updated.
-:::
+If an error occurs and neither `ignore_failure` nor `on_failure` is specified, the processor will:
+1. Leave already processed elements modified
+2. Stop processing remaining elements
+3. Return the error
 
 ## Examples
 
-### Arrays
-
-Multiple elements can be applied the same operation.
+### Array Processing
 
 <ExampleGrid>
   <CommentCol>
-    The array has three strings.
+    Process each array element...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "data": ["foo", "bar", "baz"]
-    }
-    ```
-  </CodeCol>
-  <CommentCol>
-    With this configuration...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    foreach:
-      - field: data
-      - processor:
-        - uppercase:
-    ```
-  </CodeCol>
-  <CommentCol>
-    ...they are converted to uppercase.
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "data": ["FOO", "BAR", "BAZ"]
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Arrays of Objects
-
- Multiple objects with multiple fields can be applied multiple operations.
-
-<ExampleGrid>
-  <CommentCol>
-    The objects in the array have an `id` field
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "data": [
-        {"id": 1, "name": "foo"},
-        {"id": 2, "name": "bar"}
+      "messages": [
+        {"text": "hello", "read": false},
+        {"text": "world", "read": false}
       ]
     }
     ```
-  </CodeCol>
-  <CommentCol>
-    The processor is configured to remove that field...
-  </CommentCol>
-  <CodeCol>
     ```yaml
     foreach:
-      - field: data
+      - field: messages
       - processor:
-        - remove:
-          field: id
+          set:
+            - field: "_ingest._value.read"
+            - value: true
     ```
   </CodeCol>
   <CommentCol>
-    ...resulting in:
+    marking each as read:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "data": [
-        {"name": "foo"},
-        {"name": "bar"}
+      "messages": [
+        {"text": "hello", "read": true},
+        {"text": "world", "read": true}
       ]
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Objects
-
-Objects with multiple fields can be applied an operation.
+### Map Processing
 
 <ExampleGrid>
   <CommentCol>
-    We have 3 objects with 2 fields each:
+    Process each key-value pair in a map...
   </CommentCol>
   <CodeCol>
-  ```json
-  {
-    "data": {
-      "foos": {
-        "size": 10,
-        "display_name": "Foos"
-      },
-      "bars": {
-        "size": 20,
-        "display_name": "Bars"
-      },
-      "quxs": {
-        "size": 50,
-        "display_name": ""
-      }
-    }
-  }
-  ```
-  </CodeCol>
-  <CommentCol>
-    Convert their display names to uppercase:
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    foreach:
-      - field: data
-      - processor:
-        - uppercase:
-          - field: display_name
-    ```
     ```json
     {
-      "data": {
-        "foos": {
-          "size": 10,
-          "display_name": "FOOS"
-        },
-        "bars": {
-          "size": 20,
-          "display_name": "BARS"
-        },
-        "quxs": {
-          "size": 50
-          "display_name": ""
-        }
+      "counts": {
+        "errors": "5",
+        "warnings": "3",
+        "info": "10"
+      }
+    }
+    ```
+    ```yaml
+    foreach:
+      - field: counts
+      - processor:
+          convert:
+            - field: "_ingest._value"
+            - type: integer
+    ```
+  </CodeCol>
+  <CommentCol>
+    converting string values to integers:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "counts": {
+        "errors": 5,
+        "warnings": 3,
+        "info": 10
       }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Cascading Failures
+### Error Handling
 
-If multiple levels of nesting are being used, the innermost processor can be assigned the task of sending the pipeline to a failure queue for review.
-
-```yaml
-foreach:
-  - field: data
-  - processor:
-    - remove:
-      - field: id
+<ExampleGrid>
+  <CommentCol>
+    Handle processing failures gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": [
+        {"num": "123"},
+        {"num": "invalid"},
+        {"num": "456"}
+      ]
+    }
+    ```
+    ```yaml
+    foreach:
+      - field: values
+      - processor:
+          convert:
+            - field: "_ingest._value.num"
+            - type: integer
+      - ignore_failure: true
       - on_failure:
-          - id: {{{errors.id}}}
-          - message: "Remove failed"
-```
+          - set:
+              - field: "_ingest._value.error"
+              - value: "Conversion failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserving data and adding error info:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": [
+        {"num": 123},
+        {"num": "invalid", "error": "Conversion failed"},
+        {"num": 456}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Nested Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Chain multiple processors for each element...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "users": [
+        {"name": "john doe", "role": "admin"},
+        {"name": "jane smith", "role": "user"}
+      ]
+    }
+    ```
+    ```yaml
+    foreach:
+      - field: users
+      - processor:
+          pipeline:
+            - uppercase:
+                - field: "_ingest._value.name"
+            - set:
+                - field: "_ingest._value.processed"
+                - value: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    applying multiple transformations:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "users": [
+        {"name": "JOHN DOE", "role": "admin", "processed": true},
+        {"name": "JANE SMITH", "role": "user", "processed": true}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The `_ingest._value` and `_ingest._key` fields are automatically cleaned up after processing completes.
+:::
+
+:::warning
+Be careful when modifying the `_ingest` fields directly as they are used internally by the processor.
+:::

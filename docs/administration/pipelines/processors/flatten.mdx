@@ -4,50 +4,254 @@
 
 ```yaml {2}
 flatten:
-  - fields: <ident[]>
+  - field: <ident>
+  - format: <string>
+  - target_field: <ident>
+  - description: <text>
+  - if: <script>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
+  - on_failure: <processor[]>
+  - on_success: <processor[]>
+  - tag: <string>
 ```
 
 ## Description
 
-**Functionality**: Recursively reduces the level of objects, and appends the first level to their keys.
+**Functionality**: Flattens nested objects into a single-level object where keys are paths representing the original nested structure. Supports various formats and can optionally convert field names to match specific schema conventions.
+
+## Parameters
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the nested object to flatten|
+|`format`|N|-|Output format: `ecs`, `cim`, `asim`. When not specified, maintains original case|
+|`target_field`|N|`field`|Field to store the flattened result. If not specified, overwrites the source field|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|If `true`, errors are ignored|
+|`ignore_missing`|N|`false`|If `true`, missing fields are skipped|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
 
 ## Examples
 
+### Basic Flattening
+
 <ExampleGrid>
   <CommentCol>
-    Fields with multiple nested levels...
+    Flatten a nested object...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "foo": {
-        "bar": {
-          "baz": 10,
-          "qux": "D",
-        },
-        "jaz": [1, 2, 3]
+      "nested": {
+        "field1": "value1",
+        "field2": {
+          "subfield": "value2"
+        }
+      }
+    }
+    ```
+    ```yaml
+    flatten:
+      - field: nested
+      - target_field: flattened
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates dot-notation paths:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "nested": {
+        "field1": "value1",
+        "field2": {
+          "subfield": "value2"
+        }
+      },
+      "flattened": {
+        "field1": "value1",
+        "field2.subfield": "value2"
       }
     }
     ```
   </CodeCol>
+</ExampleGrid>
 
+### ECS Format
+
+<ExampleGrid>
   <CommentCol>
-    are flattened to a single level:
+    Convert to ECS format with lowercase fields...
   </CommentCol>
   <CodeCol>
-    ```yaml
-    flatten:
-      - fields:
-        - foo.bar.baz
-        - foo.bar.qux
-        - foo.jaz
-    ```
     ```json
     {
-      "foo_bar_baz": 10,
-      "foo_bar_qux": "D",
-      "foo_jaz": [1, 2, 3]
+      "User": {
+        "Name": "John",
+        "Details": {
+          "Age": 30
+        }
+      }
+    }
+    ```
+    ```yaml
+    flatten:
+      - field: User
+      - format: ecs
+    ```
+  </CodeCol>
+  <CommentCol>
+    normalizes field names:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "User": {
+        "name": "John",
+        "details.age": 30
+      }
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Deep Nesting
+
+<ExampleGrid>
+  <CommentCol>
+    Flatten deeply nested structures...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "root": {
+        "level1": {
+          "level2": {
+            "level3": "deep value"
+          },
+          "sibling": "value"
+        }
+      }
+    }
+    ```
+    ```yaml
+    flatten:
+      - field: root
+      - target_field: flat
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves complete paths:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "flat": {
+        "level1.level2.level3": "deep value",
+        "level1.sibling": "value"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Flattening
+
+<ExampleGrid>
+  <CommentCol>
+    Flatten only when condition is met...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "condition": true,
+      "nested": {
+        "field": "value"
+      }
+    }
+    ```
+    ```yaml
+    flatten:
+      - field: nested
+      - if: "ctx.condition == true"
+    ```
+  </CodeCol>
+  <CommentCol>
+    processes when condition is true:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "condition": true,
+      "nested": {
+        "field": "value"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Format Options
+
+1. **Default (no format)**
+   - Preserves original field name casing
+   - Uses dot notation for paths
+   - Example: `User.FirstName.Last`
+
+2. **ECS Format**
+   - Converts all field names to lowercase
+   - Uses dot notation for paths
+   - Example: `user.firstname.last`
+
+3. **CIM Format**
+   - Converts all field names to lowercase
+   - Specifically for Common Information Model
+   - Example: `user.firstname.last`
+
+4. **ASIM Format**
+   - Preserves original field name casing
+   - For Advanced Security Information Model
+   - Example: `User.FirstName.Last`
+
+## Common Use Cases
+
+1. **Log Normalization**
+   ```yaml
+   flatten:
+     - field: metadata
+     - format: ecs
+     - target_field: normalized_metadata
+   ```
+
+2. **Schema Conversion**
+   ```yaml
+   flatten:
+     - field: raw_data
+     - format: cim
+     - target_field: cim_data
+   ```
+
+3. **Deep Object Simplification**
+   ```yaml
+   flatten:
+     - field: complex_object
+     - target_field: simple_object
+   ```
+
+:::warning
+- The processor only flattens objects/maps
+- Non-map values will cause an error unless `ignore_failure` is true
+- Original nested structure is preserved in source field when using `target_field`
+:::
+
+:::note
+Best practices:
+- Use `target_field` when you need to preserve the original structure
+- Choose appropriate format based on your schema requirements
+- Consider using `ignore_missing` for optional fields
+- Test with deeply nested structures to ensure expected results
+:::

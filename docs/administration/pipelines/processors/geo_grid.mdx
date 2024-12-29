@@ -23,41 +23,240 @@ geo_grid:
 
 ## Description
 
-**Functionality**: Transforms geo-grid definitions of tiles or cells into standard bounding boxes or polygons that represent their shapes.
+**Functionality**: Transforms geo-grid definitions (geohash, geotile) into standard geometric shapes (bounding boxes or polygons) for spatial indexing and operations.
 
-This is particularly useful for enabling spatial indexing and operations on the tile shapes.
+The processor converts string-based grid cell identifiers into actual geometric shapes that can be used for spatial operations. For example:
+- A geohash like "sn4ph" becomes a polygon with precise coordinates
+- A geotile like "4/8/5" becomes an envelope with defined boundaries
 
-For instance, a geotile value like "`5/9/4`" can be stored as a string, but that format does _not_ allow spatial manipulation. A geometric representation like (`-67.5, 89.9341`, `-67.5, 89.9555`, `-78.75, 89.9555`, `-78.75, 89.9341`), however, lends itself to indexing as a `geo_shape` field, which makes spatial interactions possible.
+This transformation enables:
+- Spatial indexing of grid cells
+- Geometric operations (intersections, contains, etc.)
+- Visual representation of grid cells
+- Integration with geo-shape capable systems
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field containing the geo-tile definition. The format is determined by `tile_type`|
-|`tile_type`|Y||Valid formats: `geohash`, `geotile`, `geohex`|
-|`children_field`|N|-|If children tiles exist, save those tiles' addresses to this field as a string array|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`non_children_field`|N|-|If intersecting non-child tiles exist, save their addresses to this field as a string array|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`parent_field`|N|-|If a parent tile exists, save its address to this field|
-|`precision_field`|N|-|Save the tile zoom rate as an integer to this field|
-|`tag`|N|-|Identifier|
-|`target_field`|N|`field`|Field to assign the polygon shape to|
-|`target_format`|N|-|Valid options: `WKT`, `GeoJSON`|
+|`field`|Y|-|Field containing the geo-grid cell identifier|
+|`tile_type`|Y|-|Grid system type: `geohash` or `geotile`|
+|`children_field`|N|-|Store child cell identifiers in this field|
+|`description`|N|-|Documentation note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Skip errors in processing|
+|`ignore_missing`|N|`false`|Skip if input field is missing|
+|`non_children_field`|N|-|Store intersecting non-child cells here|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`parent_field`|N|-|Store parent cell identifier here|
+|`precision_field`|N|-|Store zoom level/precision here|
+|`tag`|N|-|Identifier for logging|
+|`target_field`|N|`field`|Output field for the shape|
+|`target_format`|N|`GeoJSON`|Output format: `WKT` or `GeoJSON`|
+
+## Output Formats
+
+### GeoJSON Format
+
+For geohash cells, outputs a GeoJSON Polygon:
+```json
+{
+  "type": "Polygon",
+  "coordinates": [
+    [
+      [lon1, lat1],
+      [lon2, lat2],
+      [lon3, lat3],
+      [lon4, lat4],
+      [lon1, lat1]  // Closing point
+    ]
+  ]
+}
+```
+
+For geotile cells, outputs a GeoJSON Envelope:
+```json
+{
+  "type": "Envelope",
+  "coordinates": [
+    [minLon, maxLat],  // Top-left
+    [maxLon, minLat]   // Bottom-right
+  ]
+}
+```
+
+### WKT Format
+
+For geohash cells, outputs a WKT POLYGON:
+```
+POLYGON((lon1 lat1, lon2 lat2, lon3 lat3, lon4 lat4, lon1 lat1))
+```
+
+For geotile cells, outputs a WKT ENVELOPE:
+```
+ENVELOPE(minLon, maxLon, maxLat, minLat)
+```
 
 ## Examples
 
-Populate the `location` field of type `geo_shape` using the `geotile` field:
+### Basic Geohash Conversion
 
-```yaml
-processors:
-  - geo_grid:
-    field: location
-    tile_type: geotile
-```
+<ExampleGrid>
+  <CommentCol>
+    Convert a geohash to a polygon...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "geocell": "sn4ph"
+    }
+    ```
+    ```yaml
+    geo_grid:
+      - field: geocell
+      - tile_type: geohash
+      - target_field: geoshape
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a GeoJSON polygon:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "geocell": "sn4ph",
+      "geoshape": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [2.98828125, 34.98046875],
+            [3.0322265625, 34.98046875],
+            [3.0322265625, 35.0244140625],
+            [2.98828125, 35.0244140625],
+            [2.98828125, 34.98046875]
+          ]
+        ]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
 
-{/* FIXME: Examples and graphics needed */}
+### Geotile to WKT
+
+<ExampleGrid>
+  <CommentCol>
+    Convert a geotile to WKT format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tile": "4/8/5"
+    }
+    ```
+    ```yaml
+    geo_grid:
+      - field: tile
+      - tile_type: geotile
+      - target_field: shape
+      - target_format: wkt
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces a WKT envelope:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tile": "4/8/5",
+      "shape": "ENVELOPE(0.0, 22.5, 55.77657301866769, 40.97989806962013)"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Only process when condition is met...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "geocell": "4/8/5",
+      "process": true
+    }
+    ```
+    ```yaml
+    geo_grid:
+      - field: geocell
+      - tile_type: geotile
+      - if: "ctx.process == true"
+      - target_field: shape
+    ```
+  </CodeCol>
+  <CommentCol>
+    transforms when condition is true:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "geocell": "4/8/5",
+      "process": true,
+      "shape": {
+        "type": "Envelope",
+        "coordinates": [
+          [0.0, 55.77657301866769],
+          [22.5, 40.97989806962013]
+        ]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle invalid grid cell values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "geocell": "invalid_value"
+    }
+    ```
+    ```yaml
+    geo_grid:
+      - field: geocell
+      - tile_type: geohash
+      - ignore_failure: true
+      - on_failure:
+          - set:
+              - field: error
+              - value: "Invalid geohash"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing with error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "geocell": "invalid_value",
+      "error": "Invalid geohash"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor automatically handles different precision levels for both geohash and geotile formats, adjusting the output shape accordingly.
+:::
+
+:::warning
+Geohash cells that contain poles cannot be converted to polygons due to coordinate system limitations.
+:::

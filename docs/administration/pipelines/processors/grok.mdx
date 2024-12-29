@@ -2,113 +2,231 @@
 
 ## Synopsis
 
-```yaml {2,3}
+```yaml {2-3}
 grok:
   - field: <ident>
-  - patterns: <script>
+  - patterns: <string[]>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
   - ignore_missing: <boolean>
   - on_failure: <processor[]>
   - on_success: <processor[]>
-  - pattern_definitions: <script>
+  - pattern_definitions: <map>
   - tag: <string>
   - trace_match: <boolean>
 ```
 
 ## Description
 
-**Functionality**: Extracts structured fields from a single text field within a document using pre-defined regular expression-based patterns.
+**Functionality**: Extracts structured fields from text using pattern matching. The Grok processor combines pre-defined patterns to match and extract values from text fields. It uses a pattern syntax that combines pattern names with field names in the format `%{PATTERN_NAME:FIELD_NAME}`.
 
-You choose which field to extract matched fields from, as well as the grok pattern you expect will match. A grok pattern contains _key-value_ pairs of labels and predefined regular expressions for reusability, and it follows the syntax `%{PATTERN_NAME:FIELD_NAME}`.
+The processor supports type conversion by appending `:type` to field names (e.g., `%{NUMBER:duration:int}`).
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field containing the grok expression to be parsed|
-|`patterns`|Y||Ordered list of grok expressions to match with named captures. Returns the first match|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`pattern_definitions`|N|-|A map of _name_$\rightarrow$_pattern_ tuples. Patterns matching existing names override the pre-existing ones|
-|`tag`|N|-|Identifier|
-|`trace_match`|N|`false`|Inserts `_ingest._grok_match_index` into the matched document's metadata, along with the index of the pattern that matched|
+|`field`|Y|-|Text field to extract patterns from|
+|`patterns`|Y|-|List of patterns to try matching (first match wins)|
+|`description`|N|-|Documentation note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Skip pattern match failures|
+|`ignore_missing`|N|`false`|Skip if input field missing|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`pattern_definitions`|N|-|Custom pattern definitions|
+|`tag`|N|-|Identifier for logging|
+|`trace_match`|N|`false`|Track which pattern matched|
+
+## Pattern Types
+
+The processor supports two types of value conversions:
+
+1. **Integer** (`:int`): Converts matched values to 32-bit integers
+2. **Long** (`:long`): Converts matched values to 64-bit integers
 
 ## Examples
 
-### Setting information
+### Basic Pattern Matching
 
 <ExampleGrid>
-	<CommentCol>
-		Data contains user identification information:
-	</CommentCol>
-	<CodeCol>
-		```json
-		{
-			"user": {
-				"name": "John",
-				"last-name": "Doe"
-			}
-		}
-		```
-	</CodeCol>
-	<CommentCol>
-		Using his hostname...
-	</CommentCol>
-	<CodeCol>
-		```js
-		  '%{HOSTNAME:privilege}%'
-		```
-	</CodeCol>
-
-	<CommentCol>
-		classify the user for his access privileges:
-	</CommentCol>
-	<CodeCol>
-		```json
-		{
-			"user": {
-				"name": "John",
-				"last-name": "Doe",
-				"privilege": "Guest"
-			}
-		}
-		```
-	</CodeCol>
+  <CommentCol>
+    Parse Apache log entry...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "192.168.1.1 - - [07/Jul/2023:12:34:56 +0000] \"GET /index.html HTTP/1.1\" 200 1234"
+    }
+    ```
+    ```yaml
+    grok:
+      - field: message
+      - patterns:
+          - "%{COMMONAPACHELOG}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts structured fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "clientip": "192.168.1.1",
+      "timestamp": "07/Jul/2023:12:34:56 +0000",
+      "verb": "GET",
+      "request": "/index.html",
+      "httpversion": "1.1",
+      "response": 200,
+      "bytes": 1234
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
-### Inferring information
+### Custom Pattern Definitions
 
 <ExampleGrid>
-	<CommentCol>
-		Using local time...
-	</CommentCol>
-	<CodeCol>
-		```json
-		{
-		  "local-time": "2024-10-16T04:15:10.55+01:00"
-		}
-		```
-	</CodeCol>
-	<CommentCol>
-		infer the event date:
-	</CommentCol>
-	<CodeCol>
-		```js
-		  '%{DATESTAMP:event-date}%'
-		```
-		```json
-		{
-		  "local-time": "2024-10-16T04:15:10.55+01:00"
-		  "event-data": "2024-10-16"
-		}
-		```
-	</CodeCol>
+  <CommentCol>
+    Define and use custom patterns...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_entry": "User[123] Action=LOGIN Status=SUCCESS"
+    }
+    ```
+    ```yaml
+    grok:
+      - field: log_entry
+      - pattern_definitions:
+          USER_ID: "User\\[(?<user_id>\\d+)\\]"
+          ACTION: "Action=(?<action>\\w+)"
+          STATUS: "Status=(?<status>\\w+)"
+      - patterns:
+          - "%{USER_ID} %{ACTION} %{STATUS}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates structured output:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": "123",
+      "action": "LOGIN",
+      "status": "SUCCESS"
+    }
+    ```
+  </CodeCol>
 </ExampleGrid>
 
-For a list of built-in `grok` patterns, see the [Appendix](/docs/appendix/grok-patterns.mdx).
+### Type Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Convert matched values to specific types...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metric": "cpu_usage=85 memory=1024"
+    }
+    ```
+    ```yaml
+    grok:
+      - field: metric
+      - patterns:
+          - "cpu_usage=%{NUMBER:cpu:int} memory=%{NUMBER:memory:long}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    automatically converts types:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cpu": 85,
+      "memory": 1024
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Syslog Parsing
+
+<ExampleGrid>
+  <CommentCol>
+    Parse structured syslog message...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "<134>1 2022-07-06T15:53:08Z host app 2700 - [action:\"login\"; status:\"failed\"]"
+    }
+    ```
+    ```yaml
+    grok:
+      - field: message
+      - patterns:
+          - "%{SYSLOG5424PRI}%{NONNEGINT:ver} +(?:%{TIMESTAMP_ISO8601:ts}|-) +(?:%{IPORHOST:host}|-) +(?:%{SYSLOG5424PRINTASCII:app}) +(?:%{NONNEGINT:pid}|-) +(?:%{SYSLOG5424PRINTASCII:msgid}|-) +\\[%{GREEDYDATA:structured_data}\\]"
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts syslog fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ver": "1",
+      "ts": "2022-07-06T15:53:08Z",
+      "host": "host",
+      "app": "app",
+      "pid": "2700",
+      "structured_data": "action:\"login\"; status:\"failed\""
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Patterns
+
+<ExampleGrid>
+  <CommentCol>
+    Try multiple patterns in order...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Error: Connection timeout after 30s"
+    }
+    ```
+    ```yaml
+    grok:
+      - field: message
+      - patterns:
+          - "Error: %{GREEDYDATA:error_message}"
+          - "Warning: %{GREEDYDATA:warning_message}"
+          - "Info: %{GREEDYDATA:info_message}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    uses first matching pattern:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_message": "Connection timeout after 30s"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pattern matching stops at the first successful match. Order your patterns from most specific to most general.
+:::
+
+:::warning
+Complex patterns may impact performance. Monitor matching time and consider optimizing patterns for frequently processed fields.
+:::

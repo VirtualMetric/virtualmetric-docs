@@ -2,10 +2,10 @@
 
 ## Synopsis
 
-```yaml
+```yaml {2}
 reroute:
-  - description: <text>
   - destination: <string>
+  - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
   - on_failure: <processor[]>
@@ -15,34 +15,22 @@ reroute:
 
 ## Description
 
-**Functionality**: Allows routing a document to another target index or data stream.
+**Functionality**: Enables dynamic routing of logs to different target systems based on pipeline processing results.
 
-It has two main modes:
+The Reroute processor is a powerful feature that allows you to make routing decisions after processing your logs through pipelines. While basic routing can be configured at the source level, Reroute gives you the ability to:
 
-* If the `destination` option is to be set, the target is explicitly specified, and the `dataset` and `namespace` options cannot be set.
+- Route logs to different destinations based on the content extracted or modified by pipeline processors
+- Implement complex routing logic that depends on multiple conditions or transformations
+- Direct logs to specific target systems defined in your configuration
 
-* If the `destination` option is not set, the processor is in a data stream mode. In this mode, `reroute` can only be used on data streams that follow the data stream naming scheme. Trying to use it on a data stream with a non-compliant name will raise an exception.
-
-The processor can use both literal values and reference fields from the document to determine the `dataset` and `namespace` of the new target.
-
-:::warning
-It is not possible to change the type of the data stream with `reroute`.
-:::
-
-When a `reroute` processor gets executed, other processors in the pipeline are skipped. If the current pipeline is executed in the context of a _Pipeline_, the calling pipeline will be skipped as well. This means that at most one `reroute` processor is ever executed within a pipeline, allowing to define mutually exclusive routing conditions.
-
-The `reroute` processor ensures that the `data_stream.<type|dataset|namespace>` fields are set according to the new target. If the document contains an `event.dataset` value, it will be updated to reflect the same value as `data_stream.dataset`.
-
-:::note
-The client needs to have execute permissions on the final target. Otherwise, the document will be rejected with a security exception.
-:::
+The `destination` field should reference a target system defined in your configuration (e.g., Sentinel, Splunk, etc.).
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
+|`destination`|Y|-|Name of the target system configuration to route to|
 |`description`|N|-|Explanatory note|
-|`destination`|N|-|Field containing the destination|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
@@ -51,25 +39,140 @@ The client needs to have execute permissions on the final target. Otherwise, the
 
 ## Examples
 
-### Conditional routing
+### Route to Microsoft Sentinel
 
-Using the `if` option, the event can be rerouted to a new target:
+<ExampleGrid>
+  <CommentCol>
+    First, define your Sentinel target configuration...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: auto_sentinel
+      type: sentinel
+      properties:
+        tenant_id: "00000000-0000-0000-0000-000000000000"
+        client_id: "00000000-0000-0000-0000-000000000000"
+        client_secret: "your-client-secret"
+        rule_id: "dcr-00000000-0000-0000-0000-000000000000"
+        endpoint: "https://your-dcr-endpoint"
+    ```
+  </CodeCol>
+  
+  <CommentCol>
+    Then use Reroute in your pipeline to send specific logs to Sentinel...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: security_pipeline
+        processors:
+          - grok:
+              field: message
+              pattern: '%{IPADDR:source_ip}'
+          - reroute:
+              if: 'source_ip matches "10.0.0.*"'
+              destination: auto_sentinel
+    ```
+  </CodeCol>
+</ExampleGrid>
 
-```yaml
-- reroute:
-  tag: "review-routing"
-  if: "log?.file?.path?.contains('review')"
-  dataset: review
-```
+### Conditional Routing Based on Log Processing
 
-### Defining a terminal route
+<ExampleGrid>
+  <CommentCol>
+    Process logs and route based on extracted data...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: firewall_logs
+        processors:
+          - checkpoint:
+              field: message
+          - reroute:
+              if: 'checkpoint.action == "Drop" && checkpoint.severity >= 3'
+              destination: high_priority_sentinel
+          - reroute:
+              destination: standard_sentinel
+    ```
+  </CodeCol>
+  <CommentCol>
+    using different target configurations:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: high_priority_sentinel
+      type: sentinel
+      properties:
+        tenant_id: "tenant1"
+        # ... high priority config
+        
+    - id: 2
+      name: standard_sentinel
+      type: sentinel
+      properties:
+        tenant_id: "tenant2"
+        # ... standard config
+    ```
+  </CodeCol>
+</ExampleGrid>
 
-The processor first tries to resolve the `service.name` to determine the dataset. If that field contains `null`, does not exist, or is not a string, it tries the next element in the list which, in the example below, is "`generic`". The `namespace` is configured with a single literal value:
+### Multi-Stage Processing and Routing
 
-```yaml
-- reroute:
-  dataset: ["{{service.name}}", "generic"]
-  namespace: default
-```
+<ExampleGrid>
+  <CommentCol>
+    Process logs through multiple stages before routing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: complex_processing
+        processors:
+          - json:
+              field: message
+          - grok:
+              field: parsed_message
+              pattern: '%{DATA:app_name}'
+          - user_agent:
+              field: user_agent
+          - geoip:
+              field: ip_address
+          - reroute:
+              if: 'geoip.country_code not in ["US", "CA"] && app_name == "core_banking"'
+              destination: security_analytics
+          - reroute:
+              destination: standard_logs
+    ```
+  </CodeCol>
+</ExampleGrid>
 
-{/* TODO: Make the example more illustrative */}
+:::note
+The Reroute processor allows you to leverage the full power of your pipeline processing to make intelligent routing decisions. You can process, enrich, and transform your logs before deciding where they should be sent.
+:::
+
+:::warning
+- Make sure the destination specified in the Reroute processor matches exactly with a target system name in your configuration
+- Only one reroute processor will be executed in a pipeline, even if multiple conditions match
+- Ensure your target system configurations are properly set up with all required credentials and endpoints
+:::
+
+## Advanced Usage
+
+The Reroute processor is particularly powerful when combined with other processors in a pipeline. Common use cases include:
+
+1. **Security Log Processing**:
+   - Parse and normalize logs
+   - Enrich with threat intelligence
+   - Route high-risk events to security platforms
+
+2. **Compliance Requirements**:
+   - Filter sensitive data
+   - Apply transformations
+   - Route to specific compliance-mandated destinations
+
+3. **Cost Optimization**:
+   - Process high-volume logs
+   - Filter out unnecessary data
+   - Route important logs to premium storage/analysis platforms

@@ -5,7 +5,7 @@
 ```yaml {2,3}
 join:
   - field: <ident>
-  - separator: <char>
+  - separator: <string>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
@@ -18,51 +18,176 @@ join:
 
 ## Description
 
-**Functionality**: Joins the elements of an array in a single string, using a separator character between them. Raises an exception if the field does not contain an array.
+**Functionality**: Combines elements from an array into a single string using a specified separator. The processor expects an array of strings as input and produces a concatenated string with the specified separator between elements.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field containing the array values to join|
-|`separator`|Y||Separator character|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`tag`|N|-|Identifier|
-|`target_field`|N|-|Field to assigned the string containing the joined elements to|
+|`field`|Y|-|Source field containing array of strings|
+|`separator`|Y|-|String to insert between elements|
+|`description`|N|-|Documentation note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Skip processing errors|
+|`ignore_missing`|N|`false`|Skip if input field missing|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier for logging|
+|`target_field`|N|`field`|Output field for joined string|
 
 ## Examples
 
+### Basic Array Joining
+
 <ExampleGrid>
   <CommentCol>
-    Collect the items...
+    Join array elements with comma...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "foo": ["A", "B", "C"]
+      "fruits": ["apple", "banana", "cherry"]
     }
+    ```
+    ```yaml
+    join:
+      - field: fruits
+      - separator: ", "
+      - target_field: result
     ```
   </CodeCol>
   <CommentCol>
-    separating them with semicolons:
+    creates comma-separated string:
   </CommentCol>
   <CodeCol>
-    ```yaml
-    - join:
-      field: foo
-      target_field: bar
-      separator: ";"
-    ```
     ```json
     {
-      "foo": ["A", "B", "C"],
-      "bar": "A;B;C"
+      "fruits": ["apple", "banana", "cherry"],
+      "result": "apple, banana, cherry"
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Empty Array Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Join empty array...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": []
+    }
+    ```
+    ```yaml
+    join:
+      - field: tags
+      - separator: ";"
+      - target_field: tag_string
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces empty string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": [],
+      "tag_string": ""
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling for Missing Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Handle missing source field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "other_field": "value"
+    }
+    ```
+    ```yaml
+    join:
+      - field: missing_field
+      - separator: ", "
+      - ignore_missing: true
+      - on_failure:
+          - set:
+              - field: status
+              - value: "field_missing"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing with error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "other_field": "value",
+      "status": "field_missing"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom Separator
+
+<ExampleGrid>
+  <CommentCol>
+    Join with custom separator...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "paths": ["/home", "user", "documents"]
+    }
+    ```
+    ```yaml
+    join:
+      - field: paths
+      - separator: "/"
+      - target_field: full_path
+    ```
+  </CodeCol>
+  <CommentCol>
+    builds path string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "paths": ["/home", "user", "documents"],
+      "full_path": "/home/user/documents"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Common Use Cases
+
+1. **Formatting Lists**: Convert arrays of items into human-readable lists
+2. **Building Paths**: Combine path segments into complete file paths
+3. **Tag Management**: Combine multiple tags into a single string
+4. **CSV Generation**: Create comma-separated values from arrays
+5. **URL Construction**: Join URL segments with appropriate separators
+
+## Limitations and Considerations
+
+1. **String Elements Only**: All array elements must be strings
+2. **Empty Arrays**: Returns an empty string for empty arrays
+3. **Non-Array Input**: Raises an error if input field is not an array
+4. **Missing Fields**: Can be handled with `ignore_missing` flag
+
+:::note
+The processor handles empty arrays gracefully by returning an empty string.
+:::
+
+:::warning
+The processor strictly requires string elements in the array. Non-string elements will cause processing errors.
+:::

@@ -3,7 +3,7 @@
 ## Synopsis
 
 ```yaml
-fail:
+final:
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
@@ -14,28 +14,159 @@ fail:
 
 ## Description
 
-**Functionality**: Finalizes a pipeline without raising any errors.
-
-Useful to prevent other pipelines from working on the same document.
+**Functionality**: Cleanly terminates pipeline processing without raising an error. This processor is particularly useful for:
+- Preventing subsequent pipeline processing
+- Implementing conditional pipeline termination
+- Creating processing breakpoints
+- Optimizing pipeline execution by early termination
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`description`|N|-|Explanatory note for documentation|
+|`if`|N|-|Condition determining when to finalize processing|
+|`ignore_failure`|N|`false`|If `true`, condition evaluation errors are ignored|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`tag`|N|-|Identifier|
+|`tag`|N|-|Identifier for the finalization point|
 
 ## Examples
 
-Terminate the processor if it completes without errors:
+### Basic Finalization
 
-```yaml
-processor-1:
-  field: foo
-  target_field: bar
-  on_success: final
-```
+<ExampleGrid>
+  <CommentCol>
+    Stop processing after field update...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - set:
+          field: status
+          value: completed
+      - final:
+          description: "Stop after status update"
+      - set:  # This processor won't run
+          field: other_field
+          value: skipped
+    ```
+  </CodeCol>
+  <CommentCol>
+    prevents further processing:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status": "completed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Finalization
+
+<ExampleGrid>
+  <CommentCol>
+    Finalize based on packet count...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "packets": 10
+      }
+    }
+    ```
+    ```yaml
+    final:
+      - if: "ctx.source.packets == 10"
+      - description: "Stop processing for 10-packet sources"
+    ```
+  </CodeCol>
+  <CommentCol>
+    stops when condition met:
+  </CommentCol>
+  <CodeCol>
+    ```text
+    Pipeline processing finalized
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Success Handler
+
+<ExampleGrid>
+  <CommentCol>
+    Execute cleanup on finalization...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    final:
+      - description: "Clean finalization"
+      - on_success:
+          - set:
+              field: processing_status
+              value: completed
+          - remove:
+              field: temporary_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    performs cleanup before stopping:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "processing_status": "completed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Common Use Cases
+
+1. **Early Exit on Success**
+   ```yaml
+   processors:
+     - append:
+         field: tags
+         value: processed
+     - final:
+         if: "ctx.tags.contains('processed')"
+   ```
+
+2. **Prevent Duplicate Processing**
+   ```yaml
+   processors:
+     - set:
+         field: processed_by
+         value: pipeline_a
+     - final:
+         description: "Prevent other pipelines from processing"
+   ```
+
+3. **Conditional Pipeline Branch**
+   ```yaml
+   processors:
+     - final:
+         if: "ctx.environment == 'production'"
+         description: "Skip test processors in production"
+     - set:
+         field: test_field
+         value: test_value
+   ```
+
+:::warning
+- Once finalized, no further processors in any pipeline will execute
+- Use with caution in multi-pipeline setups
+- Consider using the `if` condition to prevent unintended early termination
+:::
+
+:::note
+Best practices:
+- Use descriptive `description` fields to document finalization points
+- Consider adding cleanup tasks using `on_success`
+- Test conditional finalization thoroughly
+- Use tags for tracking finalization points in logs
+:::

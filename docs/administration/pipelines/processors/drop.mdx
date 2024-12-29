@@ -2,10 +2,10 @@
 
 ## Synopsis
 
-```yaml
+```yaml {2}
 drop:
-  - description: <text>
   - if: <script>
+  - description: <text>
   - ignore_failure: <boolean>
   - on_failure: <processor[]>
   - on_success: <processor[]>
@@ -14,24 +14,188 @@ drop:
 
 ## Description
 
-**Functionality**: Drops the document without raising any exceptions. This prevents the indexing of the document based on some condition.
+**Functionality**: Conditionally stops processing of a document by dropping it from the pipeline. This processor is particularly useful for filtering out unwanted documents based on their content or metadata without raising exceptions.
+
+:::note
+When a document is dropped, all subsequent processors in the pipeline are skipped.
+:::
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
+|`if`|N|-|Condition that determines whether to drop the document|
 |`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_failure`|N|`false`|If `true`, condition evaluation errors are ignored|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
 ## Examples
 
-If the user is _not_ an administrator, drop the process.
+### Basic Conditional Drop
 
-```yaml
-drop:
-  if: "user.privilege != 'Admin'"
-```
+<ExampleGrid>
+  <CommentCol>
+    Drop documents with specific packet count...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "packets": 10
+      }
+    }
+    ```
+    ```yaml
+    drop:
+      - if: ctx.source.packets == 10
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes matching documents from processing:
+  </CommentCol>
+  <CodeCol>
+    ```text
+    Document dropped from pipeline
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Conditions
+
+<ExampleGrid>
+  <CommentCol>
+    Drop based on multiple criteria...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "role": "guest",
+        "access_level": 1
+      }
+    }
+    ```
+    ```yaml
+    drop:
+      - if: ctx.user.role == 'guest' && ctx.user.access_level < 2
+      - description: "Drop low-privilege guest access"
+    ```
+  </CodeCol>
+  <CommentCol>
+    filters out based on combined conditions:
+  </CommentCol>
+  <CodeCol>
+    ```text
+    Document dropped from pipeline
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Complex Filtering
+
+<ExampleGrid>
+  <CommentCol>
+    Use complex conditions for filtering...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "http": {
+        "request": {
+          "method": "GET",
+          "path": "/health",
+          "source_ip": "10.0.0.1"
+        }
+      }
+    }
+    ```
+    ```yaml
+    drop:
+      - if: >
+          ctx.http?.request?.method == 'GET' &&
+          ctx.http.request.path == '/health' &&
+          ctx.http.request.source_ip.startsWith('10.')
+      - description: "Drop internal health checks"
+    ```
+  </CodeCol>
+  <CommentCol>
+    filters out specific traffic patterns:
+  </CommentCol>
+  <CodeCol>
+    ```text
+    Document dropped from pipeline
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle evaluation errors gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status": "active"
+    }
+    ```
+    ```yaml
+    drop:
+      - if: ctx.nonexistent.field == true
+      - ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing on errors:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status": "active",
+      "error": {
+        "message": "failed to evaluate condition"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Common Use Cases
+
+1. **Filtering Debug Logs**
+   ```yaml
+   drop:
+     - if: ctx.log.level == 'debug'
+     - description: "Filter out debug messages"
+   ```
+
+2. **Excluding Health Checks**
+   ```yaml
+   drop:
+     - if: ctx.request.path == '/health'
+     - description: "Exclude health check endpoints"
+   ```
+
+3. **Dropping Internal Traffic**
+   ```yaml
+   drop:
+     - if: ctx.network.source.ip.startsWith('192.168.')
+     - description: "Exclude internal network traffic"
+   ```
+
+:::warning
+- The Drop processor permanently removes documents from the pipeline
+- Once dropped, a document cannot be recovered in subsequent processors
+- Use caution with complex conditions to avoid accidentally dropping important documents
+:::
+
+:::note
+The Drop processor is often used with:
+- Log level filtering
+- Network traffic filtering
+- Test data exclusion
+- Development environment data filtering
+:::

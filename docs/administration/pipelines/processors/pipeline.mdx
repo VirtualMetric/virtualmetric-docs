@@ -1,48 +1,225 @@
-# Pipeline
+# Canvas
 
 ## Synopsis
 
 ```yaml {2}
-pipeline:
-  - name: <ident>
+canvas:
+  - type: <string>
+  - field: <ident>
+  - target_field: <ident>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
-  - ignore_missing_pipeline: <boolean>
+  - ignore_missing: <boolean>
   - on_failure: <processor[]>
   - on_success: <processor[]>
   - tag: <string>
+  - dimensions:
+      width: <numeric>
+      height: <numeric>
+  - format: <string>
+  - quality: <numeric>
+  - draw:
+      - type: <string>
+      - x: <numeric>
+      - y: <numeric>
+      - width: <numeric>
+      - height: <numeric>
+      - color: <string>
+      - text: <string>
+      - fontSize: <numeric>
+      - fontFamily: <string>
 ```
 
 ## Description
 
-**Functionality**: Executes another pipeline.
+**Functionality**: Generates or manipulates image data using a virtual canvas. Supports drawing shapes, text, and basic image operations.
+
+The canvas processor can create new images or modify existing ones, with support for various drawing operations and output formats.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`name`|Y||Name of the pipeline to be executed|
+|`type`|Y|-|Type of canvas operation (`create`, `draw`)|
+|`field`|N|-|Source field containing image data (for existing images)|
+|`target_field`|N|`canvas`|Field to store the resulting image data|
+|`dimensions`|N|-|Canvas dimensions for new images|
+|`format`|N|`png`|Output format (`png`, `jpeg`, `webp`)|
+|`quality`|N|`90`|Image quality (1-100) for lossy formats|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing_pipeline`|N|`false`|Flag to fail at a missing pipeline|
+|`ignore_missing`|N|`false`|If `true`, silently continue when source field is missing|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+### Draw Operations
+
+The `draw` array supports multiple drawing operations with these parameters:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`type`|Y|-|Drawing operation (`rect`, `circle`, `text`)|
+|`x`|Y|-|X coordinate|
+|`y`|Y|-|Y coordinate|
+|`width`|N|-|Width for shapes|
+|`height`|N|-|Height for shapes|
+|`color`|N|`#000000`|Color in hex format|
+|`text`|N|-|Text content for text operations|
+|`fontSize`|N|`12`|Font size for text|
+|`fontFamily`|N|`Arial`|Font family for text|
+
 ## Examples
 
-Run pipeline _bar_ after you are finished running _foo.processor-1_:
+### Create New Canvas
 
-```yaml
-pipelines:
-  - foo:
-    processors:
-    - processor-1:
-      field: "A"
-      pipeline: bar
-  - bar:
-    processors:
-    ...
-```
+<ExampleGrid>
+  <CommentCol>
+    Create a blank canvas...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "name": "example"
+    }
+    ```
+    ```yaml
+    canvas:
+      - type: create
+      - dimensions:
+          width: 400
+          height: 300
+      - format: png
+      - target_field: image
+    ```
+  </CodeCol>
+  <CommentCol>
+    which creates a new image field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "name": "example",
+      "image": "<base64-encoded PNG data>"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Draw Shapes
+
+<ExampleGrid>
+  <CommentCol>
+    Draw multiple shapes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    canvas:
+      - type: create
+      - dimensions:
+          width: 200
+          height: 200
+      - draw:
+          - type: rect
+            x: 10
+            y: 10
+            width: 100
+            height: 50
+            color: "#FF0000"
+          - type: circle
+            x: 150
+            y: 150
+            width: 40
+            height: 40
+            color: "#0000FF"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creating a composite image:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "canvas": "<base64-encoded PNG with shapes>"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Add Text
+
+<ExampleGrid>
+  <CommentCol>
+    Add text to canvas...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    canvas:
+      - type: draw
+      - draw:
+          - type: text
+            x: 20
+            y: 40
+            text: "Hello World"
+            fontSize: 24
+            fontFamily: "Arial"
+            color: "#000000"
+    ```
+  </CodeCol>
+  <CommentCol>
+    resulting in rendered text:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "canvas": "<base64-encoded PNG with text>"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Format and Quality
+
+<ExampleGrid>
+  <CommentCol>
+    Control output format and quality...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    canvas:
+      - type: create
+      - dimensions:
+          width: 800
+          height: 600
+      - format: jpeg
+      - quality: 85
+      - draw:
+          - type: rect
+            x: 0
+            y: 0
+            width: 800
+            height: 600
+            color: "#F0F0F0"
+    ```
+  </CodeCol>
+  <CommentCol>
+    with optimized file size:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "canvas": "<base64-encoded JPEG data>"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+All image data is stored as base64-encoded strings. The canvas processor automatically handles encoding and decoding when processing images.
+:::
+
+:::warning
+Large canvas dimensions or numerous draw operations may impact performance. Consider optimizing dimensions and batch operations when possible.
+:::
