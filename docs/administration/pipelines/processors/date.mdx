@@ -2,75 +2,258 @@
 
 ## Synopsis
 
-```yaml {2,3}
+```yaml {2}
 date:
   - field: <ident>
-  - formats: <enum>
+  - formats: <enum[]>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
-  - locale: <enum>
+  - locale: <string>
   - on_failure: <processor[]>
   - on_success: <processor[]>
-  - output_format: <enum>
+  - output_format: <string>
   - tag: <string>
   - target_field: <ident>
-  - timezone: <enum>
+  - timezone: <string>
 ```
 
 ## Description
 
-**Functionality**: Parses the fields for dates and uses them as timestamp for the document.
+**Functionality**: Features an advanced timestamp parser that can automatically detect and parse a wide variety of date/time formats without requiring explicit format specifications.
 
-By default, the parsed date is added as a new field called `@timestamp`. A different field can be set with `target_field`.
+Key features:
+- Intelligent format detection for nearly any timestamp format
+- Support for both human-readable and machine timestamps
+- Automatic recognition of format components including:
+  - Year formats: `YYYY`, `YY`, `yyyy`, `yy`
+  - Month formats: `MMMM` (full name), `MMM` (abbreviated), `MM` (zero-padded), `M`
+  - Day formats: `DD`, `D`, `dd`, `d`
+  - Hour formats: `HH` (24-hour), `hh` (12-hour), `h`
+  - Minute/Second formats: `mm`, `m`, `ss`, `s`
+  - Millisecond formats: `S`, `SSS`, `SSSSSS`, `SSSSSSSSS`
+  - Timezone formats: `Z`, `ZZ`, `ZZZ`
+  - AM/PM indicators: `A`, `a`
+- Supports Java time patterns and Go time layouts
+- Handles numeric timestamps (Unix epoch in seconds/milliseconds)
+- Customizable output formatting and timezone handling
+- Template support for dynamic timezone and locale selection
 
-Multiple date formats can be specified which are used sequentially to parse the date.
-
-The `timezone` and `locale` parameters can be extracted from document fields if they are defined.
+By default, the parsed date is stored in the `@timestamp` field, but this can be customized using `target_field`.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field containing the date|
-|`formats`|Y||Expected date formats. Valid options: Java time pattern, ISO8601, UNIX, UNIX_MS, or TAI64N|
+|`field`|Y|-|Field containing the date to parse|
+|`formats`|N|-|Array of expected date formats. Supports: standard Go time layouts, `ISO8601`, `UNIX`, `UNIX_MS`|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`locale`|N|`ENGLISH`|The locale to use in parsing. May impact month names and weekdays|
+|`ignore_failure`|N|`false`|Continue processing if parsing fails|
+|`locale`|N|-|Locale for date parsing (e.g., "en_US")|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`output_format`|N|`yyyy-MM-dd'T'HH:mm:ss.SSSXXX`|The format to use when printing the date to a `target_field`. Must be valid Java time pattern|
+|`output_format`|N|`2006-01-02T15:04:05.000Z07:00`|Format pattern for the output timestamp|
 |`tag`|N|-|Identifier|
-|`target_field`|N|`@timestamp`|Field to assign the parsed date|
-|`timezone`|N|`UTC`|The timezone to use in parsing|
+|`target_field`|N|`@timestamp`|Field to store the parsed date|
+|`timezone`|N|`UTC`|Timezone for parsing (e.g., "Europe/Amsterdam")|
 
 ## Examples
 
+### Standard Date Format
+
 <ExampleGrid>
   <CommentCol>
-    Put the date parsed from the field to the target field:
+    Parse a date using standard format...
   </CommentCol>
   <CodeCol>
+    ```json
+    {
+      "initial_date": "25/04/2016 12:02:01"
+    }
+    ```
     ```yaml
     date:
-      - field: foo
-      - target_field: bar
-      - formats: "dd/MM/yyyy HH:mm:ss"
-      - timezone: "Europe/London"
+      - field: initial_date
+      - target_field: timestamp
+      - formats: ["02/01/2006 15:04:05"]
+      - timezone: "Europe/Amsterdam"
     ```
   </CodeCol>
   <CommentCol>
-    Get date-related info from template fields:
+    converts to ISO format with timezone:
   </CommentCol>
   <CodeCol>
-    ```yaml
-    date:
-      - field: foo
-      - target_field: bar
-      - formats: "ISO8601"
-      - timezone: "{{baz}}"
-      - locale: "{{qux}}"
+    ```json
+    {
+      "initial_date": "25/04/2016 12:02:01",
+      "timestamp": "2016-04-25T12:02:01.000+02:00"
+    }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Automatic Format Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Parse various timestamp formats without explicit patterns...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "date1": "2023-12-29_15:04:05",
+      "date2": "29/Dec/2023:15:04:05 +0000",
+      "date3": "Fri Dec 29 15:04:05 2023",
+      "date4": "1461578521",
+      "date5": "1461578521000"
+    }
+    ```
+    ```yaml
+    date:
+      - field: date1
+      - target_field: time1
+    date:
+      - field: date2
+      - target_field: time2
+    date:
+      - field: date3
+      - target_field: time3
+    date:
+      - field: date4
+      - target_field: time4
+    date:
+      - field: date5
+      - target_field: time5
+    ```
+  </CodeCol>
+  <CommentCol>
+    all formats are automatically detected and normalized:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "time1": "2023-12-29T15:04:05.000Z",
+      "time2": "2023-12-29T15:04:05.000Z",
+      "time3": "2023-12-29T15:04:05.000Z",
+      "time4": "2016-04-25T12:02:01.000Z",
+      "time5": "2016-04-25T12:02:01.000Z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Nested Fields with ISO8601
+
+<ExampleGrid>
+  <CommentCol>
+    Process dates in nested objects...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "login_date": "2016-04-25T12:02:01.789Z"
+      }
+    }
+    ```
+    ```yaml
+    date:
+      - field: user.login_date
+      - target_field: timestamp
+      - formats: ["2006-01-02T15:04:05.000Z07:00"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    maintains the precise timestamp:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "login_date": "2016-04-25T12:02:01.789Z"
+      },
+      "timestamp": "2016-04-25T12:02:01.789Z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom Output Format
+
+<ExampleGrid>
+  <CommentCol>
+    Specify custom output format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "initial_date": "25/04/2016 12:02:01"
+    }
+    ```
+    ```yaml
+    date:
+      - field: initial_date
+      - target_field: timestamp
+      - formats: ["02/01/2006 15:04:05"]
+      - output_format: "2006-01-02 15:04:05"
+    ```
+  </CodeCol>
+  <CommentCol>
+    formats output as specified:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "initial_date": "25/04/2016 12:02:01",
+      "timestamp": "2016-04-25 12:02:01"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Dynamic Timezone and Locale
+
+<ExampleGrid>
+  <CommentCol>
+    Use template fields for timezone and locale...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_date": "2016-04-25 12:02:01",
+      "tz": "Europe/London",
+      "lang": "en_GB"
+    }
+    ```
+    ```yaml
+    date:
+      - field: event_date
+      - target_field: timestamp
+      - formats: ["2006-01-02 15:04:05"]
+      - timezone: "{{{tz}}}"
+      - locale: "{{{lang}}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    uses the specified timezone and locale:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_date": "2016-04-25 12:02:01",
+      "tz": "Europe/London",
+      "lang": "en_GB",
+      "timestamp": "2016-04-25T12:02:01.000+01:00"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor features an intelligent format detection system that can automatically parse most common timestamp formats without requiring explicit pattern specification. It handles various date components (year, month, day, etc.), different separators, timezone notations, and both human-readable and Unix epoch timestamps.
+:::
+
+:::warning
+Date parsing will fail if none of the specified formats match the input. Use `ignore_failure: true` if parsing errors should be tolerated.
+:::
