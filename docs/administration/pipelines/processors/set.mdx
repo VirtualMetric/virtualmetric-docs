@@ -5,7 +5,7 @@
 ```yaml {2}
 set:
   - field: <ident>
-  - copy_from: <enum>
+  - copy_from: <ident>
   - description: <text>
   - if: <script>
   - ignore_empty_value: <boolean>
@@ -20,159 +20,176 @@ set:
 
 ## Description
 
-**Functionality**: Sets a field and associates it with a specified value.
+**Functionality**: Sets a field and associates it with a specified value. The processor can either set a literal value or copy a value from another field.
 
-If the field already exists, its value will be replaced with the provided one.
+If the field already exists, its value will be replaced unless `override` is set to `false`.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field to update|
-|`copy_from`|N|-|Field whose value will copied to `field`. Cannot be used if `value` is specified. Valid options: `array`, `date`, `boolean`, `number`, `object`, `string`, etc.|
+|`field`|Y|-|Field to update|
+|`copy_from`|N|-|Field whose value will be copied to `field`. Cannot be used if `value` is specified|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
-|`ignore_empty_value`|N|`false`|If `true` and `value`/`copy_from` is not `null`, quietly exit if specified field does not exist or its value evaluates to `null` or `empty`|
+|`ignore_empty_value`|N|`false`|If `true`, quietly exit if specified field does not exist or its value is `null`/empty|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`media_type`|N|`application/json`|For encoding `value`. Valid options: `application/json`, `text/plain`, or `application/x-www-form-urlencoded`.|
+|`media_type`|N|`application/json`|For encoding `value`. Valid options: `application/json`, `text/plain`, or `application/x-www-form-urlencoded`|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`override`|N|`true`|Update non-null fields with `field`. If `false`, do not touch those fields|
+|`override`|N|`true`|If `false`, do not update fields that already have a non-null value|
 |`tag`|N|-|Identifier|
-|`value`|N|-|The value to be set. Cannot be used if `copy_from` is specified|
+|`value`|N|-|Value to set. Cannot be used if `copy_from` is specified|
 
 ## Examples
 
-### Set scalar values
-
-Literal values can be directly assigned:
+### Basic Value Assignment
 
 <ExampleGrid>
   <CommentCol>
-    The data contains a _foo_ field:
+    Set a simple numeric value...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "foo": 5
+      "data": {}
     }
     ```
-  </CodeCol>
-
-  <CommentCol>
-    Set its value to 1:
-  </CommentCol>
-  <CodeCol>
     ```yaml
     set:
-      field: foo
-      value: 1
-    ```
-    ```json
-    {
-      "foo": 1
-    }
+      - field: metrics.packets
+      - value: 150
     ```
   </CodeCol>
-</ExampleGrid>
-
-They can also be assigned from other fields, include meta ones:
-
-<ExampleGrid>
   <CommentCol>
-    The _data.foo_ field contains _A_:
+    creates new field with value:
   </CommentCol>
   <CodeCol>
     ```json
     {
       "data": {
-        "foo": "A"
-      }
-    }
-    ```
-  </CodeCol>
-
-  <CommentCol>
-    Set its value to that of the _B_ meta field:
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - set:
-      field: data.foo
-      value: {{{B}}}
-    ```
-    ```json
-    {
-      "data": {
-        "foo": "META-B"
+        "metrics": {
+          "packets": 150
+        }
       }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Array field access
-
-Array fields can be accessed with the dot notation:
+### Using Templates
 
 <ExampleGrid>
   <CommentCol>
-    The field contains 3 elements:
+    Values can reference other fields using templates...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "foo": ["A", "B", "C"]
+      "checkpoint": {
+        "product": "ExampleProduct"
+      }
     }
+    ```
+    ```yaml
+    set:
+      - field: observer.product
+      - value: "{{checkpoint.product}}"
     ```
   </CodeCol>
   <CommentCol>
-    The _1st_ is copied to _bar_:
+    which get resolved during processing:
   </CommentCol>
   <CodeCol>
-    ```yaml
-    - set:
-      field: bar
-      value: {{{foo.1}}}
-    ```
     ```json
     {
-      "foo": ["A", "B", "C"],
-      "bar": ["A"]
+      "checkpoint": {
+        "product": "ExampleProduct"
+      },
+      "observer": {
+        "product": "ExampleProduct"
+      }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Set by copying
-
-The contents of a field containing complex values&mdash;such as arrays or objects&mdash;can be copied to another using `copy_from`:
+### Copying Field Values
 
 <ExampleGrid>
   <CommentCol>
-    The values in _foo_...
+    Copy value from one field to another...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "foo": ["A", "B"]
+      "source": {
+        "packets": 10
+      }
     }
+    ```
+    ```yaml
+    set:
+      - field: metrics.packets
+      - copy_from: source.packets
     ```
   </CodeCol>
   <CommentCol>
-    ...are copied into _bar_:
+    duplicates the value:
   </CommentCol>
   <CodeCol>
-    ```yaml
-    - set:
-      field: bar
-      copy_from: foo
-    ```
     ```json
     {
-      "foo": ["A", "B"],
-      "bar": ["A", "B"]
+      "source": {
+        "packets": 10
+      },
+      "metrics": {
+        "packets": 10
+      }
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Preserving Existing Values
+
+<ExampleGrid>
+  <CommentCol>
+    With override: false...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "checkpoint": {
+        "title": "NoTitle"
+      }
+    }
+    ```
+    ```yaml
+    set:
+      - field: checkpoint.title
+      - value: "NewTitle"
+      - override: false
+    ```
+  </CodeCol>
+  <CommentCol>
+    existing non-null values are preserved:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "checkpoint": {
+        "title": "NoTitle"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Either `value` or `copy_from` must be specified, but not both. When using `copy_from`, the source field must exist unless `ignore_empty_value` is set to `true`.
+:::
+
+:::warning
+Be careful when using templates in values to ensure they reference valid fields, as missing fields will cause the processor to fail unless `ignore_empty_value` is enabled.
+:::

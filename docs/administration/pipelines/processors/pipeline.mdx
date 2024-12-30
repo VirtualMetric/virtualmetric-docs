@@ -1,225 +1,135 @@
-# Canvas
+# Pipeline
 
 ## Synopsis
 
 ```yaml {2}
-canvas:
-  - type: <string>
-  - field: <ident>
-  - target_field: <ident>
+pipeline:
+  - name: <string>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
+  - ignore_missing_pipeline: <boolean>
   - on_failure: <processor[]>
   - on_success: <processor[]>
   - tag: <string>
-  - dimensions:
-      width: <numeric>
-      height: <numeric>
-  - format: <string>
-  - quality: <numeric>
-  - draw:
-      - type: <string>
-      - x: <numeric>
-      - y: <numeric>
-      - width: <numeric>
-      - height: <numeric>
-      - color: <string>
-      - text: <string>
-      - fontSize: <numeric>
-      - fontFamily: <string>
 ```
 
 ## Description
 
-**Functionality**: Generates or manipulates image data using a virtual canvas. Supports drawing shapes, text, and basic image operations.
+**Functionality**: Executes another pipeline by name. This allows for pipeline reuse and modular processing configurations.
 
-The canvas processor can create new images or modify existing ones, with support for various drawing operations and output formats.
+The pipeline processor can reference other pipelines using the format `{{ IngestPipeline "pipeline-name" }}`. The referenced pipeline must exist in the configuration. Pipeline names can be specified with or without the `.yml`/`.yaml` extension.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`type`|Y|-|Type of canvas operation (`create`, `draw`)|
-|`field`|N|-|Source field containing image data (for existing images)|
-|`target_field`|N|`canvas`|Field to store the resulting image data|
-|`dimensions`|N|-|Canvas dimensions for new images|
-|`format`|N|`png`|Output format (`png`, `jpeg`, `webp`)|
-|`quality`|N|`90`|Image quality (1-100) for lossy formats|
+|`name`|Y|-|Name or reference of the pipeline to execute|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true`, silently continue when source field is missing|
+|`ignore_missing_pipeline`|N|`false`|If `true`, silently continue when referenced pipeline is not found|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
-### Draw Operations
-
-The `draw` array supports multiple drawing operations with these parameters:
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`type`|Y|-|Drawing operation (`rect`, `circle`, `text`)|
-|`x`|Y|-|X coordinate|
-|`y`|Y|-|Y coordinate|
-|`width`|N|-|Width for shapes|
-|`height`|N|-|Height for shapes|
-|`color`|N|`#000000`|Color in hex format|
-|`text`|N|-|Text content for text operations|
-|`fontSize`|N|`12`|Font size for text|
-|`fontFamily`|N|`Arial`|Font family for text|
-
 ## Examples
 
-### Create New Canvas
+### Basic Pipeline Reference
 
 <ExampleGrid>
   <CommentCol>
-    Create a blank canvas...
+    Execute another pipeline...
   </CommentCol>
   <CodeCol>
-    ```json
-    {
-      "name": "example"
-    }
-    ```
     ```yaml
-    canvas:
-      - type: create
-      - dimensions:
-          width: 400
-          height: 300
-      - format: png
-      - target_field: image
+    pipelines:
+      - name: main
+        processors:
+          - pipeline:
+              name: '{{ IngestPipeline "parse-logs" }}'
     ```
   </CodeCol>
   <CommentCol>
-    which creates a new image field:
+    which must be defined in the config:
   </CommentCol>
   <CodeCol>
-    ```json
-    {
-      "name": "example",
-      "image": "<base64-encoded PNG data>"
-    }
+    ```yaml
+    pipelines:
+      - name: parse-logs
+        processors:
+          - grok:
+              field: message 
+              pattern: '%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level}'
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Draw Shapes
+### Conditional Pipeline Execution
 
 <ExampleGrid>
   <CommentCol>
-    Draw multiple shapes...
+    Only execute pipeline if condition is met...
   </CommentCol>
   <CodeCol>
     ```yaml
-    canvas:
-      - type: create
-      - dimensions:
-          width: 200
-          height: 200
-      - draw:
-          - type: rect
-            x: 10
-            y: 10
-            width: 100
-            height: 50
-            color: "#FF0000"
-          - type: circle
-            x: 150
-            y: 150
-            width: 40
-            height: 40
-            color: "#0000FF"
+    pipeline:
+      - name: '{{ IngestPipeline "enrich-data" }}'
+      - if: 'ctx.level == "ERROR"'
+      - ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>
-    creating a composite image:
+    which helps control processing flow:
   </CommentCol>
   <CodeCol>
-    ```json
-    {
-      "canvas": "<base64-encoded PNG with shapes>"
-    }
+    ```yaml
+    pipelines:
+      - name: enrich-data
+        processors:
+          - append:
+              field: tags
+              value: needs-review
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Add Text
+### Error Handling
 
 <ExampleGrid>
   <CommentCol>
-    Add text to canvas...
+    Handle missing pipelines gracefully...
   </CommentCol>
   <CodeCol>
     ```yaml
-    canvas:
-      - type: draw
-      - draw:
-          - type: text
-            x: 20
-            y: 40
-            text: "Hello World"
-            fontSize: 24
-            fontFamily: "Arial"
-            color: "#000000"
+    pipeline:
+      - name: '{{ IngestPipeline "optional-pipeline" }}'
+      - ignore_missing_pipeline: true
+      - on_failure:
+          - append:
+              field: tags
+              value: pipeline-failed
     ```
   </CodeCol>
   <CommentCol>
-    resulting in rendered text:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "canvas": "<base64-encoded PNG with text>"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Format and Quality
-
-<ExampleGrid>
-  <CommentCol>
-    Control output format and quality...
+    and specify fallback actions:
   </CommentCol>
   <CodeCol>
     ```yaml
-    canvas:
-      - type: create
-      - dimensions:
-          width: 800
-          height: 600
-      - format: jpeg
-      - quality: 85
-      - draw:
-          - type: rect
-            x: 0
-            y: 0
-            width: 800
-            height: 600
-            color: "#F0F0F0"
-    ```
-  </CodeCol>
-  <CommentCol>
-    with optimized file size:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "canvas": "<base64-encoded JPEG data>"
-    }
+    pipelines:
+      - name: main
+        processors:
+          - append:
+              field: status
+              value: processed
     ```
   </CodeCol>
 </ExampleGrid>
 
 :::note
-All image data is stored as base64-encoded strings. The canvas processor automatically handles encoding and decoding when processing images.
+Pipeline references are resolved at runtime. Make sure all referenced pipelines exist in your configuration to avoid processing errors, or set `ignore_missing_pipeline: true` if the pipeline is optional.
 :::
 
 :::warning
-Large canvas dimensions or numerous draw operations may impact performance. Consider optimizing dimensions and batch operations when possible.
+Be careful with recursive pipeline references to avoid infinite loops. The processor does not currently detect circular dependencies.
 :::

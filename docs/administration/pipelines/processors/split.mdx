@@ -19,53 +19,155 @@ split:
 
 ## Description
 
-**Functionality**: Splits a field into an array using a separator character.
+**Functionality**: Splits a string field into an array using a specified separator pattern. The separator can be a simple character or a regular expression pattern.
+
+When splitting strings, the processor supports both basic string separators and advanced regular expression patterns. The result is stored as an array either in the original field or in a specified target field.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field containing the string to split|
-|`separator`|Y||Regular expression matching a separator, e.g. `\s+`|
+|`field`|Y|-|Field containing the string to split|
+|`separator`|Y|-|Character or regular expression pattern to use as separator|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If set to `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`ignore_missing`|N|`false`|If `true`, quietly exit if field doesn't exist|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`preserve_trailing`|N|`false`|Preserves trailing spaces|
+|`preserve_trailing`|N|`false`|If `true`, preserve empty trailing values|
 |`tag`|N|-|Identifier|
-|`target_field`|N|`feield`|Field to assign the array of split values to|
+|`target_field`|N|`field`|Field to store the resulting array|
 
 ## Examples
 
+### Basic String Splitting
+
 <ExampleGrid>
   <CommentCol>
-    The field contains space-delimited values:
+    Split string using comma separator...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "foo": "A B C"
+      "data": "one,two,three"
     }
     ```
+    ```yaml
+    split:
+      - field: data
+      - separator: ","
+    ```
   </CodeCol>
-
   <CommentCol>
-    Split them using whitespace.
+    creates an array of values:
   </CommentCol>
   <CodeCol>
-    ```yaml
-    - split:
-      field: foo
-      separator: "\\s+"
-      target_field: "foos"
-    ```
     ```json
     {
-      "foo": "A B C",
-      "foos": ["A", "B", "C"]
+      "data": ["one", "two", "three"]
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Preserving Trailing Values
+
+<ExampleGrid>
+  <CommentCol>
+    With preserve_trailing enabled...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "one,two,three,"
+    }
+    ```
+    ```yaml
+    split:
+      - field: data
+      - separator: ","
+      - preserve_trailing: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    keeps empty trailing elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": ["one", "two", "three", ""]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Regular Expressions 
+
+<ExampleGrid>
+  <CommentCol>
+    Split on multiple whitespace characters...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "hello   world     test"
+    }
+    ```
+    ```yaml
+    split:
+      - field: message
+      - separator: "\\s+"
+    ```
+  </CodeCol>
+  <CommentCol>
+    treats consecutive spaces as one separator:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": ["hello", "world", "test"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Different Target Field
+
+<ExampleGrid>
+  <CommentCol>
+    Store result in a new field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": "important,urgent,review"
+    }
+    ```
+    ```yaml
+    split:
+      - field: tags
+      - separator: ","
+      - target_field: tag_array
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves the original field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": "important,urgent,review",
+      "tag_array": ["important", "urgent", "review"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor supports both simple string separators and regular expressions. Regular expressions are cached for better performance when reused.
+:::
+
+:::warning
+The field must contain a string value. If the field contains a non-string value, the processor will fail unless `ignore_failure` is set to `true`.
+:::

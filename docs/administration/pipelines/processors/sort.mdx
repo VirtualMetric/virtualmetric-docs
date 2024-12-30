@@ -19,30 +19,162 @@ sort:
 
 **Functionality**: Sorts the elements of an array in ascending or descending order.
 
-Arrays of numbers will be sorted numerically, whereas string arrays or heterogeneous arrays of strings and numbers will be sorted lexicographically.
+Arrays of numbers will be sorted numerically, whereas string arrays will be sorted lexicographically. When dealing with mixed arrays containing both strings and numbers, the sorting is performed lexicographically.
 
-Raises an exception when the field is not an array.
+The processor raises an exception if the specified field is not an array.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field to be sorted|
+|`field`|Y|-|Field containing the array to be sorted|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`order`|N|`asc`|Sort order: Valid options: `asc`, `desc`|
+|`order`|N|`asc`|Sort order: `asc` or `desc`|
 |`tag`|N|-|Identifier|
-|`target_field`|N|`field`|Field to assign the sorted values|
+|`target_field`|N|`field`|Field to store the sorted array|
 
 ## Examples
 
-Sort the values in the field in _descending_ order:
+### Sorting String Arrays
 
-```yaml
-- sort:
-  field: foo
-  order: desc
-```
+<ExampleGrid>
+  <CommentCol>
+    Sort string array in ascending order...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "types": ["z", "b", "k"]
+      }
+    }
+    ```
+    ```yaml
+    sort:
+      - field: source.types
+    ```
+  </CodeCol>
+  <CommentCol>
+    which orders strings lexicographically:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "types": ["b", "k", "z"]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Descending Order
+
+<ExampleGrid>
+  <CommentCol>
+    Sort array in descending order...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "types": ["z", "b", "k"]
+      }
+    }
+    ```
+    ```yaml
+    sort:
+      - field: source.types
+      - order: desc
+    ```
+  </CodeCol>
+  <CommentCol>
+    reverses the lexicographical order:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "types": ["z", "k", "b"]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Sorting Numeric Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Sort numeric array in ascending order...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "destination": {
+        "types": [9, 3, 7]
+      }
+    }
+    ```
+    ```yaml
+    sort:
+      - field: destination.types
+      - order: asc
+    ```
+  </CodeCol>
+  <CommentCol>
+    which orders numbers numerically:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "destination": {
+        "types": [3, 7, 9]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using a Different Target Field
+
+<ExampleGrid>
+  <CommentCol>
+    Sort array into a new field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": [5, 2, 8, 1]
+    }
+    ```
+    ```yaml
+    sort:
+      - field: values
+      - target_field: sorted_values
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserving the original array:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": [5, 2, 8, 1],
+      "sorted_values": [1, 2, 5, 8]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When sorting arrays with mixed types (strings and numbers), the sorting is performed lexicographically, which may not give the expected results for numerical ordering.
+:::
+
+:::warning
+The processor will fail if the specified field does not exist or is not an array. Use `ignore_failure: true` if you want to handle such cases gracefully.
+:::
