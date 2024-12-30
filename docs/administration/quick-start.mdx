@@ -4,45 +4,268 @@ sidebar_label: Quick Start
 
 # Administration: Quick Start
 
-Multiple devices can be entered into the same YAML file, or multiple YAML files can be created to define device groups based on your requirements.
+This guide helps you quickly set up and configure Director for log collection and processing.
 
-# The `vmetric.yaml` File
+## Initial Setup
 
-<details>
-<summary>Contents of `vmetric.yaml`</summary>
-```YAML
+### Core Configuration
+
+The main configuration file is `vmetric.yaml` in the root config directory:
+
+```yaml
 debug:
   log:
-   status: true
+    status: true
   level: 5
   console:
-   status: false
+    status: false
 ```
-</details>
 
-To enable the console for receiving debug messages, set the `console: status:` value to `true`.
-
-# The `syslog.yaml` File
-
-By default, this file is under `<vm_root>\config\devices`.
-
-<details>
-<summary>Contents of `syslog.yaml`</summary>
-```YAML
-devices:
-  - id: 324235346
-   name: 127.0.0.1
-   description: syslog
-   type: syslog
-   status: true
-   properties:
-    address: "0.0.0.0"
-    port: 14514
-```
-</details>
-
-:::info
-If the default `id` value is not modified, **Director** assumes this value represents the local computer.
+:::tip
+Enable console debugging by setting `console.status: true` during initial setup and troubleshooting.
 :::
 
-{/* TODO: Complete */}
+## Configuration Examples
+
+### Device Configurations
+
+#### Syslog Device
+```yaml
+# config/devices/syslog.yaml
+devices:
+  - id: 324235346
+    name: 127.0.0.1
+    type: syslog
+    status: true
+    properties:
+      address: "0.0.0.0"
+      port: 14514
+```
+
+#### Estreamer Device
+```yaml
+# config/devices/estreamer.yaml
+devices:
+  - id: 456789
+    name: firepower
+    type: estreamer
+    status: true
+    properties:
+      address: "192.168.1.10"
+      port: 8302
+```
+
+#### TCP Device
+```yaml
+# config/devices/tcp.yaml
+devices:
+  - id: 567890
+    name: tcp_collector
+    type: tcp
+    status: true
+    properties:
+      address: "0.0.0.0"
+      port: 9000
+```
+
+### Target Configuration
+
+```yaml
+# config/targets/sentinel.yaml
+targets:
+  - id: 1
+    name: azure_sentinel
+    type: sentinel
+    properties:
+      workspace_id: "your-workspace-id"
+      shared_key: "your-shared-key"
+      log_type: "CustomLogs"
+```
+
+### Pipeline Configuration
+
+#### Using Built-in Templates
+
+1. First, locate the template in package directory:
+```plaintext
+package/definitions/pipelines/checkpoint.yaml
+```
+
+2. Copy to user directory maintaining the same structure:
+```plaintext
+user/definitions/pipelines/checkpoint.yaml
+```
+
+3. Modify the custom version:
+```yaml
+# user/definitions/pipelines/checkpoint.yaml
+pipelines:
+  - name: checkpoint
+    processors:
+      - parse_checkpoint:
+          field: message
+      - add_fields:
+          fields:
+            environment: production
+```
+
+:::tip
+Always work with pipeline configurations in the `user/definitions` directory. Templates in the `package/definitions` directory are overwritten during updates.
+:::
+
+### Route Configuration
+
+```yaml
+# config/routes/main.yaml
+routes:
+  - name: checkpoint_to_sentinel
+    if: device.type == 'checkpoint'
+    pipelines:
+      - checkpoint
+    targets:
+      - azure_sentinel
+```
+
+## Setup Steps
+
+1. **Basic Configuration**
+   - Install Director
+   - Configure `vmetric.yaml`
+   - Set up logging
+
+2. **Configure Components**
+   - Add device configurations in `config/devices/`
+   - Set up targets in `config/targets/`
+   - Copy and customize pipeline templates from `package` to `user` directory
+   - Create routes in `config/routes/`
+
+## Working with Pipeline Templates
+
+### Template Customization Process
+
+1. **Locate Template**
+   ```bash
+   ls package/definitions/pipelines/
+   ```
+
+2. **Create User Directory**
+   ```bash
+   mkdir -p user/definitions/pipelines
+   ```
+
+3. **Copy Template**
+   ```bash
+   cp package/definitions/pipelines/checkpoint.yaml user/definitions/pipelines/checkpoint.yaml
+   ```
+
+4. **Customize Pipeline**
+   Edit `user/definitions/pipelines/checkpoint.yaml` with your modifications
+
+### Example Custom Pipeline
+
+```yaml
+# user/definitions/pipelines/checkpoint.yaml
+pipelines:
+  - name: checkpoint
+    description: "Customized Checkpoint processing"
+    processors:
+      - parse_checkpoint:
+          field: message
+      - add_fields:
+          fields:
+            datacenter: east
+            environment: production
+      - format_timestamp:
+          field: event_time
+          format: "RFC3339"
+```
+
+## Directory Structure
+
+```plaintext
+<vm_root>/
+├── config/
+│   ├── devices/
+│   │   ├── syslog.yaml
+│   │   ├── estreamer.yaml
+│   │   └── tcp.yaml
+│   ├── targets/
+│   │   ├── sentinel.yaml
+│   │   └── storage.yaml
+│   ├── routes/
+│   │   └── main.yaml
+│   └── vmetric.yaml
+├── package/
+│   └── definitions/
+│       └── pipelines/
+│           ├── checkpoint.yaml
+│           ├── cisco.yaml
+│           └── normalize.yaml
+└── user/
+    └── definitions/
+        └── pipelines/
+            ├── checkpoint.yaml
+            └── normalize.yaml
+```
+
+## Verification Steps
+
+1. **Check Configuration**
+   ```bash
+   director validate
+   ```
+
+2. **Test Connections**
+   ```bash
+   director test devices
+   ```
+
+3. **Monitor Logs**
+   ```bash
+   director logs
+   ```
+
+## Common Tasks
+
+### Adding New Devices
+1. Create device configuration in `config/devices/`
+2. Set unique ID
+3. Configure properties
+4. Enable device
+5. Verify connection
+
+### Creating Pipelines
+1. Copy template from package directory
+2. Customize in user directory
+3. Test transformation
+4. Verify output
+
+### Setting Up Routes
+1. Define conditions
+2. Assign pipelines
+3. Configure targets
+4. Test data flow
+
+## Next Steps
+
+1. Explore advanced configurations
+2. Set up monitoring
+3. Configure alerts
+4. Optimize performance
+5. Review security settings
+
+## Troubleshooting Tips
+
+1. Enable debug logging in `vmetric.yaml`
+2. Check connection status for devices
+3. Verify pipeline configurations
+4. Monitor resource usage
+5. Review error logs in the debug output
+
+:::note
+Remember to always make customizations in the `user/definitions` directory to ensure they are preserved during updates.
+:::
+
+:::warning
+Never modify files in the `package` directory as they will be overwritten during updates.
+:::
