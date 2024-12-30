@@ -17,29 +17,125 @@ trim:
 
 ## Description
 
-**Functionality**: Trims whitespace from the field.
+**Functionality**: Removes leading and trailing whitespace from string values.
 
-If the field is an array of strings, all members of the array will be trimmed. Works only on leading and trailing spaces.
+The processor can handle both single string fields and arrays of strings. When processing an array, it trims whitespace from each element. If the field contains non-string values, the processor will fail unless `ignore_failure` is set to `true`.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field to trim whitespace from|
+|`field`|Y|-|Field containing string(s) to trim|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`ignore_missing`|N|`false`|If `true`, quietly exit if field doesn't exist|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
-|`target_field`|N|||
+|`target_field`|N|`field`|Field to store the trimmed value(s)|
 
 ## Examples
 
-Trim the field.
+### Trimming Single String
 
-```yaml
-- trim:
-  field: foo
-```
+<ExampleGrid>
+  <CommentCol>
+    Remove whitespace from username...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "myusername": "  username  "
+    }
+    ```
+    ```yaml
+    trim:
+      - field: myusername
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes leading and trailing spaces:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "myusername": "username"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Trimming String Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Process array of email addresses...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "myemails": [
+        "  email@example.com  ",
+        "  admin@example.org  "
+      ]
+    }
+    ```
+    ```yaml
+    trim:
+      - field: myemails
+    ```
+  </CodeCol>
+  <CommentCol>
+    trims each array element:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "myemails": [
+        "email@example.com",
+        "admin@example.org"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Different Target Field
+
+<ExampleGrid>
+  <CommentCol>
+    Store trimmed values in new field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "  value  "
+    }
+    ```
+    ```yaml
+    trim:
+      - field: original
+      - target_field: trimmed
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves the original field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "  value  ",
+      "trimmed": "value"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor only removes whitespace characters (spaces, tabs, newlines) from the beginning and end of strings. It does not affect whitespace between words.
+:::
+
+:::warning
+When processing fields that might contain non-string values, set `ignore_failure: true` to handle them gracefully. Otherwise, the processor will fail when encountering non-string types.
+:::

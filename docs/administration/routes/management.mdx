@@ -5,13 +5,217 @@ pagination_next: null
 
 # Route Management
 
-Management of a route involves defining how a log line is handled after it has been processed. This may involve further _filtering_ and _transformation_ as per the destination's data model. Each route can be viewed and edited on a per tenant basis.
+Managing routes effectively is crucial for maintaining efficient data flow in your environment. This guide covers the key aspects of route management and administration.
 
-Routes can be:
+## Route Operations
 
-* added, copied, moved, and deleted
-* selectively run
-* grouped under a name
-* run in clusters
+### Creating Routes
 
-{/* TODO: Complete */}
+Routes can be created through configuration files or the management interface:
+
+```yaml
+routes:
+  - name: new_route
+    description: "Process and store security logs"
+    if: device.type == 'firewall'
+    pipelines:
+      - name: security_process
+    targets:
+      - name: security_storage
+```
+
+### Modifying Routes
+
+Routes can be modified in several ways:
+
+1. **Edit Configuration**
+   - Update route parameters
+   - Modify conditions
+   - Change pipeline assignments
+   - Adjust target configurations
+
+2. **Copy Routes**
+   - Duplicate existing routes
+   - Modify copies for new purposes
+   - Maintain consistent configurations
+
+3. **Move Routes**
+   - Change route order
+   - Adjust processing priority
+   - Optimize data flow
+
+### Deleting Routes
+
+Routes can be safely removed:
+
+```yaml
+# Mark route for deletion
+routes:
+  - name: old_route
+    status: disabled  # Optional: disable before deletion
+    delete: true
+```
+
+## Route Organization
+
+### Grouping Strategies
+
+1. **By Function**
+   ```yaml
+   routes:
+     - name: security_group_logs
+       group: security
+       # ...
+     - name: security_group_alerts
+       group: security
+       # ...
+   ```
+
+2. **By Source**
+   ```yaml
+   routes:
+     - name: windows_servers
+       group: windows
+       # ...
+     - name: linux_servers
+       group: linux
+       # ...
+   ```
+
+### Priority Management
+
+Routes are evaluated in order with priority considerations:
+
+1. More specific routes first
+2. Critical processing routes
+3. General purpose routes
+4. Catch-all routes last
+
+## Monitoring and Maintenance
+
+### Performance Monitoring
+
+Track key metrics:
+
+- Event throughput
+- Processing time
+- Pipeline efficiency
+- Target availability
+- Error rates
+
+### Health Checks
+
+Regular maintenance tasks:
+
+1. Verify route conditions
+2. Check pipeline connectivity
+3. Validate target accessibility
+4. Monitor resource usage
+5. Review error logs
+
+### Optimization
+
+Optimize route performance:
+
+1. **Condition Optimization**
+   - Use efficient filters
+   - Minimize complex conditions
+   - Remove redundant checks
+
+2. **Pipeline Efficiency**
+   - Reduce unnecessary processing
+   - Optimize transformation logic
+   - Monitor resource usage
+
+3. **Target Management**
+   - Balance load across targets
+   - Monitor target health
+   - Optimize batch sizes
+
+## Advanced Management
+
+### Cluster Operations
+
+Managing routes in clustered environments:
+
+1. **Configuration Sync**
+   - Maintain consistent configurations
+   - Synchronize route updates
+   - Handle failover scenarios
+
+2. **Load Distribution**
+   - Balance processing across nodes
+   - Monitor cluster health
+   - Handle node failures
+
+### Version Control
+
+Maintain route configurations:
+
+1. **Change Management**
+   - Track configuration changes
+   - Maintain version history
+   - Document modifications
+
+2. **Backup and Recovery**
+   - Regular configuration backups
+   - Recovery procedures
+   - Rollback capabilities
+
+## Best Practices
+
+### Configuration Management
+
+1. **Documentation**
+   - Document route purposes
+   - Maintain configuration notes
+   - Record dependencies
+
+2. **Testing**
+   - Test new configurations
+   - Verify data flow
+   - Validate processing results
+
+3. **Maintenance**
+   - Regular reviews
+   - Performance optimization
+   - Configuration updates
+
+### Security Considerations
+
+1. **Access Control**
+   - Manage user permissions
+   - Control configuration changes
+   - Audit modifications
+
+2. **Data Protection**
+   - Secure sensitive data
+   - Encrypt communications
+   - Monitor access patterns
+
+## Troubleshooting Guide
+
+### Common Issues
+
+1. **Route not matching**
+   - Verify conditions
+   - Check data format
+   - Review route order
+
+2. **Pipeline failures**
+   - Check processor configurations
+   - Verify dependencies
+   - Monitor resource usage
+
+3. **Target connectivity**
+   - Verify network access
+   - Check credentials
+   - Monitor target health
+
+### Resolution Steps
+
+1. Enable debug logging
+2. Review error messages
+3. Check configuration syntax
+4. Verify dependencies
+5. Test modifications

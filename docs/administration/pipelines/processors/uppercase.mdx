@@ -17,29 +17,125 @@ uppercase:
 
 ## Description
 
-**Functionality**: Converts a string to its uppercase equivalent.
+**Functionality**: Converts string values to their uppercase equivalent.
 
-If the field is an array of strings, all members of the array are converted.
+The processor can handle both single string fields and arrays of strings. When processing an array, it converts each element to uppercase. If the field contains non-string values, the processor will fail unless `ignore_failure` is set to `true`.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field to convert to uppercase|
+|`field`|Y|-|Field containing string(s) to convert|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`ignore_missing`|N|`false`|If `true`, quietly exit if field doesn't exist|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
-|`target_field`|N|`field`|Field to assign converted value to|
+|`target_field`|N|`field`|Field to store the converted value(s)|
 
 ## Examples
 
-Convert the values in the field to uppercase:
+### Converting Single String
 
-```yaml
-- uppercase:
-  field: foo
-```
+<ExampleGrid>
+  <CommentCol>
+    Convert username to uppercase...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "admin"
+    }
+    ```
+    ```yaml
+    uppercase:
+      - field: username
+    ```
+  </CodeCol>
+  <CommentCol>
+    capitalizes all characters:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "ADMIN"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Converting String Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Process array of email addresses...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "emails": [
+        "email@example.com",
+        "admin@example.org"
+      ]
+    }
+    ```
+    ```yaml
+    uppercase:
+      - field: emails
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts each array element:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "emails": [
+        "EMAIL@EXAMPLE.COM",
+        "ADMIN@EXAMPLE.ORG"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Different Target Field
+
+<ExampleGrid>
+  <CommentCol>
+    Store uppercase values in new field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "value"
+    }
+    ```
+    ```yaml
+    uppercase:
+      - field: original
+      - target_field: uppercase
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves the original field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "value",
+      "uppercase": "VALUE"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor uses the standard string uppercase conversion rules of the Go programming language, which handles Unicode characters appropriately.
+:::
+
+:::warning
+When processing fields that might contain non-string values, set `ignore_failure: true` to handle them gracefully. Otherwise, the processor will fail when encountering non-string types.
+:::

@@ -19,71 +19,141 @@ user_agent:
 
 ## Description
 
-**Functionality**: Extracts details from the user agent string a browser sends with its web requests.
+**Functionality**: Parses user agent strings to extract information about the browser, operating system, and device.
 
-Adds this information by default to the `user_agent` field.
+The processor extracts key information including browser name and version, operating system details, and device platform. It handles a wide range of user agent formats and can store the parsed information in a structured format.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field containing the user agent info|
+|`field`|Y|-|Field containing the user agent string|
 |`description`|N|-|Explanatory note|
-|`extract_device_type`|N|`false`|Extract device type, if possible|
+|`extract_device_type`|N|`false`|Extract device type information|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
+|`ignore_missing`|N|`false`|If `true`, quietly exit if field doesn't exist|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`properties`|N|[`build`, `device`, `major`, `minor`, `name`, `os`, `os_major`, `os_minor`, `os_name`, `patch`]|Controls the properties to be added to the `target_field`|
+|`properties`|N|all|Properties to include in output|
 |`tag`|N|-|Identifier|
-|`target_field`|N|-|Field to be filled with the user agent details|
-
-## Node Settings
-
-The processor has an `_ingest.user_agent.cache_size` setting which is the maximum number of results to be cached. The default is `1000`.
-
-Also, the node settings apply to all `user_agent` processors.
+|`target_field`|N|`user_agent`|Field to store the parsed details|
 
 ## Examples
 
+### Full User Agent Parsing
+
 <ExampleGrid>
   <CommentCol>
-    Given this agent:
+    Parse detailed Chrome user agent...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "agent": "Mozilla/5.0 Chrome/51.0.2704.103"
+      "agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
     }
+    ```
+    ```yaml
+    user_agent:
+      - field: agent
+      - target_field: user_agent
     ```
   </CodeCol>
   <CommentCol>
-    these user agent details can be inferred:
+    extracts all available information:
   </CommentCol>
   <CodeCol>
-    ```yaml
-    user_agent:
-      field: agent
-      target_field: agent-details
-    ```
     ```json
     {
-      "agent": "Mozilla/5.0 Chrome/51.0.2704.103",
-      "agent-details": {
+      "user_agent": {
         "name": "Chrome",
-        "original": "Mozilla/5.0 Chrome/51.0.2704.103",
         "version": "51.0.2704.103",
         "os": {
-          "name": "Mac OS X",
-          "version": "10.10.5",
-          "full": "Mac OS X 10.10.5"
+          "name": "Intel Mac OS X 10_10_5"
         },
         "device": {
-          "name": "Mac"
-        }
+          "name": "Macintosh"
+        },
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
       }
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Handling Invalid User Agents
+
+<ExampleGrid>
+  <CommentCol>
+    Process invalid or unknown user agent...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "agent": "InvalidUserAgent"
+    }
+    ```
+    ```yaml
+    user_agent:
+      - field: agent
+      - ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves original string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_agent": {
+        "original": "InvalidUserAgent"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Custom Target Field
+
+<ExampleGrid>
+  <CommentCol>
+    Store parsed details in specific field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "browser": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
+    }
+    ```
+    ```yaml
+    user_agent:
+      - field: browser
+      - target_field: browser_details
+      - extract_device_type: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    includes device information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "browser_details": {
+        "name": "Safari",
+        "version": "14.0",
+        "os": {
+          "name": "iOS 14.0"
+        },
+        "device": {
+          "name": "iPhone"
+        },
+        "original": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+Some user agents may be spoofed or contain incorrect information. The processor provides the information as reported in the user agent string without validating its accuracy.
+:::

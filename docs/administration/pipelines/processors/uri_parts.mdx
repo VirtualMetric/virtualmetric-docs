@@ -19,72 +19,148 @@ uri_parts:
 
 ## Description
 
-**Functionality**: Parses a _Uniform Resource Identifier_ (URI) string and extracts its components as objects.
+**Functionality**: Parses a Uniform Resource Identifier (URI) string and extracts its components into a structured object.
 
-The URI object includes properties of the URI's domain, path, port, fragment, query, scheme, user info, username, and password.
+The processor extracts various URI components including scheme, domain, port, path, query parameters, fragment, user information, and file extension. Empty or zero-value components are omitted from the output.
 
 ## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y||Field containing the URI string|
+|`field`|Y|-|Field containing the URI string|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` does not exist or is `null`, exit quietly without making any modifications|
-|`keep_original`|N|`true`|Copy the unparsed URI string to `<target_field>.original`|
+|`ignore_missing`|N|`false`|If `true`, quietly exit if field doesn't exist|
+|`keep_original`|N|`true`|Include original URI in output|
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`remove_if_successful`|N|`false`|If `true`, remove the `field` after parsing the URI string. If parsing fails, the `field` is not removed|
+|`remove_if_successful`|N|`false`|Remove source field after successful parsing|
 |`tag`|N|-|Identifier|
-|`target_field`|N|`url`|Field to assign the URI object to|
+|`target_field`|N|`url`|Field to store the parsed components|
 
 ## Examples
 
+### Basic URI Parsing
+
 <ExampleGrid>
   <CommentCol>
-    The field contains all the details of a web query:
-  </CommentCol>
-  <CodeCol>
-  ```json
-  {
-    "uri-data": "http://user:pass@www.example.com:80/foo.gif?k1=v1&k2=v2#frag"
-  }
-  ```
-  </CodeCol>
-  <CommentCol>
-    Parse the URI to extract the details...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - uri_parts:
-      field: uri-data
-      target_field: url
-      keep_original: true
-      remove_if_successful: false
-    ```
-  </CodeCol>
-  <CommentCol>
-    and place them in the target field:
+    Parse a complete URI with all components...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "uri-data": "http://user:pass@www.example.com:80/foo.gif?k1=v1&k2=v2#frag",
-      "url": {
-        "path": "/foo.gif",
-        "fragment": "frag",
-        "extension": "gif",
-        "password": "pass",
-        "original": "http://user:pass@www.example.com:80/foo.gif?key1=val1&key2=val2#frag",
+      "url": "http://myusername:mypassword@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment"
+    }
+    ```
+    ```yaml
+    uri_parts:
+      - field: url
+      - target_field: uri_parts
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts all components:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "uri_parts": {
         "scheme": "http",
-        "port": 80,
-        "user_info": "user:pass",
         "domain": "www.example.com",
-        "query": "k1=v1&k2=v2",
-        "username": "user"
+        "port": 80,
+        "path": "/foo.gif",
+        "query": "key1=val1&key2=val2",
+        "fragment": "fragment",
+        "user_info": "myusername:mypassword",
+        "username": "myusername",
+        "password": "mypassword",
+        "extension": "gif",
+        "original": "http://myusername:mypassword@www.example.com:80/foo.gif?key1=val1&key2=val2#fragment"
       }
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+### Without Original URI
+
+<ExampleGrid>
+  <CommentCol>
+    Parse URI without keeping original...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "http://example.com:8080/path?q=search"
+    }
+    ```
+    ```yaml
+    uri_parts:
+      - field: url
+      - target_field: parsed
+      - keep_original: false
+    ```
+  </CodeCol>
+  <CommentCol>
+    omits original from output:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "parsed": {
+        "scheme": "http",
+        "domain": "example.com",
+        "port": 8080,
+        "path": "/path",
+        "query": "q=search"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Remove Source Field
+
+<ExampleGrid>
+  <CommentCol>
+    Remove original field after parsing...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source_url": "https://api.example.com/data.json"
+    }
+    ```
+    ```yaml
+    uri_parts:
+      - field: source_url
+      - target_field: uri
+      - remove_if_successful: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    keeps only parsed result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "uri": {
+        "scheme": "https",
+        "domain": "api.example.com",
+        "path": "/data.json",
+        "extension": "json",
+        "original": "https://api.example.com/data.json"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor automatically handles URL-encoded query parameters and supports both IPv4 and IPv6 addresses in the domain component.
+:::
+
+:::warning
+URIs with invalid syntax will cause the processor to fail unless `ignore_failure` is set to `true`. For security reasons, be cautious when processing URIs with authentication information.
+:::
