@@ -100,16 +100,6 @@ const sidebars: SidebarsConfig = {
             "administration/targets/azure-blob-storage",
           ],
         },
-
-        {
-          type: "category",
-          label: "Templates",
-          link: {type: "doc", id: "administration/templates/overview"},
-          items: [
-            'administration/templates/quick-start',
-            'administration/templates/checkpoint'
-          ],
-        },
       ],
     },
 
