@@ -103,30 +103,7 @@ const sidebars: SidebarsConfig = {
         },
       ],
     },
-
-    {
-      type: "category",
-      label: "Reference",
-      link: {type: "doc", id: "reference/index"},
-      items: [
-        "reference/applicationlog",
-        "reference/asim",
-        "reference/auditlog",
-        "reference/cim",
-        "reference/customlog",
-        "reference/ecs",
-        "reference/eventlog",
-        "reference/inventory",
-        "reference/metric",
-        "reference/netflowlog",
-        "reference/networklog",
-        "reference/parquet",
-        "reference/pem",
-        "reference/syslog",
-        "reference/userlog",
-      ],
-    },
-
+    
     {
       type: "category",
       label: "Appendix",
@@ -138,7 +115,8 @@ const sidebars: SidebarsConfig = {
         "appendix/synopsis-key",
       ],
     },
-
+    
+    "reference",
     "glossary"
   ],
 
