@@ -4,14 +4,147 @@ pagination_prev: null
 
 # Routes: Overview
 
-Routes are the stage where incoming events are filtered to select a correct subset that will be delivered tol a certain pipeline. Events that will directly delivered to the pipeline naturally do not need to be cloned.
+Routes define how incoming data is filtered, processed, and directed to specific destinations. They act as traffic controllers, determining which data goes through which pipelines and ultimately reaches which targets.
 
-The selection process is carried out by applying filters. These are essentially expressions that evaluate to _boolean_ values:
+## Core Concepts
 
-* `dataset.name == 'bar'`
-* `! (field == log.foo || field == log.bar)`
-* `log.date >= '2024-10-14'`
+### Route Components
 
-A collection of such filtering, cloning, and aggregation operations are called **Routes**. The efficiency of each can be measured as a proportion of execution time to the overall throughput of the inbound data.
+A route consists of several key components:
 
-{/* TODO: Complete */}
+- **Name**: Unique identifier for the route
+- **Condition**: Optional filter expression to determine which events match
+- **Description**: Optional explanation of the route's purpose
+- **Pipelines**: Optional processing steps applied to matching events
+- **Targets**: One or more destinations for the processed data
+
+### Filtering
+
+Routes use boolean expressions to filter events. These expressions can reference:
+
+- Device properties: `device.type == 'syslog'`
+- Dataset attributes: `dataset.name == 'firewall_logs'`
+- Event fields: `log.severity > 4`
+- Complex conditions: `!(source.ip == '10.0.0.1' || source.ip == '10.0.0.2')`
+
+### Data Flow
+
+Routes support several data flow patterns:
+
+1. **Single Source to Single Target**
+   ```yaml
+   routes:
+     - name: basic_route
+       pipelines:
+         - normalize
+       targets:
+         - storage
+   ```
+
+2. **Single Source to Multiple Targets** (Mirroring)
+   ```yaml
+   routes:
+     - name: mirror_route
+       pipelines:
+         - enrich
+       targets:
+         - primary_storage
+         - backup_storage
+         - monitoring
+   ```
+
+3. **Multiple Sources to Single Target**
+   ```yaml
+   routes:
+     - name: aggregate_route
+       if: "device.type in ['syslog', 'winlog', 'apache']"
+       pipelines:
+         - normalize
+       targets:
+         - central_analytics
+   ```
+
+### Pipeline Handling
+
+- Routes can include zero or more pipelines
+- Multiple pipelines will process data sequentially
+- Pipeline processors can override routing using the `reroute` processor
+- The `final` processor in a pipeline stops further processing
+
+## Route Evaluation
+
+Routes are evaluated in order, with important considerations:
+
+1. First matching route processes the event
+2. Multiple targets receive identical copies of the data
+3. Pipeline processing can modify or redirect data flow
+4. Route conditions are evaluated before pipeline processing begins
+
+## Performance Considerations
+
+To optimize route performance:
+
+- Use specific conditions to filter early
+- Minimize the number of routes
+- Avoid unnecessary pipeline duplications
+- Use efficient filtering expressions
+- Consider the order of route evaluation
+
+## Best Practices
+
+1. **Naming Convention**
+   - Use clear, descriptive names
+   - Include purpose in name (e.g., `apache_to_analytics`)
+   - Keep names consistent across similar routes
+
+2. **Filtering**
+   - Start with most specific routes
+   - Use efficient filter conditions
+   - Avoid overlapping conditions when possible
+
+3. **Pipeline Assignment**
+   - Use single pipeline when possible
+   - Only duplicate data when necessary
+   - Document any multi-pipeline routes
+
+4. **Target Configuration**
+   - Group similar targets together
+   - Document any mirroring requirements
+   - Consider target capacity and throughput
+
+## Common Patterns
+
+### Pass-Through Route
+```yaml
+routes:
+  - name: passthrough
+    description: "Direct data flow without processing"
+    targets:
+      - raw_storage
+```
+
+### Conditional Route
+```yaml
+routes:
+  - name: critical_errors
+    if: "log.severity == 'critical'"
+    description: "Route critical errors to urgent handling"
+    pipelines:
+      - error_handling
+    targets:
+      - urgent_alerts
+      - error_storage
+```
+
+### Multi-Pipeline Route
+```yaml
+routes:
+  - name: complex_processing
+    description: "Multiple processing steps for special data"
+    pipelines:
+      - normalize
+      - enrich
+      - aggregate
+    targets:
+      - analytics_platform
+```
