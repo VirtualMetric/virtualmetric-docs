@@ -114,6 +114,89 @@ If the field already exists, its value will be replaced unless `override` is set
   </CodeCol>
 </ExampleGrid>
 
+
+### Using Array Templates
+
+<ExampleGrid>
+  <CommentCol>
+    Set arrays with mixed values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "type": "login",
+        "service": "ssh"
+      }
+    }
+    ```
+    ```yaml
+    set:
+      - field: event.category
+        value: 
+          - "{{event.service}}"
+          - authentication
+          - "{{event.type}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    combining static and dynamic values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "type": "login",
+        "service": "ssh",
+        "category": ["ssh", "authentication", "login"]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Map Templates
+
+<ExampleGrid>
+  <CommentCol>
+    Set maps with template values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "service": "webserver",
+        "version": "2.4"
+      }
+    }
+    ```
+    ```yaml
+    set:
+      - field: service.details
+        value:
+          name: "{{source.service}}"
+          type: "web"
+          version: "{{source.version}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creating structured data:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service": {
+        "details": {
+          "name": "webserver",
+          "type": "web",
+          "version": "2.4"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
 ### Copying Field Values
 
 <ExampleGrid>
