@@ -17,9 +17,12 @@ syslog:
 
 ## Description
 
-**Functionality**: Parses a syslog message into a structured object containing priority, facility, severity, hostname, application name, process ID, and message content.
+**Functionality**: Parses syslog messages into structured objects containing priority, facility, severity, hostname, application name, process ID, and message content. Supports:
 
-The processor supports both RFC 3164 (BSD-style) and RFC 5424 (newer format) syslog messages, with or without structured data.
+- RFC 3164 (BSD-style) syslog messages
+- RFC 5424 (modern format) syslog messages with structured data
+- Common Event Format (CEF) messages
+- Log Event Extended Format (LEEF) messages
 
 ## Parameters
 
@@ -124,6 +127,48 @@ The processor supports both RFC 3164 (BSD-style) and RFC 5424 (newer format) sys
   </CodeCol>
 </ExampleGrid>
 
+### CEF Format Message
+
+<ExampleGrid>
+  <CommentCol>
+    Parse a Cisco Firepower CEF message...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "syslog_message": "<134>MAR  1 16:23:11 policyuuid CEF:0|Cisco|Firepower|6.0|PV:112:1234:5678|POLICY VIOLATION|5|rt=1687855290000;deviceExternalId=12;act=Alerted;dvchost=10.50.60.100"
+    }
+    ```
+    ```yaml
+    syslog:
+      - field: syslog_message
+      - target_field: parsed_syslog
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts CEF data:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "parsed_syslog": {
+        "priority": 134,
+        "facility": {
+          "code": 16,
+          "name": "Local 0"
+        },
+        "severity": {
+          "code": 6,
+          "name": "Informational"
+        },
+        "hostname": "policyuuid",
+        "message": "CEF:0|Cisco|Firepower|6.0|PV:112:1234:5678|POLICY VIOLATION|5|rt=1687855290000;deviceExternalId=12;act=Alerted;dvchost=10.50.60.100"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
 ### Error Message Format
 
 <ExampleGrid>
@@ -169,9 +214,13 @@ The processor supports both RFC 3164 (BSD-style) and RFC 5424 (newer format) sys
 </ExampleGrid>
 
 :::note
-The processor can handle both legacy BSD-style syslog messages (RFC 3164) and modern format messages (RFC 5424) with structured data.
+The processor handles multiple syslog formats:
+- Legacy BSD-style (RFC 3164)
+- Modern format with structured data (RFC 5424)
+- Common Event Format (CEF)
+- Log Event Extended Format (LEEF)
 :::
 
 :::warning
-The field must contain a valid syslog message string. Messages not conforming to either RFC 3164 or RFC 5424 format will cause the processor to fail unless `ignore_failure` is set to `true`.
+The field must contain a valid syslog message string that conforms to one of the supported formats. Invalid messages will cause the processor to fail unless `ignore_failure` is set to `true`.
 :::
