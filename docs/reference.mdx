@@ -1,0 +1,116 @@
+# Reference
+
+## Applicationlog
+
+## ASIM
+
+**ASIM** (Advanced Security Information Model) is a layer between the data and the user to configure what and how to ingest data from the source and to route it to a destination.
+
+For details, see [this article](https://learn.microsoft.com/en-us/azure/sentinel/normalization) on the Microsoft site.
+
+## Auditlog
+
+## CIM
+
+## Customlog
+
+## ECS
+
+## Eventlog
+
+## Inventory
+
+## Metric
+
+## Netflowlog
+
+## Networklog
+
+## Parquet Files
+
+The parquet file was designed by Apache as a column-based format. Unlike row-based formats like **CSV**, it stores the records in columns.
+
+**Row-based storage** First row contains field names:
+
+```plaintext
+id,name,last_name,age
+1,John,Buck,35
+2,Jane,Doe,27
+3,Joe,Dane,42
+```
+
+**Column-based Storage** First column contains field names:
+
+```plaintext
+id:1,2,3
+name:John,Jane,Joe
+last_name:Buck,Doe,Dane
+age:35, 27,42
+```
+
+Parquet files use _dictionary encoding_, compression and _bit packing_, and _run-length encoding_, features which make it more efficient compared to row-based formats.
+
+## PEM Files
+
+A **PEM** (Privacy Enhanced Mail) file is a container format often used to store cryptographic keys, certificates, and other data. It is a base64-encoded file that starts with a header and ends with a footer, e.g.:
+
+```encoding
+-----BEGIN CERTIFICATE-----
+MIIH/TCCBeWgAwIBAgIQaBYE3/M08XHYCnNVmcFBcjANBgkqhkiG9w0BAQsFADBy
+MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMxEDAOBgNVBAcMB0hvdXN0b24x
+ETAPBgNVBAoMCFNTTCBDb3JwMS4wLAYDVQQDDCVTU0wuY29tIEVWIFNTTCBJbnRl
+cm1lZGlhdGUgQ0EgUlNBIFIzMB4XDTIwMDQwMTAwNTgzM1oXDTIxMDcxNjAwNTgz
+M1owgb0xCzAJBgNVBAYTAlVTMQ4wDAYDVQQIDAVUZXhhczEQMA4GA1UEBwwHSG91
+...
+-----END CERTIFICATE--
+```
+
+where `CERTIFICATE` can also be `PRIVATE KEY` or `RSA KEY`. These blocks communicate what is encoded in the file.
+
+This is a text-based format, and the base64-encoded data can be uppercase and lowercase letters, digits, '+', and '/'.
+
+A **PEM** file can contain multiple blocks of such data. These are generally used to encode for example **RSA** keys for **SSH** connections, certificates used for **SSL** encryption and the keys associated with them, etc.
+
+A **PEM** file for certificates can specify
+
+* the end-user certificate assigned to a domain name by a **CA** (Certificate Authority)
+* up to 4 intermedidate certificates
+* a root certificate self-signed by the **CA**
+
+These are generally issued by the **SSL** provider to be used in a web service.
+
+**PEM** files are also used for **SSH**. Typical use on the command line is:
+
+```CLI-linux
+ssh -i keyfile.pem root@host
+```
+
+where the `-i` parameter specifies the PEM file to use to create a secure **SSH** connection `host`.
+
+## Syslog
+
+**SYSLOG** is a standard protocol used for system logging in computer networks. Using this protocol, devices and applications send log messages to central servers that store them for monitoring and analysis.
+
+### Severity
+
+**Syslog** has numeric severity levels, indicating their importance. The lower the value, the more critical the event. The levels are used for:
+
+* _Prioritization_ of critical issues
+* _Filtering_ of log messages
+* _Automation_ of specific types of events
+* _Compliance_ with regulatory standards
+
+|Level|Severity|Description|
+|---|---|---|
+|0|Emergency|System unusable|
+|1|Alert|Immediate action required|
+|2|Critical|Condition critical|
+|3|Error|Errors exist|
+|4|Warning|Warnings exist|
+|5|Notice|Significant condition|
+|6|Info|Info messages|
+|7|Debug|Debug messages|
+
+## Userlog
+
+---
