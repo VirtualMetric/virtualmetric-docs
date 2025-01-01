@@ -2,11 +2,13 @@
 
 ## Synopsis
 
-```yaml {2}
+```yaml
 flatten:
   - field: <ident>
   - format: <string>
   - target_field: <ident>
+  - delimiter: <string>
+  - depth: <numeric>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
@@ -24,9 +26,11 @@ flatten:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|-|Field containing the nested object to flatten|
+|`field`|N|-|Field containing the nested object to flatten. If empty or omitted, flattens the entire document|
 |`format`|N|-|Output format: `ecs`, `cim`, `asim`. When not specified, maintains original case|
 |`target_field`|N|`field`|Field to store the flattened result. If not specified, overwrites the source field|
+|`delimiter`|N|`.`|Character(s) used to separate nested field names in the flattened result|
+|`depth`|N|`-1`|Maximum nesting depth to flatten. Use -1 for unlimited depth|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|If `true`, errors are ignored|
@@ -37,7 +41,50 @@ flatten:
 
 ## Examples
 
-### Basic Flattening
+### Document-Wide Flattening
+
+<ExampleGrid>
+  <CommentCol>
+    Flatten the entire document...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "name": "John",
+        "address": {
+          "city": "New York",
+          "country": "USA"
+        }
+      },
+      "metadata": {
+        "version": "1.0"
+      }
+    }
+    ```
+    ```yaml
+    flatten:
+      - target_field: flattened
+    ```
+  </CodeCol>
+  <CommentCol>
+    flattens all nested structures:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "flattened": {
+        "user.name": "John",
+        "user.address.city": "New York",
+        "user.address.country": "USA",
+        "metadata.version": "1.0"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Basic Field Flattening
 
 <ExampleGrid>
   <CommentCol>
@@ -81,6 +128,88 @@ flatten:
   </CodeCol>
 </ExampleGrid>
 
+### Custom Delimiter
+
+<ExampleGrid>
+  <CommentCol>
+    Use underscore as delimiter...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "nested": {
+        "field1": "value1",
+        "field2": {
+          "subfield": "value2"
+        }
+      }
+    }
+    ```
+    ```yaml
+    flatten:
+      - field: nested
+      - delimiter: "_"
+      - target_field: flattened
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates underscore-separated paths:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "flattened": {
+        "field1": "value1",
+        "field2_subfield": "value2"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Deep Nesting with Depth Control
+
+<ExampleGrid>
+  <CommentCol>
+    Limit flattening depth...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "root": {
+        "level1": {
+          "level2": {
+            "level3": "deep value"
+          },
+          "sibling": "value"
+        }
+      }
+    }
+    ```
+    ```yaml
+    flatten:
+      - field: root
+      - depth: 2
+      - target_field: flat
+    ```
+  </CodeCol>
+  <CommentCol>
+    only flattens to specified depth:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "flat": {
+        "level1.sibling": "value",
+        "level1.level2": {
+          "level3": "deep value"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
 ### ECS Format
 
 <ExampleGrid>
@@ -113,46 +242,6 @@ flatten:
       "User": {
         "name": "John",
         "details.age": 30
-      }
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Deep Nesting
-
-<ExampleGrid>
-  <CommentCol>
-    Flatten deeply nested structures...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "root": {
-        "level1": {
-          "level2": {
-            "level3": "deep value"
-          },
-          "sibling": "value"
-        }
-      }
-    }
-    ```
-    ```yaml
-    flatten:
-      - field: root
-      - target_field: flat
-    ```
-  </CodeCol>
-  <CommentCol>
-    preserves complete paths:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "flat": {
-        "level1.level2.level3": "deep value",
-        "level1.sibling": "value"
       }
     }
     ```
@@ -199,12 +288,12 @@ flatten:
 
 1. **Default (no format)**
    - Preserves original field name casing
-   - Uses dot notation for paths
+   - Uses specified delimiter (defaults to dot notation)
    - Example: `User.FirstName.Last`
 
 2. **ECS Format**
    - Converts all field names to lowercase
-   - Uses dot notation for paths
+   - Uses specified delimiter (defaults to dot notation)
    - Example: `user.firstname.last`
 
 3. **CIM Format**
@@ -224,6 +313,7 @@ flatten:
    flatten:
      - field: metadata
      - format: ecs
+     - delimiter: "."
      - target_field: normalized_metadata
    ```
 
@@ -232,6 +322,7 @@ flatten:
    flatten:
      - field: raw_data
      - format: cim
+     - delimiter: "_"
      - target_field: cim_data
    ```
 
@@ -239,6 +330,7 @@ flatten:
    ```yaml
    flatten:
      - field: complex_object
+     - depth: 3
      - target_field: simple_object
    ```
 
@@ -253,5 +345,7 @@ Best practices:
 - Use `target_field` when you need to preserve the original structure
 - Choose appropriate format based on your schema requirements
 - Consider using `ignore_missing` for optional fields
+- Set appropriate `depth` for controlling nesting levels
+- Select delimiter based on your naming conventions
 - Test with deeply nested structures to ensure expected results
 :::
