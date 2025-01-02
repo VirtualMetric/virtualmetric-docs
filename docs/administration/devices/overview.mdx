@@ -4,160 +4,101 @@ pagination_prev: null
 
 # Devices: Overview
 
-VirtualMetric Director uses devices as abstraction layers to collect, process, and manage telemetry data from various sources. These devices serve as the interface between data sources and the Director's processing pipeline.
+**VirtualMetric Director** uses devices as an abstraction layer to collect data from various sources and manage them for telemetry. As such, they decouple data sources from **Director**'s pipelines.
+
+:::note
+Each device type provides specific configuration options detailed in their respective chapters.
+:::
 
 ## Device Categories
 
+Devices come in various categories, depending on their intended purpose of use. The main distinction, however, is OS monitoring versus protocol listening.
+
 ### Operating System Monitoring
 
-Director uses a unified agent-based approach with two deployment methods:
+For monitoring operating systems, **Director** uses a unified agent-based approach with two types of deployment:
 
-#### Managed Agent (Traditional)
+**Managed** (Traditional): The agent is installed and managed by system administrators. This provides persistent installation on the target system. Local data is buffered in the emergence of network issues. **Director** supports _Windows_, _Linux_, _MacOS_, _Solaris_, and _AIX_.
 
-- Agent installed and managed by system administrators
-- Persistent installation on target systems
-- Local data buffering during network issues
-- Windows, Linux, MacOS, Solaris, AIX support
+**Auto-managed** (Agentless): 
+The agent is automatically deployed and managed, no manual installation is required. Auto-managed agents provide local data buffering, network resilience, and performance optimization. This deployment type is self-healing since the agent is automatically redeployed if the process terminates. Also, it supports _remote credential management_. Deployment is done using **WinRM** for _Windows_, and **SSH** for _Linux_, _MacOS_, _Solaris_, and _AIX_.
 
-#### Auto-managed Agent (Agentless)
-
-- Director automatically deploys and manages agent process
-- No manual installation required
-- Same capabilities as managed agent:
- - Local data buffering
- - Network resilience
- - Performance optimization
-- Self-healing: Director automatically redeploys if process terminates
-- Windows: WinRM for deployment
-- Linux, MacOS, Solaris, AIX: SSH for deployment
-- Supports remote credential management
-
-Both approaches provide:
-
-- Local data processing
-- Store-and-forward during connectivity issues
-- Real-time metrics and events
-- Native OS monitoring capabilities
-
-The key difference is deployment and lifecycle management, not functionality.
+Both approaches provide local data processing, store-and-forward capability against connectivity issues, real-time metrics and events, and native OS monitoring. The key difference is deployment and lifecycle management, not functionality.
 
 ### Protocol Listeners
 
-Director can receive data through various network protocols:
+Data is received from listeners using various network protocols with two types of collection:
 
-#### Push-based Protocols
+**Push-based**: Devices like _Syslog_ (via _UDP_/_TCP_), _SNMP Traps_, _HTTP/HTTPS_, _TCP_/_UDP_, and _eStreamer_ send event data.
 
-Devices send data to Director:
-
-- Syslog (UDP/TCP)
-- SNMP Traps
-- HTTP/HTTPS
-- TCP/UDP streams
-- eStreamer events
-
-#### Pull-based Integration
-
-Director fetches data from sources:
-
-- Kafka topics
-- Microsoft Sentinel
-- REST APIs
-- Database queries
-- Custom integrations
+**Pull-based**: Data is fetched from _Kafka_ topics, _Microsoft Sentinel_, _REST_ APIs, database queries, and other custom integration types.
 
 ## Data Processing
 
-### Pipeline Processing
+Devices enable handling and processing of data through the following means:
 
-- Message parsing and enrichment with custom rules
-- Data transformation (field mapping, type conversion)
-- Event correlation and aggregation
-- Custom field extraction and tagging
-- Filter and routing based on message content
-- Alert generation for matching conditions
-- Templating support for output formatting
-- Built-in and custom functions
+**Pipelines**: These provide the capability to parse and enrich messages with custom rules. Data is transformed&mdash;through _field mapping_ and _type conversion_&mdash; and events are correlated and aggregated, custom fields are extracted, tagged, filtered, and routed based on message content. For certain conditions, alerts are generated. Additionally, there is _templating_ support for output formatting, and built-in and custom functions.
 
-### Queue Management
+**Queues**: These provide persistent message storage, configurable batch processing capability, automatic checkpoint recovery, and rotation and cleanup ability.
 
-- Persistent message storage
-- Configurable batch processing
-- Automatic checkpoint recovery
-- Queue rotation and cleanup
+### Performance
 
-### Performance Features
+Devices can improve telemetry performance through their multi-worker architecture, dynamic scaling ability, socket reuse optimization, buffer management, and resource monitoring capability.
 
-- Multi-worker architecture
-- Dynamic scaling
-- Socket reuse optimization
-- Buffer management
-- Resource monitoring
+### Security
 
-### Security Controls
+For security, devices offer the following:
 
-- Authentication methods
-  - Basic auth
-  - API keys
-  - HMAC signing
-  - Client certificates
-- Encryption options
-  - TLS/SSL
-  - SNMPv3 privacy
-  - Custom encryption
-- Access control
-- Audit logging
+**Authentication**: Basic authentication, API keys, HMAC signing, and client certificates.\
+**Encryption**: _TLS_/_SSL_, _SNMPv3_ privacy, and custom encryption.
 
-## Deployment Options
+In addition, they also provide _access control_, and _audit logging_.
+
+:::warning
+Always implement the appropriate security controls when deploying devices in production environments.
+:::
+
+## Deployment
+
+As stated above, devices offer various deployment options for different purposes.
 
 ### Standalone
+
+With this approach, sources are connected directly to **Director**, bypassing any intermediate mechanism.
+
 ```
 [Sources] → [Director]
 ```
 
 ### High Availability
+
+Here, sources are first connected to a load balancer&mdash;which distributes the work to multiple processes&mdash;after which they are streamed to either a **Director** cluster
+
 ```
 [Sources] → [Load Balancer] → [Director Cluster]
 ```
 
-or
+-or- sources are connected to a cluster with VIP&mdash;which serves as&hellip; {/* TODO: What is VIP? */}
 
 ```
 [Sources] → [Director Cluster with VIP]
 ```
 
-## Common Applications
+## Common Uses
 
-### Infrastructure Monitoring
+Devices are commonly used for the following:
 
-- System performance metrics
-- Event logs
-- Resource utilization
-- Service availability
+**Infrastructure monitoring**: Provides system performance metrics, event logs, resource utilization, and service availability information.
 
-### Security Operations
+**Security operations**: Enables security event monitoring, threat detection, compliance monitoring, and provides audit trails.
 
-- Security event collection
-- Threat detection
-- Compliance monitoring
-- Audit trails
+**Application telemetry**: Provides application logs and performance metrics, and enables error tracking and user activity monitoring.
 
-### Application Telemetry
-
-- Application logs
-- Performance metrics
-- Error tracking
-- User activity
-
-### Network Monitoring
-
-- Network device logs
-- Traffic analysis
-- SNMP data
-- Connection tracking
+**Network monitoring**: Provides network device logs and SNMP data, and enables traffic analysis and connection tracking
 
 ## Configuration
 
-All device configurations reside in the `config` directory using either `.yaml` or `.yml` extensions. Flexible organization options:
+**Director** offers flexible organization options for device configuration files: they all have a `.yaml` or `.yml` extension, and reside inside the `config` directory:
 
 ```
 config/
@@ -169,12 +110,4 @@ config/
 └── integrations/
 ```
 
-Director recursively discovers all configuration files regardless of subfolder structure.
-
-:::note
-Each device type provides specific configuration options detailed in their respective documentation.
-:::
-
-:::warning
-Always implement the appropriate security controls when deploying devices, especially in production environments.
-:::
+**Director** discovers all configuration files recursively, regardless of the subfolder structure.
