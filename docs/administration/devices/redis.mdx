@@ -28,9 +28,9 @@
 
 ## Description
 
-Creates a Redis Pub/Sub subscriber that connects to Redis servers and processes messages from specified channels. Supports authentication, TLS encryption, and multi-worker processing with automatic message handling.
+Creates a Pub/Sub subscriber that connects to Redis servers and processes messages from specified channels. Supports authentication, TLS encryption, and multiple workers with automatic message handling.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -81,37 +81,31 @@ The TLS certificate and key files must be placed in the service root directory.
 
 ### Channel Patterns
 
-The collector supports Redis Pub/Sub channel patterns:
-- Exact channel names: `logs`
-- Pattern matching: `logs.*`
-- Multiple patterns: `logs.* app.*`
+The collector supports Redis Pub/Sub channel consuming with exact matching (e.g. `logs`) and single- or multi-pattern matching (e.g. `logs.*` or `logs.* app.*`).
 
 ### Multi-Worker Use
 
-When `reuse` is enabled, the collector uses multiple worker processes:
-- Each worker maintains its own Redis subscription
-- Workers process messages independently
-- Messages are automatically distributed
-- Worker count is capped at available CPU cores
+When `reuse` is enabled, the collector uses multiple workers which maintain their own Redis subscriptions and process messages independently thanks to which messages are automatically distributed.
+
+:::note
+The worker count is capped at the number of available CPU cores.
+:::
 
 ### Messages
 
-The collector supports:
-- Pattern-based subscriptions
-- Multiple channel subscriptions
-- TLS encrypted connections
-- Authentication methods
-- Custom message processing pipelines
+The collector supports pattern-based subscriptions, multiple channel subscriptions, and custom message processing pipelines. It also supports TLS-encrypted connections and authentication methods.
 
 ## Examples
 
+The following are examples of commonly used configuration types.
+
 ### Basic
 
-The minimum required configuration:
+A basic collector can be easily created:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple Redis subscriber...
+    Creating a simple Redis subscriber...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -128,11 +122,11 @@ The minimum required configuration:
 
 ### Secure
 
-For connecting to secured Redis servers:
+The collector can connect to secure Redis servers:
 
 <ExampleGrid>
   <CommentCol>
-    Connect with authentication and encryption...
+    Connecting with authentication and encryption...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -155,11 +149,11 @@ For connecting to secured Redis servers:
 
 ### High-Performance
 
-For processing high message volumes:
+Performance can be enhanced for high message volumes:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high throughput...
+    Optimizing for high throughput...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -178,17 +172,13 @@ For processing high message volumes:
   </CodeCol>
 </ExampleGrid>
 
-:::note
-When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
-:::
-
 ### Pattern Subscription
 
-For pattern-based message filtering:
+Messages can be filtered using pattern-based matching:
 
 <ExampleGrid>
   <CommentCol>
-    Configure pattern-based subscriptions...
+    Configuring pattern-based subscriptions...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -211,11 +201,11 @@ Redis channel patterns support the `*` wildcard character for matching multiple 
 
 ### Pipelines
 
-For message pre-processing:
+Messages can be pre-processed:
 
 <ExampleGrid>
   <CommentCol>
-    Apply custom processing to messages...
+    Applying custom processing to messages...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -234,5 +224,5 @@ For message pre-processing:
 </ExampleGrid>
 
 :::note
-Pipelines are processed sequentially and can modify or drop messages before ingestion.
+Pipelines are processed sequentially, and can modify or drop messages before ingestion.
 :::
