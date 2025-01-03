@@ -30,9 +30,9 @@
 
 ## Description
 
-Creates a Kafka consumer that connects to Kafka brokers and consumes messages from specified topics. Supports authentication, TLS encryption, and multi-worker processing.
+Creates a collector that connects to Kafka brokers and consumes messages from specified topics. Supports authentication, TLS encryption, and multiple workers.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -83,33 +83,25 @@ The TLS certificate and key files must be placed in the service root directory.
 
 ## Advanced Features
 
-### Multi-Worker Processing
+### Multi-Worker Use
 
-When `reuse` is enabled, the collector uses multiple worker processes:
-- Each worker maintains its own Kafka consumer in the consumer group
-- Workers process messages independently
-- Messages are automatically balanced across workers
-- Worker count is capped at available CPU cores
+When `reuse` is enabled, the collector uses multiple workers. Each worker maintains its own Kafka consumer, and processes its own messages independently, automatically balancing message volumes. The worker count is capped at the number of available CPU cores.
 
-### Message Processing
+### Messages
 
-The collector supports:
-- Message offset tracking and commits
-- Automatic consumer group rebalancing
-- Multiple topic subscriptions
-- TLS encrypted connections
-- SASL authentication
-- Custom message processing pipelines
+The collector supports message offset tracking and commits, automatic consumer group rebalancing, multiple topic subscriptions, TLS-encrypted connections and SASL authentication, and custom message-processing pipelines.
 
 ## Examples
 
-### Basic Configuration
+The following are examples of commonly used configuration types.
 
-The minimum required configuration:
+### Basic
+
+The minimum required configuration creates the consumer:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple Kafka consumer...
+    Creating a simple Kafka consumer...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -124,13 +116,13 @@ The minimum required configuration:
   </CodeCol>
 </ExampleGrid>
 
-### Secure Configuration
+### Secure
 
-For connecting to secured Kafka brokers:
+The consumer can connect to secure Kafka brokers:
 
 <ExampleGrid>
   <CommentCol>
-    Connect with authentication and encryption...
+    Connecting with authentication and encryption...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -151,13 +143,13 @@ For connecting to secured Kafka brokers:
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance Configuration
+### High-Performance
 
-For processing high message volumes:
+Performance can be enhanced for high message volumes:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high throughput...
+    Optimizing for throughput...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -181,13 +173,13 @@ For processing high message volumes:
 When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
 :::
 
-### Consumer Group Configuration
+### Consumer Groups
 
-For coordinated message consumption:
+Message consumption can be coordinated:
 
 <ExampleGrid>
   <CommentCol>
-    Configure consumer group behavior...
+    Configuring consumer group behavior...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -207,16 +199,16 @@ For coordinated message consumption:
 </ExampleGrid>
 
 :::warning
-All consumers in the same group must use compatible configuration settings.
+The consumers in the same group must use compatible configuration settings.
 :::
 
-### Message Pipeline Configuration
+### Message Pipelines
 
-For message pre-processing:
+Messages can be pre-processed:
 
 <ExampleGrid>
   <CommentCol>
-    Apply custom processing to messages...
+    Applying custom processing to messages...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -236,5 +228,5 @@ For message pre-processing:
 </ExampleGrid>
 
 :::note
-Pipelines are processed sequentially and can modify or drop messages before ingestion.
+Pipelines are processed sequentially, and can modify or drop messages before ingestion.
 :::

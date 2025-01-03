@@ -34,9 +34,9 @@
 
 ## Description
 
-Creates a RabbitMQ consumer that connects to RabbitMQ servers and consumes messages from specified exchanges and queues. Supports multiple authentication methods, exchange types, TLS encryption, and multi-worker processing with automatic message acknowledgment.
+Creates a consumer that connects to RabbitMQ servers and consumes messages from specified exchanges and queues. Supports multiple authentication methods, exchange types, TLS encryption, and multiple workers with automatic message acknowledgment.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -102,42 +102,37 @@ The TLS certificate and key files must be placed in the service root directory.
 ### Exchange Types
 
 The collector supports various exchange types:
-- `direct`: Exact routing key match
-- `fanout`: Broadcast to all bound queues
-- `topic`: Pattern-based routing using wildcards
-- `x-custom`: Custom exchange types (if supported by server)
+
+|Exchange Type|Description|
+|---|---|
+|`direct`|Exact routing key match|
+|`fanout`|Broadcast to all bound queues|
+|`topic`|Pattern-based routing using wildcards|
+|`x-custom`|Custom exchange types (if supported by server)|
 
 ### Multi-Worker Use
 
-When `reuse` is enabled, the collector uses multiple worker processes:
-- Each worker maintains its own RabbitMQ consumer
-- Workers process messages independently
-- Messages are automatically acknowledged
-- Worker count is capped at available CPU cores
+When `reuse` is enabled, the collector uses multiple workers which maintain their own RabbitMQ consumers and process messages independently. Messages are automatically acknowledged.
+
+:::note
+The worker count will be capped at the number of available CPU cores.
+:::
 
 ### Messages
 
-The collector supports:
-
-- Multiple exchange types
-- Pattern-based routing
-- Message acknowledgment and rejection
-- Dead letter exchanges
-- TLS encrypted connections
-- Multiple authentication methods
-- Custom message processing pipelines
+The collector supports multiple exchange types, pattern-based routing, message acknowledgment and rejection, dead letter exchanges, and custom message processing pipelines. It also supports TLS-encrypted connections and multiple authentication methods. 
 
 ## Examples
 
-The following configuration types must be considered.
+The following are examples of commonly used configuration types.
 
 ### Basic
 
-The minimum required configuration:
+A basic consumer can be easily created.
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple RabbitMQ consumer...
+    Creating a simple RabbitMQ consumer...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -160,11 +155,11 @@ The minimum required configuration:
 
 ### Secure
 
-For connecting to secured RabbitMQ servers:
+The collector can connect to secure servers:
 
 <ExampleGrid>
   <CommentCol>
-    Connect with authentication and encryption...
+    Connecting with authentication and encryption...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -193,11 +188,11 @@ For connecting to secured RabbitMQ servers:
 
 ### High-Performance
 
-For processing high message volumes:
+Performance can be enhanced for high message volumes:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high throughput...
+    Optimizing for high throughput...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -222,17 +217,13 @@ For processing high message volumes:
   </CodeCol>
 </ExampleGrid>
 
-:::note
-When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
-:::
-
 ### Topic Exchange
 
-For pattern-based message routing:
+Pattern-based message routing is possible:
 
 <ExampleGrid>
   <CommentCol>
-    Configure topic-based routing...
+    Configuring topic-based routing...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -259,11 +250,11 @@ Topic routing keys support `*` and `#` wildards for single and multiple words re
 
 ### Pipelines
 
-For message pre-processing:
+Messages can be pre-processed:
 
 <ExampleGrid>
   <CommentCol>
-    Apply custom processing to messages...
+    Applying custom processing to messages...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -288,5 +279,5 @@ For message pre-processing:
 </ExampleGrid>
 
 :::note
-Pipelines are processed sequentially and can modify or drop messages before ingestion.
+Pipelines are processed sequentially, and can modify or drop messages before ingestion.
 :::

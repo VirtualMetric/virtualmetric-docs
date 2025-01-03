@@ -20,9 +20,20 @@
 
 ## Description
 
-Creates a NetFlow v5 collector that accepts flow data over UDP connections. Supports high-performance collection with multiple worker processes and configurable buffer sizes. Note that for NetFlow v9 or higher versions, use the `ipfix` collector type instead.
+Creates a NetFlow v5 collector that accepts flow data over UDP connections. Supports high-performance collection with multiple workers and configurable buffer sizes. 
 
-## Basic Configuration
+:::warning
+The collector only supports NetFlow v5. For **NetFlow v9** or higher, use the `ipfix` collector type.
+
+{/* FIXME: Burada bir tutarsızlık var: Tablo v1 .. v8 arası desteklenmiyor diyor, metin v5 destekleniyor diyor. */}
+
+|Version|Supported|Alternative|
+|---|---|---|
+|v1 .. v8|No|-|
+|v9, v10 |No|Use `ipfix`|
+:::
+
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -57,29 +68,27 @@ The following are the minimum requirements to define the device.
 
 ### Multi-Worker Use
 
-When `reuse` is enabled, the collector automatically scales to use multiple worker processes based on available CPU cores. Each worker:
-- Maintains its own UDP listener
-- Processes flows independently
-- Writes to a dedicated queue file
+When `reuse` is enabled, the collector automatically spawns multiple workers which maintain their own UDP listeners, process flows independently, and write to dedicated queue files.
+
+:::note
+The collector scales up to use all available CPU cores.
+:::
 
 ### Flows
 
-The collector supports:
-- Fixed format NetFlow v5 records
-- Application identification
-- Port-based protocol mapping
-- Flow state tracking
-- Statistics aggregation
+The collector supports fixed format NetFlow v5 records, application identification, port-based protocol mapping, flow state tracking, and statistical aggregation.
 
 ## Examples
 
-### Basic Configuration
+The following are examples of commonly used configuration types.
 
-The minimum required configuration using defaults:
+### Basic
+
+A basic collector can be created easily:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple NetFlow collector...
+    Creating a simple NetFlow collector...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -92,13 +101,13 @@ The minimum required configuration using defaults:
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance Configuration
+### High-Performance
 
-For enhanced performance with high flow volumes:
+Performance can be enhanced for high flow volumes:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high message volumes...
+    Optimizing for high message volumes...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -114,17 +123,13 @@ For enhanced performance with high flow volumes:
   </CodeCol>
 </ExampleGrid>
 
-:::note
-When `reuse` is enabled, the collector automatically scales to use all available CPU cores for processing.
-:::
+### Legacy Networks
 
-### Legacy Network Configuration
-
-For collecting from older network devices:
+Collecting flows from older network devices is possible:
 
 <ExampleGrid>
   <CommentCol>
-    Collect from legacy network devices...
+    Collecting from legacy network devices...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -141,46 +146,19 @@ For collecting from older network devices:
   </CodeCol>
 </ExampleGrid>
 
-:::warning
-This collector only supports NetFlow v5. For NetFlow v9 or IPFIX, use the `ipfix` collector type.
-:::
-
 ### Application Protocol Identification
 
-The collector supports application protocol identification using a variety of methods:
+The collector supports application-based identification, TCP port mapping, and UDP port mapping. The definition files for these respectively are placed in three locations under `<director_root>`:
 
-1. Application-based identification using app-definitions.csv
-2. TCP port mapping using tcp-definitions.csv
-3. UDP port mapping using udp-definitions.csv
-
-The definition files can be placed in three locations, in the following order:
-
-1. `<director_root>/user/definitions/app-definitions-{device-id}.csv` (device-specific)
-2. `<director_root>/user/definitions/app-definitions.csv` (user-defined)
-3. `<director_root>/package/definitions/app-definitions.csv` (system defaults)
+- `/user/definitions/app-definitions-{device-id}.csv` (device-specific)
+- `/user/definitions/app-definitions.csv` (user-defined)
+- `/package/definitions/app-definitions.csv` (system defaults)
 
 :::warning
 Definition files must be in CSV format with exactly two columns per row.
 :::
 
-<ExampleGrid>
-  <CommentCol>
-    Basic flow collection with application identification...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - id: 4
-      name: app_aware_netflow
-      type: netflow
-      properties:
-        port: 2055
-        reuse: true
-        buffer_size: 16384
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-Definition files use the CSV format:
+The contents of these files are:
 
 `app-definitions.csv`:
 
@@ -210,24 +188,22 @@ HTTPS,Secure Web
 ```
 
 :::note
-The collector will fall back to system defaults if custom definition files are not found.
+The collector will fall back on the system defaults if the custom definition files are not found.
 :::
 
-### Version Compatibility
-
-|NetFlow Version|Supported|Alternative|
-|---|---|---|
-|v1|No|-|
-|v2|No|-|
-|v3|No|-|
-|v4|No|-|
-|v5|Yes|-|
-|v6|No|-|
-|v7|No|-|
-|v8|No|-|
-|v9|No|Use `ipfix` type|
-|v10 (IPFIX)|No|Use `ipfix` type|
-
-:::warning
-For NetFlow v9 or IPFIX support, configure your collector for the `ipfix` type instead of the `netflow` type.
-:::
+<ExampleGrid>
+  <CommentCol>
+    Using application identification...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: app_aware_netflow
+      type: netflow
+      properties:
+        port: 2055
+        reuse: true
+        buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>

@@ -23,9 +23,9 @@
 
 ## Description
 
-Creates a Microsoft Sentinel collector that fetches security incidents from Azure Sentinel workspaces. Supports authentication, batch processing, and automatic incident tracking with incremental updates.
+Creates a collector that fetches security incidents from Azure Sentinel workspaces. Supports authentication, batch processing, and automatic incident tracking with incremental updates.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -50,7 +50,7 @@ The following are the minimum requirements to define the device.
 |`client_secret`|Y||Azure client secret|
 |`subscription_id`|Y||Azure subscription ID|
 
-### Workspace
+### Workspaces
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -68,42 +68,27 @@ The following are the minimum requirements to define the device.
 
 ### Incident Collection
 
-The collector captures comprehensive incident data:
-
-- Basic incident details (ID, title, description)
-- Severity and status
-- Classification and labels
-- Owner information
-- Temporal data (created, modified, activity times)
-- Resource information
+The collector captures comprehensive incident data such as basic incident details (ID, title, description), severity and status, classification and labels, owner information, temporal data (create, modify, activity dates and times), and information on resources.
 
 ### Incremental Updates
 
-The collector implements efficient data collection:
-
-- Tracks last processed incident timestamp
-- Only fetches new incidents since last checkpoint
-- Orders incidents by creation time
-- Supports batch processing
+The collector tracks the last processed incident's timestamp, fetches only new incidents since the last checkpoint, orders incidents by creation time, and spports batch processing.
 
 ### Data Normalization
 
-Incidents are automatically normalized with:
-
-- ECS field mapping
-- Consistent timestamp formats
-- Structured label handling
-- Owner information parsing
+Incidents are automatically normalized with ECS field mapping in addition to using consistent timestamp formats, structured label handling, and owner information.
 
 ## Examples
 
-### Basic Configuration
+The following are examples of commonly used configuration types.
 
-The minimum required configuration:
+### Basic
+
+A basic collector can be created as below:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple Sentinel collector...
+    Creating a simple Sentinel collector...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -121,13 +106,13 @@ The minimum required configuration:
   </CodeCol>
 </ExampleGrid>
 
-### High-Volume Configuration
+### High Volumes
 
-For collecting large numbers of incidents:
+Large numbers of incidents can be collected:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high incident volumes...
+    Optimizing for high incident volumes...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -147,13 +132,13 @@ For collecting large numbers of incidents:
   </CodeCol>
 </ExampleGrid>
 
-### Pipeline Configuration
+### Pipelines
 
-For incident enrichment and processing:
+Incidents can be enriched and processed:
 
 <ExampleGrid>
   <CommentCol>
-    Apply custom processing to incidents...
+    Applying custom processing to incidents...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -176,13 +161,13 @@ For incident enrichment and processing:
   </CodeCol>
 </ExampleGrid>
 
-### Multi-Workspace Configuration
+### Multiple Workspaces
 
-For collecting from multiple workspaces:
+Information can be collected from multiple workspaces:
 
 <ExampleGrid>
   <CommentCol>
-    Configure multiple workspace collectors...
+    Configuring multiple workspace collectors...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -211,7 +196,7 @@ For collecting from multiple workspaces:
 </ExampleGrid>
 
 :::note
-Each workspace collector maintains its own checkpoint and can be configured independently.
+Each workspace collector maintains its own checkpoint, and can be configured independently.
 :::
 
 ### Incident Field Mapping
@@ -235,5 +220,5 @@ The collector maps incident fields to standardized ECS fields:
 |`Labels`|`labels`|Incident labels|
 
 :::note
-All timestamps are normalized to nanosecond precision in UTC.
+All timestamps are normalized at nanosecond level in UTC.
 :::
