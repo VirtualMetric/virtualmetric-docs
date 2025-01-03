@@ -21,9 +21,9 @@
 
 ## Description
 
-Creates a TFTP server that accepts file uploads using the TFTP protocol. Supports IP-based device mapping, multi-worker processing, and automatic file content processing.
+Creates a server that accepts file uploads using the TFTP protocol. Supports IP-based device mapping, multiple workers, and automatic file content processing.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -56,46 +56,72 @@ The following are the minimum requirements to define the device.
 |`stats_frequency`|N|`300`|Statistics collection interval in seconds|
 
 :::warning
-TFTP protocol does not support authentication. Deploy only on trusted networks.
+TFTP protocol does **not** support authentication. Deploy only on _trusted_ networks.
 :::
 
 ## Advanced Features
 
+The following are unique features that **Director** offers.
+
 ### IP-Based Device Mapping
 
-The server supports automatic device mapping based on client IP addresses:
-- Maps incoming client IPs to device IDs
-- Automatically associates uploads with devices
-- Supports dynamic device discovery
-- Maintains IP-to-device mapping cache
+The server supports automatic device mapping based on client IP addresses: it maps incoming client IPs to device IDs, and  automatically associates uploads with devices. It also supports dynamic device discovery and maintains an IP-to-device mapping cache.
 
 ### Files
 
-The server processes uploaded files:
-
-- reads file content into memory
-- records upload metadata (filename, timestamp)
-- captures client information
-- converts content to processable format
+The server processes uploaded files by reading the file contents into memory, recording upload metadata (filename, timestamp, etc.), capturing the client information, and converting the content to consumable format.
 
 ### Multi-Worker Use
 
-When `reuse` is enabled, the server uses multiple worker processes:
+When `reuse` is enabled, the server uses multiple workers which maintain their own TFTP listeners and process files independently so that the files are automatically distributed.
 
-- each worker maintains its own TFTP listener
-- workers process files independently
-- files are automatically distributed
-- worker count is capped at available CPU cores
+:::note
+The worker count will be capped at the number of available CPU cores.
+:::
+
+### Upload Protocol
+
+The device upload operations observe the following procedure:
+
+The client initiates a TFTP upload:
+
+```mermaid
+graph LR;
+  TFTP --> |WRQ| server:69
+```
+
+The server accepts the connection:
+
+```mermaid
+graph LR;
+  server --> |ACK| client
+```
+
+The client transfers the file:
+
+```mermaid
+graph LR;
+  client --> |DATA| server;
+  server --> |ACK| client
+```
+
+Then, the server maps the client IP to the device, reads the file contents, applies the pipelines, and stores the processed data.
+
+:::tip
+Configure clients to use binary mode for file transfers to avoid data corruption.
+:::
 
 ## Examples
 
+The following are commonly used configuration types.
+
 ### Basic
 
-The minimum required configuration:
+A basic server can be created easily:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple TFTP server...
+    Creating a simple TFTP server...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -111,11 +137,11 @@ The minimum required configuration:
 
 ### Device Mapping
 
-For automatic device association:
+Devices can be automatically captured:
 
 <ExampleGrid>
   <CommentCol>
-    Configure IP-based device mapping...
+    Configuring IP-based device mapping...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -131,45 +157,13 @@ For automatic device association:
   </CodeCol>
 </ExampleGrid>
 
-:::note
-The server automatically maps client IP addresses to device IDs based on the configuration.
-:::
+### Multiple Devices
 
-### High Performance
-
-For processing high file volumes:
+Uploads from multiple devices can be handled easily:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high upload volumes...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - id: 3
-      name: performance_tftp
-      type: tftp
-      properties:
-        address: "0.0.0.0"
-        port: 69
-        reuse: true
-        workers: 4
-        buffer_size: 32768
-        stats_frequency: 60
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-:::note
-When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
-:::
-
-### Multi-Device
-
-For handling uploads from multiple devices:
-
-<ExampleGrid>
-  <CommentCol>
-    Configure server for multiple devices...
+    Configuring server for multiple devices...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -189,13 +183,37 @@ For handling uploads from multiple devices:
 Ensure all devices are configured to use the same TFTP server port.
 :::
 
-### Pipelines
+### High Performance
 
-For file content processing:
+Performance can be enhanced for high file upload volumes:
 
 <ExampleGrid>
   <CommentCol>
-    Apply custom processing to uploaded files...
+    Optimizing for high volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: performance_tftp
+      type: tftp
+      properties:
+        address: "0.0.0.0"
+        port: 69
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Pipelines
+
+File contents can be handled according to requirements:
+
+<ExampleGrid>
+  <CommentCol>
+    Applying custom processing to uploaded files...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -214,37 +232,5 @@ For file content processing:
 </ExampleGrid>
 
 :::note
-Pipelines are processed sequentially and can modify or drop content before ingestion.
-:::
-
-### Device Upload Protocol
-
-1. Client initiates TFTP upload:
-
-   ```
-   TFTP -> WRQ -> server:69
-   ```
-
-2. Server accepts connection:
-
-   ```
-   server -> ACK -> client
-   ```
-
-3. Client transfers file:
-
-   ```
-   client -> DATA -> server
-   server -> ACK -> client
-   ```
-
-4. Server processes content:
-
-   - maps client IP to device
-   - reads file content
-   - applies pipelines
-   - stores processed data
-
-:::tip
-Configure clients to use binary mode for file transfers to avoid data corruption.
+Pipelines are processed sequentially, and can modify or drop content before ingestion.
 :::

@@ -28,9 +28,9 @@
 
 ## Description
 
-Creates an SMTP server that receives email messages. Supports authentication, TLS encryption, and multi-worker processing with automatic message handling and JSON conversion.
+Creates an SMTP server that receives email messages. Supports authentication, TLS encryption, and multiple workers with automatic message handling, and JSON conversion.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -81,41 +81,40 @@ The TLS certificate and key files must be placed in the service root directory.
 
 ### Emails
 
-The server captures and processes:
-- Email headers
-- Sender information
-- Recipient information
-- Message content
-- Attachments
-- Remote client information
+The server captures and processes email headers, sender information, recipient information, message content, attachments, and remote client information.
 
 ### JSON Conversion
 
-All email messages are automatically converted to JSON format with fields:
-- `from`: Sender address
-- `to`: Recipient addresses
-- `subject`: Email subject
-- `body`: Message body
-- `headers`: Email headers
-- `remoteAddr`: Client IP address
+All email messages are automatically converted to JSON format with the following fields:
+
+|Field|Description|
+|---|---|
+|`from`|Sender address|
+|`to`|Recipient addresses|
+|`subject`|Email subject|
+|`body`|Message body|
+|`headers`|Email headers|
+|`remoteAddr`|Client IP address|
 
 ### Multi-Worker Use
 
-When `reuse` is enabled, the server uses multiple worker processes:
-- Each worker maintains a separate SMTP listener
-- Workers process messages independently
-- Messages are automatically converted to JSON
-- Worker count is capped at available CPU cores
+When `reuse` is enabled, the server uses multiple worker processes which maintain a separate SMTP listener and process messages independently. Messages are automatically converted to JSON.
+
+:::note
+The worker count will be capped at the number of available CPU cores.
+:::
 
 ## Examples
 
+The following are commonly used configuration types.
+
 ### Basic
 
-The minimum required configuration:
+A basic server can be easily created:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple SMTP server...
+    Creating a simple SMTP server...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -131,11 +130,11 @@ The minimum required configuration:
 
 ### Secure
 
-For secure email reception:
+E-mail can be received securely:
 
 <ExampleGrid>
   <CommentCol>
-    Configure TLS and authentication...
+    Configuring TLS and authentication...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -162,11 +161,11 @@ Port 587 is commonly used for TLS-enabled SMTP (STARTTLS).
 
 ### High-Performance
 
-For processing high email volumes:
+Performance can be enhanced for high email volumes:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high message volumes...
+    Optimizing for high message volumes...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -185,17 +184,13 @@ For processing high email volumes:
   </CodeCol>
 </ExampleGrid>
 
-:::note
-When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
-:::
-
 ### Submission Server
 
-For dedicated message submission:
+Message submission can be dedicated:
 
 <ExampleGrid>
   <CommentCol>
-    Configure message submission server...
+    Configuring a message submission server...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -220,11 +215,11 @@ For dedicated message submission:
 
 ### Pipelines
 
-For email pre-processing:
+Emails can be pre-processed:
 
 <ExampleGrid>
   <CommentCol>
-    Apply custom processing to emails...
+    Applying custom processing to emails...
   </CommentCol>
   <CodeCol>
     ```yaml

@@ -29,43 +29,35 @@
 
 ## Description
 
-Creates an SNMP trap receiver that listens for SNMP trap messages. Supports SNMPv2c and SNMPv3 with various authentication and privacy protocols, MIB integration, and high-performance message processing.
+Creates a receiver that listens for SNMP trap messages. Supports SNMPv2c and SNMPv3 with various authentication and privacy protocols, MIB integration, and high-performance message processing.
 
 ## MIB Configuration
 
 The SNMP trap receiver automatically loads and integrates MIB files for translating SNMP trap messages. MIB files are essential for proper interpretation of vendor-specific or custom SNMP traps.
 
+{/* TODO: What are MIB files? Veritabanı olduğunu biliyorum da bir yerde biraz açıklamamız iyi olur */}
+
 ### MIB File Locations
 
-The system looks for MIB files in two locations:
+The system looks for MIB files in two locations under `<director_root>`:
 
-1. User Directory (`<director_root>/user/mibs/`)
-   - Primary location for custom MIB files
-   - Supports nested directory structure
-   - All user-specific MIB files should be placed here
+**User directory**, i.e. `/user/mibs/`: Primary location for custom MIB files. Supports nested directory structure. All user-specific MIB files should be placed here.
 
-2. Package Directory (`<director_root>/package/mibs/`)
-   - Contains default/standard MIB files
-   - Bundled with the installation
-   - Should not be modified directly
-
-### MIB Loading Process
-
-The system will:
-1. Recursively scan both MIB directories
-2. Load all discovered MIB modules
-3. Automatically resolve MIB dependencies
-4. Use loaded MIBs for trap translation
+**Package directory**, i.e. `/package/mibs/`: Contains default/standard MIB files. Bundled with the installation. Should not be modified directly.
 
 :::note
 Custom MIB files in the user directory take precedence over similarly named files in the package directory.
 :::
 
+### MIB Loading Process
+
+The system will recursively scan both MIB directories, load all discovered MIB modules, automatically resolve MIB dependencies, and use loaded MIBs for trap translation.
+
 :::warning
 If MIB loading fails, the system will still receive traps but may not translate vendor-specific OIDs correctly.
 :::
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -92,11 +84,11 @@ The following are the minimum requirements to define the device.
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`authentication.status`|N|`false`|Enable SNMPv3 authentication|
-|`authentication.protocol`|N|`1`|Authentication protocol ID|
+|`authentication.protocol`|N|`1`|Authentication protocol ID. See [table](./snmp-trap.mdx#authentication-protocols) below|
 |`authentication.password`|Y||Authentication password (required if auth enabled)|
 |`username`|Y||SNMPv3 username|
 
-#### Used Protocols
+#### Authentication Protocols
 
 |ID|Protocol|Description|
 |---|---|---|
@@ -112,10 +104,10 @@ The following are the minimum requirements to define the device.
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`privacy.protocol`|N|`1`|Privacy protocol ID|
+|`privacy.protocol`|N|`1`|Privacy protocol ID. See [table](./snmp-trap.mdx#privacy-protocols) below|
 |`privacy.passphrase`|Y||Privacy passphrase (required if protocol > 1)|
 
-#### Used Protocols
+#### Privacy Protocols
 
 |ID|Protocol|Description|
 |---|---|---|
@@ -129,7 +121,7 @@ The following are the minimum requirements to define the device.
 
 ## Advanced Configuration
 
-Advanced configuration involves the following properties to tune performance and message handling.
+Advanced configuration involves the performance tuning and message handling.
 
 ### Performance Tuning
 
@@ -141,19 +133,15 @@ Advanced configuration involves the following properties to tune performance and
 
 ## Examples
 
-The following are examples for the use of the SNMPv2c Trap Receiver.
+The following are commonly used configuration types.
 
 ### Basic
 
-This is achieved with the following configuration:
-
-- Default listen address
-- Standard SNMP trap port
-- Public community string
+A basic trap requires a default listening address, a standard SNMP trap port, and a public community string.
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple SNMPv2c trap receiver...
+    Creating a simple SNMPv2c trap receiver...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -167,12 +155,9 @@ This is achieved with the following configuration:
   </CodeCol>
 </ExampleGrid>
 
-### Basic with Custom MIBs
+### Custom MIBs
 
-This configuration demonstrates:
-- Standard SNMP trap listening
-- Custom MIB file integration
-- Basic trap handling
+This requires standard SNMP trap listening, a custom MIB file integration, and basic trap handling.
 
 <ExampleGrid>
   <CommentCol>
@@ -197,14 +182,10 @@ Place your custom MIB files in the `<director_root>/user/mibs/` directory before
 
 ### Secure
 
-The following features must be present for enhanced security:
-
-- SHA256 authentication
-- AES-256 privacy
-- Secure credential storage
+For enhanced security, use SHA256 authentication, AES-256 privacy, and a secure credential store.
 
 :::warning
-When using SNMPv3 with privacy, ensure both authentication and privacy passwords meet minimum length requirements for the selected protocols.
+When using SNMPv3 with privacy, ensure that both the authentication and privacy passwords meet the minimum length requirements for the selected protocols.
 :::
 
 <ExampleGrid>
@@ -232,16 +213,12 @@ When using SNMPv3 with privacy, ensure both authentication and privacy passwords
 
 ### High-Performance
 
-The following key aspects must be observed for performance tuning:
-
-- Multiple worker processes
-- Increased batch size
-- Optimized queue processing
-- Basic SHA authentication
+Performance can be enhanced for high message volumes using multiple worker processes, a larger batch size,
+optimized queues, and basic SHA authentication.
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high message volumes...
+    Optimizing for high message volumes...
   </CommentCol>
   <CodeCol>
     ```yaml

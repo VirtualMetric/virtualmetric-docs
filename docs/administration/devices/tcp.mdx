@@ -33,9 +33,9 @@
 
 ## Description
 
-Creates a TCP server that accepts network messages over TCP connections. Supports both plain and TLS-encrypted connections, with configurable framing modes, connection management, and buffering options.
+Creates a server that accepts network messages over TCP connections. Supports both plain and TLS-encrypted connections, with configurable framing modes, connection management, and buffering options.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -68,7 +68,7 @@ The following are the minimum requirements to define the device.
 |`max_message_size`|N|`20971520`|Maximum message size in bytes (20MB)|
 
 :::warning
-When using delimiter framing, ensure the `line_delimiter` matches the client's to prevent message parsing errors.
+When using delimiter framing, ensure that the `line_delimiter` matches the client's to prevent message parsing errors.
 :::
 
 ### TLS
@@ -104,17 +104,15 @@ To enhance performance and achieve better message handling, the following settin
 
 ## Examples
 
+The following are commonly used configuration types.
+
 ### Basic
 
-The minimum required settings using the defaults are:
-
-- `protocol`: "tcp"
-- `address`: "0.0.0.0"
-- Default framing and timeout settings
+A basic server can be easily created using `"tcp"` for `protocol`, `"0.0.0.0"` for `address`, and the default framing and timeout settings.
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple TCP server...
+    Creating a simple TCP server...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -129,16 +127,11 @@ The minimum required settings using the defaults are:
 
 ### High Performance
 
-Make sure that the following are used:
-
-- Multiple worker processes
-- A larger buffer size (4MB)
-- Increased connection limit
-- Optimized batch processing
+Performance can be enhanced using multiple workers, a larger buffer size (e.g. **4MB**), a higher connection limit, and optimized batches.
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high message volumes...
+    Optimizing for high message volumes...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -159,16 +152,12 @@ Make sure that the following are used:
 </ExampleGrid>
 
 :::note
-The worker count cannot be less than 1, and will be automatically capped at the maximum number of physical cores available on the system.
+The worker count is automatically capped at the number of physical cores available on the system.
 :::
 
-### Custom Framing
+### Framing
 
-For a custom framing configuration, use:
-
-- CRLF message delimiter
-- 5MB message size limit
-- 1-minute connection timeout
+A custom framing can be achieved using CRLF (i.e. `"\r\n"`) as the message delimiter, a **5MB** message size limit, and **1min** connection timeout.
 
 <ExampleGrid>
   <CommentCol>
@@ -189,18 +178,13 @@ For a custom framing configuration, use:
   </CodeCol>
 </ExampleGrid>
 
-### TLS Encrypted
+### Encryption
 
-For enhanced security, make sure that:
-
-- TLS encryption is enabled
-- A custom certificate and key are used
-- Connection limits are set
-- An extended timeout is set for the TLS handshake
+Security can be enhanced using TLS encryption, a custom certificate and key, connection limits, and an extended timeout the TLS handshake.
 
 <ExampleGrid>
   <CommentCol>
-    Secure TCP server with TLS encryption...
+    Securing TCP server with TLS encryption...
   </CommentCol>
   <CodeCol>
     ```yaml

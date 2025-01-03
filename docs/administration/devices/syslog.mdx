@@ -40,7 +40,7 @@
 
 Creates a Syslog server that accepts log messages over UDP or TCP connections. Supports both plain and TLS-encrypted connections, with configurable framing and buffering options.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -120,16 +120,15 @@ To enhance performance and achieve better data handling, the following settings 
 
 ## Examples
 
-### Basic UDP Server
+The following are commonly used configuration types.
 
-The minimum required configuration using defaults is:
+### Basic
 
-- `protocol`: "udp"
-- `address`: "0.0.0.0"
+A basic configuration can be created easily using "udp" for `protocol` and "0.0.0.0" for `address`.
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple UDP syslog server...
+    Creating a simple UDP syslog server...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -142,16 +141,13 @@ The minimum required configuration using defaults is:
   </CodeCol>
 </ExampleGrid>
 
-### Basic UDP Server with Checkpoint Pre-processing Pipeline
+#### Checkpoint
 
-The minimum required configuration using defaults is:
-
-- `protocol`: "udp"
-- `address`: "0.0.0.0"
+The basic UDP Server can be configured to use a `checkpoint` pre-processing pipeline. This is a pre-processing pipeline that extracts Checkpoint firewall logs from syslog messages:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple UDP syslog server...
+    Creating a simple UDP syslog server with checkpoint...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -171,23 +167,16 @@ The minimum required configuration using defaults is:
 </ExampleGrid>
 
 :::note
-The `checkpoint` is a pre-processing pipeline that extracts Checkpoint firewall logs from syslog messages.
-If the device is a Checkpoint firewall, this pipeline will parse the logs and extract relevant fields for further processing.
-If the device is not a Checkpoint firewall, the pipeline will have no effect on the incoming messages.
+If the device is a Checkpoint firewall, this pipeline will parse the logs and extract relevant fields for further processing. Otherwise, the pipeline will have no effect on the incoming messages.
 :::
 
-### High-Performance UDP Server
+### High-Performance
 
-For enhanced performance, make sure to use:
-
-- multiple worker processes
-- a larger buffer size
-- an increased batch size
-- adjusted flush intervals
+Performance of a UDP server can be enhanced Volumes using multiple workers, a larger buffer size, a larger batch size, and adjusted flush intervals.
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high message volumes...
+    Optimizing for high message volumes...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -209,16 +198,12 @@ For enhanced performance, make sure to use:
 </ExampleGrid>
 
 :::note
-The worker count cannot be less than 1, and will be automatically capped at the maximum number of physical cores available on the system.
+The worker count will be automatically capped at the maximum number of physical cores available on the system.
 :::
 
-### TCP with Framing
+### Framing
 
-For this, the following are required:
-
-- custom frame delimiter
-- connection limits
-- idle timeout
+For a TCP server with custom message framing, use a custom frame delimiter, connection limits, and an idle timeout:
 
 <ExampleGrid>
   <CommentCol>
@@ -241,20 +226,16 @@ For this, the following are required:
 </ExampleGrid>
 
 :::warning
-When using TCP with delimiter framing, ensure the `line_delimiter` matches the client configuration.
+When using TCP with delimiter framing, ensure the `line_delimiter` matches the client side.
 :::
 
-### TLS Encrypted with Forwarding
+### Security
 
-For enhanced security, make sure to use:
-
-- TLS encryption
-- multiple forward destinations
-- mixed protocols
+Security can be enhanced using TLS encryption, multiple forward destinations, and mixed protocols:
 
 <ExampleGrid>
   <CommentCol>
-    Secure server that forwards messages...
+    Securing the server forwarding the messages...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -279,23 +260,19 @@ For enhanced security, make sure to use:
   </CodeCol>
 </ExampleGrid>
 
-### Syslog Message Forwarding
+### Forwarding
 
-The typical use cases are:
+For message forwarding use network devices with single syslog output. This can also be implemented on legacy systems that need multiple destinations. The messages can be fanned out to different analysis tools.
 
-- network devices with single syslog output
-- legacy systems that need multiple destinations
-- fan-out to different analysis tools
+:::note
+Forwarding acts as a message replicator, sending exact copies of incoming messages to all configured destinations unmodified. This is particularly useful for network devices that can only send syslog data to a single destination.
+:::
 
-The messages are forwarded exactly as received to:
-
-- UDP server on port `514`
-- TCP server on port `1514`
-- TCP server on port `6514`
+The messages are forwarded exactly as received to the UDP server on port `514`, and the TCP server on ports `1514` and `6514`.
 
 <ExampleGrid>
   <CommentCol>
-    Forward incoming syslog messages to multiple destinations...
+    Forwarding incoming messages to multiple destinations...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -319,8 +296,6 @@ The messages are forwarded exactly as received to:
   </CodeCol>
 </ExampleGrid>
 
-:::note
-Syslog forwarding acts as a message replicator, sending exact copies of incoming messages to all configured destinations unmodified. This is particularly useful for network devices that can only send syslog data to a single destination.
-  :::warning
-  When using TCP forwarding, ensure the destination servers can handle the connection load as each connection is persistent.
+:::warning
+When using TCP forwarding, ensure the destination servers can handle the connection load as each connection is persistent.
 :::
