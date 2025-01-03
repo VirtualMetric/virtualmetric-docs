@@ -31,7 +31,7 @@
 
 Creates an eStreamer client that connects to an eStreamer server to receive various security events. Supports TLS encryption, event filtering, and batch processing of events.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -78,30 +78,18 @@ The following settings are used for **event processing**:
 |`batch_size`|N|`1000`|Number of events to batch before processing|
 |`flush_interval`|N|`60`|Event flush interval in seconds|
 
-**Event types** are specified with the following:
+The **event types** are specified with:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`inputs[].id`|N|-|Event type ID to process|
-|`inputs[].status`|N|`true`|Enable/disable specific event type|
-
-The available event types are:
-
-|ID|Description|
-|---|---|
-|`102`|Connection events|
-|`103`|File events|
-|`104`|Malware events|
-|`106`|Intrusion events|
+|`inputs[].status`|N|`true`|Enable/disable specific event type. Available options: `102` (Connection), `103` (File), `104` (Malware), `106` (Intrusion)|
 
 ## Examples
 
 ### Basic eStreamer Client
 
-For a basic client, you must:
-
-- enable TLS encryption
-- use default event types and settings
+For a basic client, enable TLS encryption and use default event types and settings.
 
 <ExampleGrid>
   <CommentCol>
@@ -122,17 +110,13 @@ For a basic client, you must:
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance Tweaks
+### High-Performance
 
-For performance tuning, make sure that:
-
-- the batch size is increased
-- the flush interval is reduced
-- multiple workers are used
+To enhance performance, make sure that the batch size is larger, the flush interval is smaller, and multiple workers are used.
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high event volumes...
+    Optimize for high event volumes...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -155,11 +139,7 @@ For performance tuning, make sure that:
 
 ### Filtered Event Collection
 
-For selective event processing:
-
-- connection events must be enabled
-- intrusion events must be enabled
-- file and malware events must be disabled
+For selective event processing, enable connection and intrusion events, and disable file and malware events.
 
 <ExampleGrid>
   <CommentCol>
@@ -187,11 +167,7 @@ For selective event processing:
 
 ### Legacy System Support
 
-Compatibility with legacy systems allows:
-
-- use of older TLS versions
-- standard event processing
-- default security events
+Compatibility with legacy systems allows use of older TLS versions, standard event processing, and default security events.
 
 <ExampleGrid>
   <CommentCol>
@@ -214,5 +190,5 @@ Compatibility with legacy systems allows:
 </ExampleGrid>
 
 :::warning
-For improved security, set `tls.non_secure: false` unless connecting to legacy systems that require older TLS versions.
+For improved security, unless you are connecting to legacy systems that require older TLS versions, set `tls.non_secure: false`.
 :::

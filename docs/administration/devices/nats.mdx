@@ -30,9 +30,9 @@
 
 ## Description
 
-Creates a NATS JetStream consumer that connects to NATS servers and processes messages from specified streams and subjects. Supports authentication, TLS encryption, and multi-worker processing with automatic message acknowledgment.
+Creates a JetStream consumer that connects to NATS servers and processes messages from specified streams and subjects. Supports authentication, TLS encryption, and multiple workers with automatic message acknowledgment.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -85,31 +85,25 @@ The TLS certificate and key files must be placed in the service root directory.
 
 ### Multi-Worker Use
 
-When `reuse` is enabled, the collector uses multiple worker processes:
-- Each worker maintains its own NATS consumer
-- Workers process messages independently
-- Messages are automatically acknowledged
-- Worker count is capped at available CPU cores
+When `reuse` is enabled, the collector uses multiple workers each of which maintains its own NATS consumer. Workers process messages independently, and messages are automatically acknowledged.
+
+:::note
+The worker count will be capped at the number of available CPU cores.
+:::
 
 ### Messages
 
-The collector supports:
-- JetStream persistent message storage
-- Message acknowledgment and retry
-- Multiple subject subscriptions
-- TLS encrypted connections
-- Basic authentication
-- Custom message processing pipelines
+The collector supports a JetStream persistent message store, message acknowledgment and retry, multiple subject subscriptions, and custom message processing pipelines. It also provides security through TLS-encrypted connections and basic authentication.
 
 ## Examples
 
-### Basic Configuration
+### Basic
 
-The minimum required configuration:
+A basic consumer can be created easily.
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple NATS consumer...
+    Creating a simple NATS consumer...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -124,13 +118,13 @@ The minimum required configuration:
   </CodeCol>
 </ExampleGrid>
 
-### Secure Configuration
+### Secure
 
-For connecting to secured NATS servers:
+The consumer can connect to secure NATS servers.
 
 <ExampleGrid>
   <CommentCol>
-    Connect with authentication and encryption...
+    Connecting with authentication and encryption...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -153,13 +147,13 @@ For connecting to secured NATS servers:
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance Configuration
+### High-Performance
 
-For processing high message volumes:
+Performance can be enhanced for high message volumes.
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high throughput...
+    Optimizing for high throughput...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -180,17 +174,13 @@ For processing high message volumes:
   </CodeCol>
 </ExampleGrid>
 
-:::note
-When `reuse` is enabled, the actual worker count will be capped at the number of available CPU cores.
-:::
+### Subject Filters
 
-### Subject Filter Configuration
-
-For targeted message processing:
+Targeted message processing is possible:
 
 <ExampleGrid>
   <CommentCol>
-    Configure subject-based filtering...
+    Configuring for subject-based filtering...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -213,13 +203,13 @@ For targeted message processing:
 NATS subjects support `*` and `>` as wildcards for single and multiple tokens respectively.
 :::
 
-### Message Pipeline Configuration
+### Message Pipelines
 
-For message pre-processing:
+Messages can be pre-processed based on custom criteria:
 
 <ExampleGrid>
   <CommentCol>
-    Apply custom processing to messages...
+    Applying custom processing to messages...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -240,5 +230,5 @@ For message pre-processing:
 </ExampleGrid>
 
 :::note
-Pipelines are processed sequentially and can modify or drop messages before ingestion.
+Pipelines are processed sequentially, and can modify or drop messages before ingestion.
 :::
