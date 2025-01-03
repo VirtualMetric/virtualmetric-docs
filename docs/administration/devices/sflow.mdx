@@ -20,9 +20,9 @@
 
 ## Description
 
-Creates an sFlow collector that accepts flow sampling data over UDP connections. Supports high-performance collection with multiple worker processes and configurable buffer sizes.
+Creates an sFlow collector that accepts flow sampling data over UDP connections. Supports high-performance collection with multiple workers and configurable buffer sizes.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the device.
 
@@ -57,24 +57,19 @@ The following are the minimum requirements to define the device.
 
 ### Multi-Worker Use
 
-When `reuse` is enabled, the collector automatically scales to use multiple worker processes based on available CPU cores. Each worker:
+When `reuse` is enabled, the collector automatically scales to use multiple worker processes based on available CPU cores. Each worker maintains its own UDP listener, processes flows independently, and writes to a dedicated queue file.
 
-- maintains its own UDP listener
-- processes flows independently
-- writes to a dedicated queue file
+:::note
+The collector automatically scales up to use all available CPU cores.
+:::
 
 ### Flows
 
-The collector supports:
-
-- interface-counter sampling
-- packet-flow sampling
-- application identification
-- port-based protocol mapping
-- flow-state tracking
-- statistical aggregation
+The collector supports interface-counter sampling, packet-flow sampling, application identification, port-based protocol mapping, flow-state tracking, and statistical aggregation.
 
 ## Examples
+
+The following are commonly used configuration types.
 
 ### Basic
 
@@ -82,7 +77,7 @@ The minimum required configuration using defaults:
 
 <ExampleGrid>
   <CommentCol>
-    Create a simple sFlow collector...
+    Creating a simple sFlow collector...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -97,11 +92,11 @@ The minimum required configuration using defaults:
 
 ### High-Performance
 
-For enhanced performance with high flow volumes:
+Performance can be enhanced for high flow volumes:
 
 <ExampleGrid>
   <CommentCol>
-    Optimized for high message volumes...
+    Optimizing for high message volumes...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -117,17 +112,13 @@ For enhanced performance with high flow volumes:
   </CodeCol>
 </ExampleGrid>
 
-:::note
-When `reuse` is enabled, the collector automatically scales to use all available CPU cores for processing.
-:::
-
 ### Multiple Agents
 
-For collecting from multiple sFlow agents:
+Multiple sFlow agents can be used for collection:
 
 <ExampleGrid>
   <CommentCol>
-    Collect from multiple network devices...
+    Collecting from multiple network devices...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -150,40 +141,17 @@ All sFlow agents must be configured to send to the same collector port.
 
 ### Application Protocol Identification
 
-The collector supports application protocol identification using a variety of methods:
+The collector supports application-based identification, TCP port mapping, and UDP port mapping. The definition files for these respectively are placed in three locations under `<director_root>`:
 
-1. application-based identification using `app-definitions.csv`
-2. TCP port mapping using `tcp-definitions.csv`
-3. UDP port mapping using `udp-definitions.csv`
-
-The definition files can be placed in three locations, in the following order:
-
-1. `<director_root>/user/definitions/app-definitions-{device-id}.csv` (device-specific)
-2. `<director_root>/user/definitions/app-definitions.csv` (user-defined)
-3. `<director_root>/package/definitions/app-definitions.csv` (system defaults)
+- `/user/definitions/app-definitions-{device-id}.csv` (device-specific)
+- `/user/definitions/app-definitions.csv` (user-defined)
+- `/package/definitions/app-definitions.csv` (system defaults)
 
 :::warning
 Definition files must be in CSV format with exactly two columns per row.
 :::
 
-<ExampleGrid>
-  <CommentCol>
-    Basic flow collection with application identification...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - id: 4
-      name: app_aware_sflow
-      type: sflow
-      properties:
-        port: 6343
-        reuse: true
-        buffer_size: 16384
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-Definition files use the CSV format:
+The contents of these files are:
 
 `app-definitions.csv`:
 
@@ -213,5 +181,22 @@ HTTPS,Secure Web
 ```
 
 :::note
-The collector will fall back to system defaults if custom definition files are not found.
+The collector will fall back on the system defaults if the custom definition files are not found.
 :::
+
+<ExampleGrid>
+  <CommentCol>
+    Basic flow collection with application identification...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: app_aware_sflow
+      type: sflow
+      properties:
+        port: 6343
+        reuse: true
+        buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>
