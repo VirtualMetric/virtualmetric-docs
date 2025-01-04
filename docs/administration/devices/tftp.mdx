@@ -79,33 +79,48 @@ When `reuse` is enabled, the server uses multiple workers which maintain their o
 The worker count will be capped at the number of available CPU cores.
 :::
 
-### Upload Protocol
+### Upload
 
 The device upload operations observe the following procedure:
 
-The client initiates a TFTP upload:
+* The client initiates a TFTP upload:
 
-```mermaid
-graph LR;
-  TFTP --> |WRQ| server:69
-```
+  ```mermaid
+  graph LR
+    A("`Client :: TFTP`")
+    B(Server:69)
+    A --> |WRQ| B
+  ```
 
-The server accepts the connection:
+* The server accepts the connection:
 
-```mermaid
-graph LR;
-  server --> |ACK| client
-```
+  ```mermaid
+  graph RL
+    A("`Client :: TFTP`")
+    B(Server)
+    B --> |ACK| A
+  ```
 
-The client transfers the file:
+* The client transfers the file:
 
-```mermaid
-graph LR;
-  client --> |DATA| server;
-  server --> |ACK| client
-```
+  ```mermaid
+  graph LR
+    A("`Client :: TFTP`")
+    B(Server)
+    A --> |FILE| B
+    B --> |ACK| A
+  ```
 
-Then, the server maps the client IP to the device, reads the file contents, applies the pipelines, and stores the processed data.
+* Finally, the server maps the client IP to the device, reads the file contents, applies the pipelines, and saves the processed data to a store.
+
+  ```mermaid
+  graph LR
+    A("`Client :: TFTP`")
+    B("`Server`")
+    C[(Store)]
+    B <--> |IP| A
+    B --> |SAVE| C
+  ```
 
 :::tip
 Configure clients to use binary mode for file transfers to avoid data corruption.

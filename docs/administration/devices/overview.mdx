@@ -66,22 +66,34 @@ As stated above, devices offer various deployment options for different purposes
 
 With this approach, sources are connected directly to **Director**, bypassing any intermediate mechanism.
 
-```
-[Sources] → [Director]
+```mermaid
+graph LR;
+  A[(Sources)];
+  B(Director);
+  A --> B
 ```
 
 ### High Availability
 
-Here, sources are first connected to a load balancer&mdash;which distributes the work to multiple processes&mdash;after which they are streamed to either a **Director** cluster
+Here, sources are first connected to a load balancer&mdash;which distributes the work to multiple processes&mdash;after which they are streamed to either a **Director** cluster:
 
-```
-[Sources] → [Load Balancer] → [Director Cluster]
+```mermaid
+graph LR;
+  A[(Sources)];
+  B[/Load Balancer/];
+  C[(Director Cluster)];
+  A --> B --> C
 ```
 
--or- sources are connected to a cluster with VIP&mdash;which serves as&hellip; {/* TODO: What is VIP? */}
+-or- sources are connected to a cluster with VIP:
 
-```
-[Sources] → [Director Cluster with VIP]
+{/* TODO: What is VIP? */}
+
+```mermaid
+graph LR;
+  A[(Sources)];
+  B[(Director Cluster with VIP)];
+  A --> B
 ```
 
 ## Common Uses
@@ -98,9 +110,9 @@ Devices are commonly used for the following:
 
 ## Configuration
 
-**Director** offers flexible organization options for device configuration files: they all have a `.yaml` or `.yml` extension, and reside inside the `config` directory:
+**Director** offers flexible organization options for device configuration files: they all have a `.yaml` or `.yml` extension, and reside inside the `config` directory whose structure is like so:
 
-```
+```plaintext
 config/
 ├── devices/
 │   ├── windows/
@@ -110,4 +122,4 @@ config/
 └── integrations/
 ```
 
-**Director** discovers all configuration files recursively, regardless of the subfolder structure.
+**Director** discovers all the configuration files recursively, regardless of the subfolder structure.

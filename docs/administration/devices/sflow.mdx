@@ -1,3 +1,5 @@
+import AppProtocols from "./_app-protocols.mdx"
+
 # sFlow
 
 ## Synopsis
@@ -141,50 +143,7 @@ Multiple sFlow agents can be used for collection:
 All sFlow agents must be configured to send to the same collector port.
 :::
 
-### Application Protocol Identification
-
-The collector supports application-based identification, TCP port mapping, and UDP port mapping. The definition files for these respectively are placed in three locations under `<director_root>`:
-
-- `/user/definitions/app-definitions-{device-id}.csv` (device-specific)
-- `/user/definitions/app-definitions.csv` (user-defined)
-- `/package/definitions/app-definitions.csv` (system defaults)
-
-:::warning
-Definition files must be in CSV format with exactly two columns per row.
-:::
-
-The contents of these files are:
-
-`app-definitions.csv`:
-
-```csv
-SSH,Secure Shell
-RDP,Remote Desktop
-HTTP,Web Browsing
-HTTPS,Secure Web
-```
-
-`tcp-definitions.csv`:
-
-```csv
-22,SSH
-3389,RDP
-80,HTTP
-443,HTTPS
-```
-
-`udp-definitions.csv`:
-
-```csv
-53,DNS
-67,DHCP
-123,NTP
-161,SNMP
-```
-
-:::note
-The collector will fall back on the system defaults if the custom definition files are not found.
-:::
+<AppProtocols />
 
 <ExampleGrid>
   <CommentCol>
