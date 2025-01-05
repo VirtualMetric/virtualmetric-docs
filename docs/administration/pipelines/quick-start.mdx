@@ -4,40 +4,148 @@ sidebar_label: Quick Start
 
 # Pipelines: Quick Start
 
-Creating a pipeline is a systematic process that involves two primary considerations:
+Creating a pipeline requires a systematic approach that primarily involves two key considerations:
 
-1. **Data Ingestion Source**: Determining the origin of the data to be processed
-2. **Processor Configuration**: Selecting and arranging processors to transform the data
+**Ingestion Source** The origin of the data. Pipelines have to be designed to be able to handle data with specific characteristics which will be determined by the source
 
-## Pipeline Design Considerations
+**Configuration** The specific arrangement of the processors. Pipelines need to be configured to to meet certain objectives in their output
 
-When designing a pipeline, you'll need to address several key aspects:
+In other words, the pipeline has an _input_ and an ultimate _output_, and the selection and configuration of the processors that make up the pipeline are dictated by what is to be consumed and and what is to be produced.
 
-### Processor Sequence and Dependency
+## Design Considerations
 
-Processors can be arranged in different configurations based on their interdependence:
+When designing a pipeline, a number of key aspects need to be considered:. These are, the _sequential relations_ between the processors, and how the types of _interactions_ anticipated to take place between them.
 
-1. **Independent Processors**: Processors that can run simultaneously without relying on each other's output
-2. **Dependent Processors**: Processors where the output of one serves as input for the next
-3. **Conditional Processors**: Processors that execute based on specific conditions or previous processor results
+### Order and Dependency
 
-### Pipeline Interaction Patterns
+First, the relations between the processors. There are three possibilities:
 
-Real-world scenarios often require complex pipeline interactions:
+* Run simultaneously without relying on each other's output
 
-1. **Parallel Pipelines**: Multiple pipelines running simultaneously
-2. **Sequential Pipelines**: Pipelines that trigger one another upon completion
-3. **Hierarchical Pipelines**: Pipelines with defined execution order and potential data relay
+  ```mermaid
+  ---
+  title: Independent Flow
+  ---
+  graph LR
+      A(Processor 1...)
+      B(Processor 2...)
+      C(Processor 3...)
+  ```
 
-## Typical Pipeline Configurations
+* Use the output of a previous one as their input
+
+  ```mermaid
+  ---
+  title: Sequential Flow
+  ---
+    graph LR
+      A(Processor 1...)
+      B(Processor 2...)
+      C(Processor 3...)
+      A --> B
+      B --> C
+  ```
+
+* Run based on specific conditions, such as when the result of a previous one meets certain criteria or when a computation completes:
+
+  ```mermaid
+  ---
+  title: Conditional Flow
+  ---
+  flowchart LR
+      A(Processor 1)
+      B(Processor 2)
+      C(Processor 3...)
+      D(Processor 4...)
+      E(Processor 5...)
+      A --> |Yes| C
+      A --> |No| E
+      B --> |Ready| D
+  ```
+
+### Interaction Patterns
+
+Second, real-world scenarios often require complex pipeline interactions. There are three possible layouts:
+
+* Run simultaneously:
+
+  ```mermaid
+  ---
+  title: Parallel Flow
+  ---
+  graph LR
+    A("`Pipeline A
+      P1
+      P2
+      ...
+    `")
+
+    B("`Pipeline B
+      P1
+      P2
+      ...
+    `")
+  ```
+
+* Trigger one another upon completion:
+
+  ```mermaid
+  ---
+  title: Sequential Flow
+  ---
+    flowchart LR
+      A("`Pipeline A
+        P1
+        P2
+        ...
+      `"
+      )
+      B("`Pipeline B
+        P1
+        P2
+        ...
+      `")
+      A --> B
+  ```
+
+* Run based on a pre-defined execution order, and potentially relay data:
+
+  ```mermaid
+  ---
+  title: Relay Flow
+  ---
+    flowchart TD
+      A("`Pipeline A
+        P1
+        P2
+        ...
+      `"
+      )
+      B("`Pipeline B
+        P1
+        P2
+        ...
+      `")
+      
+      C("`Pipeline C
+        P1
+        P2
+        ...
+      `")
+
+      B --> C
+  ```
+
+## Typical Configurations
+
+Below you can find some examples of typical pipeline configurations.
 
 ### Example 1: Independent Processors
 
 ```yaml
 pipelines:
-  - name: simple_independent_pipeline
     processors:
-      - parser  # Processor 1
+      - parser    # Processor 1
       - enricher  # Processor 2 (runs independently)
 ```
 
@@ -45,23 +153,22 @@ pipelines:
 
 ```yaml
 pipelines:
-  - name: dependent_processors_pipeline
     processors:
-      - parser  # First processor
+      - parser
       - normalizer  # Uses output from parser
-      - enricher  # Uses normalized data
+      - enricher    # Uses normalized data
 ```
 
 ### Example 3: Multiple Independent Pipelines
 
 ```yaml
 pipelines:
-  - name: network_logs_pipeline
+  - name: network_logs_pipeline   # runs independently
     processors:
       - network_parser
       - network_enricher
-
-  - name: security_logs_pipeline
+  
+  - name: security_logs_pipeline  # runs independently
     processors:
       - security_parser
       - threat_detector
@@ -103,6 +210,12 @@ pipelines:
 - Implement validation steps
 - Handle edge cases and unexpected input formats
 
+## Common Challenges
+
+- **Data Format Variations**: Handling diverse input formats
+- **Performance Bottlenecks**: Identifying and optimizing slow processors
+- **Complex Transformation Logic**: Managing intricate data manipulation requirements
+
 ## Next Steps
 
 - Review available processors and their specific configurations
@@ -112,9 +225,3 @@ pipelines:
 :::note
 Pipeline design is an iterative process. Start simple and progressively enhance your configuration as you understand your specific use cases.
 :::
-
-## Common Challenges
-
-- **Data Format Variations**: Handling diverse input formats
-- **Performance Bottlenecks**: Identifying and optimizing slow processors
-- **Complex Transformation Logic**: Managing intricate data manipulation requirements

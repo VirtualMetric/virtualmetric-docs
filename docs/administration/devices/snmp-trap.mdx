@@ -29,33 +29,7 @@
 
 ## Description
 
-Creates a receiver that listens for SNMP trap messages. Supports SNMPv2c and SNMPv3 with various authentication and privacy protocols, MIB integration, and high-performance message processing.
-
-## MIB Configuration
-
-The SNMP trap receiver automatically loads and integrates MIB files for translating SNMP trap messages. MIB files are essential for proper interpretation of vendor-specific or custom SNMP traps.
-
-{/* TODO: What are MIB files? Veritabanı olduğunu biliyorum da bir yerde biraz açıklamamız iyi olur */}
-
-### MIB File Locations
-
-The system looks for MIB files in two locations under `<director_root>`:
-
-**User directory**, i.e. `/user/mibs/`: Primary location for custom MIB files. Supports nested directory structure. All user-specific MIB files should be placed here.
-
-**Package directory**, i.e. `/package/mibs/`: Contains default/standard MIB files. Bundled with the installation. Should not be modified directly.
-
-:::note
-Custom MIB files in the user directory take precedence over similarly named files in the package directory.
-:::
-
-### MIB Loading Process
-
-The system will recursively scan both MIB directories, load all discovered MIB modules, automatically resolve MIB dependencies, and use loaded MIBs for trap translation.
-
-:::warning
-If MIB loading fails, the system will still receive traps but may not translate vendor-specific OIDs correctly.
-:::
+Creates a receiver that listens for SNMP trap messages. Supports SNMPv2c and SNMPv3 with various authentication and privacy protocols, MIB integration, and High-Volume message processing.
 
 ## Configuration
 
@@ -79,7 +53,7 @@ The following are the minimum requirements to define the device.
 |`port`|Y|`162`|Listen port for SNMP traps|
 |`community`|Y||Community string for SNMPv2c (required if not using v3)|
 
-### SNMPv3 Authentication
+### Authentication
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -119,11 +93,35 @@ The following are the minimum requirements to define the device.
 |`6`|`AES192C`|AES-192 with 3DES key padding|
 |`7`|`AES256C`|AES-256 with 3DES key padding|
 
+## MIB Configuration
+
+The SNMP trap receiver automatically loads and integrates MIB files for translating SNMP trap messages. MIB files are essential for proper interpretation of vendor-specific or custom SNMP traps.
+
+{/* TODO: What are MIB files? Veritabanı olduğunu biliyorum da bir yerde biraz açıklamamız iyi olur */}
+
+### MIB File Locations
+
+The system looks for MIB files in two locations under `<director_root>`:
+
+**User directory**, i.e. `/user/mibs/`: Primary location for custom MIB files. Supports nested directory structure. All user-specific MIB files should be placed here.
+
+**Package directory**, i.e. `/package/mibs/`: Contains default/standard MIB files. Bundled with the installation. Should not be modified directly.
+
+:::note
+Custom MIB files in the user directory take precedence over similarly named files in the package directory.
+:::
+
+### MIB Loading Process
+
+The system will recursively scan both MIB directories, load all discovered MIB modules, automatically resolve MIB dependencies, and use loaded MIBs for trap translation.
+
+:::warning
+If MIB loading fails, the system will still receive traps but may not translate vendor-specific OIDs correctly.
+:::
+
 ## Advanced Configuration
 
-To enhance performance and achieve better data handling, the following settings are used.
-
-### Performance Tuning
+To enhance performance and achieve better data handling, the following settings are used:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -155,7 +153,7 @@ A basic trap requires a default listening address, a standard SNMP trap port, an
   </CodeCol>
 </ExampleGrid>
 
-### Custom MIBs
+### MIBs
 
 This requires standard SNMP trap listening, a custom MIB file integration, and basic trap handling.
 
@@ -211,7 +209,7 @@ When using SNMPv3 with privacy, ensure that both the authentication and privacy 
   </CodeCol>
 </ExampleGrid>
 
-### High-Performance
+### High-Volume
 
 Performance can be enhanced for high message volumes using multiple worker processes, a larger batch size,
 optimized queues, and basic SHA authentication.
