@@ -81,13 +81,14 @@ const config: Config = {
 
     docs: {
       sidebar: {
-        hideable: false,
+        hideable: true,
+        autoCollapseCategories: true,
       },
     },
 
     mermaid: {
       theme: {
-        // light: 'neutral', dark: 'neutral'
+        light: 'neutral', dark: 'dark'
       }
     },
 
