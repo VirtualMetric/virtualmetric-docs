@@ -58,9 +58,9 @@ First, the relations between the processors. There are three possibilities:
       C(Processor 3...)
       D(Processor 4...)
       E(Processor 5...)
-      A --> |Yes| C
-      A --> |No| E
-      B --> |Ready| D
+      A --> |"**Yes?**"| C
+      A --> |"**No?**"| E
+      B --> |"**Done**"| D
   ```
 
 ### Interaction Patterns
@@ -74,17 +74,16 @@ Second, real-world scenarios often require complex pipeline interactions. There 
   title: Parallel Flow
   ---
   graph LR
-    A("`Pipeline A
-      P1
-      P2
-      ...
-    `")
+  ```
 
-    B("`Pipeline B
-      P1
-      P2
-      ...
-    `")
+  ```mermaid
+  block-beta
+    block
+      columns 2
+      A("Pipeline A\n..."):1
+      B("Pipeline B\n..."):1
+      C("Pipeline C\n..."):2
+    end
   ```
 
 * Trigger one another upon completion:
@@ -93,47 +92,47 @@ Second, real-world scenarios often require complex pipeline interactions. There 
   ---
   title: Sequential Flow
   ---
-    flowchart LR
-      A("`Pipeline A
-        P1
-        P2
-        ...
-      `"
-      )
-      B("`Pipeline B
-        P1
-        P2
-        ...
-      `")
-      A --> B
+  graph LR
   ```
 
-* Run based on a pre-defined execution order, and potentially relay data:
+  ```mermaid
+  block-beta
+    columns 5
+    block
+      A("Pipeline A\n..."):1
+      space
+      B("Pipeline B\n..."):1
+      space
+      C("Pipeline C\n..."):1
+    end
+    A --> B
+    B --> C
+  ```
+
+* Run based on a pre-defined hierarchical order, and potentially relay data:
 
   ```mermaid
   ---
   title: Relay Flow
   ---
-    flowchart TD
-      A("`Pipeline A
-        P1
-        P2
-        ...
-      `"
-      )
-      B("`Pipeline B
-        P1
-        P2
-        ...
-      `")
-      
-      C("`Pipeline C
-        P1
-        P2
-        ...
-      `")
+  graph LR
+  ```
 
-      B --> C
+  ```mermaid
+  block-beta
+    block
+      columns 4
+        A("Pipeline A\n..."):1
+        space
+        B("Pipeline B\n..."):2
+        space
+        C("Pipeline C\n..."):2
+        space
+        D("Pipeline D\n..."):1
+    end
+    A --> B
+    B --> C
+    B --> D
   ```
 
 ## Typical Configurations

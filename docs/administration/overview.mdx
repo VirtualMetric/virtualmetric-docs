@@ -8,17 +8,47 @@ The following chapters document the administration features of **Director**, a s
 
 ## Core Components
 
-Director's administration revolves around five key components:
+**Director**'s administration revolves around five key components:
 
-1. **Devices**: Sources of log data (e.g., syslog, estreamer, tcp, http)
+1. **Devices**: Sources of log data (e.g. syslog or estreamer)
 2. **Pipelines**: Processing workflows for data transformation
-3. **Processors**: Individual data manipulation steps
+3. **Processors**: Individual data manipulation functions
 4. **Routes**: Traffic control for directing data flows
-5. **Targets**: Destinations for processed data (e.g., Sentinel, storage systems)
+5. **Targets**: Destinations for processed data (e.g. Sentinel or storage systems)
+
+To understand why these components are necessary, take a look at the following graphic that illustrates the stages of telemetry:
+
+```mermaid
+graph LR
+   subgraph A[SOURCES]
+      A1(Source 1)
+      A2(Source 2)
+   end
+   subgraph B[PREPROCESSING]
+      B1(Normalization)
+   end
+   subgraph C[ROUTES]
+      C1(Select)
+      C2(Transform)
+      C3(Enrich)
+   end
+   subgraph D[POSTPROCESSING]
+      D1(Normalization)
+   end
+   subgraph E[TARGETS]
+      E1(Target 1)
+      E2(Target 2)
+      E3(Target 3)
+   end
+   A1 & A2 --> B1
+   B1 --> C1 & C2 & C3 
+   C1 & C2 & C3 --> D1
+   D1 --> E1 & E2 & E3
+```
 
 ## Configuration Structure
 
-Director uses YAML configuration files organized in a hierarchical structure:
+**Director** uses YAML configuration files organized in a hierarchical structure:
 
 ```plaintext
 <vm_root>/
@@ -63,7 +93,7 @@ Director uses YAML configuration files organized in a hierarchical structure:
   - Used for all customizations
 
 :::warning
-Never modify files in the `package` directory. Instead, copy templates to the corresponding location in the `user/definitions` directory and modify them there. The `user` directory configurations override package definitions and are preserved during updates.
+Never modify the files in the `package` directory. Instead, copy these templates to the corresponding location in the `user/definitions` directory and modify them there. The `user` directory configurations override package definitions and are preserved during updates.
 :::
 
 ## Administration Tasks
