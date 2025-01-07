@@ -1,120 +1,57 @@
 # Normalization
 
-Normalization is a critical approach to standardizing log data from diverse sources, enabling more consistent and efficient log analysis across different systems and formats.
+Normalization is the stage at which log data from diverse sources are transposed into a standard format, enabling consistent and efficient log analysis across different systems.
 
-## Log Format Standards
+:::warning
+There is a potential risk of loss of nuance in the process. Always validate transformed logs against their originals.
+:::
 
-### ECS (Elastic Common Schema)
+## Log Formats
 
-The Elastic Common Schema provides a standardized approach to log representation:
+There are a number of widely used log data format standards that various systems have adopted for marshalling data.
 
-- **Notation**: Dot notation (e.g. `source.ip`)
-- **Key Identifier**: `@timestamp`
-- **Characteristics**:
-  - Hierarchical structure
-  - Nested field representation
-  - Example fields: `network.direction`, `host.hostname`
+|Standard|Notation|Key Identifiers|Layout Characteristics|
+|---|---|---|---|
+|Elastic Common Schema (ECS)|lowercase dot, e.g. `source.ip`|e.g. `@timestamp`|Hierarchical structure and nested field representation, e.g. `network.direction`|
+|Splunk Common Information Model (CIM)|lowercase underscore, e.g. `src_ip`|e.g. `_time`|flat and concise names, e.g.`network_direction`|
+|Advanced Security Information Model (ASIM)|Pascal case, e.g. `SourceIp`|e.g. `TimeGenerated`|explicit, verbose field names, e.g. `NetworkDirection`|
 
-### CIM (Splunk Common Information Model)
+The conventions used by their vendors imply that log formats can be identified through&mdash;and therefore detected by&mdash;certain characteristic fields, such as
 
-Splunk's Common Information Model focuses on:
+- `@timestamp`: typically indicates ECS
+- `_time`: characteristic of CIM
+- `TimeGenerated`: signature of ASIM
 
-- **Notation**: Underscore-based (e.g. `src_ip`)
-- **Key Identifier**: `_time`
-- **Characteristics**:
-  - Flat, simplified naming
-  - Concise field names
-  - Example fields: `network_direction`, `src_port`
+## Challenges
 
-### ASIM (Advanced Security Information Model)
+The overriding challenge in normalizing logs is **variability across systems**
 
-Azure's log normalization approach uses:
+Different systems generate logs with unique structures, and there are no strict industry-wide norms covering all use cases. There are also context-specific nuances in log generation: field names can be inconsistent, timestamp formats may vary, data structures may be nested or flat, and different units and measurements may be used.
 
-- **Notation**: PascalCase (e.g., `SourceIp`)
-- **Key Identifier**: `TimeGenerated`
-- **Characteristics**:
-  - Camel-case naming convention
-  - Explicit, verbose field names
-  - Example fields: `NetworkDirection`, `DstPort`
-
-## Standard Field Mappings
-
-### Common Network Fields
-
-| Context | Source IP | Destination IP | Network Direction |
-|---------|-----------|----------------|-------------------|
-| ECS | `source.ip` | `destination.ip` | `network.direction` |
-| CIM | `src` | `dest` | `direction` |
-| ASIM | `SrcIp` | `DstIp` | `NetworkDirection` |
-
-## Format Detection Strategies
-
-Different log formats can be identified through characteristic fields:
-
-### Automatic Format Identification
-
-Logs can be recognized by their unique identifying fields:
-
-- `@timestamp`: Typically indicates ECS format
-- `_time`: Characteristic of CIM format
-- `TimeGenerated`: Signature of ASIM format
-
-## Challenges in Log Normalization
-
-### Variability Across Systems
-
-- Different systems generate logs with unique structures
-- No universal standard covers all use cases
-- Context-specific nuances in log generation
-
-### Common Normalization Challenges
-
-- Field name inconsistencies
-- Varying timestamp formats
-- Nested vs. flat data structures
-- Different units and measurements
-
-## Normalization Approaches
+The following approaches may be used to deal with these challenges.
 
 ### Field Mapping
 
-- Translate field names between different conventions
-- Preserve original data semantics
-- Create consistent data model
+Field names can be translated between different conventions while preserving original data semantics to create a consistent data model.
 
-### Timestamp Standardization
+### Timestamps
 
-- Convert timestamps to a unified format
-- Ensure consistent time representation
-- Handle timezone variations
+Timestamps can be converted to a unified format to ensure consistent time representation and handle timezone variations.
 
-### Data Type Harmonization
+### Type Unification
 
-- Standardize numeric representations
-- Normalize boolean and categorical values
-- Ensure consistent data typing
+Numeric representations can be standardized, boolean and categorical values can be reduced to common factors, to ensure consistent data typing.
 
 ## Best Practices
 
-1. **Consistency is Key**
-   - Choose a primary log format
-   - Define clear mapping rules
-   - Document transformation logic
+Like all other aspects of the telemetry process, some guidelines should be observed during normalization.
 
-2. **Preserve Original Data**
-   - Keep original fields when possible
-   - Add metadata about transformations
-   - Allow traceability
+First, consistency is key. Choose a primary log format, define clear mapping rules around it, and document transformation logic.
 
-3. **Handle Edge Cases**
-   - Develop robust error handling
-   - Create fallback mechanisms
-   - Test with diverse log samples
+Second, always preserve the original data. Keep the original fields whenever possible, add metadata about the transformations, and allow for traceability.
+
+And third, do not skip handling the edge cases. Develop a robust error handling strategy, create fallback mechanisms, and test with diverse log samples.
 
 :::note
 Log normalization is an ongoing process. No single approach fits all scenarios perfectly.
-:::
-
-:::warning
-Normalization can potentially lose nuanced information. Always validate transformed logs against original sources.
 :::

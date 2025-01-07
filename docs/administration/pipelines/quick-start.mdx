@@ -4,9 +4,9 @@ sidebar_label: Quick Start
 
 # Pipelines: Quick Start
 
-Creating a pipeline requires a systematic approach that primarily involves two key considerations:
+Creating a pipeline requires a systematic approach that primarily involves two key factors:
 
-**Ingestion Source** The origin of the data. Pipelines have to be designed to be able to handle data with specific characteristics which will be determined by the source
+**Ingestion Source** The origin of the data. Pipelines have to be designed to be able to handle data with specific characteristics that will be determined by the source
 
 **Configuration** The specific arrangement of the processors. Pipelines need to be configured to to meet certain objectives in their output
 
@@ -14,11 +14,15 @@ In other words, the pipeline has an _input_ and an ultimate _output_, and the se
 
 ## Design Considerations
 
-When designing a pipeline, a number of key aspects need to be considered:. These are, the _sequential relations_ between the processors, and how the types of _interactions_ anticipated to take place between them.
+When designing a pipeline, a number of key aspects need to be considered:. These are the _sequential relations_ between the processors, and the _types of interactions_ anticipated to take place between them.
+
+:::note
+Pipeline design is an iterative process. Always start simple and progressively improve your configuration as you better grasp the requirements of your specific use cases.
+:::
 
 ### Order and Dependency
 
-First, the relations between the processors. There are three possibilities:
+The first thing to consider is the relations between the processors. There are three possibilities:
 
 * Run simultaneously without relying on each other's output
 
@@ -27,9 +31,25 @@ First, the relations between the processors. There are three possibilities:
   title: Independent Flow
   ---
   graph LR
-      A(Processor 1...)
-      B(Processor 2...)
-      C(Processor 3...)
+  ```
+
+  ```mermaid
+  block-beta
+    columns 2
+      A("Processor 1"):2
+      B("Processor 2"):2
+      C("..."):2
+  ```
+
+  **Example**
+
+  The `parser` and `enricher` processors run independently:
+
+  ```yaml
+  pipelines:
+      processors:
+        - parser
+        - enricher
   ```
 
 * Use the output of a previous one as their input
@@ -38,12 +58,31 @@ First, the relations between the processors. There are three possibilities:
   ---
   title: Sequential Flow
   ---
-    graph LR
-      A(Processor 1...)
-      B(Processor 2...)
-      C(Processor 3...)
+  graph LR
+  ```
+
+  ```mermaid
+    block-beta
+      columns 7
+      A("Processor 1"):2
+      space
+      B("Processor 2"):2
+      space
+      C("..."):1
       A --> B
       B --> C
+  ```
+
+  **Example**
+
+  The `normalizer` processor uses the output of `parser`, and the `enricher` processor uses normalized data:
+
+  ```yaml
+  pipelines:
+      processors:
+        - parser
+        - normalizer
+        - enricher
   ```
 
 * Run based on specific conditions, such as when the result of a previous one meets certain criteria or when a computation completes:
@@ -52,20 +91,31 @@ First, the relations between the processors. There are three possibilities:
   ---
   title: Conditional Flow
   ---
-  flowchart LR
-      A(Processor 1)
-      B(Processor 2)
-      C(Processor 3...)
-      D(Processor 4...)
-      E(Processor 5...)
-      A --> |"**Yes?**"| C
-      A --> |"**No?**"| E
-      B --> |"**Done**"| D
+  graph LR
+  ```
+
+  ```mermaid
+  block-beta
+      columns 5
+      A("Processor 1"):2
+      space
+      B("Processor 2"):2
+      space
+      space
+      space
+      C("Processor 3"):2
+      D("Processor 4"):2
+      space
+      E("..."):1
+
+      A -- "Yes?" --> B
+      A -- "No?" --> C
+      D -- "Ready!" --> E
   ```
 
 ### Interaction Patterns
 
-Second, real-world scenarios often require complex pipeline interactions. There are three possible layouts:
+The next on the list is the interactions between the pipelines. Real-world scenarios often require complex exchanges between them. There are three possible layouts:
 
 * Run simultaneously:
 
@@ -80,10 +130,27 @@ Second, real-world scenarios often require complex pipeline interactions. There 
   block-beta
     block
       columns 2
-      A("Pipeline A\n..."):1
-      B("Pipeline B\n..."):1
-      C("Pipeline C\n..."):2
+      A("Pipeline A"):1
+      B("Pipeline B"):1
+      C("Pipeline C"):2
     end
+  ```
+  
+  **Example**
+  
+  The `network_logs` and `security_logs` pipelines run independently, and so they can run simultaneously:
+
+  ```yaml
+  pipelines:
+    - name: network_logs
+      processors:
+        - network_parser
+        - network_enricher
+    
+    - name: security_logs
+      processors:
+        - security_parser
+        - threat_detector
   ```
 
 * Trigger one another upon completion:
@@ -97,16 +164,31 @@ Second, real-world scenarios often require complex pipeline interactions. There 
 
   ```mermaid
   block-beta
-    columns 5
-    block
-      A("Pipeline A\n..."):1
-      space
-      B("Pipeline B\n..."):1
-      space
-      C("Pipeline C\n..."):1
-    end
+    columns 7
+    A("Pipeline A"):2
+    space
+    B("Pipeline B"):2
+    space
+    C("Pipeline C"):2
     A --> B
     B --> C
+  ```
+
+  **Example**
+
+  The `secondary` pipeline is triggered by the `primary` pipeline:
+
+  ```yaml
+  pipelines:
+    - name: primary
+      processors:
+        - initial_parser
+      on_complete:
+        trigger: secondary
+
+    - name: secondary
+      processors:
+        - advanced_enrichment
   ```
 
 * Run based on a pre-defined hierarchical order, and potentially relay data:
@@ -120,107 +202,68 @@ Second, real-world scenarios often require complex pipeline interactions. There 
 
   ```mermaid
   block-beta
-    block
-      columns 4
-        A("Pipeline A\n..."):1
-        space
-        B("Pipeline B\n..."):2
-        space
-        C("Pipeline C\n..."):2
-        space
-        D("Pipeline D\n..."):1
-    end
+    columns 5
+    A("Pipeline A"):2
+    space
+    B("Pipeline B"):2
+    C("Pipeline C"):2
+    space
+    D("Pipeline D"):2
     A --> B
     B --> C
-    B --> D
+    C --> D
   ```
-
-## Typical Configurations
-
-Below you can find some examples of typical pipeline configurations.
-
-### Example 1: Independent Processors
-
-```yaml
-pipelines:
-    processors:
-      - parser    # Processor 1
-      - enricher  # Processor 2 (runs independently)
-```
-
-### Example 2: Dependent Processors
-
-```yaml
-pipelines:
-    processors:
-      - parser
-      - normalizer  # Uses output from parser
-      - enricher    # Uses normalized data
-```
-
-### Example 3: Multiple Independent Pipelines
-
-```yaml
-pipelines:
-  - name: network_logs_pipeline   # runs independently
-    processors:
-      - network_parser
-      - network_enricher
-  
-  - name: security_logs_pipeline  # runs independently
-    processors:
-      - security_parser
-      - threat_detector
-```
-
-### Example 4: Sequential Pipeline Triggering
-
-```yaml
-pipelines:
-  - name: primary_pipeline
-    processors:
-      - initial_parser
-    on_complete:
-      trigger: secondary_pipeline
-
-  - name: secondary_pipeline
-    processors:
-      - advanced_enrichment
-```
 
 ## Best Practices
 
-1. **Modularity**: Design processors to be reusable and focused on specific transformations
-2. **Performance**: Consider the computational overhead of complex pipeline designs
-3. **Error Handling**: Implement robust error handling and logging mechanisms
-4. **Scalability**: Design pipelines that can handle varying data volumes
+Finally, we have to consider a few guidelines for designing effective and efficient pipelines. Always keep the following in mind.
 
-## Considerations for Complex Scenarios
+### Modularity
 
-### Performance Optimization
+Reusability is one of the ever-present requirements in IT design. 
+  
+In the context of pipelines, this means focusing on specific transformations. If, for example, a string field needs to be stripped of formatting tags before extracting a certain value, it is best to keep these two together.
 
-- Use parallel processing where possible
-- Minimize unnecessary data transformations
-- Choose appropriate processor order to reduce computational complexity
+### Simplicity
+
+Complex pipelines are likely to bring an overhead which, if not handled carefully, mmay degrade performance. Therefore, it is essential to check whether every processor included is absolutely essential for its primary task. Keep in mind that performance is also related to modularity.
+
+### Volumes
+
+Anticipate handling varying data volumes.
+
+Pipelines really shine at scale. It is best to keep in mind handling large amounts of data, a consideration which may expose inefficient design choices.
+
+### Failures
+
+Always implement robust error handling.
+
+This is particularly relevant to expensive computations repeating which is likely to consume extra system resources and therefore may become wasteful.
+
+Given the above, a well-designed logging mechanism is likely to be a good aid in the implementation of error handling.
+
+### Optimization
+
+This requires observing a the following:
+
+* Use **parallel processing** where possible
+
+  If your pipelines are modular enough, you should not have any difficulty running them simultaneously. Conversely, if you want to be able to do as much parallel processing as possible, mind the modularity of your pipelines.
+
+* Streamline **data transformations**
+
+  Unless it is directly relevant to its goal, it is best not to include a data transformation in a pipeline. Managing intricate data manipulation requirements is always a challenge. Make sure that the pipeline serves a specific and clear purpose.
+
+* Reduce **computational complexity**
+
+  The key to achieving this is choosing the appropriate processor order. A sloppy design in that regard, i.e. not paying attention to the input-output sequence may increase the computational burden of a pipeline in unexpected ways.
 
 ### Data Integrity
 
-- Ensure consistent data typing across processors
-- Implement validation steps
-- Handle edge cases and unexpected input formats
+This requires consistent data typing across the processors, implementing validation steps, and handling edge cases and unexpected input formats. 
 
-## Common Challenges
-
-- **Data Format Variations**: Handling diverse input formats
-- **Performance Bottlenecks**: Identifying and optimizing slow processors
-- **Complex Transformation Logic**: Managing intricate data manipulation requirements
+The most common challenge in this regard is **format variations**. Make sure that you have paid enough attention to the [**normalization**](./normalization.mdx) stage.
 
 ## Next Steps
 
-- Review available processors and their specific configurations
-- Design your pipeline based on your specific data processing requirements
-- Test and iterate on your pipeline design
-
-:::note
-Pipeline design is an iterative process. Start simple and progressively enhance your configuration as you understand your specific use cases.
-:::
+Always review the available processors and their specific configurations first before embarking on a specifi design. Build _incrementally_ and _iteratively_, and at every step _test_ your design.

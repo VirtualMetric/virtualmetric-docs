@@ -1,88 +1,16 @@
 # Pre-processing
 
-This is the stage where the pipelines attached to a Source perform a number of operations before the data is delivered to a later stage such as indexing or analysis.
+This is the stage at which pipelines attached to a source perform some operations to prepare the data for downstream stages such as indexing or analysis.
 
-Pre-processing pipelines help organizations optimize their data ingestion, reduce costs, and improve data quality before it reaches storage or analysis systems.
+Pre-processing helps organizations optimize their data ingestion, reduce costs, and improve the quality of the data before it reaches storage or analysis systems.
 
 ## Key Benefits
 
 ### Data Reduction
 
-Lower downstream costs and improve performance through:
+Data reduction lowers downstream costs and improves performance by filtering unnecessary events and fields, sampling representative subsets of data, deduplicating redundant events, removing unnecessary metadata and fields, and aggregating to combine similar events.
 
-- **Filtering**: Remove unnecessary events and fields
-- **Sampling**: Collect representative subsets of high-volume data
-- **Deduplication**: Eliminate redundant events
-- **Field removal**: Strip unnecessary metadata and fields
-- **Aggregation**: Combine similar events into summary records
-
-### Normalization
-
-Convert diverse log formats into consistent, structured schemas:
-
-- **Field standardization**: Map vendor-specific fields to common names
-- **Format conversion**: Transform between ECS, CIM, and ASIM formats
-- **Time normalization**: Standardize timestamps across sources
-- **IP normalization**: Convert various IP address formats
-- **Protocol normalization**: Standardize protocol fields
-
-### Data Enrichment
-
-Add context and value to raw data:
-
-- **Geolocation**: Add geographic data for IP addresses
-- **Threat intelligence**: Enrich with security context
-- **Asset information**: Add system and user context
-- **DNS lookups**: Resolve hostnames and domains
-- **Custom lookups**: Add business-specific metadata
-
-### Transformation
-
-Modify data to meet security and compliance requirements:
-
-- **PII masking**: Redact sensitive information
-- **Field encryption**: Protect confidential data
-- **Format conversion**: Transform data structures
-- **Field extraction**: Parse complex messages
-- **Data validation**: Ensure data quality
-
-## Common Use Cases
-
-### Security Operations
-
-- Normalize various security tool outputs
-- Enrich events with threat intelligence
-- Mask sensitive data
-- Filter out noise events
-- Add geographic context
-
-### Infrastructure Monitoring
-
-- Standardize metrics formats
-- Aggregate system statistics
-- Filter debug messages
-- Add asset context
-- Convert timestamps
-
-### Application Logging
-
-- Parse structured data
-- Extract error codes
-- Sample debug logs
-- Add service context
-- Normalize severity levels
-
-### Compliance
-
-- Mask PII/PCI data
-- Validate required fields
-- Add compliance metadata
-- Filter sensitive data
-- Generate audit trails
-
-## Pipeline Examples
-
-### Log Volume Reduction
+**Example** - Reducing log volumes:
 
 ```yaml
 pipeline:
@@ -96,7 +24,15 @@ pipeline:
         fields: ["debug_info", "internal_id"]
 ```
 
-### Security Event Normalization
+### Normalization
+
+This involves converting diverse log formats into consistent, structured schemas: vendor-specific fields are mapped to common ones, data is converted to and from ECS, CIM, ASIM, etc. formats, and timestamps, IP address formats, and protocol fields are normalized unified accross sources.
+
+### Enrichment
+
+The purpose here is to add context and value to raw data by inferring geolocation from IP addresses, generating threat intelligence from the security context, create asset information by adding system and user information, resolve hostnames and domains via DNS lookups, and add business-specific metadata through custom lookups.
+
+**Example** - Normalizing security events:
 
 ```yaml
 pipeline:
@@ -111,7 +47,11 @@ pipeline:
         match_field: "source.ip"
 ```
 
-### PII Protection
+### Transformation
+
+This involves modifying data to meet security and compliance requirements by redacting Personally Identifiable Information (PII), protecting confidential data through field encryption, maintaining compatibility with format conversion, parsing complex messages with field extraction, and ensuring data quality with data validation.
+
+**Example**: Protecting personally identifiable information:
 
 ```yaml
 pipeline:
@@ -126,31 +66,28 @@ pipeline:
 
 ## Best Practices
 
-1. **Order Matters**
-   - Put high-impact filters first
-   - Perform heavy enrichment last
-   - Group similar operations
+For pre-processing pipelines, the following guidelines should be observed:
 
-2. **Performance Optimization**
-   - Use sampling for high-volume sources
-   - Cache lookup results
-   - Minimize regex usage
+### Sequencing
 
-3. **Data Quality**
-   - Validate after transformations
-   - Monitor dropped events
-   - Track field presence
+Put high-impact filters first, and perform heavy enrichment last. Group similar operations.
 
-4. **Maintenance**
-   - Document transformations
-   - Monitor pipeline performance
-   - Review sampling rates
-   - Update enrichment data
+### Optimization
 
-:::tip
-Start with minimal processing and add steps incrementally while monitoring impact on performance and storage costs.
-:::
+Use sampling for high-volume sources. Cache lookup results, and minimize regex use.
 
 :::warning
-Complex processing can impact throughput. Monitor resource usage and adjust pipeline complexity accordingly.
+Complex operations can impact throughput. Monitor resource use, and adjust pipeline complexity accordingly.
+:::
+
+### Data Quality
+
+Validate data after transformations. Monitor the dropped events, and track field presence.
+
+### Maintenance
+
+Document the transformations. Monitor pipeline performance, review the sampling rates, and update the enrichment data regularly.
+
+:::tip
+Start with minimal processing and add steps incrementally while monitoring their impact on performance and storage
 :::
