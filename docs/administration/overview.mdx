@@ -4,19 +4,40 @@ pagination_prev: null
 
 # Administration: Overview
 
-The following chapters document the administration features of **Director**, a streamlined solution designed for efficient log collection and processing.
+The following chapters document the administration features of **Director**.
 
-## Core Components
+## Key Components
 
-**Director**'s administration revolves around five key components:
+The administration of **Director** involves the following key components which are used for telemetry purposes:
 
-1. **Devices**: Sources of log data (e.g. syslog or estreamer)
-2. **Pipelines**: Processing workflows for data transformation
-3. **Processors**: Individual data manipulation functions
-4. **Routes**: Traffic control for directing data flows
-5. **Targets**: Destinations for processed data (e.g. Sentinel or storage systems)
+<table class="term-listing" >
+   <tr>
+      <td class="term-column">[Devices](/docs/administration/devices/overview.mdx) </td>
+      <td>Sources of log data, e.g. syslog or estreamer</td>
+   </tr>
 
-To understand why these components are necessary, take a look at the following graphic that illustrates the stages of telemetry:
+   <tr>
+      <td class="term-column">[Pipelines](/docs/administration/pipelines/overview.mdx) </td>
+      <td>Processing workflows for data transformation</td>
+   </tr>
+
+   <tr>
+      <td class="term-column">[Processors](/docs/administration/pipelines/processors/index.mdx) </td>
+      <td>Individual data manipulation functions</td>
+   </tr>
+
+   <tr>
+      <td class="term-column">[Routes](/docs/administration/routes/overview.mdx) </td>
+      <td>Traffic control for directing data flows</td>
+   </tr>
+
+   <tr>
+      <td class="term-column">[Targets](/docs/administration/targets/overview.mdx)</td>
+      <td>Destinations for processed data, e.g. Sentinel or a storage system</td>
+   </tr>
+</table>
+
+The following graphic illustrates the stages that utilize these components:
 
 ```mermaid
 graph LR
@@ -46,9 +67,15 @@ graph LR
    D1 --> E1 & E2 & E3
 ```
 
-## Configuration Structure
+For the PREPROCESSING, ROUTES, and POSTPROCESSING stages, **Director** uses **Pipelines**, which in turn are composed of **Processors**.
 
-**Director** uses YAML configuration files organized in a hierarchical structure:
+To represent the SOURCES and to communicate with them to stream data, **Director** uses **Devices**.
+
+To forward processed data to TARGETS, **Director** uses **Targets**.
+
+### System Directories
+
+To help design and configure the pipelines that will combine the above stages with one another, **Director** uses YAML files organized in a hierarchical structure under the `vm_root` directory:
 
 ```plaintext
 <vm_root>/
@@ -76,136 +103,62 @@ graph LR
             └── normalize.yaml
 ```
 
-### Package vs User Directories
+All administration tasks are carried out by editing these files. They contain predefined fields with specific data types, and **Director** uses them to run its processes.
 
-- **Package Directory**: Contains built-in templates and definitions
+### Definition Files
 
-  - Located at `package/definitions/`
-  - Updated with new Director versions
-  - Should not be modified directly
-  - Serves as reference for default configurations
+Two directories are of key importance in this regard: the `package` directory, and the `user` directory.
 
-- **User Directory**: Contains custom configurations
-
-  - Located at `user/definitions/`
-  - Never overwritten by updates
-  - Takes precedence over package definitions
-  - Used for all customizations
+The `package` directory contains templates and ready-to-use definitions. These definitions are updated with newer versions of **Director**.
 
 :::warning
-Never modify the files in the `package` directory. Instead, copy these templates to the corresponding location in the `user/definitions` directory and modify them there. The `user` directory configurations override package definitions and are preserved during updates.
+Never modify the definition files under `package` directly. To create configurations using them as templates, copy the relevant definition file to the corresponding location under `user` first.
 :::
 
-## Administration Tasks
+The `user` directory contains custom configurations. These definitions take precedence over those under the `package` directory.
 
-### Configuration Management
+The definitions under `user` override the definitions under `package`, and they are preserved between updates.
 
-- Create and modify configuration files
-- Validate configuration syntax
-- Apply configuration changes
-- Back up configurations
+## Basic Tasks
 
-### Device Management
+The system administrator's responsibilities cover the following areas.
 
-- Add new data sources
-- Configure input parameters
-- Monitor device health
-- Troubleshoot connectivity
+### System administration
 
-### Pipeline Administration
+This entails maintaining an up-and-running system by attending to the following:
 
-- Design processing workflows
-- Configure processors
-- Test transformations
-- Optimize performance
+* **Settings** - Creating and modifying the setting files, validating and applying them, and keeping backups of them.
 
-### Route Control
+* **Devices** - Creating devices to listen new data sources, configuring their input parameters, monitoring their health, and troubleshooting connectivity issues.
 
-- Define traffic patterns
-- Set up filtering rules
-- Configure destinations
-- Monitor data flow
+* **Pipelines** - Designing workflows, configuring processors, test the transformations, and optimizing performance
 
-### System Monitoring
+* **Routes** - Defining traffic patterns, setting up filtering rules, configuring destinations, and monitoring data flows
 
-- Track performance metrics
-- Monitor resource usage
-- Review error logs
-- Generate reports
+* **System monitoring** - Tracking performance metrics, monitoring resource usage, reviewing error logs, and generating reports
 
-## Security Considerations
+### Security
 
-### Authentication
+A crucial aspect of system administration is security. This requires attending to the following:
 
-- Configure access controls
-- Manage credentials
-- Set up encryption
-- Monitor access logs
+* **Authentication** - Configuring access controls, managing credentials, setting up encryption, and monitoring access logs
 
-### Network Security
+* **Networks** - Configuring TLS/SSL, setting up firewalls, managing certificates, and controlling port access
 
-- Configure TLS/SSL
-- Set up firewalls
-- Manage certificates
-- Control port access
-
-### Data Protection
-
-- Secure sensitive data
-- Configure encryption
-- Manage retention
-- Handle compliance
+* **Data protection** - Securing sensitive data, configuring encryption, managing data retention, and supervising compliance
 
 ## Best Practices
 
-1. **Configuration Management**
+In order to maintaing the integrity, robustness, and health of a system, some guidelines have to observed:
 
-   - Use version control
-   - Document changes
-   - Test before deployment
-   - Maintain backups
+For _managing configurations_, use version control, document the changes, and always keep backups. Also, never forget to test before deploying.
 
-2. **Performance Optimization**
+For _performance optimization_, first monitor the resource usage and balance the loads if necessary. Optimizing the configurations is the next thing to check. And do not forget to schedule maintenance. Error tracking and health checks must also be always kept in mind.
 
-   - Monitor resource usage
-   - Optimize configurations
-   - Balance loads
-   - Schedule maintenance
-
-3. **Security**
-
-   - Regular updates
-   - Security audits
-   - Access control
-   - Encryption
-
-4. **Monitoring**
-
-   - Performance metrics
-   - Error tracking
-   - Resource usage
-   - Health checks
+Finally, for _security_, regular updates is essential. There must be official security audits, particularly on access control and encryption.
 
 ## Troubleshooting
 
-### Common Issues
+System administration frequently involves dealing with failures and problem solving. The most common issues are configuration errors, connection problems, unhandled processing errors, and violated resource constraints.
 
-- Configuration errors
-- Connection problems
-- Processing failures
-- Resource constraints
-
-### Resolution Steps
-
-1. Check configurations
-2. Review logs
-3. Verify connectivity
-4. Monitor resources
-5. Test solutions
-
-## Next Steps
-
-1. Review the Quick Start guide
-2. Explore component documentation
-3. Set up your first configuration
-4. Monitor and optimize
+The resolution steps are checking the configurations and reviewing the logs, verifying connectivity and resource availability, and testing the solutions.
