@@ -4,15 +4,13 @@ sidebar_label: Quick Start
 
 # Administration: Quick Start
 
-This guide helps you quickly set up and configure Director for log collection and processing.
+This guide will help you quickly set up and run **Director** for log collection and processing.
 
 ## Initial Setup
 
-### Basic Configuration
+The basic system can be configured through a file named `vmetric.yaml`, which can be found in the `config` directory under the root, i.e. the folder where you have placed **Director**. This file contains the following fields:
 
-The main configuration file is `vmetric.yaml` in the `config` directory under the root:
-
-```yaml
+```yaml title="<vm_root>\vmetric.yaml"
 debug:
   log:
     status: true
@@ -22,107 +20,99 @@ debug:
 ```
 
 :::tip
-Enable console debugging by setting `console.status: true` during initial setup and troubleshooting.
+Enable _console debugging_ by setting `console.status` to `true`.
 :::
 
-## Configuration Examples
+Note that _logging status_ is by default set to `true`. With these settings, **Director** is ready to be activated.
 
-### Device Configurations
+## The Devices
 
-#### Syslog Device
+Configure the following devices using the settings given:
 
-```yaml
-# config/devices/syslog.yaml
-devices:
-  - id: 324235346
-    name: 127.0.0.1
-    type: syslog
-    status: true
-    properties:
-      address: "0.0.0.0"
-      port: 14514
-```
+* **Syslog**
 
-#### Estreamer Device
+  ```yaml title="<vm_root>\config\devices\syslog.yaml"
+  devices:
+    - id: 324235346
+      name: 127.0.0.1
+      type: syslog
+      status: true
+      properties:
+        address: "0.0.0.0"
+        port: 14514
+  ```
 
-```yaml
-# config/devices/estreamer.yaml
-devices:
-  - id: 456789
-    name: firepower
-    type: estreamer
-    status: true
-    properties:
-      address: "192.168.1.10"
-      port: 8302
-```
+* **eStreamer**
 
-#### TCP Device
+  ```yaml title="<vm_root>\config\devices\estreamer.yaml"
+  devices:
+    - id: 456789
+      name: firepower
+      type: estreamer
+      status: true
+      properties:
+        address: "192.168.1.10"
+        port: 8302
+  ```
 
-```yaml
-# config/devices/tcp.yaml
-devices:
-  - id: 567890
-    name: tcp_collector
-    type: tcp
-    status: true
-    properties:
-      address: "0.0.0.0"
-      port: 9000
-```
+* **TCP**
 
-### Target Configuration
+  ```yaml title="<vm_root>\config\devices\tcp.yaml"
+  devices:
+    - id: 567890
+      name: tcp_collector
+      type: tcp
+      status: true
+      properties:
+        address: "0.0.0.0"
+        port: 9000
+  ```
 
-```yaml
-# config/targets/sentinel.yaml
-targets:
-  - id: 1
-    name: microsoft_sentinel
-    type: sentinel
-    properties:
-      workspace_id: "your-workspace-id"
-      shared_key: "your-shared-key"
-      log_type: "CustomLogs"
-```
+## The Target
 
-### Pipeline Configuration
+Configure the following target using the settings given:
 
-#### Using Built-in Templates
+* **Sentinel**
 
-1. First, locate the template in package directory:
+  ```yaml title="<vm_root>\config\targets\sentinel.yaml"
+  targets:
+    - id: 1
+      name: microsoft_sentinel
+      type: sentinel
+      properties:
+        workspace_id: "your-workspace-id"
+        shared_key: "your-shared-key"
+        log_type: "CustomLogs"
+  ```
 
-```plaintext
-package/definitions/pipelines/checkpoint.yaml
-```
+## The Pipeline
 
-2. Copy to user directory maintaining the same structure:
+Now you will configure a pipeline using, again, a template.
 
-```plaintext
-user/definitions/pipelines/checkpoint.yaml
-```
+1. First, locate the `package\defitinions\pipelines\checkpoint.yaml` template under `<vm_root>`
+2. Copy this file to the `user\defitinions\pipelines\` directory
+3. Modify its settings as below:
 
-3. Modify the custom version:
-
-```yaml
-# user/definitions/pipelines/checkpoint.yaml
-pipelines:
-  - name: checkpoint
-    processors:
-      - parse_checkpoint:
-          field: message
-      - add_fields:
-          fields:
-            environment: production
-```
+  ```yaml title="user\definitions\pipelines\checkpoint.yaml"
+  pipelines:
+    - name: checkpoint
+      processors:
+        - parse_checkpoint:
+            field: message
+        - add_fields:
+            fields:
+              environment: production
+  ```
 
 :::tip
-Always work with pipeline configurations in the `user/definitions` directory. Templates in the `package/definitions` directory are overwritten during updates.
+Always work with the files in the `user/definitions` directory. Templates in the `package/definitions` directory are overwritten between updates.
 :::
 
-### Route Configuration
+## The Route
 
-```yaml
-# config/routes/main.yaml
+Configure a route using the settings given below:
+
+```yaml title="config\routes\main.yaml"
 routes:
   - name: checkpoint_to_sentinel
     if: device.type == 'syslog'
@@ -132,136 +122,4 @@ routes:
       - microsoft_sentinel
 ```
 
-## Setup Steps
-
-1. **Basic Configuration**
-   - Install Director
-   - Configure `vmetric.yaml`
-   - Set up logging
-
-2. **Configure Components**
-   - Add device configurations in `config/devices/`
-   - Set up targets in `config/targets/`
-   - Copy and customize pipeline templates from `package` to `user` directory
-   - Create routes in `config/routes/`
-
-## Working with Pipeline Templates
-
-### Template Customization Process
-
-1. **Locate Template**
-
-   ```bash
-   ls package/definitions/pipelines/
-   ```
-
-2. **Create User Directory**
-
-   ```bash
-   mkdir -p user/definitions/pipelines
-   ```
-
-3. **Copy Template**
-
-   ```bash
-   cp package/definitions/pipelines/checkpoint.yaml user/definitions/pipelines/checkpoint.yaml
-   ```
-
-4. **Customize Pipeline**
-
-   Edit `user/definitions/pipelines/checkpoint.yaml` with your modifications
-
-### Example Custom Pipeline
-
-```yaml
-# user/definitions/pipelines/checkpoint.yaml
-pipelines:
-  - name: checkpoint
-    description: "Customized Checkpoint processing"
-    processors:
-      - parse_checkpoint:
-          field: message
-      - add_fields:
-          fields:
-            datacenter: east
-            environment: production
-      - format_timestamp:
-          field: event_time
-          format: "RFC3339"
-```
-
-## Directory Structure
-
-```plaintext
-<vm_root>/
-├── config/
-│   ├── devices/
-│   │   ├── syslog.yaml
-│   │   ├── estreamer.yaml
-│   │   └── tcp.yaml
-│   ├── targets/
-│   │   ├── sentinel.yaml
-│   │   └── storage.yaml
-│   ├── routes/
-│   │   └── main.yaml
-│   └── vmetric.yaml
-├── package/
-│   └── definitions/
-│       └── pipelines/
-│           ├── checkpoint.yaml
-│           ├── cisco.yaml
-│           └── normalize.yaml
-└── user/
-    └── definitions/
-        └── pipelines/
-            ├── checkpoint.yaml
-            └── normalize.yaml
-```
-
-## Common Tasks
-
-### Adding New Devices
-
-1. Create device configuration in `config/devices/`
-2. Set unique ID
-3. Configure properties
-4. Enable device
-5. Verify connection
-
-### Creating Pipelines
-
-1. Copy template from package directory
-2. Customize in user directory
-3. Test transformation
-4. Verify output
-
-### Setting Up Routes
-
-1. Define conditions
-2. Assign pipelines
-3. Configure targets
-4. Test data flow
-
-## Next Steps
-
-1. Explore advanced configurations
-2. Set up monitoring
-3. Configure alerts
-4. Optimize performance
-5. Review security settings
-
-## Troubleshooting Tips
-
-1. Enable debug logging in `vmetric.yaml`
-2. Check connection status for devices
-3. Verify pipeline configurations
-4. Monitor resource usage
-5. Review error logs in the debug output
-
-:::note
-Remember to always make customizations in the `user/definitions` directory to ensure they are preserved during updates.
-:::
-
-:::warning
-Never modify files in the `package` directory as they will be overwritten during updates.
-:::
+You have configured a pipeline that will read _Syslog_ and route the data to _Microsoft Sentinel_.
