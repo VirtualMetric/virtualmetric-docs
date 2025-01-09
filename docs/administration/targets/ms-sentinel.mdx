@@ -21,13 +21,11 @@
 
 ## Description
 
-Creates a Microsoft Sentinel target that ingests log messages into Sentinel workspace tables using Data Collection Rules (DCRs). Supports automatic table selection based on input type and ASIM normalization.
+Creates a target that ingests log messages into Microsoft Sentinel workspace tables using Data Collection Rules (DCRs). Supports automatic table selection based on input type and ASIM normalization.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the target.
-
-### Target Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -38,7 +36,7 @@ The following are the minimum requirements to define the target.
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### Azure Properties
+### Azure
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -48,16 +46,20 @@ The following are the minimum requirements to define the target.
 |`rule_id`|Y||Data Collection Rule (DCR) ID|
 |`endpoint`|Y||DCR ingestion endpoint|
 
-### Stream Properties
+### Streams
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`stream`|N|`auto`|Target table streams|
 |`buffer_size`|N|`1048576`|Buffer size in bytes (1MB)|
 
-### Supported Tables
+:::warning
+When the buffer size limit is reached, the current batch is sent to Sentinel and a new batch is started. Setting an appropriate buffer size is important for performance.
+:::
 
-When `stream` is not specified, the target automatically selects appropriate tables based on the input type:
+### Tables
+
+When `stream` is not specified, the appropriate tables are automatically selected based on the input type:
 
 |Input Type|Target Table|
 |---|---|
@@ -69,28 +71,23 @@ When `stream` is not specified, the target automatically selects appropriate tab
 |Linux Audit Report|`Custom-CommonSecurityLog`|
 |Windows Audit Report|`Custom-CommonSecurityLog`|
 
-You can also explicitly specify one or more of these tables:
+You can also specify one or more of these explicitly:
 
-**Standard Tables:**
-- `Custom-WindowsEvent`
-- `Custom-SecurityEvent`
-- `Custom-CommonSecurityLog`
-- `Custom-Syslog`
+**Standard** - Prefix: `Custom-`
 
-**ASIM Tables:**
-- `Custom-ASimAuditEventLogs` → `Microsoft-ASimAuditEventLogs`
-- `Custom-ASimAuthenticationEventLogs` → `Microsoft-ASimAuthenticationEventLogs`
-- `Custom-ASimDhcpEventLogs` → `Microsoft-ASimDhcpEventLogs`
-- `Custom-ASimDnsActivityLogs` → `Microsoft-ASimDnsActivityLogs`
-- `Custom-ASimFileEventLogs` → `Microsoft-ASimFileEventLogs`
-- `Custom-ASimNetworkSessionLogs` → `Microsoft-ASimNetworkSessionLogs`
-- `Custom-ASimProcessEventLogs` → `Microsoft-ASimProcessEventLogs`
-- `Custom-ASimRegistryEventLogs` → `Microsoft-ASimRegistryEventLogs`
-- `Custom-ASimUserManagementActivityLogs` → `Microsoft-ASimUserManagementActivityLogs`
+> `WindowsEvent` `SecurityEvent` `CommonSecurityLog` `Syslog`
+
+**ASIM** - Prefix: `Custom-` or `Microsoft-`
+
+> `ASimAuditEventLogs` `ASimAuthenticationEventLogs` `ASimAuditEventLogs` `ASimAuditEventLogs` `ASimAuditEventLogs` `ASimAuthenticationEventLogs` `ASimAuthenticationEventLogs` `ASimDhcpEventLogs` `ASimDnsActivityLogs` `ASimFileEventLogs` `ASimNetworkSessionLogs` `ASimProcessEventLogs` `ASimRegistryEventLogs` `ASimUserManagementActivityLogs`
+
+:::note
+All data is automatically normalized to the ASIM format before ingestion. This ensures consistency across different data sources.
+:::
 
 ## Examples
 
-### Basic Auto-Selection
+### Basic
 
 The minimum configuration using automatic table selection:
 
@@ -106,7 +103,7 @@ The minimum configuration using automatic table selection:
     endpoint: "https://your-dcr-endpoint"
 ```
 
-### Specific Table Selection
+### Specific
 
 Configuration for specific ASIM table ingestion:
 
@@ -126,7 +123,7 @@ Configuration for specific ASIM table ingestion:
       - "Custom-ASimNetworkSessionLogs"
 ```
 
-### Optimized Buffer Configuration
+### Optimized
 
 Configuration with custom buffer size:
 
@@ -144,14 +141,6 @@ Configuration with custom buffer size:
     endpoint: "https://your-dcr-endpoint"
     buffer_size: 5242880  # 5MB
 ```
-
-:::note
-All data is automatically normalized to ASIM format before ingestion. This ensures consistency across different data sources.
-:::
-
-:::warning
-When the buffer size limit is reached, the current batch is sent to Sentinel and a new batch is started. Setting an appropriate buffer size is important for performance.
-:::
 
 :::note
 If a message exceeds the maximum allowed size, it will be temporarily stored and retried in the finalization phase.
