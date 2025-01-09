@@ -43,13 +43,13 @@ Choose the grouping that best fits your needs&mdash;**Director** will find them 
 Create a syslog configuration in your preferred location (e.g. `config/devices/syslog.yaml`):
 
 ```yaml
-- id: 1                   # Unique identifier for this device
-  name: syslog_udp        # Descriptive name
-  type: syslog            # Device type
+- id: 1
+  name: syslog_udp
+  type: syslog
   properties:
-    protocol: udp         # Using UDP protocol
-    address: 0.0.0.0      # Listen on all interfaces
-    port: 514             # Standard syslog port
+    protocol: udp
+    address: 0.0.0.0
+    port: 514
 ```
 
 ### 2. Test The Configuration
@@ -152,8 +152,8 @@ Update or create your configuration file, e.g. `config/devices/secure_syslog.yam
     port: 6514
     tls:
       status: true
-      cert_name: cert.pem    # Generated from pfx2pem
-      key_name: key.pem      # Generated from pfx2pem
+      cert_name: cert.pem
+      key_name: key.pem
     framing: octet
     max_connections: 1000
     timeout: 300
@@ -161,6 +161,10 @@ Update or create your configuration file, e.g. `config/devices/secure_syslog.yam
     queue:
       interval: 2
 ```
+
+:::note
+The `cert.pem` and `key.pem` are generated via `pfx2pem`.
+:::
 
 ### 3. Place TLS Certificates
 
@@ -215,10 +219,10 @@ Test the secure connection:
 For high-volume environments, add the following to your configuration:
 
 ```yaml
-  reuse: true                # Enable socket reuse
-  workers: 4                 # Use 4 worker processes
-  buffer_size: 32768         # 32KB buffer size
-  flush_interval: 5          # Flush every 5 seconds
+  reuse: true
+  workers: 4
+  buffer_size: 32768
+  flush_interval: 5
 ```
 
 ## Monitoring
@@ -231,10 +235,4 @@ Worker counts, buffer sizes, and batch settings can be adjusted based on your me
 
 ## Next Steps
 
-Configure and use
-
-- message forwarding
-- advanced authentication options
-- data processing pipelines
-
-{/* TODO: Bunlar için syslog bazında detay gerekiyor */}
+Configure and use message forwarding, advanced authentication options, and pipelines.
