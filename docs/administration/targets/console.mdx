@@ -15,13 +15,11 @@
 
 ## Description
 
-Creates a console target that writes log messages to the standard output (stdout). Supports field normalization to different logging standards through the format property.
+Creates a console target that writes log messages to the standard output. Supports field normalization to various logging standards through the format property.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the target.
-
-### Target Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -32,27 +30,27 @@ The following are the minimum requirements to define the target.
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### Format Property
+### Format
+
+The target normalizes the fields to the specified format:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`format`|N|-|Target format standard for field normalization (`ecs`, `cim`, or `asim`)|
-
-## Format Standards
-
-When a format is specified, the console target will normalize fields to the specified standard:
+|`format`|N|-|Target format standard for field normalization: `ecs`, `cim`, or `asim`|
 
 - `ecs`: Elastic Common Schema format
 - `cim`: Splunk Common Information Model format
 - `asim`: Advanced Security Information Model format
 
-If no format is specified, fields will remain in their original form without normalization.
+:::note
+If no format is specified, log messages will be written to the console without any field normalization.
+:::
 
 ## Examples
 
-### Basic Console Output
+### Basic
 
-Basic configuration without field normalization:
+Console use without field normalization:
 
 ```yaml
 - id: 1
@@ -60,9 +58,9 @@ Basic configuration without field normalization:
   type: console
 ```
 
-### ECS Normalized Output
+### ECS
 
-Configuration with ECS field normalization:
+Console use with ECS field normalization:
 
 ```yaml
 - id: 2
@@ -72,9 +70,9 @@ Configuration with ECS field normalization:
     format: "ecs"
 ```
 
-### ASIM Normalized Output
+### ASIM
 
-Configuration with ASIM field normalization:
+Console use with ASIM field normalization:
 
 ```yaml
 - id: 3
@@ -84,10 +82,6 @@ Configuration with ASIM field normalization:
     format: "asim"
 ```
 
-:::note
-If no format is specified, log messages will be written to the console without any field normalization.
-:::
-
 :::warning
-Using field normalization may impact performance when processing high volumes of messages.
+Using field normalization may impact the performance with high message volumes.
 :::
