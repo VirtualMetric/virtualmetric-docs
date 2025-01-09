@@ -21,13 +21,11 @@
 
 ## Description
 
-Creates a file target that writes log messages to files in various formats (JSON, Avro, OCF, Parquet) with support for different compression methods and schemas.
+Creates a file target that writes log messages to files in various formats like JSON, Avro, OCF, Parquet, with support for various compression methods and schemas.
 
-## Basic Configuration
+## Configuration
 
 The following are the minimum requirements to define the target.
-
-### Target Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -38,21 +36,29 @@ The following are the minimum requirements to define the target.
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### File Properties
+### Files
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`location`|N|Service root path|File output directory|
+|`location`|N|`<service-root>`|File output directory|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|File name template|
-|`type`|N|`"json"`|File format (`json`, `avro`, `ocf`, `parquet`)|
+|`type`|N|`"json"`|File format: `json`, `avro`, `ocf`, or `parquet`|
 |`compression`|N|`"zstd"`|Compression algorithm|
 |`schema`|N|-|Data schema for Avro/OCF/Parquet formats|
 |`no_buffer`|N|`false`|Disable write buffering|
-|`format`|N|-|Field normalization format (`ecs`, `cim`, or `asim`)|
+|`format`|N|-|Field normalization format: `ecs`, `cim`, or `asim`|
 
-### Template Variables
+:::note
+If no schema is specified the for the Avro, OCF, or Parquet formats, a default schema will be used that captures epoch timestamp and message content.
+:::
 
-The following variables can be used in the file name template:
+:::note
+Files with no messages (i.e. with `counter=0`) are automatically removed when the target is disposed.
+:::
+
+### Templates
+
+The following template variables can be used in the file name:
 
 |Variable|Description|Example|
 |---|---|---|
@@ -66,9 +72,9 @@ The following variables can be used in the file name template:
 |`{{.TargetName}}`|Target name|`my_logs`|
 |`{{.TargetType}}`|Target type|`file`|
 
-### Supported Compression Methods
+### Compression
 
-|Format|Supported Compression|
+|Format|Compression|
 |---|---|
 |JSON|`zstd`|
 |Avro|None|
@@ -77,7 +83,7 @@ The following variables can be used in the file name template:
 
 ## Examples
 
-### Basic JSON Output
+### JSON
 
 The minimum configuration for JSON file output:
 
@@ -89,7 +95,7 @@ The minimum configuration for JSON file output:
     location: "/var/log/vmetric"
 ```
 
-### Compressed Parquet with Schema
+### Parquet
 
 Configuration for Parquet output with compression and schema:
 
@@ -115,7 +121,7 @@ Configuration for Parquet output with compression and schema:
       }
 ```
 
-### OCF with Daily Rotation
+### OCF
 
 Configuration for OCF output with daily file rotation:
 
@@ -130,9 +136,9 @@ Configuration for OCF output with daily file rotation:
     name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.ocf"
 ```
 
-### Windows File Output
+### Windows
 
-Configuration for Windows environment with proper path structure:
+Configuration for a Windows environment with a proper path structure:
 
 ```yaml
 - id: 4
@@ -145,14 +151,6 @@ Configuration for Windows environment with proper path structure:
     name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
 ```
 
-:::note
-If no schema is specified for Avro, OCF, or Parquet formats, a default schema will be used that captures epoch timestamp and message content.
-:::
-
 :::warning
-When `no_buffer` is enabled, each write operation will be immediately flushed to disk. This provides better durability but may impact performance.
-:::
-
-:::note
-Files with no messages (counter = 0) are automatically removed when the target is disposed.
+When `no_buffer` is enabled, each write operation will be immediately flushed to disk. This provides durability but may impact performance.
 :::
