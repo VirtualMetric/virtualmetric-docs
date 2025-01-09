@@ -4,155 +4,151 @@ sidebar_label: Quick Start
 
 # Targets: Quick Start
 
-This guide walks you through configuring your first target in Director, showing different output options for your log data.
+This guide will walk you through configuring your first target in **Director**, to illustrate various output options available for your log data.
 
-## Configuration Structure
+## Configuration
 
-Director searches recursively through the `config` directory for target configurations in `.yaml` or `.yml` files:
+Target uses the configuration files with `.yaml` or `.yml` extensions in the `config` directory under the root, e.g.
 
-```bash
-<director_root>/config/targets.yaml                     # Using .yaml extension
-<director_root>/config/targets/outputs.yml              # Using .yml extension
-<director_root>/config/target/outputs/sentinel.yaml     # Categorized structure
-```
+* `<vm_root>/config/targets.yaml`
+* `<vm_root>/config/targets/outputs.yml`
+* `<vm_root>/config/target/outputs/sentinel.yaml`
 
-Choose the organization that best fits your needs - Director will find the configurations regardless of subfolder structure.
+**Director** searches recursively through the directory to spot these files. Choose the organization that best fits your needs.
 
-## Basic Console Output
+## Console
 
-### 1. Create Configuration File
-Create a console configuration for simple stdout output (e.g., `config/targets/console.yaml`):
+Create a console configuration for a simple `stdout` output, e.g.:
 
-```yaml
-- id: 1                   # Unique identifier for this target
-  name: debug_output      # Descriptive name
-  type: console          # Target type
+```yaml title="config/targets/console.yaml"
+- id: 1
+  name: debug_output
+  type: console
   properties:             
-    format: "ecs"        # Optional: normalize to ECS format
+    format: "ecs"
 ```
 
-## Local File Output
+Here, `1` is the unique identifier of the target, `console` is its type, and we intend to normalize the data to the ECS format, although this is optional.
 
-### 1. Basic JSON File Output
-Create a file target configuration for local storage (e.g., `config/targets/file.yaml`):
+## Files
 
-```yaml
-- id: 2
-  name: local_logs
-  type: file
-  properties:
-    location: "/var/log/vmetric"
-    type: "json"
-    name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.json"
-```
+Various file formats are available for local storage.
 
-### 2. Structured Parquet Output
-For efficient storage and querying, use Parquet format:
+* The ever-present **JSON** format is supported:
 
-```yaml
-- id: 3
-  name: structured_logs
-  type: file
-  properties:
-    location: "/var/log/vmetric"
-    type: "parquet"
-    compression: "zstd"
-    schema: |
-      {
-        "timestamp": {
-          "type": "INT",
-          "bitWidth": 64,
-          "signed": true
-        },
-        "message": {
-          "type": "STRING",
-          "compression": "ZSTD"
+  ```yaml title="config/targets/file.yaml"
+  - id: 2
+    name: local_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      type: "json"
+      name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.json"
+  ```
+
+* For more efficient results, the **Parquet** format can be used:
+
+  ```yaml
+  - id: 3
+    name: structured_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      type: "parquet"
+      compression: "zstd"
+      schema: |
+        {
+          "timestamp": {
+            "type": "INT",
+            "bitWidth": 64,
+            "signed": true
+          },
+          "message": {
+            "type": "STRING",
+            "compression": "ZSTD"
+          }
         }
-      }
-```
-
-## Cloud Storage Output
-
-### 1. Azure Blob Storage
-Configure Azure Blob Storage output (e.g., `config/targets/azblob.yaml`):
-
-```yaml
-- id: 4
-  name: cloud_logs
-  type: azblob
-  properties:
-    account: "mystorageaccount"
-    tenant_id: "${AZURE_TENANT_ID}"
-    client_id: "${AZURE_CLIENT_ID}"
-    client_secret: "${AZURE_CLIENT_SECRET}"
-    container: "logs"
-    type: "parquet"
-    compression: "zstd"
-    max_size: 536870912  # 512MB
-```
-
-### 2. Microsoft Sentinel
-Configure Sentinel output with ASIM normalization (e.g., `config/targets/sentinel.yaml`):
-
-```yaml
-- id: 5
-  name: sentinel_logs
-  type: sentinel
-  properties:
-    tenant_id: "${AZURE_TENANT_ID}"
-    client_id: "${AZURE_CLIENT_ID}"
-    client_secret: "${AZURE_CLIENT_SECRET}"
-    rule_id: "${DCR_RULE_ID}"
-    endpoint: "${DCR_ENDPOINT}"
-    stream:
-      - "Custom-ASimProcessEventLogs"
-      - "Custom-ASimNetworkSessionLogs"
-```
-
-## Performance Tuning
-
-For high-volume environments, adjust these settings:
-
-### File Target
-```yaml
-    no_buffer: false          # Enable buffering
-    compression: "zstd"       # Use efficient compression
-```
-
-### Azure Blob Target
-```yaml
-    max_retry: 10            # Increase retry attempts
-    retry_interval: 30       # Longer retry intervals
-    max_size: 536870912      # 512MB chunks
-```
-
-### Microsoft Sentinel Target
-```yaml
-    buffer_size: 5242880     # 5MB buffer size
-```
-
-## Monitoring
-
-Watch Director's logs for:
-- Target initialization messages
-- Upload/ingestion status
-- Buffer and retry operations
-
-## Next Steps
-
-- Set up data transformation pipelines
-- Configure multiple targets for redundancy
-- Implement custom normalization rules
-- Set up monitoring and alerts
-
-:::tip
-Use environment variables for sensitive credentials and adjust buffer sizes based on your ingestion volume.
-:::
-
-:::warning
-Always verify permissions and network connectivity before deploying to production.
-:::
+  ```
 
 :::note
 File targets with no messages are automatically cleaned up when disposed.
+:::
+
+## Cloud
+
+Cloud storage formats are also readily available.
+
+* **Azure Blob** can be configured for output:
+
+  ```yaml title="config/targets/azblob.yaml"
+  - id: 4
+    name: cloud_logs
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${AZURE_CLIENT_ID}"
+      client_secret: "${AZURE_CLIENT_SECRET}"
+      container: "logs"
+      type: "parquet"
+      compression: "zstd"
+      max_size: 536870912  # 512MB
+  ```
+
+* **Microsoft Sentinel** with ASIM normalization can be used:
+
+  ```yaml title="config/targets/sentinel.yaml"
+  - id: 5
+    name: sentinel_logs
+    type: sentinel
+    properties:
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${AZURE_CLIENT_ID}"
+      client_secret: "${AZURE_CLIENT_SECRET}"
+      rule_id: "${DCR_RULE_ID}"
+      endpoint: "${DCR_ENDPOINT}"
+      stream:
+        - "Custom-ASimProcessEventLogs"
+        - "Custom-ASimNetworkSessionLogs"
+  ```
+
+## Performance
+
+For high-volume environments
+
+* With files, enable buffering and use compression:
+
+  ```yaml
+      no_buffer: false
+      compression: "zstd"
+  ```
+
+* For _Azure Blob_, increase the number of retry attempts and the retry interval, and use **512MB** chunks:
+
+  ```yaml
+      max_retry: 10
+      retry_interval: 30
+      max_size: 536870912
+  ```
+
+* For _Microsoft Sentinel_, a **5MB** buffer is recommended:
+
+  ```yaml
+      buffer_size: 5242880
+  ```
+
+## Monitoring
+
+Watch Director's logs for target initialization messages, upload/ingestion status, and buffers and retries.
+
+:::tip
+Use environment variables for sensitive credentials, and adjust buffer sizes based on your ingestion volume.
+:::
+
+## Next Steps
+
+In addition to the above, it is good practice to set up data transformation pipelines, configure multiple targets for redundancy, implement custom normalization rules, and put in place alerts.
+
+:::warning
+Always verify permissions and network connectivity before deploying to production.
 :::
