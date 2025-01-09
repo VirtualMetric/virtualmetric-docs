@@ -26,13 +26,15 @@
 
 ## Description
 
-Creates a syslog target that forwards log messages to a remote syslog server using RFC5424 format. Supports multiple transport protocols, message templating, and TLS encryption.
+Creates a target that forwards log messages to a remote syslog server. Supports multiple transport protocols, message templating, and TLS encryption.
 
-## Basic Configuration
+:::note
+The syslog target uses the RFC5424 format for all messages, ensuring modern syslog compatibility.
+:::
+
+## Configuration
 
 The following are the minimum requirements to define the target.
-
-### Target Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -43,24 +45,24 @@ The following are the minimum requirements to define the target.
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### Connection Properties
+### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`type`|N|`"udp"`|Transport protocol (`udp`, `tcp`, or `tls`)|
-|`address`|N|`"127.0.0.1"`|Remote syslog server address|
-|`port`|N|`514`|Remote syslog server port|
+|`type`|N|`"udp"`|Transport protocol: `udp`, `tcp`, or `tls`|
+|`address`|N|`"127.0.0.1"`|Remote server address|
+|`port`|N|`514`|Remote server port|
 
-### Message Properties
+### Messages
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`template`|N|`"<{{.Priority}}> {{.Timestamp}} {{.AppName}}[{{.PID}}]: {{.Message}}"`|Message template|
-|`app_name`|N|`"vmetric"`|Application name in syslog messages|
+|`app_name`|N|`"vmetric"`|Application name in the messages|
 |`priority`|N|`14`|Syslog priority value|
-|`format`|N|-|Field normalization format (`ecs`, `cim`, or `asim`)|
+|`format`|N|-|Field normalization format: `ecs`, `cim`, or `asim`|
 
-### TLS Properties
+### TLS
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -69,7 +71,11 @@ The following are the minimum requirements to define the target.
 |`tls.cert_name`|N|`"cert.pem"`|Client certificate file|
 |`tls.key_name`|N|`"key.pem"`|Client private key file|
 
-### Template Variables
+:::warning
+When using TLS, ensure that the certificate files are accessible and have the appropriate permissions.
+:::
+
+### Templates
 
 The following variables can be used in the message template:
 
@@ -84,11 +90,15 @@ The following variables can be used in the message template:
 |`{{.PID}}`|Process ID|`1234`|
 |`{{.Message}}`|Log message|`User login successful`|
 
+:::note
+Invalid templates will fall back to sending the raw message content without formatting.
+:::
+
 ## Examples
 
-### Basic UDP Output
+### Basic UDP
 
-The minimum configuration for UDP syslog:
+The minimum configuration for a UDP syslog:
 
 ```yaml
 - id: 1
@@ -98,9 +108,9 @@ The minimum configuration for UDP syslog:
     address: "192.168.1.100"
 ```
 
-### Secure TLS Output
+### Secure TLS
 
-Configuration for TLS-encrypted syslog:
+Configuration for a TLS-encrypted syslog:
 
 ```yaml
 - id: 2
@@ -117,9 +127,9 @@ Configuration for TLS-encrypted syslog:
       key_name: "client-key.pem"
 ```
 
-### Custom Template
+### Template
 
-Configuration with custom message template:
+Configuration with a custom message template:
 
 ```yaml
 - id: 3
@@ -131,15 +141,3 @@ Configuration with custom message template:
     app_name: "myapp"
     priority: 13
 ```
-
-:::note
-The syslog target uses RFC5424 format for all messages, ensuring modern syslog compatibility.
-:::
-
-:::warning
-When using TLS, ensure the certificate files are accessible and have appropriate permissions.
-:::
-
-:::note
-Invalid templates will fall back to sending the raw message content without formatting.
-:::
