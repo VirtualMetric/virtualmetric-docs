@@ -5,217 +5,69 @@ pagination_next: null
 
 # Route Management
 
-Managing routes effectively is crucial for maintaining efficient data flow in your environment. This guide covers the key aspects of route management and administration.
+Managing routes effectively is crucial for maintaining an effective and efficient data flow in your environment. This guide covers the key aspects of route administration and management.
 
-## Route Operations
+## Creation
 
-### Creating Routes
+Routes can be created through configuration files or the management interface.
 
-Routes can be created through configuration files or the management interface:
+They can then be modified in several ways:
 
-```yaml
-routes:
-  - name: new_route
-    description: "Process and store security logs"
-    if: device.type == 'firewall'
-    pipelines:
-      - name: security_process
-    targets:
-      - name: security_storage
-```
+* **editing** - update route parameters, modify conditions, change the pipeline assignments, and adjust target configurations
+* **moving** - change the routes' order, adjust their processing priorities, and optimize the data flow
+* **copying** - duplicate existing routes, modify them for other purposes, and ensure that the configurations are consistent
 
-### Modifying Routes
+Once their work is done, routes can be safely removed: just mark them for deletion. (Optionally, they can be disabled first.)
 
-Routes can be modified in several ways:
+## Groups
 
-1. **Edit Configuration**
-   - Update route parameters
-   - Modify conditions
-   - Change pipeline assignments
-   - Adjust target configurations
+Routes can be grouped by **function**, i.e. for what purpose they are used, or by **source**, i.e. where they get their data from.
 
-2. **Copy Routes**
-   - Duplicate existing routes
-   - Modify copies for new purposes
-   - Maintain consistent configurations
+## Priority
 
-3. **Move Routes**
-   - Change route order
-   - Adjust processing priority
-   - Optimize data flow
+Routes are evaluated in order based on their priority such that more specific routes come first, followed by critical processing routes, then by general purpose routes, and finally by catch-all ones.
 
-### Deleting Routes
+## Health
 
-Routes can be safely removed:
+For route performance and health checks, it is a good practice to track key metrics like route conditions, event throughput, processing time, pipeline connectivity and efficiency, target accessibility and availability, resource usage, and error rates.
 
-```yaml
-# Mark route for deletion
-routes:
-  - name: old_route
-    status: disabled  # Optional: disable before deletion
-    delete: true
-```
+Route performance can be optimized by attending the following:
 
-## Route Organization
+* **conditions** - use effective and efficient filters, minimize complex conditions, remove redundant checks
+* **pipelines** - reduce unnecessary processing, streamline transformation logic, and monitor resource usage
+* **targets** - balance load across targets, monitor their health, and optimize batch sizes
 
-### Grouping Strategies
+Also, routes can be managed in _clustered_ environments:
 
-1. **By Function**
-   ```yaml
-   routes:
-     - name: security_group_logs
-       group: security
-       # ...
-     - name: security_group_alerts
-       group: security
-       # ...
-   ```
+* **configuration syncing** - Maintain consistent configurations, synchronize route updates, and handle failover scenarios
+* **load distribution** - Balance processing across nodes, monitor cluster health, and handle node failures
 
-2. **By Source**
-   ```yaml
-   routes:
-     - name: windows_servers
-       group: windows
-       # ...
-     - name: linux_servers
-       group: linux
-       # ...
-   ```
+## Versioning
 
-### Priority Management
+Route versions can be maintained using:
 
-Routes are evaluated in order with priority considerations:
-
-1. More specific routes first
-2. Critical processing routes
-3. General purpose routes
-4. Catch-all routes last
-
-## Monitoring and Maintenance
-
-### Performance Monitoring
-
-Track key metrics:
-
-- Event throughput
-- Processing time
-- Pipeline efficiency
-- Target availability
-- Error rates
-
-### Health Checks
-
-Regular maintenance tasks:
-
-1. Verify route conditions
-2. Check pipeline connectivity
-3. Validate target accessibility
-4. Monitor resource usage
-5. Review error logs
-
-### Optimization
-
-Optimize route performance:
-
-1. **Condition Optimization**
-   - Use efficient filters
-   - Minimize complex conditions
-   - Remove redundant checks
-
-2. **Pipeline Efficiency**
-   - Reduce unnecessary processing
-   - Optimize transformation logic
-   - Monitor resource usage
-
-3. **Target Management**
-   - Balance load across targets
-   - Monitor target health
-   - Optimize batch sizes
-
-## Advanced Management
-
-### Cluster Operations
-
-Managing routes in clustered environments:
-
-1. **Configuration Sync**
-   - Maintain consistent configurations
-   - Synchronize route updates
-   - Handle failover scenarios
-
-2. **Load Distribution**
-   - Balance processing across nodes
-   - Monitor cluster health
-   - Handle node failures
-
-### Version Control
-
-Maintain route configurations:
-
-1. **Change Management**
-   - Track configuration changes
-   - Maintain version history
-   - Document modifications
-
-2. **Backup and Recovery**
-   - Regular configuration backups
-   - Recovery procedures
-   - Rollback capabilities
+* **change management** - tracking changes, maintaining version history, and documenting modifications
+* **backup and recovery** - regular backups, rcovery procedures, and rollback capability
 
 ## Best Practices
 
-### Configuration Management
+Following some guidelines will prove to be useful in managing routes:
 
-1. **Documentation**
-   - Document route purposes
-   - Maintain configuration notes
-   - Record dependencies
+* **documentation** - document the purpose, and record the dependencies
+* **testing** - test new configurations, verify the data flow, and validate the results
+* **maintenance** - make regular reviews, optimize performance, and apply updates
 
-2. **Testing**
-   - Test new configurations
-   - Verify data flow
-   - Validate processing results
+For security purposes, the following should be kept in mind:
 
-3. **Maintenance**
-   - Regular reviews
-   - Performance optimization
-   - Configuration updates
+* **access control** - manage user permissions, control configuration changes, and audit modifications
+* **data protection** - secure sensitive data, encrypt communications, and monitor access patterns
 
-### Security Considerations
+## Troubleshooting
 
-1. **Access Control**
-   - Manage user permissions
-   - Control configuration changes
-   - Audit modifications
+The most common issues are:
 
-2. **Data Protection**
-   - Secure sensitive data
-   - Encrypt communications
-   - Monitor access patterns
+* **route not matching** - verify the conditions, check the data format, and review the route order
+* **pipeline failures** - check the processor configurations, verify the dependencies, and monitor resource usage
+* **target connectivity** - verify network access, check the credentials, and monitor target health
 
-## Troubleshooting Guide
-
-### Common Issues
-
-1. **Route not matching**
-   - Verify conditions
-   - Check data format
-   - Review route order
-
-2. **Pipeline failures**
-   - Check processor configurations
-   - Verify dependencies
-   - Monitor resource usage
-
-3. **Target connectivity**
-   - Verify network access
-   - Check credentials
-   - Monitor target health
-
-### Resolution Steps
-
-1. Enable debug logging
-2. Review error messages
-3. Check configuration syntax
-4. Verify dependencies
-5. Test modifications
+For resolving the issues, enable debug logging, review the error messages, check the configuration syntax, verify the dependencies, and always test modified routes.
