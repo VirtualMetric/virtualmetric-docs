@@ -2,27 +2,27 @@
 sidebar_label: Quick Start
 ---
 
-# Route: Quick Start
+# Routes: Quick Start
 
-This guide will help you get started with routes by walking through common scenarios and configurations.
+This guide will help you get started with routes by walking you through some common scenarios.
 
-## Basic Route Creation
+## Basic Setup
 
-### 1. Simple Pass-Through Route
-
-The simplest route forwards data directly to a target without processing:
+The simplest route that can be defined sends data directly without processing:
 
 ```yaml
 routes:
   - name: basic_forward
     description: "Forward all logs to storage"
     targets:
-      - name: storage_target
+      - name: storage
 ```
 
-### 2. Adding a Pipeline
+## Pipelines
 
-Include basic processing with a pipeline:
+### Single
+
+We can add some basic processing with a pipeline before we forward the data:
 
 ```yaml
 routes:
@@ -31,29 +31,30 @@ routes:
     pipelines:
       - name: normalize_logs
     targets:
-      - name: storage_target
+      - name: storage
 ```
 
-### 3. Conditional Routing
+### Multiple
 
-Filter data based on conditions:
+Or we can process data with several pipelines:
 
 ```yaml
 routes:
-  - name: firewall_logs
-    description: "Process firewall logs"
-    if: device.type == 'firewall'
+  - name: complex_processing
+    description: "Multi-stage processing"
     pipelines:
-      - name: firewall_pipeline
+      - name: normalize
+      - name: enrich
+      - name: aggregate
     targets:
-      - name: security_storage
+      - name: analytics
 ```
 
-## Common Use Cases
+## Selection
 
-### Device-Based Routing
+### Device-Based
 
-Route specific device types to different targets:
+We can route data from specific device types:
 
 ```yaml
 routes:
@@ -72,9 +73,9 @@ routes:
       - name: windows_storage
 ```
 
-### Dataset-Based Routing
+### Dataset-Based
 
-Route different datasets to specific targets:
+Or we can route it from specific datasets:
 
 ```yaml
 routes:
@@ -93,9 +94,9 @@ routes:
       - name: metrics_platform
 ```
 
-### Data Mirroring
+### Multi-Target
 
-Send the same data to multiple targets:
+The same data can be sent to multiple targets (mirroring):
 
 ```yaml
 routes:
@@ -109,27 +110,26 @@ routes:
       - name: analytics_platform
 ```
 
-## Advanced Configurations
+## Conditionals
 
-### Multiple Pipeline Processing
+### Simple
 
-Process data through several pipelines:
+We can filter the data to be forwarded using conditions:
 
 ```yaml
 routes:
-  - name: complex_processing
-    description: "Multi-stage processing"
+  - name: firewall_logs
+    description: "Process firewall logs"
+    if: device.type == 'firewall'
     pipelines:
-      - name: normalize
-      - name: enrich
-      - name: aggregate
+      - name: firewall_pipeline
     targets:
-      - name: analytics
+      - name: security_storage
 ```
 
-### Conditional with Multiple Criteria
+### Complex
 
-Complex filtering for specific scenarios:
+For specific scenarios, complex filtering can be applied:
 
 ```yaml
 routes:
@@ -142,37 +142,4 @@ routes:
       - name: storage
 ```
 
-## Best Practices for Starting
-
-1. **Start Simple**
-   - Begin with basic routes
-   - Add complexity gradually
-   - Test each configuration
-
-2. **Plan Your Structure**
-   - List your data sources
-   - Define target requirements
-   - Identify processing needs
-
-3. **Test and Monitor**
-   - Verify data flow
-   - Check processing results
-   - Monitor performance
-
-## Next Steps
-
-After setting up basic routes:
-
-1. Explore advanced filtering conditions
-2. Implement data transformation pipelines
-3. Configure multiple target destinations
-4. Set up monitoring and alerts
-5. Optimize route performance
-
-## Troubleshooting Tips
-
-- Verify route conditions are correct
-- Check pipeline configurations
-- Ensure targets are accessible
-- Monitor route metrics
-- Review processing logs
+Verify that the route's conditions are correctly expressed and that the pipelines are configured, ensure that the targets are accessible, monitor the route's metrics, and review the logs.
