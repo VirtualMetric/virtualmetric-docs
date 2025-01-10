@@ -10,7 +10,7 @@ pagination_prev: null
 
 All target configuration files reside in the `config` directory under the root, and have `.yaml` or `.yml` extensions:
 
-```powershell title="<vm_root>/"
+{/* ```powershell title="<vm_root>/"
 config/
 ├── targets/
 │   ├── local/
@@ -18,11 +18,32 @@ config/
 │   └── sentinel/
 ├── outputs/
 └── storage/
+``` */}
+
+```mermaid
+flowchart LR
+   vmroot@{shape: docs, label: "<code>&lt;vm_root&gt;</code>"}
+   config@{shape: docs, label: "<code>config/</code>"}
+      targets@{shape: docs, label: "<code>targets/</code>"}
+        local@{shape: tag-doc, label: "<code>local/</code>"}
+        cloud@{shape: tag-doc, label: "<code>cloud/</code>"}
+        sentinel@{shape: tag-doc, label: "<code>sentinel/</code>"}
+
+      outputs@{shape: tag-doc, label: "<code>outputs</code>"}
+      storage@{shape: tag-doc, label: "<code>storage</code>"}
+
+   vmroot --> config
+
+   config --> targets
+   config --> outputs
+   config --> storage
+
+   targets --> local
+   targets --> cloud
+   targets --> sentinel
 ```
 
-{/* TODO: Bu ağaca bir iki örnek target koyabilir misin? */}
-
-**Director** recursively discovers all configuration files regardless of subfolder structure.
+**Director** recursively discovers all configuration files, regardless of subfolder structure.
 
 :::note
 Each target type provides specific configuration options detailed in its respective chapter.
