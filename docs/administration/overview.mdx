@@ -57,17 +57,17 @@ graph LR
    D1 --> E1 & E2 & E3
 ```
 
-For the PREPROCESSING, ROUTES, and POSTPROCESSING stages, **Director** uses **Pipelines**, which in turn are composed of **Processors**.
+For the PREPROCESSING, ROUTES, and POSTPROCESSING stages, **Director** uses **Pipelines**, which are composed of **Processors**.
 
-To represent the SOURCES and to communicate with them to stream data, **Director** uses **Devices**.
+To ingest data from the SOURCES and to communicate with them, **Director** uses **Devices**.
 
-To forward processed data to TARGETS, **Director** uses **Targets**.
+To forward processed data to TARGETS and to communicate with them, **Director** uses **Targets**.
 
 ### Directories
 
-To help design the processes that will define, combine, and run the above stages, **Director** uses the files under a hierarchical structure in the `vm_root` directory:
+To help design the processes that will define, combine, and run the above stages, **Director** uses the files in the hierarchical folder structure under `vm_root`:
 
-```plaintext
+{/* ```plaintext
 <vm_root>/
 ├── config/
 │   ├── devices/
@@ -91,15 +91,74 @@ To help design the processes that will define, combine, and run the above stages
         └── pipelines/
             ├── checkpoint.yaml
             └── normalize.yaml
+``` */}
+
+```mermaid
+flowchart LR
+   vmroot@{shape: docs, label: "<code>&lt;vm_root&gt;</code>"}
+   config@{shape: docs, label: "<code>config/</code>"}
+      devices@{shape: tag-doc, label: "<code>devices</code>"}
+         syslog("<code>syslog.yaml</code>")
+         estreamer("<code>estreamer.yaml</code>")
+         tcp("<code>tcp.yaml</code>")
+      targets@{shape: tag-doc, label: "<code>targets</code>"}
+         sentinel("<code>sentinel.yaml</code>")
+         storage("<code>storage.yaml</code>")
+      routes@{shape: tag-doc, label: "<code>routes</code>"}
+         main("<code>main.yaml</code>")
+      vmetric("<code>vmetric.yaml</code>")
+
+   package@{shape: docs, label: "<code>package/</code>"}
+      packageDefinitions@{shape: docs, label: "<code>definitions/</code>"}
+         packageDefinitionsPipelines@{shape: tag-doc, label: "<code>pipelines/</code>"}
+            packageDefinitionsPipelinesCheckpoint("<code>checkpoint.yaml</code>")
+            packageDefinitionsPipelinesCisco("<code>cisco.yaml</code>")
+            packageDefinitionsPipelinesNormalize("<code>normalize.yaml</code>")
+
+   user@{shape: docs, label: "<code>user/</code>"}
+      userDefinitions@{shape: docs, label: "<code>definitions/</code>"}
+         userDefinitionsPipelines@{shape: tag-doc, label: "<code>pipelines/</code>"}
+            userDefinitionsPipelinesCheckpoint("<code>checkpoint.yaml</code>")
+            userDefinitionsPipelinesNormalize("<code>normalize.yaml</code>")
+
+   vmroot --> config
+   vmroot --> package
+   vmroot --> user
+
+   config --> devices
+   config --> targets
+   config --> routes
+   config --> vmetric
+
+   devices --> syslog
+   devices --> estreamer
+   devices --> tcp
+
+   targets --> sentinel
+   targets --> storage
+
+   routes --> main
+
+   package --> packageDefinitions
+   packageDefinitions --> packageDefinitionsPipelines
+   packageDefinitionsPipelines --> packageDefinitionsPipelinesCheckpoint
+   packageDefinitionsPipelines --> packageDefinitionsPipelinesCisco
+   packageDefinitionsPipelines --> packageDefinitionsPipelinesNormalize
+
+   user --> userDefinitions
+   userDefinitions --> userDefinitionsPipelines
+   userDefinitionsPipelines --> userDefinitionsPipelinesCheckpoint
+   userDefinitionsPipelines --> userDefinitionsPipelinesNormalize
+
 ```
 
 All administration tasks are carried out with these files.
 
 The configurations for each type of component have their own directory. The YAML files contain predefined fields these components recognize, and **Director** uses these as settings to spawn and run its processes.
 
-### Definition Filess
+### Definition Files
 
-Two directories are of key importance in this regard: the `package` directory, and the `user` directory.
+Two directories are of key importance: `package` and `user`.
 
 The `package` directory contains templates and ready-to-use definitions. These definitions are updated with newer versions of **Director**.
 
