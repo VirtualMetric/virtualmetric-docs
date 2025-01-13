@@ -2,12 +2,12 @@
 description: Removes unused fields
 ---
 
-# Flatten
+# Dot Nester
 
 ## Synopsis
 
 ```yaml
-flatten:
+dot_nester:
   - field: <ident>
   - format: <string>
   - target_field: <ident>
@@ -24,7 +24,26 @@ flatten:
 
 ## Description
 
-**Functionality**: Flattens nested objects into a single-level object where keys are paths representing the original nested structure. Supports various formats and can optionally convert field names to match specific schema conventions.
+**Functionality**: Flattens nested objects into a single-level object where keys are paths representing the original nested structure.
+
+The original nested structure in the source field is preserved when `target_field` is used.
+
+The processor is used for log normalization, schema conversion, and deep object simplification.
+
+:::warning
+Only mapped objects are flattened. Non-map values will cause an error unless `ignore_failure` is set to `true`. 
+:::
+
+Supports various formats, and can optionally converts field names to match specific schema conventions:
+
+**Default** (no format) - Preserves original field name casing, and uses specified delimiter (defaults to dot notation). Example: `User.FirstName.Last`
+
+**ECS** - Converts all field names to lowercase, and uses specified delimiter (defaults to dot notation). Example: `user.firstname.last`
+
+**CIM** - Converts all field names to lowercase, and is specifically used for Common Information Model. Example: `user.firstname.last`
+
+**ASIM** - Preserves original field name casing, and is specifically used for For Advanced Security Information Model. Example: `User.FirstName.Last`
+
 
 ## Parameters
 
@@ -43,13 +62,15 @@ flatten:
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+Use `target_field` when you need to preserve the original structure, set appropriate `depth` for controlling nesting levels, and select `delimiter` based on your naming convention.
+
 ## Examples
 
-### Document-Wide Flattening
+### Documents
 
 <ExampleGrid>
   <CommentCol>
-    Flatten the entire document...
+    All nested structures in the document...
   </CommentCol>
   <CodeCol>
     ```json
@@ -67,12 +88,12 @@ flatten:
     }
     ```
     ```yaml
-    flatten:
+    dot_nester:
       - target_field: flattened
     ```
   </CodeCol>
   <CommentCol>
-    flattens all nested structures:
+    are flattened:
   </CommentCol>
   <CodeCol>
     ```json
@@ -88,11 +109,11 @@ flatten:
   </CodeCol>
 </ExampleGrid>
 
-### Basic Field Flattening
+### Fields
 
 <ExampleGrid>
   <CommentCol>
-    Flatten a nested object...
+    Nested objects...
   </CommentCol>
   <CodeCol>
     ```json
@@ -112,7 +133,7 @@ flatten:
     ```
   </CodeCol>
   <CommentCol>
-    creates dot-notation paths:
+    are flattened with dot notation:
   </CommentCol>
   <CodeCol>
     ```json
@@ -132,11 +153,11 @@ flatten:
   </CodeCol>
 </ExampleGrid>
 
-### Custom Delimiter
+### Delimiter
 
 <ExampleGrid>
   <CommentCol>
-    Use underscore as delimiter...
+    Using underscore as delimiter...
   </CommentCol>
   <CodeCol>
     ```json
@@ -157,7 +178,7 @@ flatten:
     ```
   </CodeCol>
   <CommentCol>
-    creates underscore-separated paths:
+    separates paths:
   </CommentCol>
   <CodeCol>
     ```json
@@ -171,11 +192,11 @@ flatten:
   </CodeCol>
 </ExampleGrid>
 
-### Deep Nesting with Depth Control
+### Depth
 
 <ExampleGrid>
   <CommentCol>
-    Limit flattening depth...
+    Limiting the depth...
   </CommentCol>
   <CodeCol>
     ```json
@@ -198,7 +219,7 @@ flatten:
     ```
   </CodeCol>
   <CommentCol>
-    only flattens to specified depth:
+    flattens only at the specified level:
   </CommentCol>
   <CodeCol>
     ```json
@@ -214,11 +235,47 @@ flatten:
   </CodeCol>
 </ExampleGrid>
 
-### ECS Format
+### Conditions
 
 <ExampleGrid>
   <CommentCol>
-    Convert to ECS format with lowercase fields...
+    Specific criteria limits flattening...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": "external",
+      "nested": {
+        "field": "value"
+      }
+    }
+    ```
+    ```yaml
+    flatten:
+      - field: nested
+      - if: "source == 'external'"
+    ```
+  </CodeCol>
+  <CommentCol>
+    only with fields that meet them:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": "external",
+      "nested": {
+        "field": "value"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Formats
+
+<ExampleGrid>
+  <CommentCol>
+    Using the ECS format...
   </CommentCol>
   <CodeCol>
     ```json
@@ -238,7 +295,7 @@ flatten:
     ```
   </CodeCol>
   <CommentCol>
-    normalizes field names:
+    converts field names to lowercase:
   </CommentCol>
   <CodeCol>
     ```json
@@ -251,105 +308,3 @@ flatten:
     ```
   </CodeCol>
 </ExampleGrid>
-
-### Conditional Flattening
-
-<ExampleGrid>
-  <CommentCol>
-    Flatten only when condition is met...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "condition": true,
-      "nested": {
-        "field": "value"
-      }
-    }
-    ```
-    ```yaml
-    flatten:
-      - field: nested
-      - if: "ctx.condition == true"
-    ```
-  </CodeCol>
-  <CommentCol>
-    processes when condition is true:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "condition": true,
-      "nested": {
-        "field": "value"
-      }
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-## Format Options
-
-1. **Default (no format)**
-   - Preserves original field name casing
-   - Uses specified delimiter (defaults to dot notation)
-   - Example: `User.FirstName.Last`
-
-2. **ECS Format**
-   - Converts all field names to lowercase
-   - Uses specified delimiter (defaults to dot notation)
-   - Example: `user.firstname.last`
-
-3. **CIM Format**
-   - Converts all field names to lowercase
-   - Specifically for Common Information Model
-   - Example: `user.firstname.last`
-
-4. **ASIM Format**
-   - Preserves original field name casing
-   - For Advanced Security Information Model
-   - Example: `User.FirstName.Last`
-
-## Common Use Cases
-
-1. **Log Normalization**
-   ```yaml
-   flatten:
-     - field: metadata
-     - format: ecs
-     - delimiter: "."
-     - target_field: normalized_metadata
-   ```
-
-2. **Schema Conversion**
-   ```yaml
-   flatten:
-     - field: raw_data
-     - format: cim
-     - delimiter: "_"
-     - target_field: cim_data
-   ```
-
-3. **Deep Object Simplification**
-   ```yaml
-   flatten:
-     - field: complex_object
-     - depth: 3
-     - target_field: simple_object
-   ```
-
-:::warning
-- The processor only flattens objects/maps
-- Non-map values will cause an error unless `ignore_failure` is true
-- Original nested structure is preserved in source field when using `target_field`
-:::
-
-:::note
-Best practices:
-- Use `target_field` when you need to preserve the original structure
-- Choose appropriate format based on your schema requirements
-- Consider using `ignore_missing` for optional fields
-- Set appropriate `depth` for controlling nesting levels
-- Select delimiter based on your naming conventions
-- Test with deeply nested structures to ensure expected results
-:::
