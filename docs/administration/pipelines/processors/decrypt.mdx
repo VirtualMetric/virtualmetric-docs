@@ -26,8 +26,16 @@ decrypt:
 
 **Functionality**: Decrypts encrypted string values using AES encryption with a specified key and initialization vector (IV). Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation.
 
+The processor supports two AES-256 modes:
+
+* **AES-256-GCM** (Galois/Counter Mode) - Provides both confidentiality and authenticity. This is more secure against tampering, although slightly slower than the CFB mode.
+
+* **AES-256-CFB** (Cipher Feedback) - Provides confidentiality. This is faster than the GCM mode, although there is no built-in authentication.
+
 :::warning
-The encryption key must be exactly 32 bytes long for AES-256 encryption.
+The encryption key must be exactly 32 bytes long for the AES-256 encryption, and both the encrypted value and IV must be base64 encoded strings.
+
+Unsupported algorithms will result in error.
 :::
 
 ## Parameters
@@ -47,27 +55,17 @@ The encryption key must be exactly 32 bytes long for AES-256 encryption.
 |`tag`|N|-|Identifier|
 |`with_compression`|N|`false`|Enable compression during decryption|
 
-## Supported Algorithms
-
-The processor supports two AES-256 modes:
-
-1. **AES-256-GCM** (Galois/Counter Mode)
-   - Provides both confidentiality and authenticity
-   - More secure against tampering
-   - Slightly slower than CFB mode
-
-2. **AES-256-CFB** (Cipher Feedback)
-   - Provides confidentiality
-   - Faster than GCM mode
-   - No built-in authentication
+:::note
+To improve performance, the processor automatically caches cipher instances for repeated use with the same encryption key.
+:::
 
 ## Examples
 
-### Basic AES-256-CFB Decryption
+### AES-256-CFB
 
 <ExampleGrid>
   <CommentCol>
-    When decrypting with CFB mode...
+    When decrypting in the CFB mode...
   </CommentCol>
   <CodeCol>
     ```json
@@ -101,7 +99,7 @@ The processor supports two AES-256 modes:
 
 <ExampleGrid>
   <CommentCol>
-    Using GCM mode with compression...
+    Using the GCM mode with compression...
   </CommentCol>
   <CodeCol>
     ```json
@@ -120,7 +118,7 @@ The processor supports two AES-256 modes:
     ```
   </CodeCol>
   <CommentCol>
-    decompresses after decryption:
+    decompresses the values after decryption:
   </CommentCol>
   <CodeCol>
     ```json
@@ -136,7 +134,7 @@ The processor supports two AES-256 modes:
 
 <ExampleGrid>
   <CommentCol>
-    When using an invalid key length...
+    If an invalid key length is specified...
   </CommentCol>
   <CodeCol>
     ```json
@@ -155,7 +153,7 @@ The processor supports two AES-256 modes:
     ```
   </CodeCol>
   <CommentCol>
-    the error is captured:
+    the raised error is captured:
   </CommentCol>
   <CodeCol>
     ```json
@@ -169,13 +167,3 @@ The processor supports two AES-256 modes:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor automatically caches cipher instances for repeated use with the same encryption key to improve performance.
-:::
-
-:::warning
-- The encryption key must be exactly 32 bytes for AES-256 encryption
-- Both the encrypted value and IV must be base64 encoded strings
-- Unsupported algorithms will result in an error
-:::

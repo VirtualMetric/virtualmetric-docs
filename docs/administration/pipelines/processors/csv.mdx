@@ -47,13 +47,21 @@ The processor reads a single line of CSV data and maps each field to the corresp
 |`tag`|N|-|Identifier|
 |`trim`|N|`false`|Trim whitespace from unquoted fields|
 
+:::note
+The processor expects the CSV data to be a single line. For multi-line CSV processing, consider using other processors, or pre-processing the data first.
+:::
+
+:::warning
+If the number of fields in the CSV data is less than the number of target fields, the processor will fail unless `ignore_missing` is set to `true`.
+:::
+
 ## Examples
 
 ### Basic CSV Parsing
 
 <ExampleGrid>
   <CommentCol>
-    Parse simple quoted CSV data...
+    Parsing simple quoted CSV data...
   </CommentCol>
   <CodeCol>
     ```json
@@ -69,7 +77,7 @@ The processor reads a single line of CSV data and maps each field to the corresp
     ```
   </CodeCol>
   <CommentCol>
-    creates new fields with parsed values:
+    creates new fields:
   </CommentCol>
   <CodeCol>
     ```json
@@ -87,7 +95,7 @@ The processor reads a single line of CSV data and maps each field to the corresp
 
 <ExampleGrid>
   <CommentCol>
-    Fill empty fields with default value...
+    Filling empty fields with default values...
   </CommentCol>
   <CodeCol>
     ```json
@@ -103,7 +111,7 @@ The processor reads a single line of CSV data and maps each field to the corresp
     ```
   </CodeCol>
   <CommentCol>
-    empty fields get the default value:
+    result:
   </CommentCol>
   <CodeCol>
     ```json
@@ -121,7 +129,7 @@ The processor reads a single line of CSV data and maps each field to the corresp
 
 <ExampleGrid>
   <CommentCol>
-    Use semicolon as separator...
+    Using semicolon as the separator...
   </CommentCol>
   <CodeCol>
     ```json
@@ -137,7 +145,7 @@ The processor reads a single line of CSV data and maps each field to the corresp
     ```
   </CodeCol>
   <CommentCol>
-    parses semicolon-separated values:
+    parses the values:
   </CommentCol>
   <CodeCol>
     ```json
@@ -150,11 +158,3 @@ The processor reads a single line of CSV data and maps each field to the corresp
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor expects the CSV data to be a single line. For multi-line CSV processing, consider using other processors or pre-processing the data.
-:::
-
-:::warning
-If the number of fields in the CSV data is less than the number of target fields, the processor will fail unless `ignore_missing` is set to `true`.
-:::

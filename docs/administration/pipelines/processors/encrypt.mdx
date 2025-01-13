@@ -26,9 +26,23 @@ encrypt:
 
 **Functionality**: Encrypts string values using AES encryption with optional compression. Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation. When compression is enabled, data is compressed before encryption, significantly reducing the size of encrypted data.
 
-:::note
-The processor caches cipher instances for better performance when using the same encryption key multiple times.
+The compression feature provides significant benefits:
+
+* **Storage Efficiency** - Reduces encrypted data size by 50-80% for text data, thereby lowering storage costs. It is particularly effective for repetitive content.
+
+* **Performance** - Smaller data size means faster transmission, thereby reducing network bandwidth consumption.
+
+Ideal uses are log files with repeating patterns, JSON/XML documents, text-heavy data, and backup data.
+
+:::warning
+Encryption key must be exactly 32 bytes for AES-256. Both the encrypted value and IV are returned as base64 strings. Compression may not be beneficial for already compressed data, e.g. images.
 :::
+
+The processor supports two AES-256 modes:
+
+* **AES-256-GCM** (Default) - Provides both confidentiality and authenticity. This is more secure against tampering, although slightly slower than the CFB mode.
+
+* **AES-256-CFB** -Provides confidentiality. This is faster than the GCM mode, although there is no built-in authentication.
 
 ## Parameters
 
@@ -47,38 +61,17 @@ The processor caches cipher instances for better performance when using the same
 |`tag`|N|-|Identifier|
 |`with_compression`|N|`false`|Enable compression before encryption to reduce data size|
 
-## Supported Algorithms
-
-The processor supports two AES-256 modes:
-
-1. **AES-256-GCM** (Default)
-   - Provides both confidentiality and authenticity
-   - More secure against tampering
-   - Slightly slower than CFB mode
-
-2. **AES-256-CFB**
-   - Provides confidentiality
-   - Faster than GCM mode
-   - No built-in authentication
-
-## Compression
-
-When `with_compression` is enabled:
-- Data is compressed before encryption
-- Significantly reduces the size of encrypted data
-- Particularly effective for:
-  - Text data with repeating patterns
-  - Structured data (JSON, XML)
-  - Log messages with common formats
-  - Large string fields
+:::note
+The processor caches cipher instances for better performance when using the same encryption key multiple times.
+:::
 
 ## Examples
 
-### Basic AES-256-GCM Encryption
+### AES-256-GCM
 
 <ExampleGrid>
   <CommentCol>
-    Encrypt sensitive data using GCM mode...
+    Using the GCM mode...
   </CommentCol>
   <CodeCol>
     ```json
@@ -95,7 +88,7 @@ When `with_compression` is enabled:
     ```
   </CodeCol>
   <CommentCol>
-    creates encrypted value and IV:
+    encrypts the sensitive data and IV:
   </CommentCol>
   <CodeCol>
     ```json
@@ -107,11 +100,11 @@ When `with_compression` is enabled:
   </CodeCol>
 </ExampleGrid>
 
-### Encryption with Compression
+### Compression
 
 <ExampleGrid>
   <CommentCol>
-    Enable compression for large text data...
+    Enabling compression for large text data...
   </CommentCol>
   <CodeCol>
     ```json
@@ -134,18 +127,18 @@ When `with_compression` is enabled:
   <CodeCol>
     ```json
     {
-      "log_data": "Yh8dR2S2kZpsMkYoBN2tQ==",  # Compressed & encrypted
+      "log_data": "Yh8dR2S2kZpsMkYoBN2tQ==",
       "log_iv": "K+r8YorvFiFTC"
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Using AES-256-CFB
+### AES-256-CFB
 
 <ExampleGrid>
   <CommentCol>
-    Encrypt using CFB mode for better performance...
+    Using the CFB mode...
   </CommentCol>
   <CodeCol>
     ```json
@@ -162,7 +155,7 @@ When `with_compression` is enabled:
     ```
   </CodeCol>
   <CommentCol>
-    produces encrypted data:
+    encrypts the data faster:
   </CommentCol>
   <CodeCol>
     ```json
@@ -178,7 +171,7 @@ When `with_compression` is enabled:
 
 <ExampleGrid>
   <CommentCol>
-    Handle missing fields gracefully...
+    Handling missing fields gracefully...
   </CommentCol>
   <CodeCol>
     ```json
@@ -195,7 +188,7 @@ When `with_compression` is enabled:
     ```
   </CodeCol>
   <CommentCol>
-    continues processing:
+    continues the processing:
   </CommentCol>
   <CodeCol>
     ```json
@@ -205,36 +198,3 @@ When `with_compression` is enabled:
     ```
   </CodeCol>
 </ExampleGrid>
-
-## Compression Benefits
-
-The compression feature provides significant benefits:
-
-1. **Storage Efficiency**
-   - Reduces encrypted data size by 50-80% for text data
-   - Particularly effective for repetitive content
-   - Lower storage costs and bandwidth usage
-
-2. **Performance**
-   - Smaller data size means faster transmission
-   - Reduced network bandwidth consumption
-   - More efficient storage operations
-
-3. **Ideal Use Cases**
-   - Log files with repeating patterns
-   - JSON/XML documents
-   - Text-heavy data
-   - Backup data encryption
-
-:::warning
-- Encryption key must be exactly 32 bytes for AES-256
-- Both the encrypted value and IV are returned as base64 strings
-- Compression may not be beneficial for already compressed data (e.g., images)
-:::
-
-:::note
-Consider enabling compression when:
-- Encrypting text data larger than 100 bytes
-- Dealing with repetitive content
-- Storage or bandwidth efficiency is important
-:::

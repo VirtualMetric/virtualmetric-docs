@@ -20,9 +20,9 @@ dot_expander:
 
 ## Description
 
-**Functionality**: Expands fields containing dots in their names into nested object structures. This processor is particularly useful when you need to convert flat field names with dots into hierarchical data structures that can be more easily processed by other processors.
+**Functionality**: Expands fields containing dots in their names into nested object structures.
 
-For example, `foo.bar.baz: 123` becomes `foo: { bar: { baz: 123 } }`.
+This processor is particularly useful when you need to convert flat field names with dots into hierarchical data structures that can be more easily processed by other processors. For example, `foo.bar.baz: 123` becomes `foo: { bar: { baz: 123 } }`.
 
 ## Parameters
 
@@ -37,21 +37,21 @@ For example, `foo.bar.baz: 123` becomes `foo: { bar: { baz: 123 } }`.
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
-## Behavior
+:::warning
+The field name must contain at least one dot. The original field is removed after expansion, and all values are preserved as their original types during expansion. If `path` is specified, the expanded structure is placed at that location.
+:::
 
-The processor follows these rules:
-1. The field name must contain at least one dot (.)
-2. The original field is removed after expansion
-3. If path is specified, the expanded structure is placed at that location
-4. All intermediate objects are created as needed
+:::note
+Use the `ignore_failure` flag if the field may not contain dots, the field may not exist, or errors may occur during expansion.
+:::
 
 ## Examples
 
-### Basic Field Expansion
+### Basic Expansion
 
 <ExampleGrid>
   <CommentCol>
-    Expand a dotted field into nested objects...
+    Expanding a dotted field into nested objects...
   </CommentCol>
   <CodeCol>
     ```json
@@ -80,11 +80,11 @@ The processor follows these rules:
   </CodeCol>
 </ExampleGrid>
 
-### Using Custom Path
+### Custom Path
 
 <ExampleGrid>
   <CommentCol>
-    Place expanded structure at specific path...
+    Specifying a path...
   </CommentCol>
   <CodeCol>
     ```json
@@ -99,7 +99,7 @@ The processor follows these rules:
     ```
   </CodeCol>
   <CommentCol>
-    creates structure at specified path:
+    creates the expanded structure at that location:
   </CommentCol>
   <CodeCol>
     ```json
@@ -116,11 +116,11 @@ The processor follows these rules:
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Expansion
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Only expand field if condition is met...
+    Specifying a condition...
   </CommentCol>
   <CodeCol>
     ```json
@@ -136,7 +136,7 @@ The processor follows these rules:
     ```
   </CodeCol>
   <CommentCol>
-    expands when condition is true:
+    expands the field only when that condition is met:
   </CommentCol>
   <CodeCol>
     ```json
@@ -156,7 +156,7 @@ The processor follows these rules:
 
 <ExampleGrid>
   <CommentCol>
-    When field doesn't contain dots...
+    If the field doesn't contain dots...
   </CommentCol>
   <CodeCol>
     ```json
@@ -171,7 +171,7 @@ The processor follows these rules:
     ```
   </CodeCol>
   <CommentCol>
-    error is ignored:
+    the raised error is ignored:
   </CommentCol>
   <CodeCol>
     ```json
@@ -184,16 +184,3 @@ The processor follows these rules:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::warning
-- The field name must contain at least one dot
-- The original field is removed after expansion
-- All values are preserved as their original types during expansion
-:::
-
-:::note
-Use the `ignore_failure` flag to handle cases where:
-- The field doesn't contain dots
-- The field doesn't exist
-- There are errors during expansion
-:::

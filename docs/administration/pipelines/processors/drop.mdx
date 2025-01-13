@@ -20,9 +20,7 @@ drop:
 
 **Functionality**: Conditionally stops processing of a document by dropping it from the pipeline. This processor is particularly useful for filtering out unwanted documents based on their content or metadata without raising exceptions.
 
-:::note
-When a document is dropped, all subsequent processors in the pipeline are skipped.
-:::
+Common uses are filtering debug logs, excluding health checks, and dropping internal traffic.
 
 ## Parameters
 
@@ -35,13 +33,17 @@ When a document is dropped, all subsequent processors in the pipeline are skippe
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+:::warning
+Once dropped, a document cannot be recovered by the subsequent processors. Use caution with complex conditions to avoid accidentally dropping important documents.
+:::
+
 ## Examples
 
-### Basic Conditional Drop
+### Basic Drop
 
 <ExampleGrid>
   <CommentCol>
-    Drop documents with specific packet count...
+    Dropping documents with a specific packet count...
   </CommentCol>
   <CodeCol>
     ```json
@@ -57,7 +59,7 @@ When a document is dropped, all subsequent processors in the pipeline are skippe
     ```
   </CodeCol>
   <CommentCol>
-    removes matching documents from processing:
+    removes them from the pipeline:
   </CommentCol>
   <CodeCol>
     ```text
@@ -70,7 +72,7 @@ When a document is dropped, all subsequent processors in the pipeline are skippe
 
 <ExampleGrid>
   <CommentCol>
-    Drop based on multiple criteria...
+    Specifying multiple criteria...
   </CommentCol>
   <CodeCol>
     ```json
@@ -88,7 +90,7 @@ When a document is dropped, all subsequent processors in the pipeline are skippe
     ```
   </CodeCol>
   <CommentCol>
-    filters out based on combined conditions:
+    filters out documents that meet the combined conditions:
   </CommentCol>
   <CodeCol>
     ```text
@@ -101,7 +103,7 @@ When a document is dropped, all subsequent processors in the pipeline are skippe
 
 <ExampleGrid>
   <CommentCol>
-    Use complex conditions for filtering...
+    Using complex conditions...
   </CommentCol>
   <CodeCol>
     ```json
@@ -125,7 +127,7 @@ When a document is dropped, all subsequent processors in the pipeline are skippe
     ```
   </CodeCol>
   <CommentCol>
-    filters out specific traffic patterns:
+    filters out those traffic patterns:
   </CommentCol>
   <CodeCol>
     ```text
@@ -138,7 +140,7 @@ When a document is dropped, all subsequent processors in the pipeline are skippe
 
 <ExampleGrid>
   <CommentCol>
-    Handle evaluation errors gracefully...
+    Handling evaluation errors gracefully...
   </CommentCol>
   <CodeCol>
     ```json
@@ -153,7 +155,7 @@ When a document is dropped, all subsequent processors in the pipeline are skippe
     ```
   </CodeCol>
   <CommentCol>
-    continues processing on errors:
+    continues the process on errors:
   </CommentCol>
   <CodeCol>
     ```json
@@ -166,40 +168,3 @@ When a document is dropped, all subsequent processors in the pipeline are skippe
     ```
   </CodeCol>
 </ExampleGrid>
-
-## Common Use Cases
-
-1. **Filtering Debug Logs**
-   ```yaml
-   drop:
-     - if: ctx.log.level == 'debug'
-     - description: "Filter out debug messages"
-   ```
-
-2. **Excluding Health Checks**
-   ```yaml
-   drop:
-     - if: ctx.request.path == '/health'
-     - description: "Exclude health check endpoints"
-   ```
-
-3. **Dropping Internal Traffic**
-   ```yaml
-   drop:
-     - if: ctx.network.source.ip.startsWith('192.168.')
-     - description: "Exclude internal network traffic"
-   ```
-
-:::warning
-- The Drop processor permanently removes documents from the pipeline
-- Once dropped, a document cannot be recovered in subsequent processors
-- Use caution with complex conditions to avoid accidentally dropping important documents
-:::
-
-:::note
-The Drop processor is often used with:
-- Log level filtering
-- Network traffic filtering
-- Test data exclusion
-- Development environment data filtering
-:::

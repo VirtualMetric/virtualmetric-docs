@@ -26,6 +26,7 @@ convert:
 **Functionality**: Converts field values from one data type to another. Supports single values and arrays, with the ability to specify precision for floating-point numbers.
 
 Supported conversion types:
+
 - `integer`: Converts to whole number
 - `long`: Converts to 64-bit integer
 - `float`: Converts to floating-point with specified precision
@@ -52,6 +53,14 @@ When converting arrays, all elements in the array will be converted to the speci
 |`precision`|N|3|Number of decimal places for floating-point numbers|
 |`tag`|N|-|Identifier|
 |`target_field`|N|`field`|Field to store the converted value. If not specified, overwrites the source field|
+
+:::note
+With the `auto` type specified, the processor attempts conversion in the order: `integer`, `float`, `boolean`. If none of these matches, it falls back to `string`.
+:::
+
+:::warning
+IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `ignore_failure: true` to skip invalid IPs.
+:::
 
 ## Examples
 
@@ -120,7 +129,7 @@ When converting arrays, all elements in the array will be converted to the speci
 
 <ExampleGrid>
   <CommentCol>
-    Convert all elements in array...
+    Converting all elements of an array...
   </CommentCol>
   <CodeCol>
     ```json
@@ -150,7 +159,7 @@ When converting arrays, all elements in the array will be converted to the speci
 
 <ExampleGrid>
   <CommentCol>
-    Convert to different field...
+    Converting to a different field...
   </CommentCol>
   <CodeCol>
     ```json
@@ -182,7 +191,7 @@ When converting arrays, all elements in the array will be converted to the speci
 
 <ExampleGrid>
   <CommentCol>
-    Automatically determine type...
+    Automatically determining the type...
   </CommentCol>
   <CodeCol>
     ```json
@@ -200,7 +209,7 @@ When converting arrays, all elements in the array will be converted to the speci
     ```
   </CodeCol>
   <CommentCol>
-    results in appropriate types:
+    results in the appropriate types:
   </CommentCol>
   <CodeCol>
     ```json
@@ -213,11 +222,3 @@ When converting arrays, all elements in the array will be converted to the speci
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-When using `auto` type, the processor attempts conversion in this order: integer, float, boolean, and finally falls back to string if no other type matches.
-:::
-
-:::warning
-IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Use `ignore_failure: true` to skip invalid IPs.
-:::

@@ -75,7 +75,7 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/contains",
                 "administration/pipelines/processors/convert",
                 "administration/pipelines/processors/csv",
-                "administration/pipelines/processors/date_index",
+                "administration/pipelines/processors/date_index_name",
                 "administration/pipelines/processors/date",
                 "administration/pipelines/processors/decrypt",
                 "administration/pipelines/processors/dissect",
