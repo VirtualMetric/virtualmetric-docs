@@ -43,28 +43,25 @@ Unlike regular expressions, dissect patterns require exact matching of separator
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
-## Pattern Syntax
+:::note
+Use the `ignore_missing` flag when the field may not always exist, and `ignore_failure` when pattern matching failures should be tolerated.
+:::
 
-### Basic Syntax
-- Use `%{keyname}` to capture values into named fields
-- Text outside capture groups must match exactly
-- All captured values are stored as strings
-- All named groups must capture a value for successful matching
+Patterns are matched verbatim. Use `%{keyname}` to capture values into named fields. The input string must be fully consumed by the pattern, and all named groups&mdash;i.e. `%{keyname}`&mdash;must capture a value.
 
-### Pattern Rules
-1. Patterns are matched verbatim - spaces and delimiters must match exactly
-2. All named capture groups (`%{keyname}`) must capture a value
-3. The input string must be fully consumed by the pattern
-4. Values are always captured as strings, even if they look numeric
-5. Nested fields can be created using dot notation in key names
+Nested fields can be created using dot notation in key names. The captured values are stored as strings.
+
+:::warning
+The separator in `append_separator` must be a single character. All named capture groups must extract a non-empty value.
+:::
 
 ## Examples
 
-### Basic Field Extraction
+### Basic Extraction
 
 <ExampleGrid>
   <CommentCol>
-    Extract first name, last name and age...
+    Extracting first name, last name, and age...
   </CommentCol>
   <CodeCol>
     ```json
@@ -93,11 +90,11 @@ Unlike regular expressions, dissect patterns require exact matching of separator
   </CodeCol>
 </ExampleGrid>
 
-### Nested Field Extraction
+### Nested Fields
 
 <ExampleGrid>
   <CommentCol>
-    Extract error details from a log message...
+    Extracting error details from a log message...
   </CommentCol>
   <CodeCol>
     ```json
@@ -117,7 +114,7 @@ Unlike regular expressions, dissect patterns require exact matching of separator
     ```
   </CodeCol>
   <CommentCol>
-    creates nested event structure:
+    creates a nested event structure:
   </CommentCol>
   <CodeCol>
     ```json
@@ -135,45 +132,11 @@ Unlike regular expressions, dissect patterns require exact matching of separator
   </CodeCol>
 </ExampleGrid>
 
-### Error Handling
+### Non-String Fields
 
 <ExampleGrid>
   <CommentCol>
-    When pattern doesn't match...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "message": "John Doe"
-    }
-    ```
-    ```yaml
-    dissect:
-      - field: message
-      - pattern: "%{firstname} %{lastname} %{age}"
-      - ignore_failure: true
-    ```
-  </CodeCol>
-  <CommentCol>
-    error can be ignored:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "message": "John Doe",
-      "error": {
-        "message": "pattern and string value do not match"
-      }
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Non-String Field Handling
-
-<ExampleGrid>
-  <CommentCol>
-    When field is not a string...
+    When the field is not a string...
   </CommentCol>
   <CodeCol>
     ```json
@@ -189,7 +152,7 @@ Unlike regular expressions, dissect patterns require exact matching of separator
     ```
   </CodeCol>
   <CommentCol>
-    error is captured:
+    the raised error is captured:
   </CommentCol>
   <CodeCol>
     ```json
@@ -203,13 +166,36 @@ Unlike regular expressions, dissect patterns require exact matching of separator
   </CodeCol>
 </ExampleGrid>
 
-:::warning
-- The separator in `append_separator` must be a single character
-- All named capture groups must extract a non-empty value
-- The input field must be a string value
-- Patterns are matched exactly, including spaces
-:::
+### Error Handling
 
-:::note
-Use the `ignore_missing` flag when the field may not always exist, and `ignore_failure` when pattern matching failures should be tolerated.
-:::
+<ExampleGrid>
+  <CommentCol>
+    If the pattern doesn't match...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "John Doe"
+    }
+    ```
+    ```yaml
+    dissect:
+      - field: message
+      - pattern: "%{firstname} %{lastname} %{age}"
+      - ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    the raised error can be ignored:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "John Doe",
+      "error": {
+        "message": "pattern and string value do not match"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
