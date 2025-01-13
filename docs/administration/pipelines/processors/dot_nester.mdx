@@ -24,26 +24,13 @@ dot_nester:
 
 ## Description
 
-**Functionality**: Flattens nested objects into a single-level object where keys are paths representing the original nested structure.
-
-The original nested structure in the source field is preserved when `target_field` is used.
+**Functionality**: Flattens nested objects into a single-level object where keys are paths representing the original nested structure. The original nested structure in the source field is preserved when `target_field` is used.
 
 The processor is used for log normalization, schema conversion, and deep object simplification.
 
 :::warning
 Only mapped objects are flattened. Non-map values will cause an error unless `ignore_failure` is set to `true`. 
 :::
-
-Supports various formats, and can optionally converts field names to match specific schema conventions:
-
-**Default** (no format) - Preserves original field name casing, and uses specified delimiter (defaults to dot notation). Example: `User.FirstName.Last`
-
-**ECS** - Converts all field names to lowercase, and uses specified delimiter (defaults to dot notation). Example: `user.firstname.last`
-
-**CIM** - Converts all field names to lowercase, and is specifically used for Common Information Model. Example: `user.firstname.last`
-
-**ASIM** - Preserves original field name casing, and is specifically used for For Advanced Security Information Model. Example: `User.FirstName.Last`
-
 
 ## Parameters
 
@@ -62,7 +49,19 @@ Supports various formats, and can optionally converts field names to match speci
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
-Use `target_field` when you need to preserve the original structure, set appropriate `depth` for controlling nesting levels, and select `delimiter` based on your naming convention.
+:::note
+You can use `target_field` when you need to preserve the original structure, set an appropriate `depth` for the nesting level, and select a `delimiter` based on your naming convention.
+:::
+
+Available formats to comply with specific schema conventions:
+
+**Default** (no format) - Preserves original field name casing, e.g. `User.FirstName.LastName`, and uses the specified delimiter. Defaults to dot notation.
+
+**ASIM** - Preserves original field name casing, e.g. `User.FirstName.LastName`.
+
+**ECS** - Converts all field names to lowercase, e.g. `user.firstname.lastname`, and uses the specified delimiter. Defaults to dot notation.
+
+**CIM** - Converts all field names to lowercase, e.g. `user.firstname.lastname`.
 
 ## Examples
 
@@ -127,7 +126,7 @@ Use `target_field` when you need to preserve the original structure, set appropr
     }
     ```
     ```yaml
-    flatten:
+    dot_nester:
       - field: nested
       - target_field: flattened
     ```
@@ -171,7 +170,7 @@ Use `target_field` when you need to preserve the original structure, set appropr
     }
     ```
     ```yaml
-    flatten:
+    dot_nester:
       - field: nested
       - delimiter: "_"
       - target_field: flattened
@@ -212,7 +211,7 @@ Use `target_field` when you need to preserve the original structure, set appropr
     }
     ```
     ```yaml
-    flatten:
+    dot_nester:
       - field: root
       - depth: 2
       - target_field: flat
@@ -251,7 +250,7 @@ Use `target_field` when you need to preserve the original structure, set appropr
     }
     ```
     ```yaml
-    flatten:
+    dot_nester:
       - field: nested
       - if: "source == 'external'"
     ```
@@ -289,7 +288,7 @@ Use `target_field` when you need to preserve the original structure, set appropr
     }
     ```
     ```yaml
-    flatten:
+    dot_nester:
       - field: User
       - format: ecs
     ```
