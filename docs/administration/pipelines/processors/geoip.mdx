@@ -24,7 +24,9 @@ geoip:
 
 ## Description
 
-**Functionality**: Enriches IP addresses with geographical and network information using MaxMind's GeoIP2 databases. The processor supports both IPv4 and IPv6 addresses and can extract various location attributes including continent, country, city, coordinates, and autonomous system information.
+**Functionality**: Enriches IP addresses with geographical and network information using MaxMind's GeoIP2 databases.
+
+The processor supports both IPv4 and IPv6 addresses and can extract various location attributes including continent, country, city, coordinates, and autonomous system information.
 
 ## Parameters
 
@@ -43,49 +45,68 @@ geoip:
 |`tag`|N|-|Identifier for logging|
 |`target_field`|N|geo/as|Output field for location data|
 
-## Available Properties
+## Details
 
 The processor can extract different properties depending on the database type used:
 
-### City/Country Database Properties
-- `continent_name`: English name of the continent
-- `country_name`: English name of the country
-- `country_iso_code`: Two-letter country code
-- `region_name`: English name of the region/state
-- `region_iso_code`: Region/state code
-- `city_name`: English name of the city
-- `location`: Object containing latitude and longitude
+* **City/Country databases**
 
-### ASN Database Properties
-- `asn`: Autonomous System Number
-- `organization_name`: Organization operating the AS
+  <TermTable>
+    <TermCol>`continent_name`</TermCol>
+    <DefCol>English name of the continent</DefCol>
+    
+    <TermCol>`country_name`</TermCol>
+    <DefCol>English name of the country</DefCol>
 
-## Database Types
+    <TermCol>`country_iso_code`</TermCol>
+    <DefCol>Two-letter country code</DefCol>
 
-The processor supports three types of MaxMind databases:
+    <TermCol>`region_name`</TermCol>
+    <DefCol>English name of the region/state</DefCol>
 
-1. **City Database** (`GeoLite2-City.mmdb`)
-   - Most detailed information
-   - Includes all location properties
-   - Default database if none specified
+    <TermCol>`region_iso_code`</TermCol>
+    <DefCol>Region/state code</DefCol>
 
-2. **Country Database** (`GeoLite2-Country.mmdb`)
-   - Country-level information only
-   - Lighter weight than city database
-   - No city or region information
+    <TermCol>`city_name`</TermCol>
+    <DefCol>English name of the city</DefCol>
 
-3. **ASN Database** (`GeoLite2-ASN.mmdb`)
-   - Network information only
-   - AS number and organization
-   - No location information
+    <TermCol>`location`</TermCol>
+    <DefCol>Object containing latitude and longitude</DefCol>
+  </TermTable>
+
+* **ASN databases**
+
+  <TermTable>
+    <TermCol>`asn`</TermCol>
+    <DefCol>Autonomous System Number</DefCol>
+    
+    <TermCol>`organization_name`</TermCol>
+    <DefCol>Organization operating the AS</DefCol>
+  </TermTable>
+
+The processor supports three types of _MaxMind_ databases:
+
+* **City Database** (`GeoLite2-City.mmdb`) - Most detailed information. Includes all location properties, and default database if none specified
+
+* **Country Database** (`GeoLite2-Country.mmdb`) - Country-level information only. Lighter weight than city database, although no city or region information
+
+* **ASN Database** (`GeoLite2-ASN.mmdb`) - Network information only. Provides AS number and organization, although without location information
+
+:::note
+The GeoIP database files must be placed in the service's database directory or specified with absolute paths.
+:::
+
+:::warning
+The processor caches database handles for performance. Ensure sufficient memory is available when using large databases.
+:::
 
 ## Examples
 
-### Basic City Lookup
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Lookup IP address location...
+    Looking up IP address location...
   </CommentCol>
   <CodeCol>
     ```json
@@ -117,11 +138,11 @@ The processor supports three types of MaxMind databases:
   </CodeCol>
 </ExampleGrid>
 
-### ASN Information
+### ASN
 
 <ExampleGrid>
   <CommentCol>
-    Lookup network information...
+    Looking up network information...
   </CommentCol>
   <CodeCol>
     ```json
@@ -156,11 +177,11 @@ The processor supports three types of MaxMind databases:
   </CodeCol>
 </ExampleGrid>
 
-### Full Location Details
+### Full Location
 
 <ExampleGrid>
   <CommentCol>
-    Extract all location information...
+    Extracting all location information...
   </CommentCol>
   <CodeCol>
     ```json
@@ -210,7 +231,7 @@ The processor supports three types of MaxMind databases:
 
 <ExampleGrid>
   <CommentCol>
-    Handle invalid IPs gracefully...
+    Handling invalid IPs gracefully...
   </CommentCol>
   <CodeCol>
     ```json
@@ -229,7 +250,7 @@ The processor supports three types of MaxMind databases:
     ```
   </CodeCol>
   <CommentCol>
-    captures error information:
+    captures the error information:
   </CommentCol>
   <CodeCol>
     ```json
@@ -240,11 +261,3 @@ The processor supports three types of MaxMind databases:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The GeoIP database files must be placed in the service's database directory or specified with absolute paths.
-:::
-
-:::warning
-The processor caches database handles for performance. Ensure sufficient memory is available when using large databases.
-:::

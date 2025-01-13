@@ -24,10 +24,6 @@ dissect:
 
 **Functionality**: Extracts values from strings using predefined patterns without regular expressions. The processor splits input strings on delimiters and assigns values to named keys specified in the pattern.
 
-:::note
-Unlike regular expressions, dissect patterns require exact matching of separators and spacing. Use pattern modifiers to handle variable whitespace.
-:::
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -43,13 +39,19 @@ Unlike regular expressions, dissect patterns require exact matching of separator
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
-:::note
-Use the `ignore_missing` flag when the field may not always exist, and `ignore_failure` when pattern matching failures should be tolerated.
-:::
+## Details
 
 Patterns are matched verbatim. Use `%{keyname}` to capture values into named fields: nested fields can be created using dot notation in key names. The captured values are stored as strings.
 
+:::note
+Unlike regular expressions, dissect patterns require exact matching of separators and spacing. Use pattern modifiers to handle variable whitespace.
+:::
+
 The input string must be fully consumed by the pattern, and all named groups&mdash;i.e. `%{keyname}`&mdash;must capture a value.
+
+:::note
+Use the `ignore_missing` flag when the field may not always exist, and `ignore_failure` when pattern matching failures should be tolerated.
+:::
 
 :::warning
 The separator in `append_separator` must be a single character. All named capture groups must extract a non-empty value.

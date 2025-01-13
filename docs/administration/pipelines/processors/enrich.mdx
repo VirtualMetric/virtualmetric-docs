@@ -26,24 +26,6 @@ enrich:
 
 **Functionality**: Enriches log data by performing SQL queries against lookup tables loaded from CSV files or datasets. It can then join the log data with externally referenced information to add context and information.
 
-Information gathering from external sources involves loading lookup data from CSV files or datasets which may involve using SQL queries, including SQLite and Kusto Query Language (KQL), extracting and manipulating JSON data, overriding fields, and resolving conflicts.
-
-:::warning
-KQL queries are automatically converted to SQLite syntax, and some complex KQL features might not be supported.
-:::
-
-The processor provides the following special tables and fields for queries:
-
-* `_ingest` - Contains the current document's data
-* `_message` - JSON string of the entire document
-* `lookup_table` - Contains data loaded from CSV files
-
-CSV files must have headers in the first row as the column names become field names in queries. Headers are case-sensitive, and empty values are treated as NULL.
-
-:::warning
-As large CSV files are loaded directly into memory, the impact of using very large lookup tables must be carefully considered.
-:::
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -60,6 +42,37 @@ As large CSV files are loaded directly into memory, the impact of using very lar
 |`on_success`|N|-|Processors to run on success|
 |`override`|N|`false`|If true, replaces existing document with query results|
 |`tag`|N|-|Identifier for logging|
+
+## Details
+
+Information gathering from external sources involves
+
+* loading lookup data from CSV files or datasets which may involve using SQL queries, including SQLite and Kusto Query Language (KQL),
+* extracting and manipulating JSON data, overriding fields, and
+* resolving conflicts.
+
+:::warning
+KQL queries are automatically converted to SQLite syntax, and some complex KQL features might not be supported.
+:::
+
+The processor provides the following special tables and fields for queries:
+
+<TermTable>
+  <TermCol>`_ingest`</TermCol>
+  <DefCol>Contains the current document's data</DefCol>
+
+  <TermCol>`_message`</TermCol>
+  <DefCol>JSON string of the entire document</DefCol>
+
+  <TermCol>`lookup_table`</TermCol>
+  <DefCol>Contains data loaded from CSV files</DefCol>
+</TermTable>
+
+CSV files must have headers in the first row as the column names become field names in queries. Headers are case-sensitive, and empty values are treated as NULL.
+
+:::warning
+As large CSV files are loaded directly into memory, the impact of using very large lookup tables must be carefully considered.
+:::
 
 ## Examples
 

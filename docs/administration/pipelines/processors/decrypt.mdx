@@ -26,18 +26,6 @@ decrypt:
 
 **Functionality**: Decrypts encrypted string values using AES encryption with a specified key and initialization vector (IV). Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation.
 
-The processor supports two AES-256 modes:
-
-* **AES-256-GCM** (Galois/Counter Mode) - Provides both confidentiality and authenticity. This is more secure against tampering, although slightly slower than the CFB mode.
-
-* **AES-256-CFB** (Cipher Feedback) - Provides confidentiality. This is faster than the GCM mode, although there is no built-in authentication.
-
-:::warning
-The encryption key must be exactly 32 bytes long for the AES-256 encryption, and both the encrypted value and IV must be base64 encoded strings.
-
-Unsupported algorithms will result in error.
-:::
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -54,6 +42,20 @@ Unsupported algorithms will result in error.
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 |`with_compression`|N|`false`|Enable compression during decryption|
+
+## Details
+
+The processor supports two AES-256 modes:
+
+* **AES-256-GCM** (Galois/Counter Mode) - Provides both confidentiality and authenticity. This is more secure against tampering, although slightly slower than the CFB mode.
+
+* **AES-256-CFB** (Cipher Feedback) - Provides confidentiality. This is faster than the GCM mode, although there is no built-in authentication.
+
+:::warning
+The encryption key must be exactly 32 bytes long for the AES-256 encryption, and both the encrypted value and IV must be base64 encoded strings.
+
+Unsupported algorithms will result in error.
+:::
 
 :::note
 To improve performance, the processor automatically caches cipher instances for repeated use with the same encryption key.

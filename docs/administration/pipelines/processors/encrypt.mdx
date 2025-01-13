@@ -24,7 +24,28 @@ encrypt:
 
 ## Description
 
-**Functionality**: Encrypts string values using AES encryption with optional compression. Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation. When compression is enabled, data is compressed before encryption, significantly reducing the size of encrypted data.
+**Functionality**: Encrypts string values using AES encryption with optional compression. Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation.
+
+When compression is enabled, data is compressed before encryption, significantly reducing the size of encrypted data.
+
+## Parameters
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`algorithm`|N|`AES-256-GCM`|Encryption algorithm to use. Valid values: `AES-256-GCM` or `AES-256-CFB`|
+|`encryption_key`|Y|-|32-byte key used for encryption|
+|`field`|Y|-|Field containing the value to be encrypted|
+|`iv_field`|Y|-|Field where the initialization vector will be stored|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|N|`false`|If `true` and `field` doesn't exist, exit quietly|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+|`with_compression`|N|`false`|Enable compression before encryption to reduce data size|
+
+## Details
 
 The compression feature provides significant benefits:
 
@@ -43,23 +64,6 @@ The processor supports two AES-256 modes:
 * **AES-256-GCM** (Default) - Provides both confidentiality and authenticity. This is more secure against tampering, although slightly slower than the CFB mode.
 
 * **AES-256-CFB** -Provides confidentiality. This is faster than the GCM mode, although there is no built-in authentication.
-
-## Parameters
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`algorithm`|N|`AES-256-GCM`|Encryption algorithm to use. Valid values: `AES-256-GCM` or `AES-256-CFB`|
-|`encryption_key`|Y|-|32-byte key used for encryption|
-|`field`|Y|-|Field containing the value to be encrypted|
-|`iv_field`|Y|-|Field where the initialization vector will be stored|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` doesn't exist, exit quietly|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`tag`|N|-|Identifier|
-|`with_compression`|N|`false`|Enable compression before encryption to reduce data size|
 
 :::note
 The processor caches cipher instances for better performance when using the same encryption key multiple times.

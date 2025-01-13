@@ -19,11 +19,7 @@ fail:
 
 ## Description
 
-**Functionality**: Intentionally fails the pipeline with a custom error message. The message can include templates that reference document fields. This processor is particularly useful for:
-- Validation with context-specific error messages
-- Business rule enforcement
-- Conditional pipeline termination
-- Debug and testing scenarios
+**Functionality**: Intentionally fails the pipeline with a custom error message. The message can include templates that reference document fields.
 
 ## Parameters
 
@@ -36,6 +32,45 @@ fail:
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier for the failure point|
+
+## Details
+
+This processor is particularly useful for validation with context-specific error messages, business rule enforcement, conditional pipeline termination, and debug and testing scenarios. 
+
+The common use cases for the processor:
+
+* **Validation with Context** 
+   ```yaml
+   fail:
+     - message: "Invalid amount {{amount}} for currency {{currency}}"
+     - if: "ctx.amount <= 0"
+   ```
+
+* **Access Control**
+   ```yaml
+   fail:
+     - message: "User {{user.name}} lacks required permission: {{required_permission}}"
+     - if: "!ctx.user.permissions.contains(ctx.required_permission)"
+   ```
+
+* **Data Quality**
+   ```yaml
+   fail:
+     - message: "Field {{field_name}} exceeds maximum length of {{max_length}}"
+     - if: "ctx.field_name.length() > ctx.max_length"
+   ```
+
+:::warning
+Template fields must exist in the document or the processor will fail.
+:::
+
+Complex conditions should be tested thoroughly as they can lead to unexpected failures.
+
+Whenever possible, use templates to create clear, context-specific error messages: include relevant field values in error messages for debugging, use `tag` for error categorization, and add `description` to document failure conditions.
+
+:::note
+When `ignore_failure` is set to `true`, errors are still logged but they don't stop the processing.
+:::
 
 ## Examples
 
@@ -58,7 +93,7 @@ fail:
     ```
   </CodeCol>
   <CommentCol>
-    produces error:
+    produces an error message:
   </CommentCol>
   <CodeCol>
     ```json
@@ -72,11 +107,11 @@ fail:
   </CodeCol>
 </ExampleGrid>
 
-### Templated Messages
+### Templates
 
 <ExampleGrid>
   <CommentCol>
-    Use document fields in error message...
+    Use document fields...
   </CommentCol>
   <CodeCol>
     ```json
@@ -96,7 +131,7 @@ fail:
     ```
   </CodeCol>
   <CommentCol>
-    creates detailed error:
+    to create detailed error messages:
   </CommentCol>
   <CodeCol>
     ```json
@@ -110,11 +145,11 @@ fail:
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Failure
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Fail based on document content...
+    Document content can be used to state conditions...
   </CommentCol>
   <CodeCol>
     ```json
@@ -130,7 +165,7 @@ fail:
     ```
   </CodeCol>
   <CommentCol>
-    fails when condition met:
+    to fail when they are met:
   </CommentCol>
   <CodeCol>
     ```json
@@ -147,7 +182,7 @@ fail:
 
 <ExampleGrid>
   <CommentCol>
-    Continue processing despite failure...
+    Continuing despite failures...
   </CommentCol>
   <CodeCol>
     ```json
@@ -163,7 +198,7 @@ fail:
     ```
   </CodeCol>
   <CommentCol>
-    logs error but continues:
+    logs the error without terminating:
   </CommentCol>
   <CodeCol>
     ```json
@@ -177,40 +212,3 @@ fail:
     ```
   </CodeCol>
 </ExampleGrid>
-
-## Common Use Cases
-
-1. **Validation with Context**
-   ```yaml
-   fail:
-     - message: "Invalid amount {{amount}} for currency {{currency}}"
-     - if: "ctx.amount <= 0"
-   ```
-
-2. **Access Control**
-   ```yaml
-   fail:
-     - message: "User {{user.name}} lacks required permission: {{required_permission}}"
-     - if: "!ctx.user.permissions.contains(ctx.required_permission)"
-   ```
-
-3. **Data Quality**
-   ```yaml
-   fail:
-     - message: "Field {{field_name}} exceeds maximum length of {{max_length}}"
-     - if: "ctx.field_name.length() > ctx.max_length"
-   ```
-
-:::warning
-- Template fields must exist in the document or the processor will fail
-- When `ignore_failure` is true, errors are still logged but don't stop processing
-- Complex conditions should be tested thoroughly as they can lead to unexpected failures
-:::
-
-:::note
-Best practices:
-- Use templates to create clear, context-specific error messages
-- Include relevant field values in error messages for debugging
-- Use `tag` for error categorization
-- Add `description` to document failure conditions
-:::

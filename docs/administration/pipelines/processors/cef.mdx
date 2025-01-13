@@ -23,14 +23,6 @@ cef:
 
 **Functionality**: Parses Common Event Format (CEF) messages into structured objects.
 
-CEF is a standardized logging format commonly used by security devices and applications to communicate events.
-
-The processor extracts both CEF header fields and extension fields. The header contains standardized fields like `vendor`, `product`, `version`, etc., while extensions contain key-value pairs with additional event details.
-
-:::note
-Type conversion is handled automatically for numeric values in extension fields, e.g. port numbers, counts, etc.
-:::
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -45,23 +37,38 @@ Type conversion is handled automatically for numeric values in extension fields,
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+## Details
+
+CEF is a standardized logging format commonly used by security devices and applications to communicate events.
+
+The processor extracts both CEF header fields and extension fields. The header contains standardized fields like `vendor`, `product`, `version`, etc., while extensions contain key-value pairs with additional event details.
+
+:::note
+Type conversion is handled automatically for numeric values in extension fields, e.g. port numbers, counts, etc.
+:::
+
+CEF header fields that the processor extracts:
+
+<TermTable>
+  <TermCol>`cefVersion`</TermCol>
+  <DefCol>CEF version, e.g. `0`</DefCol>
+  <TermCol>`deviceVendor`</TermCol>
+  <DefCol>Event creator, e.g. `Cisco`</DefCol>
+  <TermCol>`deviceProduct`</TermCol>
+  <DefCol>Event generator, e.g. `ASA`</DefCol>
+  <TermCol>`deviceVersion`</TermCol>
+  <DefCol>Product version, e.g. `9.1`</DefCol>
+  <TermCol>`deviceEventClassId`</TermCol>
+  <DefCol>Event type identifier, e.g. `106100`</DefCol>
+  <TermCol>`name`</TermCol>
+  <DefCol>Human-readable identifier, e.g. `access-list`</DefCol>
+  <TermCol>`severity`</TermCol>
+  <DefCol>Integer indicating severity, e.g. `5`</DefCol>
+</TermTable>
+
 :::warning
 The message must begin with "`CEF:`" and contain all seven header fields separated by pipe (`|`) characters. Messages not following this format will cause parsing to fail.
 :::
-
-## CEF Header Fields
-
-The processor extracts the following standard header fields:
-
-|Field|Description|Example|
-|---|---|---|
-|`cefVersion`|CEF format version|`0`|
-|`deviceVendor`|Who created the event|`Cisco`|
-|`deviceProduct`|What generated the event|`ASA`|
-|`deviceVersion`|Version of the product|`9.1`|
-|`deviceEventClassId`|Event type identifier|`106100`|
-|`name`|Human-readable description|`access-list`|
-|`severity`|Integer indicating severity|`5`|
 
 ## Examples
 
