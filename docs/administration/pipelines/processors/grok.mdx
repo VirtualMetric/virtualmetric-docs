@@ -23,9 +23,7 @@ grok:
 
 ## Description
 
-**Functionality**: Extracts structured fields from text using pattern matching. The Grok processor combines pre-defined patterns to match and extract values from text fields. It uses a pattern syntax that combines pattern names with field names in the format `%{PATTERN_NAME:FIELD_NAME}`.
-
-The processor supports type conversion by appending `:type` to field names (e.g., `%{NUMBER:duration:int}`).
+Extracts structured fields from text using pattern matching.
 
 ## Parameters
 
@@ -43,20 +41,35 @@ The processor supports type conversion by appending `:type` to field names (e.g.
 |`tag`|N|-|Identifier for logging|
 |`trace_match`|N|`false`|Track which pattern matched|
 
-## Pattern Types
+## Details
 
-The processor supports two types of value conversions:
+ The Grok processor combines pre-defined patterns to match and extract values from text fields. It uses a pattern syntax that combines pattern names with field names in the format `%{PATTERN_NAME:FIELD_NAME}`.
 
-1. **Integer** (`:int`): Converts matched values to 32-bit integers
-2. **Long** (`:long`): Converts matched values to 64-bit integers
+The processor provides type conversion by appending `:type` to field names, e.g. `%{NUMBER:duration:int}`. It supports two types of conversion:
+
+<TermTable>
+  <TermCol>**Integer** (`:int`)</TermCol>
+  <DefCol>Converts matched values to 32-bit integers</DefCol>
+
+  <TermCol>**Long** (`:long`)</TermCol>
+  <DefCol>Converts matched values to 64-bit integers</DefCol>
+</TermTable>
+
+:::note
+Pattern matching stops at the first successful match. Order your patterns from most specific to most general.
+:::
+
+:::warning
+Complex patterns may impact performance. Monitor matching time, and consider optimizing patterns for frequently processed fields.
+:::
 
 ## Examples
 
-### Basic Pattern Matching
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Parse Apache log entry...
+    Parsing an Apache log entry...
   </CommentCol>
   <CodeCol>
     ```json
@@ -89,11 +102,11 @@ The processor supports two types of value conversions:
   </CodeCol>
 </ExampleGrid>
 
-### Custom Pattern Definitions
+### Custom Patterns
 
 <ExampleGrid>
   <CommentCol>
-    Define and use custom patterns...
+    Defining and using custom patterns...
   </CommentCol>
   <CodeCol>
     ```json
@@ -126,11 +139,11 @@ The processor supports two types of value conversions:
   </CodeCol>
 </ExampleGrid>
 
-### Type Conversion
+### Conversion
 
 <ExampleGrid>
   <CommentCol>
-    Convert matched values to specific types...
+    Converting matched values to specific types...
   </CommentCol>
   <CodeCol>
     ```json
@@ -146,7 +159,7 @@ The processor supports two types of value conversions:
     ```
   </CodeCol>
   <CommentCol>
-    automatically converts types:
+    is automatically handled:
   </CommentCol>
   <CodeCol>
     ```json
@@ -162,7 +175,7 @@ The processor supports two types of value conversions:
 
 <ExampleGrid>
   <CommentCol>
-    Parse structured syslog message...
+    Parsing a structured syslog message...
   </CommentCol>
   <CodeCol>
     ```json
@@ -178,7 +191,7 @@ The processor supports two types of value conversions:
     ```
   </CodeCol>
   <CommentCol>
-    extracts syslog fields:
+    extracts the syslog fields:
   </CommentCol>
   <CodeCol>
     ```json
@@ -198,7 +211,7 @@ The processor supports two types of value conversions:
 
 <ExampleGrid>
   <CommentCol>
-    Try multiple patterns in order...
+    Trying multiple patterns in turn...
   </CommentCol>
   <CodeCol>
     ```json
@@ -216,7 +229,7 @@ The processor supports two types of value conversions:
     ```
   </CodeCol>
   <CommentCol>
-    uses first matching pattern:
+    where the first matches:
   </CommentCol>
   <CodeCol>
     ```json
@@ -226,11 +239,3 @@ The processor supports two types of value conversions:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Pattern matching stops at the first successful match. Order your patterns from most specific to most general.
-:::
-
-:::warning
-Complex patterns may impact performance. Monitor matching time and consider optimizing patterns for frequently processed fields.
-:::

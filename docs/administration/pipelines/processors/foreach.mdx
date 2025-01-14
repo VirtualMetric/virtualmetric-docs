@@ -21,7 +21,7 @@ foreach:
 
 ## Description
 
-**Functionality**: Runs a processor on each element of an array or object when the number of elements is unknown. The processor supports both arrays and maps (objects) as input, and can execute any valid processor on each element.
+Runs a processor on each element of an array or object when the number of elements is unknown.
 
 ## Parameters
 
@@ -39,11 +39,11 @@ foreach:
 
 ## Details
 
-The foreach processor:
+ The processor supports both arrays and maps (objects) as input, and can execute any valid processor on each element. It uses the following procedure:
 
-* locates the specified field in the document, and determines if the field contains an array or a map
+* it first locates the specified field in the document, and determines if the field contains an array or a map
 
-* if it does, it goes through each element storing the current value in `_ingest._value`, the current key/index in `_ingest._key`, executing the specified processor, and capturing any errors for failure handling. 
+* if an array of a map exists, it goes through each element storing the current value in `_ingest._value`, the current key/index in `_ingest._key`, executing the specified processor, and capturing any errors for failure handling. 
 
 * finally, it cleans up any temporary `_ingest` fields, and runs the success/failure processors as appropriate.
 
