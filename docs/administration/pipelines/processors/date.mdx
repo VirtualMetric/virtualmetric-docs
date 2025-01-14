@@ -24,26 +24,7 @@ date:
 
 ## Description
 
-**Functionality**: Features an advanced timestamp parser that can automatically detect and parse a wide variety of date/time formats without requiring explicit format specifications.
-
-Key features:
-- Intelligent format detection for nearly any timestamp format
-- Support for both human-readable and machine timestamps
-- Automatic recognition of format components including:
-  - Year formats: `YYYY`, `YY`, `yyyy`, `yy`
-  - Month formats: `MMMM` (full name), `MMM` (abbreviated), `MM` (zero-padded), `M`
-  - Day formats: `DD`, `D`, `dd`, `d`
-  - Hour formats: `HH` (24-hour), `hh` (12-hour), `h`
-  - Minute/Second formats: `mm`, `m`, `ss`, `s`
-  - Millisecond formats: `S`, `SSS`, `SSSSSS`, `SSSSSSSSS`
-  - Timezone formats: `Z`, `ZZ`, `ZZZ`
-  - AM/PM indicators: `A`, `a`
-- Supports Java time patterns and Go time layouts
-- Handles numeric timestamps (Unix epoch in seconds/milliseconds)
-- Customizable output formatting and timezone handling
-- Template support for dynamic timezone and locale selection
-
-By default, the parsed date is stored in the `@timestamp` field, but this can be customized using `target_field`.
+Features an advanced timestamp parser that can automatically detect and parse a wide variety of date/time formats without requiring explicit format specification.
 
 ## Parameters
 
@@ -62,13 +43,55 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
 |`target_field`|N|`@timestamp`|Field to store the parsed date|
 |`timezone`|N|`UTC`|Timezone for parsing (e.g., "Europe/Amsterdam")|
 
+## Details
+
+The processor supports nearly all timestamp formats, including:
+
+<TermTable>
+  <TermCol>**Years**</TermCol>
+  <DefCol>`YYYY`, `YY`, `yyyy`, `yy`</DefCol>
+
+  <TermCol>**Months**</TermCol>
+  <DefCol>`MMMM` (full name), `MMM` (abbreviated), `MM` (zero-padded), `M`</DefCol>
+
+  <TermCol>**Days**</TermCol>
+  <DefCol>`DD`, `D`, `dd`, `d`</DefCol>
+
+  <TermCol>**Hours**</TermCol>
+  <DefCol>`HH` (24-hour), `hh` (12-hour), `h`</DefCol>
+
+  <TermCol>**Minutes** / **Seconds**</TermCol>
+  <DefCol>`mm`, `m`, `ss`, `s`</DefCol>
+
+  <TermCol>**Milliseconds**</TermCol>
+  <DefCol>`S`, `SSS`, `SSSSSS`, `SSSSSSSSS`</DefCol>
+
+  <TermCol>**Timezones**</TermCol>
+  <DefCol>`Z`, `ZZ`, `ZZZ`</DefCol>
+
+  <TermCol>**AM** / **PM**</TermCol>
+  <DefCol>`A`, `a`</DefCol>
+</TermTable>
+
+Human-readable and machine timestamps, as well as Java time patterns and Go time layouts are supported. Numeric timestamps (i.e. Unix epoch in seconds/milliseconds) are handled.
+
+Output formats and timezones are customizable. Also, templates can be used for dynamic timezone and locale selection.
+
+:::note
+By default, the parsed date is stored in the `@timestamp` field, but this can be customized using `target_field`.
+:::
+
+:::warning
+Date parsing will fail if none of the specified formats match the input. Set `ignore_failure` to `true` if errors should be tolerated.
+:::
+
 ## Examples
 
-### Standard Date Format
+### Standard Dates
 
 <ExampleGrid>
   <CommentCol>
-    Parse a date using standard format...
+    Parsing a date using the standard format...
   </CommentCol>
   <CodeCol>
     ```json
@@ -85,7 +108,7 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
     ```
   </CodeCol>
   <CommentCol>
-    converts to ISO format with timezone:
+    converts it to the ISO format with timezone:
   </CommentCol>
   <CodeCol>
     ```json
@@ -97,11 +120,11 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
   </CodeCol>
 </ExampleGrid>
 
-### Automatic Format Detection
+### Automatic Detection
 
 <ExampleGrid>
   <CommentCol>
-    Parse various timestamp formats without explicit patterns...
+    Parsing various timestamps without explicit specs...
   </CommentCol>
   <CodeCol>
     ```json
@@ -132,7 +155,7 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
     ```
   </CodeCol>
   <CommentCol>
-    all formats are automatically detected and normalized:
+    detects and normalizes all dates automatically:
   </CommentCol>
   <CodeCol>
     ```json
@@ -151,7 +174,7 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
 
 <ExampleGrid>
   <CommentCol>
-    Process dates in nested objects...
+    Processing dates in nested objects...
   </CommentCol>
   <CodeCol>
     ```json
@@ -169,7 +192,7 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
     ```
   </CodeCol>
   <CommentCol>
-    maintains the precise timestamp:
+    maintains the correct timestamp:
   </CommentCol>
   <CodeCol>
     ```json
@@ -183,11 +206,11 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
   </CodeCol>
 </ExampleGrid>
 
-### Custom Output Format
+### Output Formats
 
 <ExampleGrid>
   <CommentCol>
-    Specify custom output format...
+    Specifying a custom format...
   </CommentCol>
   <CodeCol>
     ```json
@@ -204,7 +227,7 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
     ```
   </CodeCol>
   <CommentCol>
-    formats output as specified:
+    generates the specified output:
   </CommentCol>
   <CodeCol>
     ```json
@@ -220,7 +243,7 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
 
 <ExampleGrid>
   <CommentCol>
-    Use template fields for timezone and locale...
+    Template fields for timezone and locale...
   </CommentCol>
   <CodeCol>
     ```json
@@ -240,7 +263,7 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
     ```
   </CodeCol>
   <CommentCol>
-    uses the specified timezone and locale:
+    can be used for parsing:
   </CommentCol>
   <CodeCol>
     ```json
@@ -253,11 +276,3 @@ By default, the parsed date is stored in the `@timestamp` field, but this can be
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor features an intelligent format detection system that can automatically parse most common timestamp formats without requiring explicit pattern specification. It handles various date components (year, month, day, etc.), different separators, timezone notations, and both human-readable and Unix epoch timestamps.
-:::
-
-:::warning
-Date parsing will fail if none of the specified formats match the input. Use `ignore_failure: true` if parsing errors should be tolerated.
-:::

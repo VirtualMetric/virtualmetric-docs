@@ -27,17 +27,7 @@ geo_grid:
 
 ## Description
 
-**Functionality**: Transforms geo-grid definitions (geohash, geotile) into standard geometric shapes (bounding boxes or polygons) for spatial indexing and operations.
-
-The processor converts string-based grid cell identifiers into actual geometric shapes that can be used for spatial operations. For example:
-- A geohash like "sn4ph" becomes a polygon with precise coordinates
-- A geotile like "4/8/5" becomes an envelope with defined boundaries
-
-This transformation enables:
-- Spatial indexing of grid cells
-- Geometric operations (intersections, contains, etc.)
-- Visual representation of grid cells
-- Integration with geo-shape capable systems
+Transforms geo-grid definitions (geohash, geotile) into standard geometric shapes (bounding boxes or polygons) for spatial indexing and operations.
 
 ## Parameters
 
@@ -59,11 +49,29 @@ This transformation enables:
 |`target_field`|N|`field`|Output field for the shape|
 |`target_format`|N|`GeoJSON`|Output format: `WKT` or `GeoJSON`|
 
-## Output Formats
+## Details
 
-### GeoJSON Format
+The processor converts string-based grid cell identifiers into actual geometric shapes that can be used for spatial operations, e.g.
 
-For geohash cells, outputs a GeoJSON Polygon:
+- a **geohash** such as "`sn4ph`" becomes a polygon with precise coordinates
+- a **geotile** such as "`4/8/5`" becomes an envelope with defined boundaries
+
+This transformation enables spatial indexing of grid cells, geometric operations (intersection, containment, etc.), visual representation of grid cells, and integration with _geo-shape-capable_ systems.
+
+:::note
+The processor handles different precision levels for both `geohash` and `geotile` formats automatically, adjusting the output shape as necessary.
+:::
+
+:::warning
+Geohash cells that contain poles _cannot_ be converted to polygons due to coordinate system limitations.
+:::
+
+### Formats
+
+#### GeoJSON
+
+For **geohash** cells, outputs a GeoJSON Polygon:
+
 ```json
 {
   "type": "Polygon",
@@ -79,7 +87,8 @@ For geohash cells, outputs a GeoJSON Polygon:
 }
 ```
 
-For geotile cells, outputs a GeoJSON Envelope:
+For **geotile** cells, outputs a GeoJSON Envelope:
+
 ```json
 {
   "type": "Envelope",
@@ -90,25 +99,27 @@ For geotile cells, outputs a GeoJSON Envelope:
 }
 ```
 
-### WKT Format
+#### WKT
 
-For geohash cells, outputs a WKT POLYGON:
+For **geohash** cells, outputs a WKT POLYGON:
+
 ```
 POLYGON((lon1 lat1, lon2 lat2, lon3 lat3, lon4 lat4, lon1 lat1))
 ```
 
-For geotile cells, outputs a WKT ENVELOPE:
+For **geotile** cells, outputs a WKT ENVELOPE:
+
 ```
 ENVELOPE(minLon, maxLon, maxLat, minLat)
 ```
 
 ## Examples
 
-### Basic Geohash Conversion
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Convert a geohash to a polygon...
+    Converting a **geohash** to a polygon...
   </CommentCol>
   <CodeCol>
     ```json
@@ -151,7 +162,7 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
 
 <ExampleGrid>
   <CommentCol>
-    Convert a geotile to WKT format...
+    Converting a **geotile** to WKT...
   </CommentCol>
   <CodeCol>
     ```json
@@ -180,11 +191,11 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Processing
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Only process when condition is met...
+    Processing based on a specific state...
   </CommentCol>
   <CodeCol>
     ```json
@@ -202,7 +213,7 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
     ```
   </CodeCol>
   <CommentCol>
-    transforms when condition is true:
+    transforms the shape only conditionally:
   </CommentCol>
   <CodeCol>
     ```json
@@ -225,7 +236,7 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
 
 <ExampleGrid>
   <CommentCol>
-    Handle invalid grid cell values...
+    Handling invalid grid cell values...
   </CommentCol>
   <CodeCol>
     ```json
@@ -245,7 +256,7 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
     ```
   </CodeCol>
   <CommentCol>
-    continues processing with error handling:
+    continues the execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -256,11 +267,3 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor automatically handles different precision levels for both geohash and geotile formats, adjusting the output shape accordingly.
-:::
-
-:::warning
-Geohash cells that contain poles cannot be converted to polygons due to coordinate system limitations.
-:::

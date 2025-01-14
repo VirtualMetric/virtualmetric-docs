@@ -21,7 +21,7 @@ foreach:
 
 ## Description
 
-**Functionality**: Runs a processor on each element of an array or object when the number of elements is unknown. The processor supports both arrays and maps (objects) as input, and can execute any valid processor on each element.
+Runs a processor on each element of an array or object when the number of elements is unknown.
 
 ## Parameters
 
@@ -37,37 +37,41 @@ foreach:
 |`on_success`|N|-|Processors to run after successful iteration completion|
 |`tag`|N|-|Identifier for logging and debugging|
 
-## Processing Model
+## Details
 
-The foreach processor operates by:
+ The processor supports both arrays and maps (objects) as input, and can execute any valid processor on each element. It uses the following procedure:
 
-1. Locating the specified field in the document
-2. Determining if the field contains an array or map
-3. For each element:
-   - Storing the current value in `_ingest._value`
-   - Storing the current key/index in `_ingest._key` 
-   - Executing the specified processor
-   - Capturing any errors for failure handling
-4. Cleaning up temporary `_ingest` fields
-5. Running success/failure processors as appropriate
+* it first locates the specified field in the document, and determines if the field contains an array or a map
 
-## Error Handling
+* if an array of a map exists, it goes through each element storing the current value in `_ingest._value`, the current key/index in `_ingest._key`, executing the specified processor, and capturing any errors for failure handling. 
+
+* finally, it cleans up any temporary `_ingest` fields, and runs the success/failure processors as appropriate.
+
+:::warning
+Be careful when modifying the `_ingest` fields directly as they are used internally by the processor.
+:::
 
 The processor provides several error handling mechanisms:
 
-- `ignore_failure`: Skip individual element failures
-- `ignore_missing`: Skip missing input fields
-- `on_failure`: Execute recovery processors on error
-- `on_success`: Execute follow-up processors on success
+<TermTable>
+  <TermCol>`ignore_failure`</TermCol>
+  <DefCol>Skip individual element failures</DefCol>
 
-If an error occurs and neither `ignore_failure` nor `on_failure` is specified, the processor will:
-1. Leave already processed elements modified
-2. Stop processing remaining elements
-3. Return the error
+  <TermCol>`ignore_missing`</TermCol>
+  <DefCol>Skip missing input fields</DefCol>
+
+  <TermCol>`on_failure`</TermCol>
+  <DefCol>Execute recovery processors on error</DefCol>
+
+  <TermCol>`on_success`</TermCol>
+  <DefCol>Execute follow-up processors on success</DefCol>
+</TermTable>
+
+If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was specified&mdash;the processor leaves the already processed elements modified, stops processing the remaining elements, and returns the error.
 
 ## Examples
 
-### Array Processing
+### Arrays
 
 <ExampleGrid>
   <CommentCol>
@@ -92,7 +96,7 @@ If an error occurs and neither `ignore_failure` nor `on_failure` is specified, t
     ```
   </CodeCol>
   <CommentCol>
-    marking each as read:
+    and mark each as read:
   </CommentCol>
   <CodeCol>
     ```json
@@ -106,11 +110,11 @@ If an error occurs and neither `ignore_failure` nor `on_failure` is specified, t
   </CodeCol>
 </ExampleGrid>
 
-### Map Processing
+### Maps
 
 <ExampleGrid>
   <CommentCol>
-    Process each key-value pair in a map...
+    Process each key-value pair...
   </CommentCol>
   <CodeCol>
     ```json
@@ -142,6 +146,48 @@ If an error occurs and neither `ignore_failure` nor `on_failure` is specified, t
         "warnings": 3,
         "info": 10
       }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Nested
+
+<ExampleGrid>
+  <CommentCol>
+    Chain multiple processors for each element...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "users": [
+        {"name": "john doe", "role": "admin"},
+        {"name": "jane smith", "role": "user"}
+      ]
+    }
+    ```
+    ```yaml
+    foreach:
+      - field: users
+      - processor:
+          pipeline:
+            - uppercase:
+                - field: "_ingest._value.name"
+            - set:
+                - field: "_ingest._value.processed"
+                - value: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    applying multiple transformations:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "users": [
+        {"name": "JOHN DOE", "role": "admin", "processed": true},
+        {"name": "JANE SMITH", "role": "user", "processed": true}
+      ]
     }
     ```
   </CodeCol>
@@ -192,53 +238,3 @@ If an error occurs and neither `ignore_failure` nor `on_failure` is specified, t
     ```
   </CodeCol>
 </ExampleGrid>
-
-### Nested Processing
-
-<ExampleGrid>
-  <CommentCol>
-    Chain multiple processors for each element...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "users": [
-        {"name": "john doe", "role": "admin"},
-        {"name": "jane smith", "role": "user"}
-      ]
-    }
-    ```
-    ```yaml
-    foreach:
-      - field: users
-      - processor:
-          pipeline:
-            - uppercase:
-                - field: "_ingest._value.name"
-            - set:
-                - field: "_ingest._value.processed"
-                - value: true
-    ```
-  </CodeCol>
-  <CommentCol>
-    applying multiple transformations:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "users": [
-        {"name": "JOHN DOE", "role": "admin", "processed": true},
-        {"name": "JANE SMITH", "role": "user", "processed": true}
-      ]
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-:::note
-The `_ingest._value` and `_ingest._key` fields are automatically cleaned up after processing completes.
-:::
-
-:::warning
-Be careful when modifying the `_ingest` fields directly as they are used internally by the processor.
-:::

@@ -1,5 +1,5 @@
 ---
-description: Converts dates to indeces
+description: Converts dates to index names
 ---
 
 # Date Index Name
@@ -26,9 +26,7 @@ date_index_name:
 
 ## Description
 
-**Functionality**: Creates dynamic index names based on date fields in documents. The processor extracts a date from a specified field, applies configured rounding, and generates an index name by combining a prefix with the formatted date.
-
-The date can be rounded to various time units (year, month, week, day, hour, minute, second) and formatted according to specified patterns. This is particularly useful for time-series data where you want to organize documents into time-based indices.
+Creates dynamic index names based on date fields in documents. The processor extracts a date from a specified field, applies configured rounding, and generates an index name by combining a prefix with the formatted date.
 
 ## Parameters
 
@@ -49,13 +47,25 @@ The date can be rounded to various time units (year, month, week, day, hour, min
 |`tag`|N|-|Identifier|
 |`time_zone`|N|`UTC`|Timezone for date parsing|
 
+## Details
+
+The date can be rounded to various time units (year, month, week, day, hour, minute, second) and formatted according to specified patterns. This is particularly useful for time-series data where you want to organize documents into time-based indices.
+
+:::note
+With the weekly rounding (`w`), the date is rounded to the start of the ISO week (Monday).
+:::
+
+:::warning
+The date parsing will fail if none of the specified date formats match the input. Consider setting `ignore_failure` to `true` if errors should be tolerated.
+:::
+
 ## Examples
 
-### Monthly Index
+### Monthly
 
 <ExampleGrid>
   <CommentCol>
-    Round date to month...
+    Rounding dates to months...
   </CommentCol>
   <CodeCol>
     ```json
@@ -72,7 +82,7 @@ The date can be rounded to various time units (year, month, week, day, hour, min
     ```
   </CodeCol>
   <CommentCol>
-    creates monthly index name:
+    creates a monthly index name:
   </CommentCol>
   <CodeCol>
     ```json
@@ -84,11 +94,11 @@ The date can be rounded to various time units (year, month, week, day, hour, min
   </CodeCol>
 </ExampleGrid>
 
-### Daily Index with Nested Fields
+### Daily
 
 <ExampleGrid>
   <CommentCol>
-    Process date from nested field...
+    Dates from a nested field...
   </CommentCol>
   <CodeCol>
     ```json
@@ -107,7 +117,7 @@ The date can be rounded to various time units (year, month, week, day, hour, min
     ```
   </CodeCol>
   <CommentCol>
-    creates daily index name:
+    create a daily index name:
   </CommentCol>
   <CodeCol>
     ```json
@@ -121,11 +131,11 @@ The date can be rounded to various time units (year, month, week, day, hour, min
   </CodeCol>
 </ExampleGrid>
 
-### Weekly Index
+### Weekly
 
 <ExampleGrid>
   <CommentCol>
-    Round to start of ISO week...
+    Rounding to the start of the ISO week...
   </CommentCol>
   <CodeCol>
     ```json
@@ -142,7 +152,7 @@ The date can be rounded to various time units (year, month, week, day, hour, min
     ```
   </CodeCol>
   <CommentCol>
-    creates weekly index name:
+    creates a weekly index name:
   </CommentCol>
   <CodeCol>
     ```json
@@ -153,11 +163,3 @@ The date can be rounded to various time units (year, month, week, day, hour, min
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-When using weekly rounding (`w`), the date is rounded to the start of the ISO week (Monday).
-:::
-
-:::warning
-The date parsing will fail if none of the specified date formats match the input. Consider using `ignore_failure: true` if date parsing errors should be tolerated.
-:::

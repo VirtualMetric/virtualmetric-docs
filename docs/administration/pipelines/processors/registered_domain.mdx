@@ -21,13 +21,7 @@ registered_domain:
 
 ## Description
 
-**Functionality**: Extracts domain components from URLs or Fully Qualified Domain Names (FQDNs). Uses the Mozilla Public Suffix List to accurately identify the registered domain (eTLD), subdomain, and top-level domain parts.
-
-The processor can handle both full URLs and plain domain names, automatically parsing and extracting the following components:
-- Full domain name
-- Registered domain (effective TLD + one level)
-- Top-level domain
-- Subdomain (if present)
+Extracts domain components from URLs or Fully Qualified Domain Names (FQDNs) using the Mozilla Public Suffix List to accurately identify the registered domain (eTLD), subdomain, and top-level domain parts.
 
 ## Parameters
 
@@ -43,13 +37,26 @@ The processor can handle both full URLs and plain domain names, automatically pa
 |`tag`|N|-|Identifier|
 |`target_field`|N|-|Field to store extracted components. If omitted, components are added to root|
 
+# Details
+
+The processor can handle both full URLs and plain domain names, automatically parsing and extracting the following components:
+
+- full domain name
+- registered domain (effective TLD + one level)
+- top-level domain
+- subdomain (if present)
+
+:::warning
+Large numbers of domains may impact performance. Consider batching or limiting concurrent processing in such cases.
+:::
+
 ## Examples
 
-### Basic Domain Parsing
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Parse a simple domain name...
+    Parsing a simple domain name...
   </CommentCol>
   <CodeCol>
     ```json
@@ -64,7 +71,7 @@ The processor can handle both full URLs and plain domain names, automatically pa
     ```
   </CodeCol>
   <CommentCol>
-    extracting all components:
+    extracts all components:
   </CommentCol>
   <CodeCol>
     ```json
@@ -81,7 +88,7 @@ The processor can handle both full URLs and plain domain names, automatically pa
   </CodeCol>
 </ExampleGrid>
 
-### URL Processing
+### URLs
 
 <ExampleGrid>
   <CommentCol>
@@ -114,7 +121,7 @@ The processor can handle both full URLs and plain domain names, automatically pa
   </CodeCol>
 </ExampleGrid>
 
-### Multi-Level Subdomains
+### Multi-Level
 
 <ExampleGrid>
   <CommentCol>
@@ -184,11 +191,3 @@ The processor can handle both full URLs and plain domain names, automatically pa
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor uses the Mozilla Public Suffix List to accurately identify domain components, ensuring correct handling of special cases like `co.uk` or `com.au`.
-:::
-
-:::warning
-Processing very large numbers of domains may impact performance. Consider batching or limiting concurrent processing in high-volume scenarios.
-:::

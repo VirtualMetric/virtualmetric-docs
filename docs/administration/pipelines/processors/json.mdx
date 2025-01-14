@@ -24,7 +24,7 @@ json:
 
 ## Description
 
-**Functionality**: Parses JSON strings into structured objects. The processor can either store the parsed object in a target field or merge it into the document root, with configurable strategies for handling conflicts and duplicate keys.
+Parses JSON strings into structured objects.
 
 ## Parameters
 
@@ -43,13 +43,30 @@ json:
 |`tag`|N|-|Identifier for logging|
 |`target_field`|N|-|Output field for parsed object|
 
+## Details
+
+The processor can either store the parsed object in a target field or merge it into the document root, with configurable strategies for handling conflicts and duplicate keys.
+
+:::note
+When `add_to_root` is set to `true`, `target_field` must not be set as fields are added directly to the document root.
+:::
+
+The processor supports two strategies for handling conflicts when adding to root:
+
+* `replace` - Existing fields are overwritten with the new values
+* `merge` - Objects are merged recursively, arrays are concatenated, and primitive values are replaced
+
+:::warning
+Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as only the last value for a key is retained.
+:::
+
 ## Examples
 
-### Basic JSON Parsing
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Parse JSON string to object...
+    Parsing JSON string to object...
   </CommentCol>
   <CodeCol>
     ```json
@@ -64,7 +81,7 @@ json:
     ```
   </CodeCol>
   <CommentCol>
-    creates structured object:
+    creates a structured object:
   </CommentCol>
   <CodeCol>
     ```json
@@ -83,7 +100,7 @@ json:
 
 <ExampleGrid>
   <CommentCol>
-    Merge JSON into document root...
+    Merging JSON into the document root...
   </CommentCol>
   <CodeCol>
     ```json
@@ -100,7 +117,7 @@ json:
     ```
   </CodeCol>
   <CommentCol>
-    replaces existing fields:
+    replaces the existing values:
   </CommentCol>
   <CodeCol>
     ```json
@@ -113,11 +130,11 @@ json:
   </CodeCol>
 </ExampleGrid>
 
-### Merging Strategy
+### Merge
 
 <ExampleGrid>
   <CommentCol>
-    Merge nested objects...
+    Merging nested objects...
   </CommentCol>
   <CodeCol>
     ```json
@@ -153,11 +170,11 @@ json:
   </CodeCol>
 </ExampleGrid>
 
-### Duplicate Key Handling
+### Duplicate Keys
 
 <ExampleGrid>
   <CommentCol>
-    Handle duplicate keys in JSON...
+    Handling the duplicate keys in JSON...
   </CommentCol>
   <CodeCol>
     ```json
@@ -173,7 +190,7 @@ json:
     ```
   </CodeCol>
   <CommentCol>
-    keeps last value when allowed:
+    keeps the last value:
   </CommentCol>
   <CodeCol>
     ```json
@@ -191,7 +208,7 @@ json:
 
 <ExampleGrid>
   <CommentCol>
-    Handle invalid JSON gracefully...
+    Handling invalid JSON gracefully...
   </CommentCol>
   <CodeCol>
     ```json
@@ -210,7 +227,7 @@ json:
     ```
   </CodeCol>
   <CommentCol>
-    captures error information:
+    captures the error information:
   </CommentCol>
   <CodeCol>
     ```json
@@ -221,21 +238,3 @@ json:
     ```
   </CodeCol>
 </ExampleGrid>
-
-## Conflict Resolution
-
-The processor supports two strategies for handling conflicts when adding to root:
-
-1. **Replace** (`replace`): Overwrites existing fields with new values
-2. **Merge** (`merge`): Recursively merges objects with the following rules:
-   - Objects are merged recursively
-   - Arrays are concatenated
-   - Primitive values are replaced
-
-:::note
-When `add_to_root` is true, `target_field` must not be set as fields are added directly to the document root.
-:::
-
-:::warning
-Using `allow_duplicate_keys: true` may lead to unpredictable results as only the last value for a key is retained.
-:::

@@ -21,7 +21,7 @@ lowercase:
 
 ## Description
 
-**Functionality**: Converts string values to lowercase. The processor can handle both single strings and arrays of strings, applying the transformation to all string elements. Non-string values will trigger an error unless error handling is configured.
+Converts string values to lowercase.
 
 ## Parameters
 
@@ -37,13 +37,27 @@ lowercase:
 |`tag`|N|-|Identifier for logging|
 |`target_field`|N|`field`|Output field for converted strings|
 
+## Details
+
+The processor can handle both single strings and arrays of strings, applying the transformation to all elements.
+
+The processor is useful for standardizing text fields and tags or categories, prepare fields such as emails addresses for case-insensitive comparisons
+
+:::note
+The processor maintains the original field structure: single strings remain single strings, and arrays remain arrays.
+:::
+
+:::warning
+Non-string values in the input field will cause processing errors unless `ignore_failure` is set to `true`.
+:::
+
 ## Examples
 
-### Basic String Conversion
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Convert single string to lowercase...
+    Converting a single string...
   </CommentCol>
   <CodeCol>
     ```json
@@ -57,7 +71,7 @@ lowercase:
     ```
   </CodeCol>
   <CommentCol>
-    transforms the string:
+    transforms the element:
   </CommentCol>
   <CodeCol>
     ```json
@@ -68,11 +82,11 @@ lowercase:
   </CodeCol>
 </ExampleGrid>
 
-### Array Processing
+### Arrays
 
 <ExampleGrid>
   <CommentCol>
-    Convert array of strings...
+    Converting an array of strings...
   </CommentCol>
   <CodeCol>
     ```json
@@ -97,11 +111,11 @@ lowercase:
   </CodeCol>
 </ExampleGrid>
 
-### Different Target Field
+### Target Field
 
 <ExampleGrid>
   <CommentCol>
-    Store result in new field...
+    Storing the result in a new field...
   </CommentCol>
   <CodeCol>
     ```json
@@ -116,7 +130,7 @@ lowercase:
     ```
   </CodeCol>
   <CommentCol>
-    preserves original value:
+    preserves the original:
   </CommentCol>
   <CodeCol>
     ```json
@@ -128,11 +142,43 @@ lowercase:
   </CodeCol>
 </ExampleGrid>
 
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Using selection criteria...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "level": "DEBUG",
+      "should_convert": true
+    }
+    ```
+    ```yaml
+    lowercase:
+      - field: level
+      - if: "ctx.should_convert == true"
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts only values that meet the condition:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "level": "debug",
+      "should_convert": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
 ### Error Handling
 
 <ExampleGrid>
   <CommentCol>
-    Handle non-string values gracefully...
+    Handling non-string values gracefully...
   </CommentCol>
   <CodeCol>
     ```json
@@ -152,7 +198,7 @@ lowercase:
     ```
   </CodeCol>
   <CommentCol>
-    continues processing with error handling:
+    continues the execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -164,51 +210,3 @@ lowercase:
     ```
   </CodeCol>
 </ExampleGrid>
-
-### Conditional Processing
-
-<ExampleGrid>
-  <CommentCol>
-    Convert only when condition met...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "level": "DEBUG",
-      "should_convert": true
-    }
-    ```
-    ```yaml
-    lowercase:
-      - field: level
-      - if: "ctx.should_convert == true"
-    ```
-  </CodeCol>
-  <CommentCol>
-    processes when condition is true:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "level": "debug",
-      "should_convert": true
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-## Common Use Cases
-
-1. **Normalization**: Standardize text fields for consistent processing
-2. **Case-Insensitive Matching**: Prepare fields for case-insensitive comparisons
-3. **Data Cleaning**: Normalize user input or imported data
-4. **Tag Management**: Standardize tags or categories
-5. **Email Addresses**: Normalize email addresses for consistency
-
-:::note
-The processor maintains the original field structure - single strings remain single strings, and arrays remain arrays.
-:::
-
-:::warning
-Non-string values in the input field will cause processing errors unless `ignore_failure` is set to true.
-:::

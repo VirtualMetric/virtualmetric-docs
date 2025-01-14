@@ -22,7 +22,7 @@ join:
 
 ## Description
 
-**Functionality**: Combines elements from an array into a single string using a specified separator. The processor expects an array of strings as input and produces a concatenated string with the specified separator between elements.
+Combines elements from an array into a single string using a specified separator.
 
 ## Parameters
 
@@ -39,13 +39,25 @@ join:
 |`tag`|N|-|Identifier for logging|
 |`target_field`|N|`field`|Output field for joined string|
 
+## Details
+
+The processor expects an array of strings as input and produces a concatenated string with the specified separator between elements.
+
+:::warning
+Empty arrays return an empty string. 
+:::
+
+Common uses are converting arrays into human-readable lists, combining path or URL segments with appropriate separators, concatenating multiple tags, creating comma-separated values from arrays.
+
+Missing fields can be handled with the `ignore_missing` flag.
+
 ## Examples
 
-### Basic Array Joining
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Join array elements with comma...
+    Joining array elements with a comma...
   </CommentCol>
   <CodeCol>
     ```json
@@ -61,7 +73,7 @@ join:
     ```
   </CodeCol>
   <CommentCol>
-    creates comma-separated string:
+    creates a comma-separated string:
   </CommentCol>
   <CodeCol>
     ```json
@@ -73,11 +85,11 @@ join:
   </CodeCol>
 </ExampleGrid>
 
-### Empty Array Handling
+### Empty Arrays
 
 <ExampleGrid>
   <CommentCol>
-    Join empty array...
+    Joining an empty array...
   </CommentCol>
   <CodeCol>
     ```json
@@ -93,7 +105,7 @@ join:
     ```
   </CodeCol>
   <CommentCol>
-    produces empty string:
+    creates an empty string:
   </CommentCol>
   <CodeCol>
     ```json
@@ -105,11 +117,43 @@ join:
   </CodeCol>
 </ExampleGrid>
 
-### Error Handling for Missing Fields
+### Separator
 
 <ExampleGrid>
   <CommentCol>
-    Handle missing source field...
+    Joining with a slash...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "paths": ["/home", "user", "documents"]
+    }
+    ```
+    ```yaml
+    join:
+      - field: paths
+      - separator: "/"
+      - target_field: full_path
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a path string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "paths": ["/home", "user", "documents"],
+      "full_path": "/home/user/documents"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling missing source field...
   </CommentCol>
   <CodeCol>
     ```json
@@ -129,7 +173,7 @@ join:
     ```
   </CodeCol>
   <CommentCol>
-    continues processing with error handling:
+    continues execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -140,58 +184,3 @@ join:
     ```
   </CodeCol>
 </ExampleGrid>
-
-### Custom Separator
-
-<ExampleGrid>
-  <CommentCol>
-    Join with custom separator...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "paths": ["/home", "user", "documents"]
-    }
-    ```
-    ```yaml
-    join:
-      - field: paths
-      - separator: "/"
-      - target_field: full_path
-    ```
-  </CodeCol>
-  <CommentCol>
-    builds path string:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "paths": ["/home", "user", "documents"],
-      "full_path": "/home/user/documents"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-## Common Use Cases
-
-1. **Formatting Lists**: Convert arrays of items into human-readable lists
-2. **Building Paths**: Combine path segments into complete file paths
-3. **Tag Management**: Combine multiple tags into a single string
-4. **CSV Generation**: Create comma-separated values from arrays
-5. **URL Construction**: Join URL segments with appropriate separators
-
-## Limitations and Considerations
-
-1. **String Elements Only**: All array elements must be strings
-2. **Empty Arrays**: Returns an empty string for empty arrays
-3. **Non-Array Input**: Raises an error if input field is not an array
-4. **Missing Fields**: Can be handled with `ignore_missing` flag
-
-:::note
-The processor handles empty arrays gracefully by returning an empty string.
-:::
-
-:::warning
-The processor strictly requires string elements in the array. Non-string elements will cause processing errors.
-:::

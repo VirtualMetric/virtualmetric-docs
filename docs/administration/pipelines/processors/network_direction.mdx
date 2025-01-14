@@ -24,7 +24,7 @@ network_direction:
 
 ## Description
 
-**Functionality**: Determines network traffic direction by analyzing source and destination IP addresses against defined internal networks. The processor classifies traffic as inbound, outbound, internal, or external based on whether IPs belong to specified internal networks.
+Determines network traffic direction by analyzing source and destination IP addresses against defined internal networks.
 
 ## Parameters
 
@@ -43,22 +43,43 @@ network_direction:
 |`tag`|N|-|Identifier for logging|
 |`target_field`|N|`network.direction`|Output field for direction|
 
-## Traffic Direction Classification
+## Details
+
+The processor classifies traffic as inbound, outbound, internal, or external based on whether IPs belong to specified internal networks.
+
+:::note
+Both **IPv4** and **IPv6** addresses in CIDR notation are supported for internal network definitions.
+:::
 
 The processor classifies traffic into four categories:
 
-1. **Inbound**: Traffic from external to internal networks
-2. **Outbound**: Traffic from internal to external networks
-3. **Internal**: Traffic between internal networks
-4. **External**: Traffic between external networks
+<TermTable>
+  <TermCol>**Inbound**</TermCol>
+  <DefCol>Traffic from external to internal networks</DefCol>
+  
+  <TermCol>**Outbound**</TermCol>
+  <DefCol>Traffic from internal to external networks</DefCol>
+
+  <TermCol>**Internal**</TermCol>
+  <DefCol>Traffic between internal networks</DefCol>
+
+  <TermCol>**External**</TermCol>
+  <DefCol>Traffic between external networks</DefCol>
+</TermTable>
+
+The processor is useful for analyzing network traffic patterns and flows to identify potential security threats, to monitor and log access to internal resources, to track and reporti on network traffic for compliance requirements, and to validate network segmentation policies.
+
+:::warning
+At least one of `internal_networks` or `internal_networks_field` must be specified for the processor to function.
+:::
 
 ## Examples
 
-### Basic Direction Detection
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Classify inbound traffic...
+    Classifying inbound traffic...
   </CommentCol>
   <CodeCol>
     ```json
@@ -88,11 +109,11 @@ The processor classifies traffic into four categories:
   </CodeCol>
 </ExampleGrid>
 
-### Outbound Traffic
+### Outbound
 
 <ExampleGrid>
   <CommentCol>
-    Detect outbound connections...
+    Detecting outbound connections...
   </CommentCol>
   <CodeCol>
     ```json
@@ -122,11 +143,11 @@ The processor classifies traffic into four categories:
   </CodeCol>
 </ExampleGrid>
 
-### Internal Traffic
+### Internal
 
 <ExampleGrid>
   <CommentCol>
-    Monitor internal network traffic...
+    Monitoring internal network traffic...
   </CommentCol>
   <CodeCol>
     ```json
@@ -156,11 +177,11 @@ The processor classifies traffic into four categories:
   </CodeCol>
 </ExampleGrid>
 
-### External Traffic
+### External
 
 <ExampleGrid>
   <CommentCol>
-    Monitor external traffic...
+    Monitoring external traffic...
   </CommentCol>
   <CodeCol>
     ```json
@@ -190,11 +211,11 @@ The processor classifies traffic into four categories:
   </CodeCol>
 </ExampleGrid>
 
-### Dynamic Internal Networks
+### Dynamic Internal
 
 <ExampleGrid>
   <CommentCol>
-    Use networks from field...
+    The networks from the field...
   </CommentCol>
   <CodeCol>
     ```json
@@ -210,7 +231,7 @@ The processor classifies traffic into four categories:
     ```
   </CodeCol>
   <CommentCol>
-    uses configured networks:
+    uses configured ones:
   </CommentCol>
   <CodeCol>
     ```json
@@ -225,19 +246,3 @@ The processor classifies traffic into four categories:
     ```
   </CodeCol>
 </ExampleGrid>
-
-## Common Use Cases
-
-1. **Security Monitoring**: Identify potential security threats based on traffic direction
-2. **Traffic Analysis**: Analyze network traffic patterns and flows
-3. **Access Control**: Monitor and log access to internal resources
-4. **Compliance**: Track and report on network traffic for compliance requirements
-5. **Network Segmentation**: Validate network segmentation policies
-
-:::note
-The processor supports both IPv4 and IPv6 addresses in CIDR notation for internal network definitions.
-:::
-
-:::warning
-At least one of `internal_networks` or `internal_networks_field` must be specified for the processor to function.
-:::

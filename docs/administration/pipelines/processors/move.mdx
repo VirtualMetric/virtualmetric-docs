@@ -24,13 +24,7 @@ move:
 
 ## Description
 
-**Functionality**: Moves fields from one location to another within the document structure. Supports moving nested fields, pattern matching, and exclusions. Can move fields to a specific target field or to the root level of the document.
-
-This processor is particularly useful for:
-- Restructuring document hierarchies
-- Flattening nested objects
-- Isolating specific fields
-- Cleaning up document structure without scripting
+Moves fields from one location to another within the document structure.
 
 ## Parameters
 
@@ -49,13 +43,31 @@ This processor is particularly useful for:
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+## Details
+
+The processor supports moving nested fields, pattern matching, and exclusions. It can move fields to a specific target field or to the root level of the document.
+
+The processor is particularly useful for modifying and tidying document hierarchies, flattening nested objects, and isolating specific fields.
+
+Fields are removed from their original location after moving. When `move_to_root` is set to `true`, `target_field` is ignored.
+
+:::note
+Pattern matching uses filepath.Match syntax, e.g. `*` for any characters, so patterns ending with `.*` handle immediate children differently.
+:::
+
+:::warning
+Moving fields to root level can overwrite existing fields. Be careful with pattern matching to avoid unintended moves.
+
+Also, when moving nested structures, field conflicts can occur. Consider using `exclude` patterns to protect critical fields.
+:::
+
 ## Examples
 
-### Basic Field Moving
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Move fields to a target location...
+    Moving fields to a target location...
   </CommentCol>
   <CodeCol>
     ```json
@@ -74,7 +86,7 @@ This processor is particularly useful for:
     ```
   </CodeCol>
   <CommentCol>
-    restructuring the document:
+    restructures the document:
   </CommentCol>
   <CodeCol>
     ```json
@@ -95,7 +107,7 @@ This processor is particularly useful for:
 
 <ExampleGrid>
   <CommentCol>
-    Flatten nested structures...
+    Flattening nested structures...
   </CommentCol>
   <CodeCol>
     ```json
@@ -115,7 +127,7 @@ This processor is particularly useful for:
     ```
   </CodeCol>
   <CommentCol>
-    bringing fields top level:
+    brings fields to the top level:
   </CommentCol>
   <CodeCol>
     ```json
@@ -127,11 +139,11 @@ This processor is particularly useful for:
   </CodeCol>
 </ExampleGrid>
 
-### Pattern Matching with Exclusions
+### Exclusions
 
 <ExampleGrid>
   <CommentCol>
-    Move selected fields while excluding others...
+    Moving selected fields while excluding others...
   </CommentCol>
   <CodeCol>
     ```json
@@ -154,7 +166,7 @@ This processor is particularly useful for:
     ```
   </CodeCol>
   <CommentCol>
-    preserving excluded fields:
+    preserves excluded fields:
   </CommentCol>
   <CodeCol>
     ```json
@@ -174,11 +186,11 @@ This processor is particularly useful for:
   </CodeCol>
 </ExampleGrid>
 
-### Moving Immediate Children
+### Immediate Children
 
 <ExampleGrid>
   <CommentCol>
-    Move direct child fields...
+    Children fields...
   </CommentCol>
   <CodeCol>
     ```json
@@ -198,7 +210,7 @@ This processor is particularly useful for:
     ```
   </CodeCol>
   <CommentCol>
-    moving one level up:
+    are moved up one level:
   </CommentCol>
   <CodeCol>
     ```json
@@ -212,11 +224,11 @@ This processor is particularly useful for:
   </CodeCol>
 </ExampleGrid>
 
-### Overwriting Target Fields
+### Target Fields
 
 <ExampleGrid>
   <CommentCol>
-    Replace existing fields...
+    Replacing existing fields...
   </CommentCol>
   <CodeCol>
     ```json
@@ -237,7 +249,7 @@ This processor is particularly useful for:
     ```
   </CodeCol>
   <CommentCol>
-    allowing field replacement:
+    allows for field replacement:
   </CommentCol>
   <CodeCol>
     ```json
@@ -251,34 +263,3 @@ This processor is particularly useful for:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-1. Pattern matching uses filepath.Match syntax (e.g., `*` for any characters)
-2. Patterns ending with `.*` handle immediate children differently
-3. Fields are removed from their original location after moving
-4. When `move_to_root` is true, `target_field` is ignored
-:::
-
-:::warning
-1. Moving fields to root level can overwrite existing fields
-2. Be careful with pattern matching to avoid unintended moves
-3. Field conflicts can occur when moving nested structures
-4. Consider using `exclude` patterns to protect critical fields
-:::
-
-## Common Use Cases
-
-1. **Document Restructuring**:
-   - Organizing related fields under a common parent
-   - Flattening deeply nested structures
-   - Isolating fields for specific processors
-
-2. **Field Isolation**:
-   - Moving matched fields to a temporary location
-   - Separating processing fields from final fields
-   - Organizing fields by category or type
-
-3. **Cleanup Operations**:
-   - Simplifying document structure
-   - Standardizing field locations
-   - Preparing documents for specific outputs

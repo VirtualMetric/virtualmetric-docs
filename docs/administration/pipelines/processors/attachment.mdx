@@ -26,9 +26,7 @@ attachment:
 
 ## Description
 
-**Functionality**: Extracts content and metadata from common document formats like **XLSX**, **DOCX**, **PDF**, **RTF**, and **ODT** using native format libraries.
-
-The source field must contain base64-encoded binary data of the document to be processed. For optimal performance with large binary files, consider using binary data formats instead of base64 encoding.
+Extracts content and metadata from common document formats like **XLSX**, **DOCX**, **PDF**, **RTF**, and **ODT** using native format libraries.
 
 ## Parameters
 
@@ -49,15 +47,16 @@ The source field must contain base64-encoded binary data of the document to be p
 |`tag`|N|-|Identifier|
 |`target_field`|N|attachment|Field containing the attachment|
 
-## Exported Fields
+## Details
+
+The source field must contain base64-encoded binary data of the document to be processed. For optimal performance with large binary files, consider using binary data formats instead of base64 encoding.
 
 The following fields can be extracted from a document:
 
 > `altitude` `author` `comments` `content` `content_length` `content_type` `contributor` `coverage` `creator_tool` `date` `description` `format` `identifier` `keywords` `language` `latitude` `longitude` `metadata_date` `modified` `modifier` `print_date` `publisher` `rating` `relation` `rights` `source` `title` `type`
 
-## Supported Formats
+The processor supports the following libraries to extract these fields:
 
-The processor supports these formats using the following libraries:
 - Microsoft Excel (XLSX)
 - Microsoft Word (DOCX)
 - PDF documents
@@ -65,9 +64,13 @@ The processor supports these formats using the following libraries:
 - OpenDocument Text (ODT)
 - Plain text (TXT)
 
+:::note
+For multiple attachments, use the [`foreach`](foreach.mdx) processor.
+:::
+
 ## Examples
 
-### Basic extraction
+### Basic Extraction
 
 The files to be attached to the JSON documents must first be encoded as `base64` strings. Then, to decode the string the processor can be used:
 
@@ -106,7 +109,7 @@ The files to be attached to the JSON documents must first be encoded as `base64`
   </CodeCol>
 </ExampleGrid>
 
-### Character limits
+### Character Limits
 
 <ExampleGrid>
   <CommentCol>
@@ -215,7 +218,3 @@ The files to be attached to the JSON documents must first be encoded as `base64`
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-For multiple attachments, use the [`foreach`](foreach.mdx) processor.
-:::

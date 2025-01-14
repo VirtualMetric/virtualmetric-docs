@@ -23,11 +23,7 @@ circle:
 
 ## Description
 
-**Functionality**: Converts shapes defined as circles to approximate polygons.
-
-:::warning[attention]
-Circles containing poles cannot be converted.
-:::
+Converts shapes defined as circles to approximate polygons.
 
 ## Parameters
 
@@ -45,19 +41,27 @@ Circles containing poles cannot be converted.
 |`tag`|N|-|Identifier|
 |`target_field`|N|-|Field to assign the converted shape to. If omitted, the circle is converted in place|
 
-## Supported Units
+## Details
 
 The radius can be specified in the following units:
 
-- `m`: meters (default if no unit specified)
-- `km`: kilometers
-- `cm`: centimeters
-- `mm`: millimeters
-- `mi`: miles
-- `yd`: yards
-- `ft`: feet
-- `in`: inches
-- `nmi`: nautical miles
+* `m` - meters (default if none specified)
+* `cm` - centimeters
+* `mm` - millimeters
+* `km` - kilometers
+* `in` - inches
+* `ft` - feet
+* `yd` - yards
+* `mi` - land miles
+* `nmi` - nautical miles
+
+:::note
+The processor automatically calculates the optimal number of points to use when approximating the circle as a polygon based on the `radius` and `error_distance` parameters. The number of points is capped at 1000 for performance.
+:::
+
+:::warning[attention]
+Circles containing poles cannot be converted.
+:::
 
 ## Examples
 
@@ -242,7 +246,3 @@ The radius can be specified in the following units:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor automatically calculates the optimal number of points to use when approximating the circle as a polygon based on the `radius` and `error_distance` parameters. The number of points is capped at 1000 for performance.
-:::

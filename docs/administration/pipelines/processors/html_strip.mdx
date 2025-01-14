@@ -21,7 +21,7 @@ html_strip:
 
 ## Description
 
-**Functionality**: Removes HTML tags from text fields while preserving the content between tags. The processor maintains text readability by preserving whitespace and text flow, making it useful for extracting plain text content from HTML-formatted fields.
+Removes HTML tags from text fields while preserving the content between tags.
 
 ## Parameters
 
@@ -37,13 +37,27 @@ html_strip:
 |`tag`|N|-|Identifier for logging|
 |`target_field`|N|`field`|Output field for stripped text|
 
+## Details
+
+The processor maintains text readability by preserving whitespace and text flow, making it useful for extracting plain text content from HTML-formatted fields.
+
+:::note
+While removing the markup tags, the text order and spacing between elements are preserved.
+:::
+
+The processor is useful for extracting text from user-submitted emails or web content to prepare the content for display formatting, textual analysis and search indexing, or natural language processing.
+
+:::warning
+The processor expects valid HTML input. Malformed HTML may produce unexpected results.
+:::
+
 ## Examples
 
-### Basic HTML Stripping
+### Simple HTML
 
 <ExampleGrid>
   <CommentCol>
-    Remove tags from HTML content...
+    Removing tags from HTML content...
   </CommentCol>
   <CodeCol>
     ```json
@@ -57,7 +71,7 @@ html_strip:
     ```
   </CodeCol>
   <CommentCol>
-    preserves only the text content:
+    reveals the text content:
   </CommentCol>
   <CodeCol>
     ```json
@@ -68,11 +82,43 @@ html_strip:
   </CodeCol>
 </ExampleGrid>
 
-### Separate Target Field
+
+### Complex HTML
 
 <ExampleGrid>
   <CommentCol>
-    Keep original and stripped versions...
+    Handling nested tags and attributes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "html": "<div class='content'><h1>Title</h1><p>Text with <em>emphasis</em> and <a href='#'>links</a></p></div>"
+    }
+    ```
+    ```yaml
+    html_strip:
+      - field: html
+      - target_field: text
+    ```
+  </CodeCol>
+  <CommentCol>
+    yields clean text content:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "html": "<div class='content'><h1>Title</h1><p>Text with <em>emphasis</em> and <a href='#'>links</a></p></div>",
+      "text": "Title Text with emphasis and links"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keep Original
+
+<ExampleGrid>
+  <CommentCol>
+    Separating the original and stripped versions...
   </CommentCol>
   <CodeCol>
     ```json
@@ -87,7 +133,7 @@ html_strip:
     ```
   </CodeCol>
   <CommentCol>
-    preserves original HTML:
+    preserves the original HTML:
   </CommentCol>
   <CodeCol>
     ```json
@@ -99,11 +145,11 @@ html_strip:
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Processing
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Strip HTML only when needed...
+    Stripping HTML only when needed...
   </CommentCol>
   <CodeCol>
     ```json
@@ -119,7 +165,7 @@ html_strip:
     ```
   </CodeCol>
   <CommentCol>
-    processes when condition is true:
+    continues execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -135,7 +181,7 @@ html_strip:
 
 <ExampleGrid>
   <CommentCol>
-    Handle missing or invalid fields...
+    Handling missing or invalid fields...
   </CommentCol>
   <CodeCol>
     ```json
@@ -154,7 +200,7 @@ html_strip:
     ```
   </CodeCol>
   <CommentCol>
-    continues processing with error handling:
+    continues execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -165,50 +211,3 @@ html_strip:
     ```
   </CodeCol>
 </ExampleGrid>
-
-### Complex HTML Processing
-
-<ExampleGrid>
-  <CommentCol>
-    Handle nested tags and attributes...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "html": "<div class='content'><h1>Title</h1><p>Text with <em>emphasis</em> and <a href='#'>links</a></p></div>"
-    }
-    ```
-    ```yaml
-    html_strip:
-      - field: html
-      - target_field: text
-    ```
-  </CodeCol>
-  <CommentCol>
-    extracts clean text content:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "html": "<div class='content'><h1>Title</h1><p>Text with <em>emphasis</em> and <a href='#'>links</a></p></div>",
-      "text": "Title Text with emphasis and links"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-:::note
-The processor preserves the text order and spacing between elements while removing all HTML markup.
-:::
-
-:::warning
-The processor expects valid HTML input. Malformed HTML may produce unexpected results.
-:::
-
-## Common Use Cases
-
-1. **Content Extraction**: Extract readable text from HTML-formatted emails or web content
-2. **Search Indexing**: Prepare HTML content for full-text search indexing
-3. **Data Cleaning**: Remove HTML markup from user-submitted content
-4. **Text Analysis**: Prepare content for natural language processing or text analysis
-5. **Display Formatting**: Convert HTML content to plain text for display in non-HTML contexts

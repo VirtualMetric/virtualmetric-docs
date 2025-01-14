@@ -21,9 +21,7 @@ bytes:
 
 ## Description
 
-**Functionality**: Converts a string expressing size written in byte units to its value in bytes, e.g. `1KB` to `1024`.
-
-If the field contains multiple values, all are converted. Allowed units are `B`, `KB`, `MB`, `GB`, `TB`, and `PB`, all case insensitive. If the string is not in one of the enumerated formats or exceeds $2^{64}-1$ in value, an error is raised.
+Converts a string expressing size written in byte units to its value in bytes.
 
 ## Parameters
 
@@ -38,6 +36,12 @@ If the field contains multiple values, all are converted. Allowed units are `B`,
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 |`target_field`|N|-|Field to assign the converted value to, if distinct from `field`|
+
+## Details
+
+If the field contains multiple values, all of them are converted.
+
+Allowed units are `B`, `KB`, `MB`, `GB`, `TB`, and `PB`, all case insensitive. Fractional values like "`1.5KB`" are also supported. If the string is not in one of the enumerated formats or exceeds $2^{64}-1$ in value, an error is raised.
 
 ## Examples
 
@@ -208,7 +212,3 @@ If the field contains multiple values, all are converted. Allowed units are `B`,
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Supported units are `B`, `KB`, `MB`, `GB`, `TB`, and `PB` (case-insensitive). Fractional values like "`1.5KB`" are supported. An error is raised if the value exceeds the 64-bit integer limit.
-:::
