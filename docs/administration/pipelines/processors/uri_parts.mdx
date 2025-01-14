@@ -25,8 +25,6 @@ uri_parts:
 
 Parses a Uniform Resource Identifier (URI) string and extracts its components into a structured object.
 
-The processor extracts various URI components including scheme, domain, port, path, query parameters, fragment, user information, and file extension. Empty or zero-value components are omitted from the output.
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -43,13 +41,27 @@ The processor extracts various URI components including scheme, domain, port, pa
 |`tag`|N|-|Identifier|
 |`target_field`|N|`url`|Field to store the parsed components|
 
+## Details
+
+The processor extracts various URI components including scheme, domain, port, path, query parameters, fragment, user information, and file extension. Empty or zero-value components are omitted from the output.
+
+:::warning
+URIs with invalid syntax will cause the processor to fail unless `ignore_failure` is set to `true`.
+:::
+
+Both **IPv4** and **IPv6** addresses are supported in the domain component.
+
+:::warning[security]
+For security reasons, be cautious when processing URIs with authentication information.
+:::
+
 ## Examples
 
-### Basic URI Parsing
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Parse a complete URI with all components...
+    Parsing a complete URI...
   </CommentCol>
   <CodeCol>
     ```json
@@ -64,7 +76,7 @@ The processor extracts various URI components including scheme, domain, port, pa
     ```
   </CodeCol>
   <CommentCol>
-    extracts all components:
+    extracts all the components:
   </CommentCol>
   <CodeCol>
     ```json
@@ -87,11 +99,11 @@ The processor extracts various URI components including scheme, domain, port, pa
   </CodeCol>
 </ExampleGrid>
 
-### Without Original URI
+### Omit Original
 
 <ExampleGrid>
   <CommentCol>
-    Parse URI without keeping original...
+    Parsing a URI without keeping the original...
   </CommentCol>
   <CodeCol>
     ```json
@@ -107,7 +119,7 @@ The processor extracts various URI components including scheme, domain, port, pa
     ```
   </CodeCol>
   <CommentCol>
-    omits original from output:
+    outputs only the parsed components:
   </CommentCol>
   <CodeCol>
     ```json
@@ -124,11 +136,11 @@ The processor extracts various URI components including scheme, domain, port, pa
   </CodeCol>
 </ExampleGrid>
 
-### Remove Source Field
+### Omit Source
 
 <ExampleGrid>
   <CommentCol>
-    Remove original field after parsing...
+    Removing the original field after parsing...
   </CommentCol>
   <CodeCol>
     ```json
@@ -144,7 +156,7 @@ The processor extracts various URI components including scheme, domain, port, pa
     ```
   </CodeCol>
   <CommentCol>
-    keeps only parsed result:
+    keeps only the parsed components:
   </CommentCol>
   <CodeCol>
     ```json
@@ -160,11 +172,3 @@ The processor extracts various URI components including scheme, domain, port, pa
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor automatically handles URL-encoded query parameters and supports both IPv4 and IPv6 addresses in the domain component.
-:::
-
-:::warning
-URIs with invalid syntax will cause the processor to fail unless `ignore_failure` is set to `true`. For security reasons, be cautious when processing URIs with authentication information.
-:::
