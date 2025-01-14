@@ -20,9 +20,7 @@ pipeline:
 
 ## Description
 
-Executes another pipeline by name. This allows for pipeline reuse and modular processing configurations.
-
-The pipeline processor can reference other pipelines using the format `{{ IngestPipeline "pipeline-name" }}`. The referenced pipeline must exist in the configuration. Pipeline names can be specified with or without the `.yml`/`.yaml` extension.
+Executes another pipeline by name, allowing for pipeline reuse and modular configurations.
 
 ## Parameters
 
@@ -37,13 +35,25 @@ The pipeline processor can reference other pipelines using the format `{{ Ingest
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+## Details
+
+The pipeline processor can reference other pipelines using the syntax `{{ IngestPipeline "pipeline-name" }}`. The names can be specified with or without the `.yml`/`.yaml` extension.
+
+:::warning
+As pipeline references are resolved at runtime, make sure all referenced pipelines exist in your configuration, or set `ignore_missing_pipeline` to `true` if they are optional.
+:::
+
+:::warning
+Be careful with recursive pipeline references to avoid infinite loops. Currently, the processor does not detect circular dependencies.
+:::
+
 ## Examples
 
-### Basic Pipeline Reference
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Execute another pipeline...
+    Another pipeline to be executed...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -55,7 +65,7 @@ The pipeline processor can reference other pipelines using the format `{{ Ingest
     ```
   </CodeCol>
   <CommentCol>
-    which must be defined in the config:
+    must be defined in the configuration:
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -69,11 +79,11 @@ The pipeline processor can reference other pipelines using the format `{{ Ingest
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Pipeline Execution
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Only execute pipeline if condition is met...
+    Executing the pipeline based on criteria...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -84,7 +94,7 @@ The pipeline processor can reference other pipelines using the format `{{ Ingest
     ```
   </CodeCol>
   <CommentCol>
-    which helps control processing flow:
+    helps control the flow:
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -102,7 +112,7 @@ The pipeline processor can reference other pipelines using the format `{{ Ingest
 
 <ExampleGrid>
   <CommentCol>
-    Handle missing pipelines gracefully...
+    Handle missing pipelines...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -129,11 +139,3 @@ The pipeline processor can reference other pipelines using the format `{{ Ingest
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Pipeline references are resolved at runtime. Make sure all referenced pipelines exist in your configuration to avoid processing errors, or set `ignore_missing_pipeline: true` if the pipeline is optional.
-:::
-
-:::warning
-Be careful with recursive pipeline references to avoid infinite loops. The processor does not currently detect circular dependencies.
-:::

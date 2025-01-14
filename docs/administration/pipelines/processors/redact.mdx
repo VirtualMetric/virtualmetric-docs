@@ -27,8 +27,6 @@ redact:
 
 Uses Grok patterns to identify and redact sensitive information in text fields. Matches are replaced with configurable prefix/suffix markers.
 
-This processor is particularly useful for protecting Personally Identifiable Information (PII) by replacing sensitive data like email addresses, IP addresses, credit card numbers, and other patterns with redacted placeholders.
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -47,9 +45,21 @@ This processor is particularly useful for protecting Personally Identifiable Inf
 |`skip_if_unlicensed`|N|`false`|Skip processing if license doesn't support redaction|
 |`tag`|N|-|Identifier|
 
+## Details
+
+This processor is particularly useful for protecting Personally Identifiable Information (PII) by replacing sensitive data like email addresses, IP addresses, credit card numbers, and other patterns with redacted placeholders.
+
+:::note
+The redact processor uses Grok pattern matching, which is case-sensitive by default. For case-insensitive matching, modify your patterns accordingly.
+:::
+
+:::warning
+Applying many patterns to large volumes of text may impact performance. Consider limiting pattern complexity and the number of patterns in such cases.
+:::
+
 ## Examples
 
-### Basic Email Redaction
+### Emails
 
 <ExampleGrid>
   <CommentCol>
@@ -80,7 +90,7 @@ This processor is particularly useful for protecting Personally Identifiable Inf
   </CodeCol>
 </ExampleGrid>
 
-### Multiple Pattern Redaction
+### Multiple Patterns
 
 <ExampleGrid>
   <CommentCol>
@@ -114,7 +124,7 @@ This processor is particularly useful for protecting Personally Identifiable Inf
   </CodeCol>
 </ExampleGrid>
 
-### Custom Pattern Definitions
+### Custom
 
 <ExampleGrid>
   <CommentCol>
@@ -151,7 +161,7 @@ This processor is particularly useful for protecting Personally Identifiable Inf
 
 <ExampleGrid>
   <CommentCol>
-    Handle missing fields gracefully...
+    In case of a missing field...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -167,7 +177,7 @@ This processor is particularly useful for protecting Personally Identifiable Inf
     ```
   </CodeCol>
   <CommentCol>
-    with failure handling:
+    display message:
   </CommentCol>
   <CodeCol>
     ```json
@@ -177,11 +187,3 @@ This processor is particularly useful for protecting Personally Identifiable Inf
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The redact processor uses Grok pattern matching, which is case-sensitive by default. For case-insensitive matching, modify your patterns accordingly.
-:::
-
-:::warning
-Large texts with many pattern matches may impact performance. Consider limiting pattern complexity and number of patterns when processing high volumes of data.
-:::
