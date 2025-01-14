@@ -23,9 +23,7 @@ split:
 
 ## Description
 
-Splits a string field into an array using a specified separator pattern. The separator can be a simple character or a regular expression pattern.
-
-When splitting strings, the processor supports both basic string separators and advanced regular expression patterns. The result is stored as an array either in the original field or in a specified target field.
+Splits a string field into an array using a specified separator pattern.
 
 ## Parameters
 
@@ -43,9 +41,21 @@ When splitting strings, the processor supports both basic string separators and 
 |`tag`|N|-|Identifier|
 |`target_field`|N|`field`|Field to store the resulting array|
 
+## Details
+
+When splitting strings, the processor supports both basic string separators and advanced regular expression patterns. The result is stored as an array either in the original field or in a specified target field.
+
+:::note
+Regular expressions are cached for better performance when reused.
+:::
+
+:::warning
+The field must contain a string value, otherwise the processor will fail unless `ignore_failure` is set to `true`.
+:::
+
 ## Examples
 
-### Basic String Splitting
+### Basic
 
 <ExampleGrid>
   <CommentCol>
@@ -64,7 +74,7 @@ When splitting strings, the processor supports both basic string separators and 
     ```
   </CodeCol>
   <CommentCol>
-    creates an array of values:
+    to create an array of values:
   </CommentCol>
   <CodeCol>
     ```json
@@ -75,11 +85,11 @@ When splitting strings, the processor supports both basic string separators and 
   </CodeCol>
 </ExampleGrid>
 
-### Preserving Trailing Values
+### Trailing Values
 
 <ExampleGrid>
   <CommentCol>
-    With preserve_trailing enabled...
+    Enabling `preserve_trailing`...
   </CommentCol>
   <CodeCol>
     ```json
@@ -106,11 +116,11 @@ When splitting strings, the processor supports both basic string separators and 
   </CodeCol>
 </ExampleGrid>
 
-### Using Regular Expressions 
+### Regular Expressions
 
 <ExampleGrid>
   <CommentCol>
-    Split on multiple whitespace characters...
+    Splitting on multiple whitespace characters...
   </CommentCol>
   <CodeCol>
     ```json
@@ -136,11 +146,11 @@ When splitting strings, the processor supports both basic string separators and 
   </CodeCol>
 </ExampleGrid>
 
-### Using Different Target Field
+### Target Field
 
 <ExampleGrid>
   <CommentCol>
-    Store result in a new field...
+    Storing the result in a new field...
   </CommentCol>
   <CodeCol>
     ```json
@@ -156,7 +166,7 @@ When splitting strings, the processor supports both basic string separators and 
     ```
   </CodeCol>
   <CommentCol>
-    preserves the original field:
+    preserves the original:
   </CommentCol>
   <CodeCol>
     ```json
@@ -167,11 +177,3 @@ When splitting strings, the processor supports both basic string separators and 
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor supports both simple string separators and regular expressions. Regular expressions are cached for better performance when reused.
-:::
-
-:::warning
-The field must contain a string value. If the field contains a non-string value, the processor will fail unless `ignore_failure` is set to `true`.
-:::

@@ -23,10 +23,6 @@ sort:
 
 Sorts the elements of an array in ascending or descending order.
 
-Arrays of numbers will be sorted numerically, whereas string arrays will be sorted lexicographically. When dealing with mixed arrays containing both strings and numbers, the sorting is performed lexicographically.
-
-The processor raises an exception if the specified field is not an array.
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -41,13 +37,23 @@ The processor raises an exception if the specified field is not an array.
 |`tag`|N|-|Identifier|
 |`target_field`|N|`field`|Field to store the sorted array|
 
+## Details
+
+Arrays of numbers will be sorted numerically, whereas string arrays will be sorted lexicographically. When dealing with mixed arrays containing both strings and numbers, the sorting is performed lexicographically.
+
+The processor raises an exception if the specified field is not an array.
+
+:::warning
+The processor will fail if the specified field does not exist or is not an array. Set `ignore_failure` to `true` to handle such cases.
+:::
+
 ## Examples
 
-### Sorting String Arrays
+### String Arrays
 
 <ExampleGrid>
   <CommentCol>
-    Sort string array in ascending order...
+    Sorting a string array in ascending order...
   </CommentCol>
   <CodeCol>
     ```json
@@ -63,7 +69,7 @@ The processor raises an exception if the specified field is not an array.
     ```
   </CodeCol>
   <CommentCol>
-    which orders strings lexicographically:
+    orders strings lexicographically:
   </CommentCol>
   <CodeCol>
     ```json
@@ -76,45 +82,11 @@ The processor raises an exception if the specified field is not an array.
   </CodeCol>
 </ExampleGrid>
 
-### Descending Order
+### Numeric Arrays
 
 <ExampleGrid>
   <CommentCol>
-    Sort array in descending order...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "source": {
-        "types": ["z", "b", "k"]
-      }
-    }
-    ```
-    ```yaml
-    sort:
-      - field: source.types
-      - order: desc
-    ```
-  </CodeCol>
-  <CommentCol>
-    reverses the lexicographical order:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "source": {
-        "types": ["z", "k", "b"]
-      }
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Sorting Numeric Arrays
-
-<ExampleGrid>
-  <CommentCol>
-    Sort numeric array in ascending order...
+    Sorting numeric arrays in ascending order...
   </CommentCol>
   <CodeCol>
     ```json
@@ -131,7 +103,7 @@ The processor raises an exception if the specified field is not an array.
     ```
   </CodeCol>
   <CommentCol>
-    which orders numbers numerically:
+    orders numbers numerically:
   </CommentCol>
   <CodeCol>
     ```json
@@ -144,11 +116,11 @@ The processor raises an exception if the specified field is not an array.
   </CodeCol>
 </ExampleGrid>
 
-### Using a Different Target Field
+### Target Field
 
 <ExampleGrid>
   <CommentCol>
-    Sort array into a new field...
+    Sorting the array into a new field...
   </CommentCol>
   <CodeCol>
     ```json
@@ -163,7 +135,7 @@ The processor raises an exception if the specified field is not an array.
     ```
   </CodeCol>
   <CommentCol>
-    preserving the original array:
+    preserves the original array:
   </CommentCol>
   <CodeCol>
     ```json
@@ -174,11 +146,3 @@ The processor raises an exception if the specified field is not an array.
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-When sorting arrays with mixed types (strings and numbers), the sorting is performed lexicographically, which may not give the expected results for numerical ordering.
-:::
-
-:::warning
-The processor will fail if the specified field does not exist or is not an array. Use `ignore_failure: true` if you want to handle such cases gracefully.
-:::

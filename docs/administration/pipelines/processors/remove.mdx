@@ -22,8 +22,6 @@ remove:
 
 Removes one or more fields from the document. Can handle both single fields and arrays of fields to remove.
 
-The processor supports template variables in field names and can remove nested fields using dot notation. If a specified field doesn't exist, an exception is raised unless `ignore_missing` is set to `true`.
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -37,9 +35,21 @@ The processor supports template variables in field names and can remove nested f
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+## Details
+
+The processor supports template variables in field names and can remove nested fields using dot notation.
+
+:::note
+When multiple fields are specified, the processor attempts to remove all of them. If `ignore_missing` is set to `true`, execution continues for the remaining fields even if a field removal fails.
+:::
+
+:::warning
+Be careful when removing nested fields as it might affect the structure of your document. Always ensure parent fields exist before attempting to remove child fields.
+:::
+
 ## Examples
 
-### Single Field Removal
+### Single Field
 
 <ExampleGrid>
   <CommentCol>
@@ -61,7 +71,7 @@ The processor supports template variables in field names and can remove nested f
     ```
   </CodeCol>
   <CommentCol>
-    removing sensitive data:
+    to avoid disclosing sensitive data:
   </CommentCol>
   <CodeCol>
     ```json
@@ -75,7 +85,7 @@ The processor supports template variables in field names and can remove nested f
   </CodeCol>
 </ExampleGrid>
 
-### Multiple Field Removal
+### Multiple Fields
 
 <ExampleGrid>
   <CommentCol>
@@ -110,7 +120,7 @@ The processor supports template variables in field names and can remove nested f
   </CodeCol>
 </ExampleGrid>
 
-### Using Templates
+### Templates
 
 <ExampleGrid>
   <CommentCol>
@@ -168,7 +178,7 @@ The processor supports template variables in field names and can remove nested f
     ```
   </CodeCol>
   <CommentCol>
-    with appropriate error handling:
+    with appropriate errors:
   </CommentCol>
   <CodeCol>
     ```json
@@ -178,11 +188,3 @@ The processor supports template variables in field names and can remove nested f
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-When removing multiple fields, the processor attempts to remove all specified fields even if some don't exist (when `ignore_missing` is `true`). The operation continues for remaining fields if one field removal fails.
-:::
-
-:::warning
-Be careful when removing nested fields as it might affect the structure of your document. Always ensure parent fields exist before attempting to remove child fields.
-:::

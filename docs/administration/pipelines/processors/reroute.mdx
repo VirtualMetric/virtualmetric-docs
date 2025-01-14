@@ -21,14 +21,6 @@ reroute:
 
 Enables dynamic routing of logs to different target systems based on pipeline processing results.
 
-The Reroute processor is a powerful feature that allows you to make routing decisions after processing your logs through pipelines. While basic routing can be configured at the source level, Reroute gives you the ability to:
-
-- Route logs to different destinations based on the content extracted or modified by pipeline processors
-- Implement complex routing logic that depends on multiple conditions or transformations
-- Direct logs to specific target systems defined in your configuration
-
-The `destination` field should reference a target system defined in your configuration (e.g., Sentinel, Splunk, etc.).
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -41,13 +33,31 @@ The `destination` field should reference a target system defined in your configu
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+## Details
+
+The Reroute processor is a powerful feature that allows you to make routing decisions after processing your logs through pipelines.
+
+While basic routing can be configured at the source level, Reroute gives you the ability to implement complex routing logic that depends on multiple conditions or transformations, and to route logs to different destinations based on the content extracted or transformed.
+
+:::warning
+Make sure the `destination` field matches exactly with a target system name in your configuration. Only one reroute processor will be executed even if there are multiple matches.
+:::
+
+The Reroute processor is particularly useful to achieve the following:
+
+* **Security** - Parse and normalize logs, enrich with threat intelligence, and route high-risk events to security platforms
+
+* **Compliance** - Filter sensitive data, apply transformations, and route them to compliance-mandated destinations
+
+* **Cost reduction** - Process high-volume logs, filter out unnecessary data, and route relevant logs to premium storage/analysis platforms
+
 ## Examples
 
-### Route to Microsoft Sentinel
+### Microsoft Sentinel
 
 <ExampleGrid>
   <CommentCol>
-    First, define your Sentinel target configuration...
+    First, define your Sentinel target...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -64,7 +74,7 @@ The `destination` field should reference a target system defined in your configu
   </CodeCol>
   
   <CommentCol>
-    Then use Reroute in your pipeline to send specific logs to Sentinel...
+    then use Reroute to send the logs...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -81,11 +91,11 @@ The `destination` field should reference a target system defined in your configu
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Routing Based on Log Processing
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Process logs and route based on extracted data...
+    Process logs, and route them based on the extracted data...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -111,19 +121,19 @@ The `destination` field should reference a target system defined in your configu
       type: sentinel
       properties:
         tenant_id: "tenant1"
-        # ... high priority config
+        # ... high priority
         
     - id: 2
       name: standard_sentinel
       type: sentinel
       properties:
         tenant_id: "tenant2"
-        # ... standard config
+        # ... standard
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Multi-Stage Processing and Routing
+### Multi-Stage
 
 <ExampleGrid>
   <CommentCol>
@@ -151,32 +161,3 @@ The `destination` field should reference a target system defined in your configu
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The Reroute processor allows you to leverage the full power of your pipeline processing to make intelligent routing decisions. You can process, enrich, and transform your logs before deciding where they should be sent.
-:::
-
-:::warning
-- Make sure the destination specified in the Reroute processor matches exactly with a target system name in your configuration
-- Only one reroute processor will be executed in a pipeline, even if multiple conditions match
-- Ensure your target system configurations are properly set up with all required credentials and endpoints
-:::
-
-## Advanced Usage
-
-The Reroute processor is particularly powerful when combined with other processors in a pipeline. Common use cases include:
-
-1. **Security Log Processing**:
-   - Parse and normalize logs
-   - Enrich with threat intelligence
-   - Route high-risk events to security platforms
-
-2. **Compliance Requirements**:
-   - Filter sensitive data
-   - Apply transformations
-   - Route to specific compliance-mandated destinations
-
-3. **Cost Optimization**:
-   - Process high-volume logs
-   - Filter out unnecessary data
-   - Route important logs to premium storage/analysis platforms

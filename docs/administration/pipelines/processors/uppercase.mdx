@@ -23,8 +23,6 @@ uppercase:
 
 Converts string values to their uppercase equivalent.
 
-The processor can handle both single string fields and arrays of strings. When processing an array, it converts each element to uppercase. If the field contains non-string values, the processor will fail unless `ignore_failure` is set to `true`.
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -39,13 +37,25 @@ The processor can handle both single string fields and arrays of strings. When p
 |`tag`|N|-|Identifier|
 |`target_field`|N|`field`|Field to store the converted value(s)|
 
+## Details
+
+The processor can handle both single string fields and arrays of strings. When processing an array, it converts each element to uppercase.
+
+:::note
+The processor uses the standard string uppercase conversion rules of the Go programming language, which handles Unicode characters appropriately.
+:::
+
+:::warning
+If the field contains non-string values, the processor will fail unless `ignore_failure` is set to `true`.
+:::
+
 ## Examples
 
-### Converting Single String
+### Single String
 
 <ExampleGrid>
   <CommentCol>
-    Convert username to uppercase...
+    Converting the username to uppercase...
   </CommentCol>
   <CodeCol>
     ```json
@@ -70,11 +80,11 @@ The processor can handle both single string fields and arrays of strings. When p
   </CodeCol>
 </ExampleGrid>
 
-### Converting String Arrays
+### String Arrays
 
 <ExampleGrid>
   <CommentCol>
-    Process array of email addresses...
+    Processing an array of email addresses...
   </CommentCol>
   <CodeCol>
     ```json
@@ -91,7 +101,7 @@ The processor can handle both single string fields and arrays of strings. When p
     ```
   </CodeCol>
   <CommentCol>
-    converts each array element:
+    converts each element:
   </CommentCol>
   <CodeCol>
     ```json
@@ -105,11 +115,11 @@ The processor can handle both single string fields and arrays of strings. When p
   </CodeCol>
 </ExampleGrid>
 
-### Using Different Target Field
+### Target Field
 
 <ExampleGrid>
   <CommentCol>
-    Store uppercase values in new field...
+    Storing the uppercase values in a new field...
   </CommentCol>
   <CodeCol>
     ```json
@@ -124,7 +134,7 @@ The processor can handle both single string fields and arrays of strings. When p
     ```
   </CodeCol>
   <CommentCol>
-    preserves the original field:
+    preserves the original:
   </CommentCol>
   <CodeCol>
     ```json
@@ -135,11 +145,3 @@ The processor can handle both single string fields and arrays of strings. When p
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor uses the standard string uppercase conversion rules of the Go programming language, which handles Unicode characters appropriately.
-:::
-
-:::warning
-When processing fields that might contain non-string values, set `ignore_failure: true` to handle them gracefully. Otherwise, the processor will fail when encountering non-string types.
-:::

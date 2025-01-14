@@ -26,8 +26,6 @@ rename:
 
 Renames one or more fields in the document. Supports both single field renaming and bulk field renaming operations.
 
-The processor can handle nested fields using dot notation and supports template variables in field names. If a target field already exists or the source field is missing, an exception is raised unless appropriate error handling is configured.
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -43,13 +41,25 @@ The processor can handle nested fields using dot notation and supports template 
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+## Details
+
+The processor can handle nested fields using dot notation and supports template variables in field names. If a target field already exists or the source field is missing, an exception is raised unless appropriate error handling is configured.
+
+:::note
+Multiple field rename is sequential. Each field is removed after being renamed unless the source and target names are identical.
+:::
+
+:::warning
+Be careful when renaming fields that are part of a nested structure. The processor creates intermediate objects as needed, but this might affect existing field paths.
+:::
+
 ## Examples
 
-### Single Field Rename
+### Single Field
 
 <ExampleGrid>
   <CommentCol>
-    Rename a single field...
+    Replace a field's name...
   </CommentCol>
   <CodeCol>
     ```json
@@ -65,7 +75,7 @@ The processor can handle nested fields using dot notation and supports template 
     ```
   </CodeCol>
   <CommentCol>
-    to its new name:
+    with a new name:
   </CommentCol>
   <CodeCol>
     ```json
@@ -77,7 +87,7 @@ The processor can handle nested fields using dot notation and supports template 
   </CodeCol>
 </ExampleGrid>
 
-### Multiple Field Rename
+### Multiple Fields
 
 <ExampleGrid>
   <CommentCol>
@@ -120,7 +130,7 @@ The processor can handle nested fields using dot notation and supports template 
   </CodeCol>
 </ExampleGrid>
 
-### Using Templates
+### Templates
 
 <ExampleGrid>
   <CommentCol>
@@ -141,7 +151,7 @@ The processor can handle nested fields using dot notation and supports template 
     ```
   </CodeCol>
   <CommentCol>
-    evaluating the template:
+    evaluating the variables:
   </CommentCol>
   <CodeCol>
     ```json
@@ -158,7 +168,7 @@ The processor can handle nested fields using dot notation and supports template 
 
 <ExampleGrid>
   <CommentCol>
-    Handle missing fields gracefully...
+    Handling missing fields gracefully...
   </CommentCol>
   <CodeCol>
     ```json
@@ -181,7 +191,7 @@ The processor can handle nested fields using dot notation and supports template 
     ```
   </CodeCol>
   <CommentCol>
-    continuing despite missing fields:
+    continues execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -192,11 +202,3 @@ The processor can handle nested fields using dot notation and supports template 
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-When using multiple field renames, the operations are processed sequentially. Each field is removed after being renamed unless the source and target names are identical.
-:::
-
-:::warning
-Be careful when renaming fields that are part of a nested structure. The processor creates intermediate objects as needed, but this might affect existing field paths.
-:::
