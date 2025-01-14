@@ -162,11 +162,11 @@ const config: Config = {
     },
 
     footer: {
-      logo: {
-        alt: "VirtualMetric Logo",
-        src: "img/VirtualMetric-Logo-Footer.svg",
-        srcDark: "img/VirtualMetric-Logo-Footer.svg",
-      },
+      // logo: {
+      //   alt: "VirtualMetric Logo",
+      //   src: "img/VirtualMetric-Logo-Footer.svg",
+      //   srcDark: "img/VirtualMetric-Logo-Footer.svg",
+      // },
       // links: [
       //   {
       //     title: "Training",

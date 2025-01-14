@@ -23,11 +23,7 @@ script:
 
 ## Description
 
-Executes custom scripts and optimized built-in functions to transform and manipulate log data. The processor supports three scripting modes:
-
-1. **Native Go Scripting**: Direct execution of Go code using an interpreter
-2. **Painless Compatibility**: Basic support for Elasticsearch Painless-style syntax (converted to Go)
-3. **Built-in VirtualMetric Functions**: Optimized implementations of common log processing operations
+Executes custom scripts and optimized built-in functions to transform and manipulate log data.
 
 ## Parameters
 
@@ -44,11 +40,13 @@ Executes custom scripts and optimized built-in functions to transform and manipu
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
-## Scripting Languages
+## Details
 
-### Native Go (Recommended)
+The processor supports three scripting modes:
 
-Go scripts are executed using an interpreter, providing full access to Go language features:
+### Native Go
+
+Go scripts provide full access to all of Go's features, and therefore is the recommended language for complex scenarios.
 
 ```yaml
 script:
@@ -63,9 +61,13 @@ script:
       }
 ```
 
-### Painless Compatibility
+:::note
+Scripts are cached using **xxHash** for performance, reusing compiled versions. Go scripts can use all the standard library functions supported by our interpreter.
+:::
 
-While basic Painless syntax is supported through conversion to Go, it's recommended to use native Go for complex scripts:
+### Painless
+
+While there is support for Elasticsearch Painless for convenience, this may not cover all the features, and has an overhead.
 
 ```yaml
 script:
@@ -74,32 +76,20 @@ script:
       ctx.normalized = ctx.field.toLowerCase()
 ```
 
-:::warning
-Painless support is provided for convenience but may not support all Elasticsearch Painless features. Complex scripts should use native Go syntax.
-:::
+### Built-in
 
-### Built-in VirtualMetric Functions
-
-Optimized implementations of common operations that bypass script interpretation:
-
-```yaml
-script:
-  - lang: vmetric
-    function: getNetworkTransport()
-```
-
-## Built-in VirtualMetric Functions
+Optimized implementations of common VirtualMetric functions that bypass script interpretation. These should be preferred over equivalent custom scripts.
 
 |Function|Description|
 |---|---|
-|`getNetworkTransport()`|Resolves IANA protocol numbers to transport names|
-|`sumFields(targetField, firstField, secondField)`|Adds numeric fields with type handling|
-|`sumNetworkBytes()`|Calculates total network bytes|
-|`sumNetworkPackets()`|Calculates total network packets|
+|`getNetworkTransport()`|Resolves **IANA** protocol numbers to transport names|
+|`sumFields(targetField, firstField, secondField)`|Adds numeric fields using type handling|
+|`sumNetworkBytes()`|Calculates the total number of network bytes|
+|`sumNetworkPackets()`|Calculates the total number of network packets|
 
 ## Examples
 
-### Native Go Script
+### Native Go
 
 <ExampleGrid>
   <CommentCol>
@@ -126,7 +116,7 @@ script:
   </CodeCol>
 </ExampleGrid>
 
-### Using Built-in Functions
+### Built-in
 
 <ExampleGrid>
   <CommentCol>
@@ -141,7 +131,7 @@ script:
   </CodeCol>
 </ExampleGrid>
 
-### Composite Processing
+### Composite
 
 <ExampleGrid>
   <CommentCol>
@@ -167,34 +157,3 @@ script:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-1. Built-in VirtualMetric functions are optimized for performance and should be preferred over equivalent custom scripts.
-2. Scripts are cached using xxHash for performance, reusing compiled versions.
-3. Go scripts can use all standard library functions supported by our interpreter.
-4. The processor provides helper functions like `getField` and `setField` for safe field access.
-:::
-
-:::warning
-1. While Painless syntax is supported, it's converted to Go and may not be 100% compatible.
-2. Complex logic should be implemented in native Go to ensure predictable behavior.
-3. Large script caches can consume significant memory.
-4. Built-in functions are being gradually converted to dedicated processors for better performance.
-:::
-
-## Performance Considerations
-
-1. **Built-in Functions**: 
-   - Use VirtualMetric built-in functions when available
-   - Fastest execution as they bypass script interpretation
-   - Optimized for common log processing tasks
-
-2. **Native Go Scripts**:
-   - Preferred for custom logic
-   - Compiled and cached for reuse
-   - Full access to Go standard library via our interpreter
-
-3. **Painless Compatibility**:
-   - Additional overhead due to syntax conversion
-   - Limited feature support
-   - Best for simple operations when maintaining Elasticsearch compatibility

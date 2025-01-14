@@ -23,8 +23,6 @@ url_decode:
 
 Decodes URL-encoded strings back to their original form. 
 
-The processor can handle both single strings and arrays of strings, decoding percent-encoded characters and converting '+' signs back to spaces. If the field contains non-string values, the processor will fail unless `ignore_failure` is set to `true`.
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -39,13 +37,29 @@ The processor can handle both single strings and arrays of strings, decoding per
 |`tag`|N|-|Identifier|
 |`target_field`|N|`field`|Field to store the decoded value(s)|
 
+## Details
+
+The processor can handle both single strings and arrays of strings, decoding percent-encoded characters and converting '+' signs back to spaces.
+
+:::warning
+If the field contains non-string values, the processor will fail unless `ignore_failure` is set to `true`.
+:::
+
+:::note
+The processor uses Go's `url.QueryUnescape` function which follows standard URL decoding rules, including converting '+' signs in query strings back to spaces.
+:::
+
+:::warning
+Decoded output might contain special characters or potentially malicious content. Consider appropriate validation and sanitization after decoding.
+:::
+
 ## Examples
 
-### Decoding Single URL
+### Single URL
 
 <ExampleGrid>
   <CommentCol>
-    Decode a URL with encoded spaces and special characters...
+    Decoding a URL with encoded spaces and special characters...
   </CommentCol>
   <CodeCol>
     ```json
@@ -70,11 +84,11 @@ The processor can handle both single strings and arrays of strings, decoding per
   </CodeCol>
 </ExampleGrid>
 
-### Decoding Multiple URLs
+### Multiple URLs
 
 <ExampleGrid>
   <CommentCol>
-    Process array of encoded URLs...
+    Processing an array of encoded URLs...
   </CommentCol>
   <CodeCol>
     ```json
@@ -91,7 +105,7 @@ The processor can handle both single strings and arrays of strings, decoding per
     ```
   </CodeCol>
   <CommentCol>
-    decodes each array element:
+    decodes each element:
   </CommentCol>
   <CodeCol>
     ```json
@@ -105,11 +119,11 @@ The processor can handle both single strings and arrays of strings, decoding per
   </CodeCol>
 </ExampleGrid>
 
-### Using Different Target Field
+### Target Field
 
 <ExampleGrid>
   <CommentCol>
-    Store decoded URL in new field...
+    Storing the decoded URL in a new field...
   </CommentCol>
   <CodeCol>
     ```json
@@ -124,7 +138,7 @@ The processor can handle both single strings and arrays of strings, decoding per
     ```
   </CodeCol>
   <CommentCol>
-    preserves the original field:
+    preserves the original:
   </CommentCol>
   <CodeCol>
     ```json
@@ -135,11 +149,3 @@ The processor can handle both single strings and arrays of strings, decoding per
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor uses Go's `url.QueryUnescape` function which follows standard URL decoding rules, including converting '+' signs in query strings back to spaces.
-:::
-
-:::warning
-When decoding untrusted URLs, be aware that the decoded output might contain special characters or potentially malicious content. Consider appropriate validation and sanitization after decoding.
-:::

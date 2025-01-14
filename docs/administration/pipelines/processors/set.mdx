@@ -24,9 +24,7 @@ set:
 
 ## Description
 
-Sets a field and associates it with a specified value. The processor can either set a literal value or copy a value from another field.
-
-If the field already exists, its value will be replaced unless `override` is set to `false`.
+Sets a field and associates it with a specified value.
 
 ## Parameters
 
@@ -45,13 +43,25 @@ If the field already exists, its value will be replaced unless `override` is set
 |`tag`|N|-|Identifier|
 |`value`|N|-|Value to set. Cannot be used if `copy_from` is specified|
 
+## Details
+
+The processor can either set a literal value or copy a value from another field. If the field already exists, its value will be replaced unless `override` is set to `false`.
+
+:::note
+Either `value` or `copy_from` must be specified, but not both. When using `copy_from`, the source field must exist unless `ignore_empty_value` is set to `true`.
+:::
+
+:::warning
+When using templates, ensure that they reference valid fields as missing fields will cause the processor to fail unless `ignore_empty_value` is enabled.
+:::
+
 ## Examples
 
-### Basic Value Assignment
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Set a simple numeric value...
+    Setting a simple numeric value...
   </CommentCol>
   <CodeCol>
     ```json
@@ -66,7 +76,7 @@ If the field already exists, its value will be replaced unless `override` is set
     ```
   </CodeCol>
   <CommentCol>
-    creates new field with value:
+    creates a new field with that value:
   </CommentCol>
   <CodeCol>
     ```json
@@ -81,11 +91,11 @@ If the field already exists, its value will be replaced unless `override` is set
   </CodeCol>
 </ExampleGrid>
 
-### Using Templates
+### Templates
 
 <ExampleGrid>
   <CommentCol>
-    Values can reference other fields using templates...
+    Values can reference other fields through templates...
   </CommentCol>
   <CodeCol>
     ```json
@@ -102,7 +112,7 @@ If the field already exists, its value will be replaced unless `override` is set
     ```
   </CodeCol>
   <CommentCol>
-    which get resolved during processing:
+    which get resolved at run time:
   </CommentCol>
   <CodeCol>
     ```json
@@ -119,7 +129,7 @@ If the field already exists, its value will be replaced unless `override` is set
 </ExampleGrid>
 
 
-### Using Array Templates
+### Array Templates
 
 <ExampleGrid>
   <CommentCol>
@@ -159,7 +169,7 @@ If the field already exists, its value will be replaced unless `override` is set
   </CodeCol>
 </ExampleGrid>
 
-### Using Map Templates
+### Map Templates
 
 <ExampleGrid>
   <CommentCol>
@@ -201,11 +211,11 @@ If the field already exists, its value will be replaced unless `override` is set
   </CodeCol>
 </ExampleGrid>
 
-### Copying Field Values
+### Copying
 
 <ExampleGrid>
   <CommentCol>
-    Copy value from one field to another...
+    Copying a value from one field to another...
   </CommentCol>
   <CodeCol>
     ```json
@@ -238,11 +248,11 @@ If the field already exists, its value will be replaced unless `override` is set
   </CodeCol>
 </ExampleGrid>
 
-### Preserving Existing Values
+### Existing Values
 
 <ExampleGrid>
   <CommentCol>
-    With override: false...
+    When existing values are not overridden...
   </CommentCol>
   <CodeCol>
     ```json
@@ -260,7 +270,7 @@ If the field already exists, its value will be replaced unless `override` is set
     ```
   </CodeCol>
   <CommentCol>
-    existing non-null values are preserved:
+    non-null values are preserved:
   </CommentCol>
   <CodeCol>
     ```json
@@ -272,11 +282,3 @@ If the field already exists, its value will be replaced unless `override` is set
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Either `value` or `copy_from` must be specified, but not both. When using `copy_from`, the source field must exist unless `ignore_empty_value` is set to `true`.
-:::
-
-:::warning
-Be careful when using templates in values to ensure they reference valid fields, as missing fields will cause the processor to fail unless `ignore_empty_value` is enabled.
-:::
