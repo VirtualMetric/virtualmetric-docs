@@ -8,7 +8,7 @@ The following chapters document the administration features of **Director**.
 
 ## Key Components
 
-The administration of **Director** involves the following key components which are used for telemetry purposes:
+**VirtualMetric Director&trade;** is a tool used primarily for telemetry purposes, and its administration involves the following key components:
 
 <TermTable>
    <TermCol>[**Devices**](/docs/administration/devices/overview.mdx) </TermCol>
@@ -27,7 +27,7 @@ The administration of **Director** involves the following key components which a
    <DefCol>Destinations for processed data, e.g. Sentinel or a storage system</DefCol>
 </TermTable>
 
-The following graphic illustrates the stages that utilize these components:
+The following graphic illustrates the various stages where these components are used and how they connect to each other:
 
 ```mermaid
 graph LR
@@ -65,33 +65,7 @@ To forward processed data to TARGETS and to communicate with them, **Director** 
 
 ### Directories
 
-To help design the processes that will define, combine, and run the above stages, **Director** uses the files in the hierarchical folder structure under `vm_root`:
-
-{/* ```plaintext
-<vm_root>/
-├── config/
-│   ├── devices/
-│   │   ├── syslog.yaml
-│   │   ├── estreamer.yaml
-│   │   └── tcp.yaml
-│   ├── targets/
-│   │   ├── sentinel.yaml
-│   │   └── storage.yaml
-│   ├── routes/
-│   │   └── main.yaml
-│   └── vmetric.yaml
-├── package/
-│   └── definitions/
-│       └── pipelines/
-│           ├── checkpoint.yaml
-│           ├── cisco.yaml
-│           └── normalize.yaml
-└── user/
-    └── definitions/
-        └── pipelines/
-            ├── checkpoint.yaml
-            └── normalize.yaml
-``` */}
+To help design the logic of the components that will define, combine, and run the above stages, **Director** uses the configuration files that can be found in the folders under `vm_root`:
 
 ```mermaid
 flowchart LR
@@ -154,16 +128,16 @@ flowchart LR
 
 All administration tasks are carried out with these files.
 
-The configurations for each type of component have their own directory. The YAML files contain predefined fields these components recognize, and **Director** uses these as settings to spawn and run its processes.
+The YAML configuration files for each type of component have their own directory. These files contain predefined fields that these components recognize, and **Director** uses the settings defined in them to spawn and run its processes.
 
 ### Definition Files
 
-Two directories are of key importance: `package` and `user`.
+Two directories are of key significance: `package` and `user`.
 
 The `package` directory contains templates and ready-to-use definitions. These definitions are updated with newer versions of **Director**.
 
 :::warning
-Never modify the definition files under `package` directly. To create configurations using them as templates, copy the relevant definition file to the corresponding location under `user` first.
+Never modify the definition files under `package` directly. To create a configuration using one of these as a template, copy the relevant file to the corresponding location under `user` first, and then edit it to suit your needs.
 :::
 
 The `user` directory contains custom configurations. These definitions take precedence over those under the `package` directory.
@@ -172,7 +146,7 @@ The definitions under `user` override the definitions under `package`, and they 
 
 ## Basic Tasks
 
-The system administrator's responsibilities cover the following areas.
+The system administrator's responsibilities cover the following.
 
 ### Maintenance
 
@@ -200,9 +174,11 @@ A crucial aspect of system administration is security. This requires attending t
 
 ### Troubleshooting
 
-System administration frequently involves dealing with failures. The most common issues are configuration errors, connection problems, unhandled processing errors, and violated resource constraints.
+System administration frequently involves dealing with errors and failures.
 
-The resolution generally involves checking the configurations and reviewing the logs, verifying connectivity and resource availability, and testing the solutions.
+The most common issues are related to misconfiguration, connectivity, unhandled disruption of pipelines, and violated resource constraints.
+
+The resolution generally involves checking the configurations and reviewing the logs, verifying connectivity and resource availability, and testing the solution in its final state.
 
 ## Best Practices
 
@@ -212,4 +188,4 @@ For _managing configurations_, use version control, document the changes, and al
 
 For _performance optimization_, first monitor the resource usage and balance the loads if necessary. Optimizing the configurations is the next thing to check. And do not forget to schedule maintenance. Error tracking and health checks must also be always kept in mind.
 
-Finally, for _security_, regular updates is essential. There must be official security audits, particularly on access control and encryption.
+Finally, for _security_, regular updates is essential. Official security audits must be conducted on a regular basis, particularly on access control and encryption.

@@ -2,19 +2,9 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 
 const sidebars: SidebarsConfig = {
   userDocs: [
-    "introduction",
-    "product-information",
-
-    {
-      type: "category",
-      label: "Features",
-      link: {type: "doc", id: "administration/features/overview"},
-      items: [
-        "administration/features/disk-persistency",
-        "administration/features/vectorized-processing",
-        "administration/features/batching-support",
-      ],
-    },
+    "README",
+    "product-info",
+    "features",
 
     {
       type: "category",
