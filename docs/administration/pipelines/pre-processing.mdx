@@ -10,86 +10,151 @@ The motivation for using pre-processing is summarized below by detailing its var
 
 ### Data Reduction
 
-Data reduction lowers downstream costs and improves performance by filtering unnecessary events and fields, sampling representative subsets of data, deduplicating redundant events, removing unnecessary metadata and fields, and aggregating to combine similar events.
+Lower downstream costs and improve performance through:
 
-**Example** - Reducing log volumes:
+- **Field Removal**: Remove unnecessary fields using the `remove` processor
+- **String Modifications**: Clean up text with `gsub` processor for pattern replacements
+- **Conditional Dropping**: Use `drop` processor with conditions to filter events
+- **Data Restructuring**: Reorganize fields with `rename` processor
+
+**Example** - Basic data reduction:
 
 ```yaml
 pipeline:
   processors:
-    - filter:
-        condition: "severity > 'info'"
-    - sampling:
-        rate: 10
-        condition: "event_type == 'debug'"
-    - drop_fields:
-        fields: ["debug_info", "internal_id"]
+    - remove:
+        field: ["debug_info", "internal_id"]
+    - drop:
+        if: "ctx.severity == 'debug'"
 ```
 
-### Normalization
+### Normalization 
 
-This involves converting diverse log formats into consistent, structured schemas: vendor-specific fields are mapped to common ones, data is converted to and from ECS, CIM, ASIM, etc. formats, and timestamps, IP address formats, and protocol fields are normalized unified accross sources.
+Convert diverse log formats into consistent structures:
 
-### Enrichment
+- **Field Standardization**: Use `normalize` processor to convert between ECS, CIM, and ASIM formats
+- **Field Restructuring**: Apply `dot_nester` processor to flatten or restructure nested objects
+- **Case Normalization**: Standardize text case with `uppercase` and `lowercase` processors
+- **Value Parsing**: Extract structured data with `csv`, `kv`, `grok` processors
 
-The purpose here is to add context and value to raw data by inferring geolocation from IP addresses, generating threat intelligence from the security context, create asset information by adding system and user information, resolve hostnames and domains via DNS lookups, and add business-specific metadata through custom lookups.
-
-**Example** - Normalizing security events:
+**Example** - Format normalization:
 
 ```yaml
 pipeline:
   processors:
     - normalize:
         target_format: "ecs"
-    - geoip:
-        source: "source.ip"
-        target: "source.geo"
-    - lookup:
-        file: "threat_intel.csv"
-        match_field: "source.ip"
+    - dot_nester:
+        field: "nested_data"
+        target_field: "flattened"
 ```
 
-### Transformation
+### Enrichment
 
-This involves modifying data to meet security and compliance requirements by redacting Personally Identifiable Information (PII), protecting confidential data through field encryption, maintaining compatibility with format conversion, parsing complex messages with field extraction, and ensuring data quality with data validation.
+Add context using:
 
-**Example**: Protecting personally identifiable information:
+- **Geo Information**: Add location data with `geoip` processor
+- **Data Correlation**: Enrich data using `enrich` processor with lookup tables
+- **URI Processing**: Extract components with `uri_parts` processor
+- **Device Information**: Parse user agent strings with `user_agent` processor
+
+**Example** - Data enrichment:
 
 ```yaml
 pipeline:
   processors:
-    - mask:
-        regex: "\b\d{16}\b"
-        replacement: "XXXX-XXXX-XXXX-****"
-    - mask:
-        regex: "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
-        replacement: "email@*****"
+    - geoip:
+        field: source.ip
+        target_field: geo
+    - enrich:
+        lookup_table: ["threat_intel.csv"]
+        query: "SELECT * FROM lookup_table WHERE ip = _ingest.source.ip"
+```
+
+### String Processing
+
+Transform text data with:
+
+- **Pattern Replacement**: Use `gsub` for regex-based substitutions
+- **Field Splitting**: Break strings into arrays with `split` processor
+- **Array Operations**: Combine array elements with `join` processor
+- **Case Conversion**: Modify text case with `uppercase`/`lowercase` processors
+
+**Example** - String transformations:
+
+```yaml
+pipeline:
+  processors:
+    - gsub:
+        field: message
+        pattern: "secret-\\d+"
+        replacement: "REDACTED"
+    - split:
+        field: tags
+        separator: ","
 ```
 
 ## Best Practices
 
-For pre-processing pipelines, the following guidelines should be observed:
+1. **Processor Order**
+   - Place critical transformations first (removal, dropping)
+   - Group related operations together
+   - Perform enrichment last
 
-### Sequencing
+2. **Performance Optimization**
+   - Use efficient regex patterns in `gsub` and `grok`
+   - Cache lookup results with `enrich` processor
+   - Monitor pipeline throughput
 
-Put high-impact filters first, and perform heavy enrichment last. Group similar operations.
+3. **Data Quality**
+   - Validate transformations
+   - Handle errors appropriately using `ignore_failure`
+   - Monitor field presence and transformations
 
-### Optimization
-
-Use sampling for high-volume sources. Cache lookup results, and minimize regex use.
+4. **Maintenance**
+   - Document pipeline configurations
+   - Review and update enrichment data
+   - Monitor processor performance
 
 :::warning
-Complex operations can impact throughput. Monitor resource use, and adjust pipeline complexity accordingly.
+Complex processing chains can impact throughput. Monitor resource usage and adjust pipeline complexity accordingly.
 :::
-
-### Data Quality
-
-Validate data after transformations. Monitor the dropped events, and track field presence.
-
-### Maintenance
-
-Document the transformations. Monitor pipeline performance, review the sampling rates, and update the enrichment data regularly.
 
 :::tip
-Start with minimal processing and add steps incrementally while monitoring their impact on performance and storage
+Start with essential processors and add complexity incrementally while monitoring impact on performance.
 :::
+
+## Error Handling
+
+Use these strategies for robust processing:
+
+1. **Ignore Missing Fields**
+   ```yaml
+   processors:
+     - gsub:
+         field: optional_field
+         pattern: "sensitive-\\d+"
+         replacement: "REDACTED"
+         ignore_missing: true
+   ```
+
+2. **Handle Failures**
+   ```yaml
+   processors:
+     - grok:
+         field: message
+         patterns: ["%{TIMESTAMP_ISO8601:timestamp}"]
+         ignore_failure: true
+         on_failure:
+           - append:
+               field: tags
+               value: parsing_failed
+   ```
+
+3. **Conditional Processing**
+   ```yaml
+   processors:
+     - normalize:
+         target_format: "ecs"
+         if: "ctx.format != 'ecs'"
+   ```
