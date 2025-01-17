@@ -1,5 +1,5 @@
 ---
-description: Parses LEEF log messages
+description: Parses LEEF messages
 ---
 
 # LEEF
@@ -23,12 +23,6 @@ leef:
 
 Parses Log Event Extended Format (LEEF) messages into structured objects.
 
-The processor identifies and extracts the LEEF version, header fields (`vendor`, `product`, `version`, and `event ID`), and attribute pairs. Field names are automatically normalized for consistent processing.
-
-:::note
-Different LEEF versions and custom delimiters are handled automatically. If a hex delimiter is specified&mdash;e.g. "`x09`" for tab&mdash;it will be used for attribute parsing.
-:::
-
 ## Parameters
 
 |Field|Required|Default|Description|
@@ -42,6 +36,14 @@ Different LEEF versions and custom delimiters are handled automatically. If a he
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
+
+## Details
+
+The processor identifies and extracts the LEEF version, header fields (`vendor`, `product`, `version`, and `event ID`), and attribute pairs. Field names are automatically normalized for consistent processing.
+
+:::note
+Different LEEF versions and custom delimiters are handled automatically. If a hex delimiter is specified&mdash;e.g. "`x09`" for tab&mdash;it will be used for attribute parsing.
+:::
 
 :::warning
 The processor expects valid LEEF formatted messages starting with "`LEEF:`". Invalid messages will cause the processor to fail unless `ignore_failure` is set to `true`.
