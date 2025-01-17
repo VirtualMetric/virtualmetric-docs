@@ -1,12 +1,6 @@
 # Post-processing
 
-This is the stage after routing. Pipelines attached to destinations perform final transformations and optimizations to meet the requirements of those destinations&mdash;such as making sure that the data layout enables advanced analytics.
-
-Post-processing helps organizations reduce their costs by improving and optimizing the quality of the data before it reaches storage or analysis systems.
-
-:::note
-Post-processing is your last chance to optimize data before it reaches its destination. Choose optimizations that benefit downstream use.
-:::
+This is the stage where pipelines attached to destinations perform final transformations before data reaches storage or analysis systems. These transformations ensure that data meets destination-specific requirements and optimizes storage efficiency.
 
 ## Key Benefits
 
@@ -16,120 +10,155 @@ The motivation for using post-processing is summarized below by detailing its va
 Heavy post-processing can impact delivery latency. Monitor and adjust based on performance requirements.
 :::
 
-### Log Routing
+### Data Routing
 
-Optimize data distribution by sending data in destination-native formats and on conditions to be met by the content or the metadata, by distributing data across multiple endpoints and thereby balancing the forwarding loads, by being able to send the same data to multiple destinations, and by having backup destinations to implement a failover mechanism.
+Use the `reroute` processor to:
 
-### Storage
+- Direct data to specific targets based on content
+- Implement conditional routing logic
+- Send data to multiple destinations
+- Handle failover scenarios
 
-Reduce storage costs and improve query performance by choosing specific compression types, aliging with destination schemas, keeping only required fields, partitioning the data for certain query patterns, and sending it in more optimal formats.
-
-**Example** Optimize for cloud storage:
+**Example** - Route based on content:
 
 ```yaml
 pipeline:
   processors:
-    - partition:
-        field: "timestamp"
-        format: "year={{.Year}}/month={{.Month}}/day={{.Day}}"
-    - compress:
-        type: "parquet"
-        schema: |
-          {
-            "timestamp": { "type": "INT64" },
-            "message": { "type": "STRING" }
-          }
+    - reroute:
+        if: "ctx.severity == 'high'"
+        destination: priority_storage
 ```
 
-**Example** S3 storage use:
+### Field Optimization
+
+Optimize fields for storage and queries using:
+
+- **Field Removal**: Use `remove` processor to eliminate unnecessary fields
+- **Field Renaming**: Apply `rename` processor for destination-specific field names
+- **Field Restructuring**: Use `dot_nester` to flatten or restructure fields
+- **Format Conversion**: Convert with `normalize` processor to match destination format
+
+**Example** - Prepare for storage:
 
 ```yaml
 pipeline:
   processors:
-    - partition:
-        field: "timestamp"
-        pattern: "year=%Y/month=%m/day=%d"
-    - compress:
-        format: "parquet"
-        compression: "snappy"
-```
-
-**Example** Elastic stack use:
-
-```yaml
-pipeline:
-  processors:
+    - remove:
+        field: ["temp_field", "debug_info"]
+    - rename:
+        field: "source_ip"
+        target_field: "source.ip"
     - normalize:
         target_format: "ecs"
-    - date:
-        field: "timestamp"
-        target_field: "@timestamp"
-    - geoip:
-        field: "source.ip"
-        target_field: "source.geo"
 ```
 
+### Microsoft Sentinel Integration
 
-### Queries
+Prepare data for Microsoft Sentinel using:
 
-Prepare data for efficient querying by identifying common query patterns, creating indexes via pre-computed query fields, simplifying nested structures through field flattening, ensuring type conformity, and creating pre-aggregated views and summaries, 
+- **ASIM Normalization**: Convert to ASIM format with `normalize` processor
+- **Field Extraction**: Use `grok` or `kv` processors for field parsing
+- **Network Processing**: Apply `network_direction` processor for traffic analysis
 
-**Example** Prepare for analytics:
-
-```yaml
-pipeline:
-  processors:
-    - aggregate:
-        window: "5m"
-        metrics:
-          - count: "requests"
-          - avg: "duration"
-        dimensions: ["service", "endpoint"]
-    - calculate:
-        field: "error_rate"
-        expression: "errors / requests * 100"
-```
-
-### Aggregation
-
-Optimize data for analytics by aggregating time windows and key dimensions with rollups, creating event groups through correlation, and preparing statistical summaries through direct and derived metrics.
-
-**Example** Integrate with _Microsoft Sentinel_:
+**Example** - Sentinel preparation:
 
 ```yaml
 pipeline:
   processors:
     - normalize:
         target_format: "asim"
-    - extract_fields:
-        fields: ["EventID", "Computer", "Channel"]
-    - route:
-        field: "EventID"
-        routes:
-          security: "4624,4625"
-          system: "7036,7040"
+    - network_direction:
+        internal_networks: ["192.168.0.0/16"]
+    - grok:
+        field: message
+        patterns: ["%{SYSLOGTIMESTAMP:TimeGenerated}"]
+```
+
+### Timestamp Processing
+
+Handle time-related transformations using:
+
+- **Date Parsing**: Convert timestamps with `date` processor
+- **Format Standardization**: Use `date_index_name` for time-based indexing
+- **String Processing**: Clean timestamps with `gsub` processor
+
+**Example** - Time processing:
+
+```yaml
+pipeline:
+  processors:
+    - date:
+        field: timestamp
+        formats: ["dd/MMM/yyyy:HH:mm:ss Z"]
+    - date_index_name:
+        field: "@timestamp"
+        date_rounding: "d"
+        index_name_format: "logs-%Y.%m.%d"
 ```
 
 ## Best Practices
 
-The following guidelines must be observed for effective post-processing:
+### Configuration
 
-### Requirements
+1. **Field Management**
+   ```yaml
+   pipeline:
+     processors:
+       - dot_nester:
+           field: nested_data
+           target_field: flat_data
+       - remove:
+           field: nested_data
+   ```
 
-Use data formats native to the destination, optimize compression ratios, and match schemas.
+2. **Format Conversion**
+   ```yaml
+   pipeline:
+     processors:
+       - normalize:
+           target_format: "ecs"
+       - rename:
+           fields:
+             - from: source_host
+               to: source.hostname
+   ```
+
+### Error Handling
+
+1. **Graceful Failures**
+   ```yaml
+   pipeline:
+     processors:
+       - date:
+           field: timestamp
+           ignore_failure: true
+           on_failure:
+             - append:
+                 field: tags
+                 value: date_parse_failed
+   ```
+
+2. **Missing Fields**
+   ```yaml
+   pipeline:
+     processors:
+       - rename:
+           field: optional_field
+           target_field: new_name
+           ignore_missing: true
+   ```
 
 ### Performance
 
-Balance aggregation windows, monitor processing latency, and always cache computed results.
+1. Monitor processing latency
+2. Use error handling for resilience
+3. Test with representative data volumes
+4. Verify destination compatibility
 
-### Storage
-
-Remove unnecessary fields, use appropriate data types, and optimize partitioning schemes.
-
-### Queries
-
-Pre-compute common aggregations, index important fields, and structure data to make it more suitable for common queries.
+:::warning
+Complex post-processing can impact delivery latency. Monitor performance and adjust as needed.
+:::
 
 :::tip
-The ultimate purpose is aligning the data with the capabilities and requirements of the destination to maximize performance and minimize storage costs.
+Align post-processing with destination capabilities to maximize performance and minimize storage costs.
 :::
