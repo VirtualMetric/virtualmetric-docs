@@ -47,9 +47,6 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "administration/pipelines/overview"},
           items: [
             "administration/pipelines/quick-start",
-            "administration/pipelines/normalization",
-            "administration/pipelines/pre-processing",
-            "administration/pipelines/post-processing",
 
             {
               type: "category",
@@ -123,7 +120,10 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "administration/routes/overview"},
           items: [
             'administration/routes/quick-start',
-            'administration/routes/management'
+            'administration/routes/management',
+            "administration/routes/pre-processing",
+            "administration/routes/normalization",
+            "administration/routes/post-processing",
           ],
         },
 
