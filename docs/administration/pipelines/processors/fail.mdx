@@ -19,7 +19,7 @@ fail:
 
 ## Description
 
-Intentionally fails the pipeline with a custom error message. The message can include templates that reference document fields.
+Intentionally fails the pipeline with a custom error message on a certain condition.
 
 ## Parameters
 
@@ -37,9 +37,12 @@ Intentionally fails the pipeline with a custom error message. The message can in
 
 This processor is particularly useful for validation with context-specific error messages, business rule enforcement, conditional pipeline termination, and debug and testing scenarios. 
 
-The common use cases for the processor:
+The message can include templates that reference document fields.
+
+Typical uses:
 
 * **Validation with Context** 
+
    ```yaml
    fail:
      - message: "Invalid amount {{amount}} for currency {{currency}}"
@@ -47,6 +50,7 @@ The common use cases for the processor:
    ```
 
 * **Access Control**
+
    ```yaml
    fail:
      - message: "User {{user.name}} lacks required permission: {{required_permission}}"
@@ -54,6 +58,7 @@ The common use cases for the processor:
    ```
 
 * **Data Quality**
+
    ```yaml
    fail:
      - message: "Field {{field_name}} exceeds maximum length of {{max_length}}"
@@ -69,7 +74,7 @@ Complex conditions should be tested thoroughly as they can lead to unexpected fa
 Whenever possible, use templates to create clear, context-specific error messages: include relevant field values in error messages for debugging, use `tag` for error categorization, and add `description` to document failure conditions.
 
 :::note
-When `ignore_failure` is set to `true`, errors are still logged but they don't stop the processing.
+When `ignore_failure` is set to `true`, errors are still logged but they don't stop the execution.
 :::
 
 ## Examples
