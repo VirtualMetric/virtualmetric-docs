@@ -139,6 +139,7 @@ const sidebars: SidebarsConfig = {
             "administration/targets/ms-sentinel",
             "administration/targets/azure-blob-storage",
             "administration/targets/azure-data-explorer",
+            "administration/targets/splunk-hec",
           ],
         },
       ],
