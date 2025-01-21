@@ -120,10 +120,10 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "administration/routes/overview"},
           items: [
             'administration/routes/quick-start',
-            'administration/routes/management',
-            "administration/routes/pre-processing",
             "administration/routes/normalization",
+            "administration/routes/pre-processing",
             "administration/routes/post-processing",
+            'administration/routes/management',
           ],
         },
 
