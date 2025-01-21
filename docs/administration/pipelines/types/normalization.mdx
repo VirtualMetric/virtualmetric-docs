@@ -1,0 +1,122 @@
+# Normalization
+
+Normalization is a critical stage that standardizes log data from diverse sources into consistent formats, enabling unified analysis across different logging systems and formats.
+
+## Log Format Standards
+
+The processor supports several widely-used log format standards:
+
+### Generic Formats
+
+|Format|Notation|Key Identifier|Layout Characteristics|Example Fields|
+|---|---|---|---|---|
+|Elastic Common Schema (ECS)|Dot notation with lowercase|`@timestamp`|Hierarchical structure|`source.ip`, `network.direction`|
+|Splunk Common Information Model (CIM)|Underscore with lowercase|`_time`|Flat structure|`src_ip`, `network_direction`|
+|Advanced Security Information Model (ASIM)|PascalCase|`TimeGenerated`|Explicit names|`SourceIp`, `NetworkDirection`|
+
+### Security-specific Formats
+
+|Format|Description|Key Identifier|Example Fields|
+|---|---|---|---|
+|Common Event Format (CEF)|ArcSight's standard format|`rt` (receiptTime)|`networkUser`, `sourceAddress`|
+|Log Event Extended Format (LEEF)|IBM QRadar's format|`devTime`|`networkUser`, `srcAddr`|
+|Common Security Log (CSL)|Microsoft Sentinel's format|`TimeGenerated`|`NetworkUser`, `SourceAddress`|
+
+## Format Detection
+
+The processor can automatically detect source formats through characteristic fields:
+
+```yaml
+# Common timestamp-based identifiers
+"@timestamp" → ECS
+"_time"      → CIM  
+"TimeGenerated" → ASIM/CSL
+
+# Security format identifiers
+"rt"      → CEF
+"devTime" → LEEF
+
+# Additional CSL detection
+"TimeGenerated" + "LogSeverity" → CSL
+"TimeGenerated" only → ASIM
+```
+
+## Conversion Rules
+
+### Case and Separators
+
+Each format follows specific naming conventions:
+
+- **ECS**: `source.ip`, `event.severity` 
+- **CIM**: `src_ip`, `event_severity`
+- **ASIM**: `SourceIp`, `EventSeverity`
+- **CEF**: `sourceAddress`, `eventSeverity`
+- **LEEF**: `srcAddr`, `evtSev`
+- **CSL**: `SourceIP`, `EventSeverity`
+
+### Field Mapping Examples
+
+Common network fields across formats:
+
+|Context|ECS|CIM|ASIM|CEF|LEEF|CSL|
+|---|---|---|---|---|---|---|
+|Source IP|`source.ip`|`src_ip`|`SourceIp`|`src`|`srcAddr`|`SourceIP`|
+|Destination IP|`destination.ip`|`dest_ip`|`DstIp`|`dst`|`dstAddr`|`DestinationIP`|
+|Direction|`network.direction`|`network_direction`|`NetworkDirection`|`networkDirection`|`netDir`|`NetworkDirection`|
+
+## Configuration Examples
+
+### Basic Format Conversion
+
+Convert from ECS to ASIM format:
+
+```yaml
+normalize:
+  - source_format: ecs
+  - target_format: asim
+```
+
+### Field-specific Normalization
+
+Convert a specific network field:
+
+```yaml
+normalize:
+  - field: network_data
+  - source_format: cef
+  - target_format: ecs
+```
+
+### Format Auto-detection
+
+Let the processor detect the source format:
+
+```yaml
+normalize:
+  - target_format: cim
+```
+
+## Best Practices
+
+### Data Integrity
+- Always validate transformed logs against originals
+- Keep original fields when possible for debugging
+- Document format-specific transformations
+
+### Performance
+- Process normalization early in pipeline
+- Cache lookup results when possible
+- Monitor transformation overhead
+
+### Error Handling
+- Use `ignore_failure` for graceful error handling
+- Implement fallback mechanisms
+- Test with diverse log samples
+
+:::note
+The processor automatically detects source formats based on characteristic fields when not explicitly specified.
+:::
+
+:::warning
+Complex format conversions may impact performance. Monitor and optimize based on your volume requirements.
+:::

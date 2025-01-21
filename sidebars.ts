@@ -5,14 +5,12 @@ const sidebars: SidebarsConfig = {
     "README",
     "product-info",
     "features",
-
     {
       type: "category",
       label: "Administration",
       link: {type: "doc", id: "administration/overview"},
       items: [
         "administration/quick-start",
-
         {
           type: "category",
           label: "Devices",
@@ -40,14 +38,22 @@ const sidebars: SidebarsConfig = {
             "administration/devices/windows",
           ],
         },
-
         {
           type: "category",
           label: "Pipelines",
           link: {type: "doc", id: "administration/pipelines/overview"},
           items: [
             "administration/pipelines/quick-start",
-
+            {
+              type: "category",
+              label: "Types",
+              link: {type: "doc", id: "administration/pipelines/types/index"},
+              items: [
+                "administration/pipelines/types/pre-processing",
+                "administration/pipelines/types/normalization",
+                "administration/pipelines/types/post-processing",
+              ],
+            },
             {
               type: "category",
               label: "Processors",
@@ -107,13 +113,11 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/user_agent",
               ],
             },
-
             "administration/pipelines/conditional-running",
             "administration/pipelines/handling-failures",
             "administration/pipelines/handling-success",
           ],
         },
-
         {
           type: "category",
           label: "Routes",
@@ -121,12 +125,8 @@ const sidebars: SidebarsConfig = {
           items: [
             'administration/routes/quick-start',
             'administration/routes/management',
-            "administration/routes/pre-processing",
-            "administration/routes/normalization",
-            "administration/routes/post-processing",
           ],
         },
-
         {
           type: "category",
           label: "Targets",
@@ -145,7 +145,6 @@ const sidebars: SidebarsConfig = {
         },
       ],
     },
-    
     {
       type: "category",
       label: "Appendix",
@@ -157,11 +156,9 @@ const sidebars: SidebarsConfig = {
         "appendix/synopsis-key",
       ],
     },
-    
     "reference",
     "glossary"
   ],
-
   tutorDocs: [
     "tutorials/quick-start",
     "tutorials/syslog-to-console",
