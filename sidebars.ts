@@ -140,6 +140,7 @@ const sidebars: SidebarsConfig = {
             "administration/targets/azure-blob-storage",
             "administration/targets/azure-data-explorer",
             "administration/targets/splunk-hec",
+            "administration/targets/elasticsearch",
           ],
         },
       ],
