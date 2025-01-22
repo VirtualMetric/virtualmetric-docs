@@ -1,0 +1,61 @@
+# Discard
+
+## Synopsis
+
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: discard
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+```
+
+## Description
+
+Creates a target that discards all incoming log messages. This target accepts all log data but does not store or forward it anywhere. It's particularly useful for:
+
+- Development and testing pipeline configurations
+- Performance testing and benchmarking
+- Debugging input configurations
+- Load testing data ingestion without storage overhead
+
+## Configuration
+
+The following are the minimum requirements to define the target.
+
+### Target Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Target name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `discard`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+## Examples
+
+### Configuration
+
+The configuration for discarding logs:
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a discard target...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: debug_discard
+      type: discard
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+All data sent to this target is permanently lost and cannot be recovered. Use this target only for development, testing, and debugging purposes.
+:::

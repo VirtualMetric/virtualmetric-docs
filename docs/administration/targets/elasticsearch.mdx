@@ -1,0 +1,168 @@
+# Elasticsearch
+
+## Synopsis
+
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: elastic
+  status: <boolean>
+  properties:
+    index: <string>
+    max_payload_size_kb: <numeric>
+    batch_size: <numeric>
+    timeout: <numeric>
+    insecure_skip_verify: <boolean>
+    use_compression: <boolean>
+    version: <string>
+    write_action: <string>
+    filter_path: <string>
+    pipeline: <string>
+    endpoints:
+      - endpoint: <string>
+        username: <string>
+        password: <string>
+```
+
+## Description
+
+Creates an Elasticsearch target that sends data using the Bulk API. Supports multiple endpoints, authentication, compression, and ingest pipelines. Data is batched for efficient delivery and can be automatically routed to different indices.
+
+## Configuration
+
+The following are the minimum requirements to define the target.
+
+### Target Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y|-|Unique identifier|
+|`name`|Y|-|Target name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `elastic`|
+|`status`|N|`true`|Enable/disable the target|
+
+### Elasticsearch Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`index`|Y|-|Default Elasticsearch index name|
+|`max_payload_size_kb`|N|`4096`|Maximum bulk request size in KB|
+|`batch_size`|N|`10000`|Maximum number of events per batch|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`insecure_skip_verify`|N|`false`|Skip TLS certificate verification|
+|`use_compression`|N|`true`|Enable GZIP compression|
+|`version`|N|`auto`|Elasticsearch version|
+|`write_action`|N|`create`|Bulk API action (`index`, `create`, `update`, `delete`)|
+|`filter_path`|N|`errors,items.*.error,items.*._index,items.*.status`|Response filter path|
+|`pipeline`|N|-|Ingest pipeline name|
+
+### Endpoint Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`endpoint`|Y|-|Elasticsearch URL|
+|`username`|N|-|Basic auth username|
+|`password`|N|-|Basic auth password|
+
+## Examples
+
+### Basic Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Simple Elasticsearch output with a single endpoint...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: elastic_output
+      type: elastic
+      properties:
+        index: "logs-%Y.%m.%d"
+        endpoints:
+          - endpoint: "http://elasticsearch:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Secure configuration with authentication and TLS...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: secure_elastic
+      type: elastic
+      properties:
+        index: "secure-logs"
+        useCompression: true
+        endpoints:
+          - endpoint: "https://elasticsearch:9200"
+            username: "elastic"
+            password: "password"
+        insecureSkipVerify: false
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Ingest Pipeline
+
+<ExampleGrid>
+  <CommentCol>
+    Send data through an ingest pipeline...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: pipeline_elastic
+      type: elastic
+      properties:
+        index: "processed-logs"
+        pipeline: "log-processor"
+        writeAction: "create"
+        endpoints:
+          - endpoint: "http://elasticsearch:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high-volume data ingestion...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: highvol_elastic
+      type: elastic
+      properties:
+        index: "metrics"
+        batchSize: 20000
+        maxPayloadSizeKB: 8192
+        useCompression: true
+        timeout: 60
+        endpoints:
+          - endpoint: "http://es1:9200"
+          - endpoint: "http://es2:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+- URLs are automatically appended with `/_bulk` if not present
+- Events are batched until either the batch size or payload size limit is reached
+- Events are automatically spread across multiple endpoints for load balancing
+:::
+
+:::warning
+- Setting `maxPayloadSizeKB` too high might cause memory pressure
+- Long `timeout` values may lead to connection pooling issues
+- Using `insecureSkipVerify: true` in production is not recommended
+:::
