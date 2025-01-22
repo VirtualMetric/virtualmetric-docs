@@ -117,11 +117,11 @@ const config: Config = {
           label: "Tutorials",
         },
 
-        {
-          href: "https://google.com",
-          position: "left",
-          label: "Community",
-        },
+        // {
+        //   href: "https://google.com",
+        //   position: "left",
+        //   label: "Community",
+        // },
 
         // {
         // 	type: 'docSidebar',

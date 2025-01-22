@@ -10,14 +10,14 @@ const sidebars: SidebarsConfig = {
       label: "Features",
       link: {type: "doc", id: "features/README"},
       items: [
-        "features/vectorized-processing",
         "features/datasets",
+        "features/vmf-file-format",
+        "features/vectorized-processing",
         "features/agentless-data-collection",
-        "features/ms-sentinel-integration",
         "features/lossless-pipeline-engine",
         "features/extensive-processor-support",
         "features/advanced-data-routing",
-        "features/vmf-file-format",
+        "features/ms-sentinel-integration",
       ]
     },
 
