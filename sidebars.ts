@@ -3,8 +3,24 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 const sidebars: SidebarsConfig = {
   userDocs: [
     "README",
-    "product-info",
-    "features",
+    // "product-info",
+
+    {
+      type: "category",
+      label: "Features",
+      link: {type: "doc", id: "features/README"},
+      items: [
+        "features/vectorized-processing",
+        "features/datasets",
+        "features/agentless-data-collection",
+        "features/ms-sentinel-integration",
+        "features/lossless-pipeline-engine",
+        "features/extensive-processor-support",
+        "features/advanced-data-routing",
+        "features/vmf-file-format",
+      ]
+    },
+
     {
       type: "category",
       label: "Administration",

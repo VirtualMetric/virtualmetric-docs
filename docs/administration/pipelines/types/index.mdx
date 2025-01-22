@@ -1,73 +1,48 @@
-# Pipeline Types
+# Pipeline Types: Overview
 
 **Director** organizes pipelines into distinct types based on their role in log processing and their position in the data flow. Each type serves a specific purpose and operates at a different stage of the processing lifecycle.
-
-## Overview
 
 The pipeline types are designed to handle different aspects of log processing:
 
 ```mermaid
 flowchart LR
-  A[Sources] --> B[Pre-processing]
-  B --> C[Routing]
-  C --> D[Post-processing]
-  D --> E[Targets]
+  A1[("Source 1")] --> B(Pre-processing)
+  A2[("Source 2")] --> B(Pre-processing)
+  B --> C{Routing}
+  C --> D(Post-processing)
+  D --> E1[/"Target 1"/]
+  D --> E2[/"Target 2"\]
+  D --> E3[\"Target 3"\]
 ```
 
 Each stage performs specific transformations:
 
-1. **Pre-processing**: Prepares incoming data
-2. **Routing**: Directs traffic based on rules
-3. **Post-processing**: Finalizes data for targets
-
-## Pre-processing Pipelines
+## Pre-processing
 
 Pre-processing pipelines are attached to sources and prepare data before it enters the routing stage. They focus on:
 
-### Data Reduction
-- Filtering unnecessary events
-- Removing redundant fields
-- Sampling high-volume data
-- Aggregating similar events
+**Data reduction** - Filtering unnecessary events, removing redundant fields, sampling high-volume data, and aggregating similar events
 
-### Initial Normalization
-- Field standardization
-- Format conversion
-- Time normalization
-- Protocol standardization
+**Initial normalization** - Field and protocol standardization, and format conversion and time normalization
 
-### Early Enrichment
-- Geolocation data
-- Asset information
-- Basic threat intelligence
-- Custom metadata
+**Early enrichment** - Geolocation data, asset information, basic threat intelligence, and custom metadata
 
-## Post-processing Pipelines
+## Post-processing
 
 Post-processing pipelines are attached to targets and perform final transformations before data storage or analysis:
 
-### Format Finalization
-- Target-specific formatting
-- Schema alignment
-- Final field mapping
+**Format finalization** - Target-specific formatting, schema alignment, and final field mapping
 
-### Storage Optimization
-- Compression configuration
-- Index preparation
-- Partition strategy
-- Retention setup
+**Storage optimization** - Compression configuration, index preparation, partitioning strategy, and retention setup
 
-### Integration Requirements
-- Target-specific transformations
-- Protocol adaptation
-- Authentication preparation
-- Error handling
+**Integration requirements** - Target-specific transformations, protocol adaptation, authentication preparation, and error handling
 
-## Normalization Pipelines
+## Normalization
 
 Normalization pipelines handle the conversion between different log formats throughout the processing chain:
 
-### Standard Formats
+Standard formats are:
+
 - ECS (Elastic Common Schema)
 - CIM (Common Information Model)
 - ASIM (Advanced Security Information Model)
@@ -75,56 +50,28 @@ Normalization pipelines handle the conversion between different log formats thro
 - LEEF (Log Event Extended Format)
 - CSL (Common Security Log)
 
-### Key Transformations
-- Field name standardization
-- Data type normalization
-- Structure unification
-- Time format alignment
+Key transformations are field name standardization, data type normalization, structure unification, and time format alignment
+
+:::warning
+Avoid mixing responsibilities between pipeline types. Keep pre-processing, routing, and post-processing concerns separate for maintainability and performance.
+:::
 
 ## Benefits of Type Separation
 
-### Clear Responsibilities
-- Each pipeline type has a specific role
-- Easier to maintain and debug
-- Better performance optimization
-- Clearer error handling
+Provides clear responsibilities since each pipeline type has a specific role, they are easier to maintain and debug, and they enable better performance optimization and clearer error handling
 
-### Optimized Performance
-- Reduced processing overhead
-- Better resource utilization
-- Improved scalability
-- More efficient routing
+**Optimized performance** - Reduced processing overhead, better resource utilization, improved scalability, and more efficient routing
 
-### Enhanced Maintainability
-- Modular architecture
-- Easier updates
-- Better testing
-- Clearer documentation
+**Enhanced maintainability** - Modular architecture, easier updates, more robust testing, and clearer documentation
 
 ## Best Practices
 
-### Pipeline Design
-- Keep pipelines focused on their type's purpose
-- Minimize cross-type dependencies
-- Use appropriate processors for each stage
-- Document type-specific requirements
+Pipeline design must: keep pipelines focused on their type's purpose, minimize cross-type dependencies, use appropriate processors for each stage, and document type-specific requirements
 
-### Performance Optimization
-- Process heavy transformations early
-- Optimize routing decisions
-- Minimize redundant processing
-- Monitor type-specific metrics
+For _performance optimization_, process heavy transformations early, optimize routing decisions, minimize redundant processing, and monitor type-specific metrics
 
-### Error Handling
-- Implement stage-appropriate error handling
-- Use type-specific failure responses
-- Maintain clear error boundaries
-- Log errors with context
+For _error handling_, implement stage-appropriate ones, use type-specific failure responses, maintain clear error boundaries, and log errors with context
 
 :::tip
-Design your pipelines with their type in mind. Each type has specific goals and optimizations that work best at their stage in the processing lifecycle.
-:::
-
-:::warning
-Avoid mixing responsibilities between pipeline types. Keep pre-processing, routing, and post-processing concerns separate for better maintainability and performance.
+Design your pipelines with their type in mind. Each type has specific goals in the lifecycle, and optimizations that work best at one stage may not work for the others.
 :::
