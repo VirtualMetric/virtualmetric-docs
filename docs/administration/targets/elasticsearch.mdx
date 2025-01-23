@@ -27,13 +27,11 @@
 
 ## Description
 
-Creates an Elasticsearch target that sends data using the Bulk API. Supports multiple endpoints, authentication, compression, and ingest pipelines. Data is batched for efficient delivery and can be automatically routed to different indices.
+Creates an Elasticsearch target that sends data using the Bulk API. Supports multiple endpoints, authentication, compression, and ingest pipelines. Data is batched for efficient delivery and can be automatically routed to different indeces.
 
 ## Configuration
 
 The following are the minimum requirements to define the target.
-
-### Target Properties
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -43,7 +41,7 @@ The following are the minimum requirements to define the target.
 |`type`|Y|-|Must be `elastic`|
 |`status`|N|`true`|Enable/disable the target|
 
-### Elasticsearch Properties
+### Elasticsearch
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -58,7 +56,7 @@ The following are the minimum requirements to define the target.
 |`filter_path`|N|`errors,items.*.error,items.*._index,items.*.status`|Response filter path|
 |`pipeline`|N|-|Ingest pipeline name|
 
-### Endpoint Properties
+### Endpoint
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -66,9 +64,15 @@ The following are the minimum requirements to define the target.
 |`username`|N|-|Basic auth username|
 |`password`|N|-|Basic auth password|
 
+## Details
+
+URLs are automatically appended with `/_bulk` if the suffix is not present. Events are batched until either the batch size or payload size limit is reached. 
+
+For load balancing, events are automatically spread across multiple endpoints.
+
 ## Examples
 
-### Basic Configuration
+### Basic
 
 <ExampleGrid>
   <CommentCol>
@@ -87,7 +91,7 @@ The following are the minimum requirements to define the target.
   </CodeCol>
 </ExampleGrid>
 
-### Secure Configuration
+### Secure
 
 <ExampleGrid>
   <CommentCol>
@@ -100,17 +104,21 @@ The following are the minimum requirements to define the target.
       type: elastic
       properties:
         index: "secure-logs"
-        useCompression: true
+        use_compression: true
         endpoints:
           - endpoint: "https://elasticsearch:9200"
             username: "elastic"
             password: "password"
-        insecureSkipVerify: false
+        insecure_skip_verify: false
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Using Ingest Pipeline
+:::warning
+In production environments, setting `insecure_skip_verify` to `true` is not recommended.
+:::
+
+### Ingest Pipeline
 
 <ExampleGrid>
   <CommentCol>
@@ -124,14 +132,14 @@ The following are the minimum requirements to define the target.
       properties:
         index: "processed-logs"
         pipeline: "log-processor"
-        writeAction: "create"
+        write_action: "create"
         endpoints:
           - endpoint: "http://elasticsearch:9200"
     ```
   </CodeCol>
 </ExampleGrid>
 
-### High-Volume Configuration
+### High-Volume
 
 <ExampleGrid>
   <CommentCol>
@@ -144,9 +152,9 @@ The following are the minimum requirements to define the target.
       type: elastic
       properties:
         index: "metrics"
-        batchSize: 20000
-        maxPayloadSizeKB: 8192
-        useCompression: true
+        batch_size: 20000
+        max_payload_size_kb: 8192
+        use_compression: true
         timeout: 60
         endpoints:
           - endpoint: "http://es1:9200"
@@ -155,14 +163,10 @@ The following are the minimum requirements to define the target.
   </CodeCol>
 </ExampleGrid>
 
-:::note
-- URLs are automatically appended with `/_bulk` if not present
-- Events are batched until either the batch size or payload size limit is reached
-- Events are automatically spread across multiple endpoints for load balancing
+:::warning
+Long `timeout` values may lead to connection pooling issues.
 :::
 
 :::warning
-- Setting `maxPayloadSizeKB` too high might cause memory pressure
-- Long `timeout` values may lead to connection pooling issues
-- Using `insecureSkipVerify: true` in production is not recommended
+Setting `max_payload_size_kb` too high might cause memory pressure.
 :::

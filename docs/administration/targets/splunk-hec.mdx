@@ -34,8 +34,6 @@ Creates a Splunk HTTP Event Collector (HEC) target that sends events to one or m
 
 The following are the minimum requirements to define the target.
 
-### Target Properties
-
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`id`|Y||Unique identifier|
@@ -45,7 +43,7 @@ The following are the minimum requirements to define the target.
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### Endpoint Configuration
+### Endpoint
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -54,7 +52,7 @@ The following are the minimum requirements to define the target.
 |`token`|N|-|HEC token when using token auth|
 |`secret`|N|-|Bearer token when using secret auth|
 
-### Event Properties
+### Event
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -63,7 +61,7 @@ The following are the minimum requirements to define the target.
 |`batch_size`|N|10000|Number of events to batch before sending|
 |`timeout`|N|30|Connection timeout in seconds|
 
-### Connection Properties
+### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -72,9 +70,13 @@ The following are the minimum requirements to define the target.
 |`insecure_skip_verify`|N|`false`|Skip TLS certificate verification|
 |`format`|N|`cim`|Event format normalization (`cim`, `ecs`, `asim`, `cef`, `leef`, `csl`)|
 
+## Details
+
+Events are automatically batched and compressed by default for optimal performance. Failover between endpoints is handled automatically if multiple endpoints are configured.
+
 ## Examples
 
-### Basic Configuration
+### Basic
 
 <ExampleGrid>
   <CommentCol>
@@ -122,7 +124,7 @@ The following are the minimum requirements to define the target.
   </CodeCol>
 </ExampleGrid>
 
-### Optimized Performance
+### High-Volume
 
 <ExampleGrid>
   <CommentCol>
@@ -148,7 +150,7 @@ The following are the minimum requirements to define the target.
   </CodeCol>
 </ExampleGrid>
 
-### Secure Configuration
+### Secure
 
 <ExampleGrid>
   <CommentCol>
@@ -171,10 +173,6 @@ The following are the minimum requirements to define the target.
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Events are automatically batched and compressed (by default) for optimal performance. Failover between endpoints is handled automatically if multiple endpoints are configured.
-:::
 
 :::warning
 Ensure your HEC tokens have the appropriate permissions and indexes enabled in Splunk. Invalid tokens or insufficient permissions will result in ingestion failures.
