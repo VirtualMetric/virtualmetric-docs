@@ -127,7 +127,7 @@ In telemetry, these basic configurations are clustered according to a scheme whe
 
 There is, however, a middle stage&mdash;where the software solutions do their real work&mdash;called **Routing**.
 
-Until now, we have not mentioned two interim stages&mdash;which also act as both consumers and providers&mdash;requried to link those stages in a chain. These are called **Pre-processing** and **Post-processing**, respectively, and they both involve what is known as [normalization](/docs/administration/routes/normalization.mdx), i.e. preparing the data for processing downstream.
+Until now, we have not mentioned two interim stages&mdash;which also act as both consumers and providers&mdash;requried to link those stages in a chain. These are called **Pre-processing** and **Post-processing**, respectively, and they both involve what is known as [normalization](/docs/administration/pipelines/normalization.mdx), i.e. preparing the data for processing downstream.
 
 Pipelines are, once again, our primary tool at these interim stages. Schematically:
 
@@ -282,8 +282,34 @@ Therefore, the guiding principles should be
 
 ---
 
-In the chapters below, you will find a wide palette of processors designed to meet your needs for creating powerful and efficient pipelines.
+## Pipeline Types
 
-:::note
-While reading the synopses, use the [Appendix](/docs/appendix/synopsis-key.mdx) to interpret the type specifiers.
-:::
+**VirtualMetric Director** organizes pipelines into distinct types based on their role and specific purpose.
+
+## Pre-processing
+
+Pre-processing pipelines are attached to _sources_, and prepare the data before it enters the routing stage. They focus on:
+
+**Data reduction** - Filtering unnecessary events, removing redundant fields, sampling high-volume data, and aggregating similar events
+
+**Initial normalization** - Field and protocol standardization, and format conversion and time normalization
+
+**Early enrichment** - Geolocation data, asset information, basic threat intelligence, and custom metadata
+
+## Normalization
+
+Normalization pipelines handle the conversion between different log formats throughout the processing chain. The primary transformations are field name standardization, data type normalization, structure unification, and time format alignment.
+
+## Post-processing
+
+Post-processing pipelines are attached to _targets_, and perform final transformations before data storage and analysis:
+
+**Format finalization** - Target-specific formatting, schema alignment, and final field mapping
+
+**Storage optimization** - Compression configuration, index preparation, partitioning strategy, and retention setup
+
+**Integration** - Target-specific transformations, protocol adaptation, authentication preparation, and error handling
+
+---
+
+In the chapters below, you will find a wide palette of processors designed to meet your needs for creating powerful and efficient pipelines.

@@ -26,7 +26,6 @@ const sidebars: SidebarsConfig = {
       label: "Administration",
       link: {type: "doc", id: "administration/overview"},
       items: [
-        "administration/quick-start",
         {
           type: "category",
           label: "Devices",
@@ -60,16 +59,9 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "administration/pipelines/overview"},
           items: [
             "administration/pipelines/quick-start",
-            {
-              type: "category",
-              label: "Types",
-              link: {type: "doc", id: "administration/pipelines/types/index"},
-              items: [
-                "administration/pipelines/types/pre-processing",
-                "administration/pipelines/types/normalization",
-                "administration/pipelines/types/post-processing",
-              ],
-            },
+            "administration/pipelines/pre-processing",
+            "administration/pipelines/normalization",
+            "administration/pipelines/post-processing",
             {
               type: "category",
               label: "Processors",
@@ -162,18 +154,7 @@ const sidebars: SidebarsConfig = {
         },
       ],
     },
-    {
-      type: "category",
-      label: "Appendix",
-      link: {type: "doc", id: "appendix/index"},
-      items: [
-        "appendix/cli",
-        "appendix/grok-patterns",
-        "appendix/metadata-tags",
-        "appendix/synopsis-key",
-      ],
-    },
-    "reference",
+    "appendix",
     "glossary"
   ],
   tutorDocs: [
