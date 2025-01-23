@@ -4,7 +4,7 @@ Normalization is a critical stage that standardizes log data from diverse source
 
 ## Log Format Standards
 
-The processor supports several widely-used log format standards:
+The processor supports several widely-used log formats:
 
 ### Generic Formats
 
@@ -47,12 +47,29 @@ The processor can automatically detect source formats through characteristic fie
 
 Each format follows specific naming conventions:
 
-- **ECS**: `source.ip`, `event.severity` 
-- **CIM**: `src_ip`, `event_severity`
-- **ASIM**: `SourceIp`, `EventSeverity`
-- **CEF**: `sourceAddress`, `eventSeverity`
-- **LEEF**: `srcAddr`, `evtSev`
-- **CSL**: `SourceIP`, `EventSeverity`
+<TermTable>
+  <TermCol>**ECS**</TermCol>
+  <DefCol>`source.ip`, `event.severity`</DefCol>
+
+  <TermCol>**CIM**</TermCol>
+  <DefCol>`src_ip`, `event_severity`</DefCol>
+
+  <TermCol>**ASIM**</TermCol>
+  <DefCol>`SourceIp`, `EventSeverity`</DefCol>
+
+  <TermCol>**CEF**</TermCol>
+  <DefCol>`sourceAddress`, `eventSeverity`</DefCol>
+
+  <TermCol>**LEEF**</TermCol>
+  <DefCol>`srcAddr`, `evtSev`</DefCol>
+
+  <TermCol>**CSL**</TermCol>
+  <DefCol>`SourceIP`, `EventSeverity`</DefCol>
+</TermTable>
+
+:::warning
+Complex format conversions may impact performance. Monitor and optimize based on your volumes.
+:::
 
 ### Field Mapping Examples
 
@@ -112,11 +129,3 @@ normalize:
 - Use `ignore_failure` for graceful error handling
 - Implement fallback mechanisms
 - Test with diverse log samples
-
-:::note
-The processor automatically detects source formats based on characteristic fields when not explicitly specified.
-:::
-
-:::warning
-Complex format conversions may impact performance. Monitor and optimize based on your volume requirements.
-:::
