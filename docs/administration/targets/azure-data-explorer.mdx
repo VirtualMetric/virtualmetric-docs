@@ -30,8 +30,6 @@ Creates an Azure Data Explorer (Kusto) target that ingests data directly into Az
 
 The following are the minimum requirements to define the target.
 
-### Target Properties
-
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`id`|Y|-|Unique identifier|
@@ -41,7 +39,7 @@ The following are the minimum requirements to define the target.
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### Azure Properties
+### Azure
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -53,7 +51,7 @@ The following are the minimum requirements to define the target.
 |`table`|N|`vmetric`|Target table name|
 |`type`|N|`parquet`|Data format type: `parquet`, `json`, or `ocf`|
 
-### Connection Properties
+### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -61,28 +59,31 @@ The following are the minimum requirements to define the target.
 |`retry_interval`|N|`10`|Base interval between retries in seconds|
 |`max_size`|N|`0`|Maximum batch size in bytes (0 for unlimited)|
 
-## Data Formats
+# Details
 
 The target supports three data formats:
 
-1. **Parquet** (default)
-   - Columnar storage format
-   - Efficient compression
-   - Best for analytical workloads
+**Parquet** (default) - Columnar storage. Provides efficient compression, and is best for analytical workloads.
 
-2. **JSON**
-   - Human-readable format
-   - Flexible schema
-   - Good for debugging
+**JSON** - Human-readable. Provides a flexible schema, and is good for debugging
 
-3. **OCF** (AVRO)
-   - Binary serialization
-   - Schema evolution support
-   - Efficient for streaming
+**OCF** (AVRO) - Binary serialization. Provides schema evolution support, and is efficient for streaming
+
+The target automatically validates table existence before starting ingestion. Data is buffered locally until `max_size` is reached or explicit flush is triggered. The retry mechanism uses an exponential backoff which is _retry_interval_&nbsp;*&nbsp;2&nbsp;^&nbsp;_attempt_.
+
+:::warning
+Consider cluster capacity when setting retry intervals.
+:::
+
+The service principal must have appropriate permissions on the database and table.
+
+:::warning
+Large batch sizes may impact memory usage during ingestion.
+:::
 
 ## Examples
 
-### Basic Configuration
+### Basic
 
 The minimum required configuration for Parquet ingestion:
 
@@ -97,7 +98,7 @@ The minimum required configuration for Parquet ingestion:
     endpoint: "https://cluster.region.kusto.windows.net"
 ```
 
-### Custom Database and Table
+### Custom
 
 Configuration with specific database and table:
 
@@ -115,7 +116,7 @@ Configuration with specific database and table:
     type: "json"
 ```
 
-### High-Volume Configuration
+### High-Volume
 
 Configuration optimized for high-volume ingestion:
 
@@ -134,7 +135,7 @@ Configuration optimized for high-volume ingestion:
     max_size: 536870912  # 512MB
 ```
 
-### Normalized Data Ingestion
+### Normalized
 
 Using data normalization before ingestion:
 
@@ -151,15 +152,3 @@ Using data normalization before ingestion:
     endpoint: "https://cluster.region.kusto.windows.net"
     format: "ecs"  # Normalize to Elastic Common Schema
 ```
-
-:::note
-- The target automatically validates table existence before starting ingestion
-- Data is buffered locally until `max_size` is reached or explicit flush is triggered
-- Retry mechanism uses exponential backoff (retry_interval * 2^attempt)
-:::
-
-:::warning
-- Make sure the service principal has appropriate permissions on the database and table
-- Large batch sizes may impact memory usage during ingestion
-- Consider cluster capacity when setting retry intervals
-:::
