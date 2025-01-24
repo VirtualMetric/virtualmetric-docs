@@ -29,24 +29,34 @@ The following are the minimum requirements to define the target.
 |`type`|Y||Must be `console`|
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
-
-### Format
-
-The target normalizes the fields to the specified format:
-
-|Field|Required|Default|Description|
-|---|---|---|---|
 |`format`|N|-|Target format standard for field normalization: `ecs`, `cim`, `asim`, `cef`, `leef`, `csl`|
 
-- `ecs`: Elastic Common Schema format
-- `cim`: Splunk Common Information Model format
-- `asim`: Advanced Security Information Model format
-- `cef`: Common Event Format
-- `leef`: Log Event Extended Format
-- `csl`: Common Security Log
+<TermTable>
+  <TermCol>`ecs`</TermCol>
+  <DefCol>Elastic Common Schema format</DefCol>
+
+  <TermCol>`cim`</TermCol>
+  <DefCol>Splunk Common Information Model format</DefCol>
+
+  <TermCol>`asim`</TermCol>
+  <DefCol>Advanced Security Information Model format</DefCol>
+
+  <TermCol>`cef`</TermCol>
+  <DefCol>Common Event Format</DefCol>
+
+  <TermCol>`leef`</TermCol>
+  <DefCol>Log Event Extended Format</DefCol>
+
+  <TermCol>`csl`</TermCol>
+  <DefCol>Common Security Log</DefCol>
+</TermTable>
 
 :::note
 If no format is specified, log messages will be written to the console without any field normalization.
+:::
+
+:::warning
+Using field normalization may impact the performance with high message volumes.
 :::
 
 ## Examples
@@ -84,7 +94,3 @@ Console use with ASIM field normalization:
   properties:
     format: "asim"
 ```
-
-:::warning
-Using field normalization may impact the performance with high message volumes.
-:::
