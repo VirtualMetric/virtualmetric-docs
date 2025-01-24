@@ -24,26 +24,21 @@ The processor supports several widely-used log formats:
 
 ## Format Detection
 
-The processor can automatically detect source formats through characteristic fields:
+The processor can automatically detect source formats through certain characteristic fields, e.g.:
 
-```yaml
-# Common timestamp-based identifiers
-"@timestamp" → ECS
-"_time"      → CIM  
-"TimeGenerated" → ASIM/CSL
+|Context|Field|Format|
+|---|---|---|
+|Timestamp|`@timestamp`|ECS|
+||`_time`|CIM|
+||`TimeGenerated`|ASIM/CSL
+|Security|`rt`|CEF|
+||`devTime`|LEEF|
+|CSL detection|`TimeGenerated` + `LogSeverity`|CSL|
+||`TimeGenerated` only|ASIM|
 
-# Security format identifiers
-"rt"      → CEF
-"devTime" → LEEF
+## Conversion
 
-# Additional CSL detection
-"TimeGenerated" + "LogSeverity" → CSL
-"TimeGenerated" only → ASIM
-```
-
-## Conversion Rules
-
-### Case and Separators
+### Casing and Delimiters
 
 Each format follows specific naming conventions:
 
@@ -68,22 +63,37 @@ Each format follows specific naming conventions:
 </TermTable>
 
 :::warning
-Complex format conversions may impact performance. Monitor and optimize based on your volumes.
+Complex format conversions may impact performance.
 :::
 
-### Field Mapping Examples
+### Field Mapping
 
-Common network fields across formats:
+Common network fields based on context across various formats:
 
-|Context|ECS|CIM|ASIM|CEF|LEEF|CSL|
-|---|---|---|---|---|---|---|
-|Source IP|`source.ip`|`src_ip`|`SourceIp`|`src`|`srcAddr`|`SourceIP`|
-|Destination IP|`destination.ip`|`dest_ip`|`DstIp`|`dst`|`dstAddr`|`DestinationIP`|
-|Direction|`network.direction`|`network_direction`|`NetworkDirection`|`networkDirection`|`netDir`|`NetworkDirection`|
+{/* ||Context|||
+|---|---|---|---|
+||Source IP|Destination IP|Direction|
+|**ECS**|`source.ip`|`destination.ip`|`network.direction`|
+|**CIM**|`src_ip`|`dest_ip`|`network_direction`|
+|**ASIM**|`SourceIp`|`DstIp`|`NetworkDirection`|
+|**CEF**|`src`|`dst`|`networkDirection`|
+|**LEEF**|`srcAddr`|`dstAddr`|`netDir`|
+|**CSL**|`SourceIP`|`DestinationIP`|`NetworkDirection`| */}
 
-## Configuration Examples
+<table>
+  <tr><th></th><th colspan="3">Context</th></tr>
+  <tr><td><b>Format</b></td><td>Source IP</td><td>Destination IP</td><td>Direction</td></tr>
+  <tr><td style={{textAlign: "right"}}>ECS</td><td>`source.ip`</td><td>`destination.ip`</td><td>`network.direction`</td></tr>
+  <tr><td style={{textAlign: "right"}}>CIM</td><td>`src_ip`</td><td>`dest_ip`</td><td>`network_direction`</td></tr>
+  <tr><td style={{textAlign: "right"}}>ASIM</td><td>`SourceIp`</td><td>`DstIp`</td><td>`NetworkDirection`</td></tr>
+  <tr><td style={{textAlign: "right"}}>CEF</td><td>`src`</td><td>`dst`</td><td>`networkDirection`</td></tr>
+  <tr><td style={{textAlign: "right"}}>LEEF</td><td>`srcAddr`</td><td>`dstAddr`</td><td>`netDir`</td></tr>
+  <tr><td style={{textAlign: "right"}}>CSL</td><td>`SourceIp`</td><td>`DestinationIp`</td><td>`NetworkDirection`</td></tr>
+</table>
 
-### Basic Format Conversion
+## Configuration
+
+### Basic
 
 Convert from ECS to ASIM format:
 
@@ -93,7 +103,7 @@ normalize:
   - target_format: asim
 ```
 
-### Field-specific Normalization
+### Field-specific
 
 Convert a specific network field:
 
@@ -104,7 +114,7 @@ normalize:
   - target_format: ecs
 ```
 
-### Format Auto-detection
+### Auto-detection
 
 Let the processor detect the source format:
 
@@ -115,17 +125,8 @@ normalize:
 
 ## Best Practices
 
-### Data Integrity
-- Always validate transformed logs against originals
-- Keep original fields when possible for debugging
-- Document format-specific transformations
+For _data integrity_, always validate transformed logs against originals, keep original fields when possible for debugging, and document format-specific transformations.
 
-### Performance
-- Process normalization early in pipeline
-- Cache lookup results when possible
-- Monitor transformation overhead
+For _performance_, do the normalization early in the pipeline, cache results for lookup when possible, and monitor transformation overhead.
 
-### Error Handling
-- Use `ignore_failure` for graceful error handling
-- Implement fallback mechanisms
-- Test with diverse log samples
+For _error handling_, use `ignore_failure` and implement fallback mechanisms. Also, do not forget to test with diverse samples.
