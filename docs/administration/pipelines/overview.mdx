@@ -138,27 +138,15 @@ flowchart LR
 	source2["`Source 2`"]
 	source3["`Source 3`"]
   preprocess["`Preprocess`"]
-	route1["`Route 1`"]
-	route2["`Route 2`"]
-	route3["`Route 3`"]
-	route4["`Route 4`"]
+	route{"`Routes`"}
   postprocess["`Postprocess`"]
 	target1["`Target 1`"]
 	target2["`Target 2`"]
 
-	source1 --> preprocess;
-	source2 --> preprocess;
-	source3 --> preprocess;
-	preprocess --> route1;
-	preprocess --> route2;
-	preprocess --> route3;
-	preprocess --> route4;
-	route1 --> postprocess;
-	route2 --> postprocess;
-	route3 --> postprocess;
-	route4 --> postprocess;
-  postprocess --> target1;
-  postprocess --> target2
+	source1 & source2 & source3 --> preprocess
+	preprocess --> route
+	route --> postprocess
+  postprocess --> target1 & target2
 ```
 
 As can be seen from the graphics, the components in the middle of this setup are actually called [routes](/docs/administration/routes/overview.mdx).
@@ -236,7 +224,7 @@ After this is done, the selected data may need to be converted into forms making
 
 Finally, the data may contain hints or fragments of information which, when correlated with other available data, may yield insights that may be required for analysis and use. The process of adding correlated information in order to render the data more relevant&mdash;or increase its relevance&mdash;is known as _enrichment_.
 
-The overall process can be represented schematically as follows:
+The overall process can be represented schematically as:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
@@ -282,27 +270,25 @@ Therefore, the guiding principles should be
 
 ### Purpose of Use
 
-It is also essential to be cognizant of the type of pipeline that is being designed.
+It is also essential to be cognizant of the _type_ of pipeline that is being designed.
 
-_Pre-processing_ pipelines are attached to _sources_, and prepare the data before it enters the routing stage. They focus on:
+**Pre-processing** pipelines are attached to _sources_, and prepare the data before it enters the routing stage. They focus on:
 
 - _Data reduction_ - Filtering unnecessary events, removing redundant fields, sampling high-volume data, and aggregating similar events
 - _Initial normalization_ - Field and protocol standardization, and format conversion and time normalization
 - _Early enrichment_ - Geolocation data, asset information, basic threat intelligence, and custom metadata
 
-_Normalization_ pipelines handle the conversion between different log formats throughout the processing chain. The primary transformations are field name standardization, data type normalization, structure unification, and time format alignment.
+**Normalization** pipelines handle the conversion between different log formats throughout the processing chain. The primary transformations are field name standardization, data type normalization, structure unification, and time format alignment.
 
-_Post-processing_ pipelines are attached to _targets_, and perform final transformations before data storage and analysis:
+**Post-processing** pipelines are attached to _targets_, and perform final transformations before data storage and analysis:
 
 - _Format finalization_ - Target-specific formatting, schema alignment, and final field mapping
 - _Storage optimization_ - Compression configuration, index preparation, partitioning strategy, and retention setup
 - _Integration_ - Target-specific transformations, protocol adaptation, authentication preparation, and error handling
 
-Keep the pipelines focused on their _purpose_, and minimize cross-type dependencies. Leverage the seperation of concerns this brings; it
+Keep the pipelines focused on their _purpose_, and minimize cross-type dependencies.
 
-- clarifies the responsibility of each by assigning a specific role
-- enables modular architecture and robust testing, and
-- reduces overhead through better resource utilization, and improves scalability and routing efficiency.
+Leverage the seperation of concerns this brings as it clarifies the role of each, enabling a modular architecture. This, in turn, makes robust testing possible. reduces overhead through better resource utilization; and improves scalability and routing efficiency.
 
 For _performance optimization_, process heavy transformations early, optimize routing decisions, and monitor type-specific metrics.
 
