@@ -8,12 +8,12 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Administration",
-      link: {type: "doc", id: "administration/overview"},
+      link: {type: "doc", id: "administration/index"},
       items: [
         {
           type: "category",
           label: "Devices",
-          link: {type: "doc", id: "administration/devices/overview"},
+          link: {type: "doc", id: "administration/devices/index"},
           items: [
             "administration/devices/quick-start",
             "administration/devices/windows",
@@ -40,7 +40,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Pipelines",
-          link: {type: "doc", id: "administration/pipelines/overview"},
+          link: {type: "doc", id: "administration/pipelines/index"},
           items: [
             "administration/pipelines/quick-start",
             "administration/pipelines/pre-processing",
@@ -113,7 +113,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Routes",
-          link: {type: "doc", id: "administration/routes/overview"},
+          link: {type: "doc", id: "administration/routes/index"},
           items: [
             'administration/routes/quick-start',
             'administration/routes/management',
@@ -122,7 +122,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Targets",
-          link: {type: "doc", id: "administration/targets/overview"},
+          link: {type: "doc", id: "administration/targets/index"},
           items: [
             "administration/targets/quick-start",
             "administration/targets/ms-sentinel",
