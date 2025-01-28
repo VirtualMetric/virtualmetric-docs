@@ -4,6 +4,7 @@ const sidebars: SidebarsConfig = {
   userDocs: [
     "README",
     "features",
+    "getting-started",
 
     {
       type: "category",
