@@ -45,6 +45,23 @@ Its purpose is to normalize diverse log data into a consistent format across dif
 
 ## ECS
 
+_Elastic Common Schema_ (ECS) is a specification that defines a common set of fields for ingesting data into _Elasticsearch_. It provides a unified structure for various types of data like logs, metrics, and traces, making it easier to correlate data across different sources and use cases. ECS standardizes field names, types, and meanings across all data types, enabling consistent data analysis and visualization in Elasticsearch and Kibana.
+
+Key features of ECS include standardized field sets for common security and observability use cases, nested field groups for complex data relationships, and strict field naming conventions that help prevent naming conflicts while maintaining clarity.
+
+| Field Group | Core Fields | Description |
+|-------------|-------------|-------------|
+| Base Fields | `@timestamp`, `tags`, `labels`, `message` | Universal fields that appear in every event |
+| Host | `host.name`, `host.ip`, `host.os.*`, `host.mac` | Information about the host machine |
+| Network | `network.protocol`, `network.type`, `network.direction`, `network.bytes` | Network activity details |
+| Source/Destination | `source.ip`, `source.port`, `dest.ip`, `dest.port` | Communication endpoint information |
+| User | `user.id`, `user.name`, `user.domain`, `user.email` | User-related information |
+| Event | `event.category`, `event.type`, `event.action`, `event.outcome` | Event classification details |
+| File | `file.path`, `file.size`, `file.type`, `file.hash.*` | File-related information |
+| Process | `process.pid`, `process.name`, `process.args`, `process.parent.*` | Process execution details |
+| Error | `error.code`, `error.message`, `error.type`, `error.stack_trace` | Error-related information |
+| Trace | `trace.id`, `span.id`, `transaction.id` | Distributed tracing data |
+
 ## Grok Patterns
 
 The grok patterns used by **Director**'s selection process:
@@ -158,5 +175,3 @@ where the `-i` parameter specifies the PEM file to use to create a secure **SSH*
 |5|Notice|Significant condition|
 |6|Info|Info messages|
 |7|Debug|Debug messages|
-
----
