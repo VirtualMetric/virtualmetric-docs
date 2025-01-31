@@ -34,8 +34,6 @@ If you have access to **Platform**, you can also download it through the CLI by 
   </TabItem>
 </Tabs>
 
-{/* TODO: Check the command line install procedure */}
-
 ## Configure
 
 You can start using **Director** without any initial configuration.
@@ -44,23 +42,269 @@ You can start using **Director** without any initial configuration.
 Do not forget to add the directory where the package was placed to the `PATH` environment variable.
 :::
 
-## Run
+Now that you have downloaded **Director** and placed it a directory of your choice (we will refer to that directory as `<vm_root>`), you can start running it from the CLI.
 
-Now that you have downloaded **Director** and placed it in your directory of choice (we will assume you have added that directory to your `PATH`, and we will refer to that directory as `<vm_root>`), you can start running it from the CLI.
-
-Open a terminal, and navigate to any directory you wish&mdash;we will use the `home` directory here. Then, type the name of the executable (i.e. `vmetric-director`) and press <kb-short>Enter</kb-short>.
+Open a **PowerShell** terminal with _Admin_ rights, and navigate to `<vm_root>`. Then, type the following on the command line and press <kb-short>Enter</kb-short>.
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
   ```PowerShell
-  C:\Users\<user>\vmetric-director
+  C:\<vm_root>\vmetric-director -sentinel
   ```
   </TabItem>
   <TabItem value="linux" label="Linux">
   ```bash
-  ~/vmetric-director
+  ~/path/to/<vm_root>: ./vmetric-director -sentinel
   ```
   </TabItem>
 </Tabs>
 
-Now we will configure the `vmetric.yml` file under `<vm_root>`. You can use any text editor for this task since files with the `yml` extension are text files.
+You will see the following output:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {4,8,9}
+  C:\<vm_root>\vmetric-director -sentinel
+  VirtualMetric - Microsoft Sentinel Integration
+
+  Welcome to the Microsoft Sentinel Integration!
+
+  Choose Authentication Method:
+
+  > Browser Authentication
+    Device Code Authentication
+  
+  Use up/down arrows to nagivate and press enter to select.
+  Press 'q' to quit.
+  ```
+  </TabItem>
+</Tabs>
+
+Select the authentication method you desire and press <kb-short>Enter</kb-short>. You will see the following prompt:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Authentication Successfull!
+
+  You have successfully authenticated!
+
+  Press any key to proceed.
+  ```
+  </TabItem>
+</Tabs>
+
+After you press a key, the following prompt appears:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Integration Method
+
+  How do you want to set up the integration?
+
+  > Create a new Log Analytics Workspace
+    Use and existing Log Analytics Workspace
+
+  Use up/down arrows to nagivate and press enter to select.
+  Press 'b' to return, press 'q' to quit.
+  ```
+  </TabItem>
+</Tabs>
+
+Select the first option and press <kb-short>Enter</kb-short>. Next you will see the following prompt:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Select Subscription
+
+  Choose the subscription you want to use:
+
+  > <your_subscription>
+
+  Use up/down arrows to nagivate and press enter to select.
+  Press 'b' to return, press 'q' to quit.
+  ```
+  </TabItem>
+</Tabs>
+
+Provide your _Azure Subscription_ name and press <kb-short>Enter</kb-short>. Next you will select a region:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Select Region
+
+  Choose the region you want to use:
+
+  > North Europe
+    South Central US
+    South India
+    Southeast Asia
+    UK South
+    UK West
+    West Europe
+    West India
+    West US
+    West US 2
+  
+  Use up/down arrows to nagivate and press enter to select.
+  Press 'b' to return, press 'q' to quit.
+  ```
+  </TabItem>
+</Tabs>
+
+Select the region you desire and press <kb-short>Enter</kb-short>. You will now create a resource group:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Resource Group Option
+
+  Choose how to manage the resource group:
+
+  > Create a new Resource Group
+    Use an existing Resource Group
+
+  Use up/down arrows to nagivate and press enter to select.
+  Press 'b' to return, press 'q' to quit.
+  ```
+  </TabItem>
+</Tabs>
+
+Select the first option and press <kb-short>Enter</kb-short>. Now you will name your resource group:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Resource Group Name
+
+  Enter the resource group name (default: vmetric):
+
+  <your_group_name>
+  
+  Press enter to confirm.
+  ```
+  </TabItem>
+</Tabs>
+
+After you have entered `<your_group_name>` and pressed <kb-short>Enter</kb-short>, you will name your instance:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Instance Name
+
+  Enter the instance name (default: vmetric-loganalytics):
+
+  <your_instance_name>
+
+  Press enter to confirm.
+  ```
+  </TabItem>
+</Tabs>
+
+Once you type `<your_instance_name>` and press <kb-short>Enter</kb-short>, **Director** begins to create your workspace and informs you that it is doing so:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Creating Workspace
+
+  Please wait while we create your workspace...
+
+  This may take a few minutes.
+
+  Press 'b' to return, press 'q' to quit.
+  ```
+  </TabItem>
+</Tabs>
+
+Once the workspace is created, you will be prompted with the following:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Setup Complete
+
+  Log Analytics Workspace 'your_instance_name' is ready for use.
+
+  Press enter to continue with App Registration.
+
+  Press 'b' to return, press 'q' to quit.
+  ```
+  </TabItem>
+</Tabs>
+
+When you press <kb-short>Enter</kb-short>, you will proceed to App Registration. This will involve authentication via the browser which will launch automatically. Once the integration process completes, you will be prompted with the following:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell {2}
+  C:\<vm_root>\vmetric-director -sentinel
+  Integration Complete
+
+  VirtualMetric Target Configuration.
+
+  targets:
+    - name: sentinel
+      type: sentinel
+      properties:
+        tenant_id: "<your-tenant-id>"
+        client_id: "<your-client-id>"
+        client_secret: "<your-client-secret>"
+        endpoint: "https://<your-endpoint>"
+        rule_id: "<rule-identifier>"
+
+  Press 's' to save the configuration to the current path, press 'q' to quit.
+  ```
+  </TabItem>
+</Tabs>
+
+From this screen
+
+- copy the sentinel information by pressing <kb-short>S</kb-short> and paste it into a text editor like **Notepad**
+
+- then, open **File Explorer** and navigate to `<vm_root>\director\config\targets`. There, you will find the file named `sentinel.yml`. Open it with **Notepad**, and replace the `properties` section with the _properties_ block you have copied from the screen
+
+Once you have done this, switch to your browser and go to **Azure Portal: Data Collection Rules** and find "`vmetric-dcr-<your-instance-name>`" under it. Select **Data Sources** and verify that all the ASIM tables have been created automatically.
+
+Now you can right-click `vmetric-director.exe` and select **Run as Administrator** from the context menu, and it will run as a service.
+
+## Run: Checkpoint Simulation
+
+Once again, open a **PowerShell** terminal with _Admin_ rights and, if you haven't added it to `PATH` yet, cd to `<vm_root>`. Then type the executable name and press <kb-short>Enter</kb-short>.
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell
+  C:\cd <vm_root>
+  C:\<vm_root>\vmetric-director
+  ```
+  </TabItem>
+</Tabs>
+
+The executable will start sending debug messages which you will see on the screen. Now open another **PowerShell** terminal with _Admin_ rights and again navigate to `<vm_root>`. This time, type the following and press <kb-short>Enter</kb-short>:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```PowerShell
+  C:\cd <vm_root>
+  C:\<vm_root>\vmetric-generator -mode syslog -path test-logs-checkpoint.txt -count 1 -duration 1 -now
+  ```
+  </TabItem>
+</Tabs>
+
+You will see on the screen the number of messages sent by **Generator.**
+
+{/* TODO: Buralarda Mark'ın notlarından bir şey anlamadım. Ne yapıyoruz tam olarak? */}
