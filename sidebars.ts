@@ -3,13 +3,13 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 const sidebars: SidebarsConfig = {
   userDocs: [
     "README",
-    "features",
     "getting-started",
 
     {
       type: "category",
       label: "Administration",
       link: {type: "doc", id: "administration/index"},
+      collapsed: false,
       items: [
         {
           type: "category",
@@ -44,6 +44,7 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "administration/pipelines/index"},
           items: [
             "administration/pipelines/quick-start",
+            "administration/pipelines/draft-quick-start",
             "administration/pipelines/pre-processing",
             "administration/pipelines/normalization",
             "administration/pipelines/post-processing",
