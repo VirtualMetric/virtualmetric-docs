@@ -12,7 +12,55 @@ Available ASIM tables:
 
 ## CIM
 
+The _Common Information Model_ (CIM) is a standardized data model developed by **Splunk**.
+
+Its purpose is to normalize diverse log data into a consistent format across different data sources and use cases. It provides a shared semantic framework that makes it easier to correlate and analyze data from various systems, applications, and security tools by mapping raw log fields to standardized field names and data types. This standardization enables organizations to build searches, alerts, and dashboards that work consistently regardless of the underlying data sources.
+
+### Common Fields
+
+| Field Category | Fields | Description |
+|---------------|---------|-------------|
+| Base Fields | `source`, `sourcetype`, `timestamp`, `host`, `index` | Core fields for event identification and source tracking |
+| Identity Fields | `user`, `src_user`, `dest_user` | User identification and authentication tracking |
+| Network Fields | `src_ip`, `dest_ip`, `src_port`, `dest_port` | Network communication endpoints |
+
+### Data Models
+
+| Model Type | Fields | Purpose |
+|------------|--------|----------|
+| Authentication | `action`, `app`, `status`, `auth_method` | Track authentication events and access control |
+| Network Traffic | `bytes`, `protocol`, `direction`, `tcp_flags` | Monitor network communications and traffic patterns |
+| Vulnerability | `severity`, `signature`, `vulnerability_id` | Track security vulnerabilities and risks |
+| Changes | - | Track system and configuration changes |
+| Intrusion Detection | - | Monitor security threats and intrusions |
+
+### Event Categories
+
+| Category | Event Types | Description |
+|----------|-------------|-------------|
+| Authentication | `success`, `failure`, `logout` | Authentication-related events and outcomes |
+| Network | `connection`, `alert`, `traffic` | Network activity and communications |
+| System | `change`, `status`, `error` | System-level events and status changes |
+| Security | - | Security-related events and alerts |
+
 ## ECS
+
+_Elastic Common Schema_ (ECS) is a specification that defines a common set of fields for ingesting data into _Elasticsearch_. It provides a unified structure for various types of data like logs, metrics, and traces, making it easier to correlate data across different sources and use cases. ECS standardizes field names, types, and meanings across all data types, enabling consistent data analysis and visualization in Elasticsearch and Kibana.
+
+Key features of ECS include standardized field sets for common security and observability use cases, nested field groups for complex data relationships, and strict field naming conventions that help prevent naming conflicts while maintaining clarity.
+
+| Field Group | Core Fields | Description |
+|-------------|-------------|-------------|
+| Base Fields | `@timestamp`, `tags`, `labels`, `message` | Universal fields that appear in every event |
+| Host | `host.name`, `host.ip`, `host.os.*`, `host.mac` | Information about the host machine |
+| Network | `network.protocol`, `network.type`, `network.direction`, `network.bytes` | Network activity details |
+| Source/Destination | `source.ip`, `source.port`, `dest.ip`, `dest.port` | Communication endpoint information |
+| User | `user.id`, `user.name`, `user.domain`, `user.email` | User-related information |
+| Event | `event.category`, `event.type`, `event.action`, `event.outcome` | Event classification details |
+| File | `file.path`, `file.size`, `file.type`, `file.hash.*` | File-related information |
+| Process | `process.pid`, `process.name`, `process.args`, `process.parent.*` | Process execution details |
+| Error | `error.code`, `error.message`, `error.type`, `error.stack_trace` | Error-related information |
+| Trace | `trace.id`, `span.id`, `transaction.id` | Distributed tracing data |
 
 ## Grok Patterns
 
@@ -127,5 +175,3 @@ where the `-i` parameter specifies the PEM file to use to create a secure **SSH*
 |5|Notice|Significant condition|
 |6|Info|Info messages|
 |7|Debug|Debug messages|
-
----

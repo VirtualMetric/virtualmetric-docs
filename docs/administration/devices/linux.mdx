@@ -20,6 +20,7 @@ Creates a collector that connects to Linux servers via SSH to gather system metr
     protocol: <string>
     address: <string>
     port: <numeric>
+    use_ssh_credentials: <boolean>
     username: <string>
     password: <string>
     private_key: <string>
@@ -50,10 +51,11 @@ The following are the minimum requirements to define the device.
 |`protocol`|N|`"ssh"`|Connection protocol (only `ssh` supported)|
 |`address`|Y||Target server address|
 |`port`|N|`22`|SSH port number|
-|`username`|Y||SSH username|
-|`password`|N|-|SSH password (if not using private key)|
+|`use_ssh_credentials`|N|`true`|Use SSH credentials|
+|`username`|N|`<SSH-username>`|Must be specified if `use_ssh_credentials` is `false`|
+|`password`|N|`<SSH-password>`|Must be specified if `use_ssh_credentials` is `false`|
 |`private_key`|N|-|Path to SSH private key file|
-|`passphrase`|N|-|Private key passphrase (if required)|
+|`passphrase`|N|-|Private key passphrase (if private key is used)|
 
 ## Advanced Configuration
 
@@ -69,20 +71,6 @@ The following settings can be used to fine tune the collector's behavior.
 
 The following are commonly used configuration types.
 
-### Passwords
-
-Passwords can be used for authentication:
-
-```yaml
-- id: 1
-  name: linux_server
-  type: linux
-  properties:
-    address: "192.168.1.100"
-    username: "admin"
-    password: "secret"
-```
-
 ### Private Keys
 
 SSH keys can be used for authentication:
@@ -95,10 +83,26 @@ SSH keys can be used for authentication:
     address: "10.0.0.50"
     port: 2222
     username: "monitor"
+    use_ssh_credentials: true
     private_key: "/path/to/private_key"
-    passphrase: "key_password"
+    passphrase: "private_key_passphrase"
+```
+
+### Passwords
+
+If SSH credentials are not used, passwords can be specified:
+
+```yaml
+- id: 1
+  name: linux_server
+  type: linux
+  properties:
+    address: "192.168.1.100"
+    use_ssh_credentials: false
+    username: "admin"
+    password: "secret"
 ```
 
 :::warning
-The private key file must be readable by the service user, and have appropriate permissions (600 or more restrictive).
+The private key file must be readable by the service user, and have the appropriate permissions (600 or more restrictive).
 :::
