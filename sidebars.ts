@@ -44,7 +44,6 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "administration/pipelines/index"},
           items: [
             "administration/pipelines/quick-start",
-            "administration/pipelines/draft-quick-start",
             "administration/pipelines/pre-processing",
             "administration/pipelines/normalization",
             "administration/pipelines/post-processing",
