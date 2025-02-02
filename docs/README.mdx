@@ -36,15 +36,15 @@ graph LR
         A[AIX]
     end
 
-    CS --> |Secure Credentials| DS
-    AD --> |Service Accounts| DS
+    CS <-.-> |Secure Credentials| DS
+    AD <-.-> |Service Accounts| DS
     
-    DS --> |Read-only Access| W
-    DS --> |Read-only Access| L
-    DS --> |Read-only Access| U
-    DS --> |Read-only Access| M
-    DS --> |Read-only Access| S
-    DS --> |Read-only Access| A
+    DS <-.-> |Read-only Access| W
+    DS <-.-> |Read-only Access| L
+    DS <-.-> |Read-only Access| U
+    DS <-.-> |Read-only Access| M
+    DS <-.-> |Read-only Access| S
+    DS <-.-> |Read-only Access| A
 
     style DS fill:#87CEEB
     style CS fill:#98FB98
@@ -66,17 +66,17 @@ Utilizing all available cores, **DataStream**'s pipeline engine processes large 
 ```mermaid
 graph TD
     subgraph Cores[Multiple CPU Cores]
-        C1[Core 1]
-        C2[Core 2]
-        C3[Core 3]
-        C4[Core N]
+        C1(Core 1)
+        C2(Core 2)
+        C3(Core 3)
+        C4(Core N)
     end
     
-    Data[Log Data] --> Pipeline[Pipeline Engine]
-    Pipeline --> Cores
+    Data[Log Data] -.-> Pipeline[Pipeline Engine]
+    Pipeline -.-> Cores
     
-    Cores --> |Parallel Ingestion| SIEM1[SIEM Target 1]
-    Cores --> |Parallel Ingestion| SIEM2[SIEM Target 2]
+    Cores -.-> |Parallel Ingestion| SIEM1[SIEM Target 1]
+    Cores -.-> |Parallel Ingestion| SIEM2[SIEM Target 2]
     
     style Pipeline fill:#87CEEB
 ```
@@ -93,7 +93,7 @@ The _WAL_ approach also minimizes the risk of system downtime, ensuring that you
 
 ### Datasets and RBAC Structure
 
-We are revolutionizing the traditional concept of _source_ in telemetry pipelines with its introduction of _Datasets_.
+We are revolutionizing the traditional concept of _source_ in telemetry pipelines with our introduction of _Datasets_.
 
 ```mermaid
 flowchart TD
@@ -120,19 +120,19 @@ The _VirtualMetric File Format_ (VMF) was engineered specifically for high-perfo
 
 ```mermaid
 graph LR
-    VMF[VirtualMetric File Format]
+    VMF[VMF]
     
-    VMF --> Compression[99% Compression]
-    VMF --> Storage[Zero Trust Storage]
-    VMF --> Filters[Bloom Filters]
-    VMF --> Chain[Log Chaining]
-    VMF --> TSA[TSA Integration]
+    VMF -.-> Compression[99% Compression]
+    VMF -.-> Storage[Zero Trust Storage]
+    VMF -.-> Filters[Bloom Filters]
+    VMF -.-> Chain[Log Chaining]
+    VMF -.-> TSA[TSA Integration]
     
     subgraph Benefits
-        Compression --> |Efficient| Transport[Network Transport]
-        Filters --> |Fast| Search[Search Capabilities]
-        Chain --> |Enhanced| Forensics[Forensic Integrity]
-        Storage --> |Secure| DataHandling[Data Handling]
+        Compression -.-> |Efficient| Transport[Network Transport]
+        Filters -.-> |Fast| Search[Search Capabilities]
+        Chain -.-> |Enhanced| Forensics[Forensic Integrity]
+        Storage -.-> |Secure| DataHandling[Data Handling]
     end
     
     style VMF fill:#FFCCCC
@@ -144,20 +144,20 @@ VMF achieves up to 99% compression, making it ideal for both storage and network
 
 ### Advanced Data Routing
 
-We have simplified data routing with our advanced `reroute` processor, eliminating the need for manual filtering required in other solutions.
+We have simplified data routing with our advanced `reroute` processor, eliminating the need for manual filtering that is necessary in other solutions.
 
 ```mermaid
 graph TD
     subgraph Sources[Data Sources]
-        S1[Source 1]
-        S2[Source 2]
-        S3[Source 3]
+        S1[(Source 1)]
+        S2[(Source 2)]
+        S3[(Source 3)]
     end
     
     subgraph Routing[Reroute Processor]
-        F[Advanced Filters]
-        P[Pipeline Level]
-        C[Content Pack Level]
+        F(Advanced Filters)
+        P(Pipeline Level)
+        C(Content Pack Level)
     end
     
     Sources --> Routing
@@ -179,15 +179,15 @@ graph TD
     EIP[Elastic Ingest Pipeline]
     
     subgraph Processors[50+ Processors]
-        P1[Parsing]
-        P2[Filtering]
-        P3[Enrichment]
-        P4[Routing]
+        P1(Parsing)
+        P2(Filtering)
+        P3(Enrichment)
+        P4(Routing)
     end
     
     EIP --> Processors
-    Processors --> |Low/No Code| Management[Pipeline Management]
-    Management --> Engineers[IT/Security Engineers]
+    Processors --> |Low/No Code| Management([Pipeline Management])
+    Management --> Engineers[(IT/Security Engineers)]
     
     style EIP fill:#87CEEB
     style Processors fill:#98FB98
@@ -201,11 +201,11 @@ The pipeline engine was specifically crafted to integrate seamlessly with Micros
 
 ```mermaid
 graph TD
-    Log[Log Messages] --> Context[Context Inference]
-    Context --> Filter[Contextual Filters]
+    Log[Log Messages] --> Context([Context Inference])
+    Context --> Filter{Contextual Filters}
     
     subgraph Sentinel[Microsoft Sentinel]
-        ASIM[ASIM Tables]
+        ASIM[(ASIM Tables)]
     end
     
     Filter --> |Optimized Data| ASIM

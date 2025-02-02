@@ -6,39 +6,6 @@ pagination_prev: null
 
 **Director** uses _targets_ as the output destinations to forward, store, and analyze collected telemetry data. Targets provide flexible options for data persistence and integration with various analysis platforms.
 
-## Configuration
-
-All target configuration files reside in the `config` directory under the root, and have a `.yml` extension:
-
-```mermaid
-flowchart LR
-   vmroot@{shape: docs, label: "<code>&lt;vm_root&gt;</code>"}
-   config@{shape: docs, label: "<code>config/</code>"}
-      targets@{shape: docs, label: "<code>targets/</code>"}
-        local@{shape: tag-doc, label: "<code>local/</code>"}
-        cloud@{shape: tag-doc, label: "<code>cloud/</code>"}
-        sentinel@{shape: tag-doc, label: "<code>sentinel/</code>"}
-
-      outputs@{shape: tag-doc, label: "<code>outputs</code>"}
-      storage@{shape: tag-doc, label: "<code>storage</code>"}
-
-   vmroot --> config
-
-   config --> targets
-   config --> outputs
-   config --> storage
-
-   targets --> local
-   targets --> cloud
-   targets --> sentinel
-```
-
-**Director** recursively discovers all configuration files, regardless of subfolder structure.
-
-:::note
-Each target type provides specific configuration options detailed in its respective chapter.
-:::
-
 ## Use Categories
 
 ### Local Storage
@@ -124,10 +91,10 @@ The most common uses of targets are:
 
 To serve these ends, the following _processing options_ are available:
 
-* **Pipelines** - Field normalization (ECS, CIM, ASIM, CEF, LEEF, CSL), data transformation, message batching, custom field mapping, schema validation, and format conversion.
+* **Pipelines** - Field normalization (for ECS, CIM, ASIM, CEF, LEEF, and CSL), data transformation, message batching, custom field mapping, schema validation, and format conversion.
 
 * **Buffer management** - Configurable buffer sizes, batch processing, flush intervals, queue management, checkpoint recovery, and error handling
 
 * **Performance** - Asynchronous writing, buffer optimization, connection pooling, retry mechanisms, resource monitoring, and size-based rotation
 
-* **Security** - Authentication using API keys, service principals, and client certificates. Encryption with TLS/SSL, HTTPS, or custom. Also, access control and audit logging.
+* **Security** - Authentication using API keys, service principals, and client certificates. Encryption with TLS/SSL, HTTPS, or custom algorithms. Also, access control and audit logging.

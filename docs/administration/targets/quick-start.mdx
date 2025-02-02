@@ -8,6 +8,37 @@ This guide will walk you through configuring your first target in **Director**, 
 
 ## Configuration
 
+All target configuration files reside in the `config` directory under the root, and have a `.yml` extension:
+
+```mermaid
+flowchart LR
+   vmroot@{shape: docs, label: "<code>&lt;vm_root&gt;</code>"}
+   config@{shape: docs, label: "<code>config/</code>"}
+      targets@{shape: docs, label: "<code>targets/</code>"}
+        local@{shape: tag-doc, label: "<code>local/</code>"}
+        cloud@{shape: tag-doc, label: "<code>cloud/</code>"}
+        sentinel@{shape: tag-doc, label: "<code>sentinel/</code>"}
+
+      outputs@{shape: tag-doc, label: "<code>outputs</code>"}
+      storage@{shape: tag-doc, label: "<code>storage</code>"}
+
+   vmroot --> config
+
+   config --> targets
+   config --> outputs
+   config --> storage
+
+   targets --> local
+   targets --> cloud
+   targets --> sentinel
+```
+
+**Director** recursively discovers all configuration files, regardless of subfolder structure.
+
+:::note
+Each target type provides specific configuration options detailed in its respective chapter.
+:::
+
 Targets use the configuration files with `.yml` extensions in the `config` directory under the root, e.g.
 
 * `<vm_root>/config/targets.yml`
