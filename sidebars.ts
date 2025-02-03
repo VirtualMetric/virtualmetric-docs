@@ -83,6 +83,7 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/json",
                 "administration/pipelines/processors/kv",
                 "administration/pipelines/processors/leef",
+                "administration/pipelines/processors/lookup",
                 "administration/pipelines/processors/lowercase",
                 "administration/pipelines/processors/move",
                 "administration/pipelines/processors/network_direction",
