@@ -146,8 +146,8 @@ const sidebars: SidebarsConfig = {
   ],
   tutorDocs: [
     "tutorials/quick-start",
-    // "tutorials/syslog-to-console",
-    // "tutorials/syslog-to-parquet-file",
+    "tutorials/syslog-to-console",
+    "tutorials/syslog-to-parquet-file",
   ],
 };
 
