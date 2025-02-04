@@ -54,6 +54,7 @@ const sidebars: SidebarsConfig = {
               label: "Processors",
               link: {type: "doc", id: "administration/pipelines/processors/index"},
               items: [
+                "administration/pipelines/processors/anthropic",
                 "administration/pipelines/processors/append",
                 "administration/pipelines/processors/attachment",
                 "administration/pipelines/processors/bytes",
