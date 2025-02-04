@@ -1,10 +1,14 @@
 ---
-description: Expands dot notation field names
+description: Expands dot notation field names into nested object structures
 ---
 
 # Dot Expander
 
 <span class="theme-doc-version-badge badge badge--primary">Transform</span><span class="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Expands fields containing dots in their names into nested objects.
 
 ## Schema
 
@@ -20,42 +24,47 @@ dot_expander:
   - tag: <string>
 ```
 
-## Synopsis
-
-Expands fields containing dots in their names into nested objects.
-
 ## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|-|Field containing dots to be expanded into a nested structure|
-|`path`|N|-|Target field path for the expanded structure|
+|`field`|Y|-|Field containing dot-separated names to expand|
+|`path`|N|-|Target location for expanded structure|
 |`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|If `true`, errors are ignored and processing continues|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`tag`|N|-|Identifier|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Continue processing on errors|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`tag`|N|-|Identifier for logging|
 
 ## Details
 
-This processor is particularly useful when you need to convert flat field names with dots into hierarchical data structures that can be more easily processed by other processors. For example, `foo.bar.baz: 123` becomes `foo: { bar: { baz: 123 } }`.
+### Functionality
+The Dot Expander processor converts flat field names with dot notation into nested object structures. This is particularly useful for:
 
-:::note
-Use the `ignore_failure` flag if the field may not contain dots, the field may not exist, or errors may occur during expansion.
-:::
+- Transforming flattened data into hierarchical formats
+- Preparing data for nested processing
+- Standardizing field structures across different data sources
 
-:::warning
-The field name must contain at least one dot. The original field is removed after expansion, and all values are preserved as their original types during expansion. If `path` is specified, the expanded structure is placed at that location.
-:::
+### Key Behaviors
+- Automatically creates intermediate objects as needed
+- Preserves original field values
+- Removes the original dot-separated field
+- Supports custom target paths for expanded structures
+
+### Use Cases
+- Normalizing log data
+- Preparing data for specific processing pipelines
+- Converting flat configurations to nested formats
+- Improving data readability and structure
 
 ## Examples
 
-### Basic Expansion
+### Basic Field Expansion
 
 <ExampleGrid>
   <CommentCol>
-    Expanding a dotted field into nested objects...
+    Expand a dotted field into nested objects...
   </CommentCol>
   <CodeCol>
     ```json
@@ -84,11 +93,11 @@ The field name must contain at least one dot. The original field is removed afte
   </CodeCol>
 </ExampleGrid>
 
-### Custom Path
+### Custom Path Expansion
 
 <ExampleGrid>
   <CommentCol>
-    Specifying a path...
+    Place expanded structure at specific path...
   </CommentCol>
   <CodeCol>
     ```json
@@ -103,7 +112,7 @@ The field name must contain at least one dot. The original field is removed afte
     ```
   </CodeCol>
   <CommentCol>
-    creates the expanded structure at that location:
+    creates structure at specified location:
   </CommentCol>
   <CodeCol>
     ```json
@@ -120,11 +129,11 @@ The field name must contain at least one dot. The original field is removed afte
   </CodeCol>
 </ExampleGrid>
 
-### Conditionals
+### Conditional Expansion
 
 <ExampleGrid>
   <CommentCol>
-    Specifying a condition...
+    Expand only when condition is met...
   </CommentCol>
   <CodeCol>
     ```json
@@ -140,7 +149,7 @@ The field name must contain at least one dot. The original field is removed afte
     ```
   </CodeCol>
   <CommentCol>
-    expands the field only when that condition is met:
+    expands when condition is true:
   </CommentCol>
   <CodeCol>
     ```json
@@ -160,7 +169,7 @@ The field name must contain at least one dot. The original field is removed afte
 
 <ExampleGrid>
   <CommentCol>
-    If the field doesn't contain dots...
+    When field doesn't contain dots...
   </CommentCol>
   <CodeCol>
     ```json
@@ -172,19 +181,33 @@ The field name must contain at least one dot. The original field is removed afte
     dot_expander:
       - field: foo
       - ignore_failure: true
+      - on_failure:
+          - set:
+              field: error
+              value: "No dots in field name"
     ```
   </CodeCol>
   <CommentCol>
-    the raised error is ignored:
+    handles error gracefully:
   </CommentCol>
   <CodeCol>
     ```json
     {
       "foo": 123,
-      "error": {
-        "message": "field 'foo' does not contain dots"
-      }
+      "error": "No dots in field name"
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+:::note
+- The processor maintains the original data types during expansion
+- Intermediate objects are created automatically
+- The original dot-separated field is removed
+:::
+
+:::warning
+- The field must contain at least one dot
+- Nested expansions create complex object structures
+- Be cautious with deeply nested fields to avoid performance issues
+:::
