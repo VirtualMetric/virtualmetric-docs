@@ -1,0 +1,234 @@
+---
+description: Enriches data with VirusTotal threat intelligence
+---
+
+# VirusTotal
+
+<span class="theme-doc-version-badge badge badge--primary">Enrichment</span><span class="theme-doc-version-badge badge badge--secondary">Threat Intelligence</span>
+
+## Synopsis
+
+Enriches events by querying the VirusTotal API for threat intelligence about files, URLs, domains, and IP addresses. Supports scanning new URLs, retrieving analysis results, and fetching reputation data.
+
+## Schema
+
+```yaml {2-4}
+virustotal:
+  - field: <ident>
+  - api_key: <string>
+  - query_type: <enum>
+  - description: <text>
+  - if: <script>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
+  - on_failure: <processor[]>
+  - on_success: <processor[]>
+  - tag: <string>
+  - target_field: <ident>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing hash, URL, domain, or IP to query|
+|`api_key`|Y|-|VirusTotal API key for authentication|
+|`query_type`|N|`hash`|Type of query: `hash`, `url`, `domain`, or `ip`|
+|`target_field`|N|`field`|Field to store the API response|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if API call fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor interfaces with VirusTotal's API to retrieve threat intelligence. It handles different query types:
+- File hashes (MD5, SHA-1, SHA-256)
+- URLs (includes scanning and analysis retrieval)
+- Domain names
+- IP addresses
+
+### Key Features
+- Multiple query types
+- Automated URL scanning
+- Rich threat intelligence
+- Error handling options
+- Success/failure processors
+
+## Examples
+
+### File Hash Lookup
+
+<ExampleGrid>
+  <CommentCol>
+    Check a file hash...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hash": "44d88612fea8a8f36de82e1278abb02f"
+    }
+    ```
+    ```yaml
+    virustotal:
+      - field: hash
+      - query_type: hash
+      - api_key: "${VIRUSTOTAL_API_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    retrieves file analysis results:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hash": "44d88612fea8a8f36de82e1278abb02f",
+      "vt_results": {
+        "last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 70
+        },
+        "type_description": "Win32 EXE",
+        "size": 1234567
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URL Analysis
+
+<ExampleGrid>
+  <CommentCol>
+    Analyze a URL...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "http://example.com/file.exe"
+    }
+    ```
+    ```yaml
+    virustotal:
+      - field: url
+      - query_type: url
+      - target_field: url_analysis
+      - api_key: "${VIRUSTOTAL_API_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    submits for scanning and retrieves results:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "http://example.com/file.exe",
+      "url_analysis": {
+        "last_analysis_stats": {
+          "malicious": 5,
+          "suspicious": 2,
+          "undetected": 63
+        },
+        "reputation": -50,
+        "times_submitted": 10
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Domain Intelligence
+
+<ExampleGrid>
+  <CommentCol>
+    Query domain reputation...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com"
+    }
+    ```
+    ```yaml
+    virustotal:
+      - field: domain
+      - query_type: domain
+      - target_field: domain_info
+      - api_key: "${VIRUSTOTAL_API_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds domain intelligence:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com",
+      "domain_info": {
+        "last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 75
+        },
+        "registrar": "Example Registrar",
+        "creation_date": "2010-08-15"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle API failures gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8"
+    }
+    ```
+    ```yaml
+    virustotal:
+      - field: ip
+      - query_type: ip
+      - api_key: "invalid-key"
+      - ignore_failure: true
+      - on_failure:
+          - set:
+              field: lookup_status
+              value: "failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing with error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8",
+      "lookup_status": "failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+- URL analysis includes both scanning and result retrieval
+- Responses are returned as structured objects
+- Analysis stats provide counts from multiple engines
+- API responses may include rich metadata
+:::
+
+:::warning
+- API keys should be securely stored
+- Consider VirusTotal API rate limits
+- URL scanning may have additional delays
+- File scan results may not be immediately available
+:::

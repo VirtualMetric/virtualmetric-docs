@@ -115,6 +115,7 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/uri_parts",
                 "administration/pipelines/processors/urldecode",
                 "administration/pipelines/processors/user_agent",
+                "administration/pipelines/processors/virustotal",
                 "administration/pipelines/processors/xml",
               ],
             },
