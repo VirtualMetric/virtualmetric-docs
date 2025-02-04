@@ -94,6 +94,7 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/move",
                 "administration/pipelines/processors/network_direction",
                 "administration/pipelines/processors/normalize",
+                "administration/pipelines/processors/openai",
                 "administration/pipelines/processors/pipeline",
                 "administration/pipelines/processors/redact",
                 "administration/pipelines/processors/regex_extract",

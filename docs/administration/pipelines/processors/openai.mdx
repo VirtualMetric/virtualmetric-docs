@@ -1,0 +1,218 @@
+---
+description: Processes content using OpenAI's API for intelligent analysis
+---
+
+# OpenAI
+
+<span class="theme-doc-version-badge badge badge--primary">Enrichment</span><span class="theme-doc-version-badge badge badge--secondary">AI Powered</span>
+
+## Synopsis
+
+Enriches events by sending field content to OpenAI's API for analysis and storing the response. Useful for automated analysis, context enrichment, and intelligent processing of log data.
+
+## Schema
+
+```yaml {2-5}
+openai:
+  - field: <ident>
+  - api_key: <string>
+  - target_field: <ident>
+  - system_msg: <string>
+  - description: <text>
+  - if: <script>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
+  - model: <string>
+  - temperature: <number>
+  - max_tokens: <number>
+  - on_failure: <processor[]>
+  - on_success: <processor[]>
+  - tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing content to analyze|
+|`api_key`|Y|-|OpenAI API key for authentication|
+|`target_field`|N|`field`|Field to store the API response|
+|`system_msg`|N|-|System context message for the AI|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if API call fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`model`|N|`gpt-3.5-turbo`|OpenAI model to use|
+|`temperature`|N|`0.7`|Response randomness (0-1)|
+|`max_tokens`|N|`1000`|Maximum response length|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor uses OpenAI's Chat API to analyze field content. It supports system context messages for customized analysis, temperature control for response variation, and token limits for response length management.
+
+### Key Features
+- Intelligent content analysis
+- Customizable system context
+- Response configuration
+- Multiple model support
+- Error handling options
+- Success/failure processors
+
+## Examples
+
+### Basic Log Analysis
+
+<ExampleGrid>
+  <CommentCol>
+    Analyze a Cisco device log...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Interface GigabitEthernet0/1 is down"
+    }
+    ```
+    ```yaml
+    openai:
+      - field: message
+      - target_field: analysis
+      - api_key: "${OPENAI_API_KEY}"
+      - system_msg: "You are an expert in Cisco networking. Analyze this log message."
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds AI analysis to the event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Interface GigabitEthernet0/1 is down",
+      "analysis": "Network interface GigabitEthernet0/1 has lost connectivity. This could indicate a physical connection issue, port configuration problem, or upstream network failure. Immediate investigation recommended."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Precise Analysis Control
+
+<ExampleGrid>
+  <CommentCol>
+    Configure analysis parameters...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_msg": "Authentication failed for user admin"
+    }
+    ```
+    ```yaml
+    openai:
+      - field: error_msg
+      - target_field: security_analysis
+      - api_key: "${OPENAI_API_KEY}"
+      - model: "gpt-4"
+      - temperature: 0.2
+      - max_tokens: 100
+      - system_msg: "You are a security analyst. Provide a brief analysis of this error."
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces focused security insight:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_msg": "Authentication failed for user admin",
+      "security_analysis": "Potential security incident: Failed authentication attempt for privileged 'admin' account. Verify if part of a brute force attempt. Check source IP and implement account lockout if needed."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Analysis
+
+<ExampleGrid>
+  <CommentCol>
+    Only analyze critical errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Critical: Database corruption detected",
+      "level": "critical"
+    }
+    ```
+    ```yaml
+    openai:
+      - if: "ctx.level == 'critical'"
+      - field: message
+      - target_field: ai_insight
+      - api_key: "${OPENAI_API_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    analyzes due to critical level:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Critical: Database corruption detected",
+      "level": "critical",
+      "ai_insight": "Severe database issue detected: Corruption may lead to data loss or system instability. Immediate database recovery procedures should be initiated. Consider failover to backup if available."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle API failures gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "System alert"
+    }
+    ```
+    ```yaml
+    openai:
+      - field: message
+      - api_key: "invalid-key"
+      - ignore_failure: true
+      - on_failure:
+          - set:
+              field: analysis_status
+              value: "failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing with error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "System alert",
+      "analysis_status": "failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+- API responses are cached to improve performance
+- System messages help guide the AI's analysis
+- Lower temperature values produce more focused responses
+- Token limits control response length and costs
+:::
+
+:::warning
+- API keys should be securely stored and accessed
+- Consider rate limits and costs for high-volume processing
+- Long input texts may hit token limits
+- API calls add latency to event processing
+:::
