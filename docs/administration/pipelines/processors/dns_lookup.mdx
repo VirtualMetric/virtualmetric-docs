@@ -1,0 +1,313 @@
+---
+description: Performs DNS lookups and caches results
+---
+
+# DNS Lookup
+
+<span class="theme-doc-version-badge badge badge--primary">Processor</span><span class="theme-doc-version-badge badge badge--secondary">Cribl Compatible</span>
+
+## Synopsis
+
+Performs DNS lookups on domains or IP addresses with result caching. Supports both forward and reverse lookups, multiple DNS record types, and custom DNS servers. Results are cached to improve performance and reduce external DNS queries.
+
+## Schema
+
+```yaml {2-6}
+dns_lookup:
+  - field: <ident>
+  - type: <string>
+  - resource_type: <string>
+  - target_field: <ident>
+  - dns_server: <string>
+  - cache_ttl: <number>
+  - description: <text>
+  - if: <script>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
+  - on_failure: <processor[]>
+  - on_success: <processor[]>
+  - tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing domain/IP to lookup|
+|`type`|Y|-|Lookup type: `forward` or `reverse`|
+|`resource_type`|N|`A`|DNS record type for forward lookups: `A`, `AAAA`, `MX`, `TXT`|
+|`target_field`|N|`field`|Field to store lookup results|
+|`dns_server`|N|-|Custom DNS server (e.g., "8.8.8.8:53")|
+|`cache_ttl`|N|`30`|Cache TTL in minutes|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if lookup fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor performs DNS lookups with configurable caching to improve performance. It supports both forward lookups (domain to IP) and reverse lookups (IP to domain) for both IPv4 and IPv6 addresses. Results are cached based on the specified TTL to reduce DNS query load.
+
+### Key Features
+- Forward and reverse DNS lookups
+- IPv4 and IPv6 support
+- Multiple DNS record type support
+- Result caching with TTL
+- Custom DNS server configuration
+- Success/failure processors
+- Conditional execution
+
+## Examples
+
+### Forward DNS Lookup (A Record)
+
+<ExampleGrid>
+  <CommentCol>
+    Lookup IPv4 addresses for a domain...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com"
+    }
+    ```
+    ```yaml
+    dns_lookup:
+      - field: domain
+      - type: forward
+      - resource_type: A
+      - target_field: ip_addresses
+      - cache_ttl: 30
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds resolved IPs to the event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com",
+      "ip_addresses": ["93.184.216.34"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### IPv4 Reverse DNS Lookup
+
+<ExampleGrid>
+  <CommentCol>
+    Lookup hostname for IPv4 address...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8"
+    }
+    ```
+    ```yaml
+    dns_lookup:
+      - field: ip
+      - type: reverse
+      - target_field: hostname
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds resolved hostname to the event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8",
+      "hostname": ["dns.google"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### IPv6 Reverse DNS Lookup
+
+<ExampleGrid>
+  <CommentCol>
+    Lookup hostname for IPv6 address...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "2001:4860:4860::8888"
+    }
+    ```
+    ```yaml
+    dns_lookup:
+      - field: ip
+      - type: reverse
+      - target_field: hostname
+    ```
+  </CodeCol>
+  <CommentCol>
+    resolves IPv6 address to hostname:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "2001:4860:4860::8888",
+      "hostname": ["dns.google"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### MX Record Lookup
+
+<ExampleGrid>
+  <CommentCol>
+    Lookup mail servers for a domain...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "gmail.com"
+    }
+    ```
+    ```yaml
+    dns_lookup:
+      - field: domain
+      - type: forward
+      - resource_type: MX
+      - target_field: mail_servers
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds MX records to the event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "gmail.com",
+      "mail_servers": [
+        "alt1.gmail-smtp-in.l.google.com 10",
+        "alt2.gmail-smtp-in.l.google.com 20"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom DNS Server
+
+<ExampleGrid>
+  <CommentCol>
+    Use Cloudflare DNS for lookups...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com"
+    }
+    ```
+    ```yaml
+    dns_lookup:
+      - field: domain
+      - type: forward
+      - resource_type: A
+      - dns_server: "1.1.1.1:53"
+      - target_field: ip_addresses
+    ```
+  </CodeCol>
+  <CommentCol>
+    resolves using specified DNS server:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com",
+      "ip_addresses": ["93.184.216.34"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Handling Private IPs
+
+<ExampleGrid>
+  <CommentCol>
+    Handle lookup for private IP gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "192.168.1.1"
+    }
+    ```
+    ```yaml
+    dns_lookup:
+      - field: ip
+      - type: reverse
+      - target_field: hostname
+      - ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing without error:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "192.168.1.1"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Execution
+
+<ExampleGrid>
+  <CommentCol>
+    Only perform lookup for debug events...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8",
+      "level": "info"
+    }
+    ```
+    ```yaml
+    dns_lookup:
+      - field: ip
+      - type: reverse
+      - target_field: hostname
+      - if: "ctx.level == 'debug'"
+    ```
+  </CodeCol>
+  <CommentCol>
+    skips lookup due to condition:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8",
+      "level": "info"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+- Results are cached based on lookup type, resource type, and input value
+- Cache entries expire based on the configured TTL
+- Multiple results are returned as arrays
+- IPv6 addresses are fully supported for both forward and reverse lookups
+:::
+
+:::warning
+- DNS lookups can introduce latency to event processing
+- Failed lookups will cause errors unless `ignore_failure` is true
+- Missing fields will cause errors unless `ignore_missing` is true
+- Non-string field values will cause errors
+- Private IP addresses typically won't have PTR records
+- Large cache sizes can impact memory usage
+:::

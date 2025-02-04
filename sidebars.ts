@@ -69,6 +69,7 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/date_index_name",
                 "administration/pipelines/processors/decrypt",
                 "administration/pipelines/processors/dissect",
+                "administration/pipelines/processors/dns_lookup",
                 "administration/pipelines/processors/dot_expander",
                 "administration/pipelines/processors/dot_nester",
                 "administration/pipelines/processors/drop",
