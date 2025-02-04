@@ -61,6 +61,7 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/bytes",
                 "administration/pipelines/processors/cef",
                 "administration/pipelines/processors/circle",
+                "administration/pipelines/processors/cloudflare",
                 "administration/pipelines/processors/comment",
                 "administration/pipelines/processors/community_id",
                 "administration/pipelines/processors/compact",

@@ -1,6 +1,16 @@
+---
+description: Encrypts string values using AES encryption with optional compression
+---
+
 # Encrypt
 
+<span class="theme-doc-version-badge badge badge--primary">Security</span><span class="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
 ## Synopsis
+
+Encrypts string values using AES encryption with optional compression. Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation.
+
+## Schema
 
 ```yaml {3-5}
 encrypt:
@@ -18,85 +28,74 @@ encrypt:
   - with_compression: <boolean>
 ```
 
-## Description
+## Configuration
 
-**Functionality**: Encrypts string values using AES encryption with optional compression. Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation.
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`algorithm`|N|`AES-256-GCM`|Encryption algorithm. Valid values: `AES-256-GCM` or `AES-256-CFB`|
+|`encryption_key`|Y|-|32-byte key for encryption|
+|`field`|Y|-|Field containing the value to encrypt|
+|`iv_field`|Y|-|Field to store the initialization vector|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Continue if encryption fails|
+|`ignore_missing`|N|`false`|Continue if source field is missing|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`tag`|N|-|Identifier for logging|
+|`with_compression`|N|`false`|Compress data before encryption|
+
+## Details
+
+The processor encrypts string values using AES encryption, with support for two encryption modes:
+
+### Encryption Modes
+- **AES-256-GCM (Recommended)**: 
+  - Provides confidentiality and authenticity
+  - More secure against tampering
+  - Slightly slower performance
+- **AES-256-CFB**:
+  - Provides confidentiality
+  - Faster performance
+  - No built-in authentication
+
+### Compression
+When `with_compression` is enabled:
+- Data is compressed before encryption
+- Reduces encrypted data size
+- Most effective for text-based data
+- Minimal impact on already compressed content
 
 ## Security Recommendations
 
 ### Key Management
-- **Key Generation**: Use a cryptographically secure random number generator (CSPRNG) to generate encryption keys
-- **Key Rotation**: Implement regular key rotation (e.g., every 90 days)
-- **Key Storage**: 
-  - Never store encryption keys in plaintext
-  - Use a secure key management service (KMS) or hardware security module (HSM)
-  - Consider using envelope encryption for key protection
-  - Follow the principle of least privilege for key access
+- Use cryptographically secure random number generators
+- Implement regular key rotation (every 90 days)
+- Store keys securely using:
+  - Key Management Services (KMS)
+  - Hardware Security Modules (HSM)
+- Follow principle of least privilege
 
-### IV (Initialization Vector) Management
-- **IV Generation**: Use a CSPRNG to generate IVs
-- **IV Uniqueness**: Never reuse IVs with the same key
-- **IV Size**: Use appropriate IV sizes:
-  - GCM mode: 12 bytes (96 bits) recommended
-  - CFB mode: Must equal block size (16 bytes/128 bits for AES)
-- **IV Storage**: IVs can be stored with ciphertext as they don't need to be secret
+### Initialization Vector (IV) Management
+- Generate using cryptographically secure random number generator
+- Never reuse IVs with the same key
+- Recommended IV sizes:
+  - GCM mode: 12 bytes (96 bits)
+  - CFB mode: 16 bytes (128 bits)
 
-### Secure Storage Guidelines
-- **Data at Rest**:
-  - Store encrypted data and IVs separately from encryption keys
-  - Use authenticated encryption (GCM mode) for data integrity
-  - Implement secure backup procedures for encrypted data
-  - Consider filesystem encryption for additional protection
-
-- **Data in Transit**:
-  - Use TLS for transmitting encrypted data
-  - Verify data integrity using message authentication codes (MACs)
-  - Implement secure key exchange protocols
-
-### Auditing and Monitoring
-- Log all encryption/decryption operations (excluding sensitive data)
-- Monitor for unusual patterns that might indicate compromise
-- Regularly audit key usage and access patterns
-- Maintain detailed records of key rotations
-
-## Parameters
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`algorithm`|N|`AES-256-GCM`|Encryption algorithm to use. Valid values: `AES-256-GCM` or `AES-256-CFB`|
-|`encryption_key`|Y|-|32-byte key used for encryption|
-|`field`|Y|-|Field containing the value to be encrypted|
-|`iv_field`|Y|-|Field where the initialization vector will be stored|
-|`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` doesn't exist, exit quietly|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`tag`|N|-|Identifier|
-|`with_compression`|N|`false`|Enable compression before encryption to reduce data size|
-
-## Supported Algorithms
-
-### AES-256-GCM (Default)
-- Provides both confidentiality and authenticity
-- More secure against tampering
-- Slightly slower than CFB mode
-- Recommended for most use cases
-
-### AES-256-CFB
-- Provides confidentiality
-- Faster than GCM mode
-- No built-in authentication
-- Use when performance is critical and data authenticity is handled separately
+### Secure Storage
+- Store encrypted data and IVs separately from encryption keys
+- Use filesystem-level encryption
+- Implement secure backup procedures
+- Use authenticated encryption (GCM mode)
 
 ## Examples
 
-### AES-256-GCM Encryption
+### Basic Encryption
 
 <ExampleGrid>
   <CommentCol>
-    Using GCM mode with proper key and IV handling...
+    Encrypt a sensitive field using GCM mode...
   </CommentCol>
   <CodeCol>
     ```json
@@ -108,12 +107,12 @@ encrypt:
     encrypt:
       - field: password
       - iv_field: password_iv
-      - encryption_key: "${ENCRYPTION_KEY}"  # Use environment variable
+      - encryption_key: "${ENCRYPTION_KEY}"
       - algorithm: AES-256-GCM
     ```
   </CodeCol>
   <CommentCol>
-    creates encrypted data and IV:
+    creates encrypted output:
   </CommentCol>
   <CodeCol>
     ```json
@@ -129,7 +128,7 @@ encrypt:
 
 <ExampleGrid>
   <CommentCol>
-    Enable compression for large text data...
+    Compress and encrypt large text data...
   </CommentCol>
   <CodeCol>
     ```json
@@ -147,27 +146,64 @@ encrypt:
     ```
   </CodeCol>
   <CommentCol>
-    produces smaller encrypted output:
+    reduces encrypted data size:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "log_data": "Yh8dR2S2kZpsMkYoBN2tQ==",  # Compressed & encrypted
+      "log_data": "Yh8dR2S2kZpsMkYoBN2tQ==",
       "log_iv": "K+r8YorvFiFTC"
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-:::warning
-- Encryption keys must be exactly 32 bytes for AES-256
-- Both the encrypted value and IV are returned as base64 strings
-- Never reuse IVs with the same key
-- Store encryption keys securely using a key management service
-:::
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle missing or invalid fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "other_field": "value"
+    }
+    ```
+    ```yaml
+    encrypt:
+      - field: missing_field
+      - iv_field: missing_iv
+      - encryption_key: "${ENCRYPTION_KEY}"
+      - ignore_missing: true
+      - on_failure:
+          - set:
+              field: error_status
+              value: "encryption_failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing with error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "other_field": "value",
+      "error_status": "encryption_failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
 
 :::note
-- The processor caches cipher instances for performance when using the same key
-- Compression may not benefit already compressed data (e.g., images)
-- Consider using GCM mode unless performance is critical
+- Encryption keys are cached for performance
+- Compression is most effective for text-based data
+- Use environment variables or secure key management for encryption keys
+:::
+
+:::warning
+- Use exactly 32-byte encryption keys
+- Never reuse initialization vectors
+- Protect encryption keys rigorously
+- Be aware of performance overhead
 :::
