@@ -57,6 +57,7 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/anthropic",
                 "administration/pipelines/processors/append",
                 "administration/pipelines/processors/attachment",
+                "administration/pipelines/processors/azureai",
                 "administration/pipelines/processors/bytes",
                 "administration/pipelines/processors/cef",
                 "administration/pipelines/processors/circle",
