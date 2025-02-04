@@ -6,40 +6,7 @@ pagination_prev: null
 
 **Director** uses _targets_ as the output destinations to forward, store, and analyze collected telemetry data. Targets provide flexible options for data persistence and integration with various analysis platforms.
 
-## Configuration
-
-All target configuration files reside in the `config` directory under the root, and have `.yml` or `.yaml` extensions:
-
-```mermaid
-flowchart LR
-   vmroot@{shape: docs, label: "<code>&lt;vm_root&gt;</code>"}
-   config@{shape: docs, label: "<code>config/</code>"}
-      targets@{shape: docs, label: "<code>targets/</code>"}
-        local@{shape: tag-doc, label: "<code>local/</code>"}
-        cloud@{shape: tag-doc, label: "<code>cloud/</code>"}
-        sentinel@{shape: tag-doc, label: "<code>sentinel/</code>"}
-
-      outputs@{shape: tag-doc, label: "<code>outputs</code>"}
-      storage@{shape: tag-doc, label: "<code>storage</code>"}
-
-   vmroot --> config
-
-   config --> targets
-   config --> outputs
-   config --> storage
-
-   targets --> local
-   targets --> cloud
-   targets --> sentinel
-```
-
-**Director** recursively discovers all configuration files, regardless of subfolder structure.
-
-:::note
-Each target type provides specific configuration options detailed in its respective chapter.
-:::
-
-## Categories
+## Use Categories
 
 ### Local Storage
 
@@ -57,75 +24,60 @@ The integration options for the cloud are below:
 
 * **Microsoft Sentinel** - Direct DCR integration and ASIM normalization are supported. In addition to standard tables, _WindowsEvent_, _SecurityEvent_, _CommonSecurityLog_, and _Syslog_ can be used. Various ASIM tables are also available. (See the [ASIM section](/docs/appendix.mdx#asim) for a complete list.)
 
-## Options
-
-The following _processing options_ are available for targets:
-
-* **Pipelines** - Field normalization (ECS, CIM, ASIM, CEF, LEEF, CSL), data transformation, message batching, custom field mapping, schema validation, and format conversion.
-
-* **Buffer management** - Configurable buffer sizes, batch processing, flush intervals, queue management, checkpoint recovery, and error handling
-
-* **Performance** - Asynchronous writing, buffer optimization, connection pooling, retry mechanisms, resource monitoring, and size-based rotation
-
-* **Security** - Authentication using API keys, service principals, and client certificates. Encryption with TLS/SSL, HTTPS, or custom. Also, access control and audit logging.
-
 ## Deployment
 
-The available deployment types are:
+The following deployment types can be used:
 
-* **Single**
+* **Single** (one-to-one) - data is routed to only one destination:
 
   ```mermaid
   block-beta
     columns 5
-    A("Director"):2
-    space
-    B("Target"):2
+    A("Director"):1
+    B(["Analysis Platform"]):2
     A --> B
   ```
 
-* **Multiple**
+* **Multiple** (one-to-many) - data is routed to two or more destinations:
 
   ```mermaid
   block-beta
     columns 5
-    A("Director"):2
+    A("Director"):1
     space
-    B("Target 1"):2
-    space
-    space
-    space
-    C("Target 2"):2
+    B[("Remote Site")]:2
     space
     space
+    C[("Client Site")]:2
     space
-    D("..."):2
+    space
+    D[("Local Storage")]:2
     A --> B
     A --> C
     A --> D
   ```
 
-* **Chained**
+* **Chained** - data is routed sequentially from one destination to the next:
 
   ```mermaid
-  graph LR
-    A("Director")
-    B("Local
-    Storage")
-    C("Cloud
-    Upload")
-    D("Analysis
-    Platform")
+  block-beta
+    columns 5
+    space
+    space
+    C[/"Cloud
+    Upload"\]:2
+    D(["Analysis
+    Platform"]):2
+    A("Director"):1
+    B[("Local
+    Storage")]:3
+    space
     A --> B
     B --> C
     C --> D
   ```
 
-:::warning
-Always implement appropriate security controls and monitor storage capacity when deploying targets in production environments.
-:::
-
-## Common Uses
+## Use Cases
 
 The most common uses of targets are:
 
@@ -136,3 +88,13 @@ The most common uses of targets are:
 * **Real-time analysis** - Live monitoring, alert generation, trend analysis, and performance tracking
 
 * **Data lake building** - Raw data storage, schema evolution, data partitioning, and analytics preparation
+
+To serve these ends, the following _processing options_ are available:
+
+* **Pipelines** - Field normalization (for ECS, CIM, ASIM, CEF, LEEF, and CSL), data transformation, message batching, custom field mapping, schema validation, and format conversion.
+
+* **Buffer management** - Configurable buffer sizes, batch processing, flush intervals, queue management, checkpoint recovery, and error handling
+
+* **Performance** - Asynchronous writing, buffer optimization, connection pooling, retry mechanisms, resource monitoring, and size-based rotation
+
+* **Security** - Authentication using API keys, service principals, and client certificates. Encryption with TLS/SSL, HTTPS, or custom algorithms. Also, access control and audit logging.

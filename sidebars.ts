@@ -3,12 +3,15 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 const sidebars: SidebarsConfig = {
   userDocs: [
     "README",
-    "features",
+    "getting-started",
+    "sentinel-integration",
+    "components",
 
     {
       type: "category",
       label: "Administration",
       link: {type: "doc", id: "administration/index"},
+      collapsed: false,
       items: [
         {
           type: "category",
@@ -148,8 +151,8 @@ const sidebars: SidebarsConfig = {
   ],
   tutorDocs: [
     "tutorials/quick-start",
-    // "tutorials/syslog-to-console",
-    // "tutorials/syslog-to-parquet-file",
+    "tutorials/syslog-to-console",
+    "tutorials/syslog-to-parquet-file",
   ],
 };
 

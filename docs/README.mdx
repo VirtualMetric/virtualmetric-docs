@@ -5,24 +5,218 @@ sidebar_label: About
 
 # VirtualMetric DataStream
 
-VirtualMetric’s DataStream is the next-generation telemetry pipeline solution tailored for security engineers and analysts. Designed for unparalleled performance and granular data control, it sets a new standard in SIEM workflows. Seamlessly integrating with Microsoft Sentinel, DataStream ensures zero data loss, advanced routing flexibility, and unprecedented cost efficiency. Stay ahead in log management and forensic data processing with VirtualMetric.
+<div className="about-byline">
+Introducing the next-generation telemetry pipeline solution for security engineers and analysts
+</div>
 
 <img src="/img/about-vendor.png" alt="VirtualMetric DataStream Vendor Overview"/>
 
-Crafted for effortless Microsoft Sentinel integration, DataStream extracts context from log messages and automatically maps them to ASIM tables. Contextual filters ensure only relevant data is ingested, saving time, reducing costs, and simplifying operations.
+<div className="about-byline">
+Designed for robust high-performance operations and granular data control
+</div>
 
-## Performance and Scalability
+## Features
 
-Process massive log volumes at record speed with VirtualMetric’s vectorized pipeline engine, leveraging all available cores for maximum throughput. Delivering 10x ingest performance compared to traditional solutions and up to 99% disk and network compression, DataStream optimizes bandwidth usage and disk space, ensuring cost savings and operational excellence.
+### Agentless Data Collection
 
-## Safety and Reliability
+**DataStream**'s agentless design enables data collection from Windows, Linux, Unix, macOS, Solaris, AIX, and many others without requiring third-party tools or complicated configurations. 
 
-VirtualMetric’s Write-Ahead Log (WAL) design ensures reliability by storing pipeline states securely on disk. Avoiding the complexity of external components like Kafka, DataStream guarantees zero data loss and minimizes downtime, even under heavy loads.
+```mermaid
+graph LR
+    DS([DataStream System])
+    CS[Credential Store]
+    AD[Active Directory]
+    
+    subgraph Target Systems
+        W[Windows]
+        L[Linux]
+        M[macOS]
+        S[Solaris]
+        A[AIX]
+    end
 
-## Agentless Data Collection
+    CS <-.-> |Secure Credentials| DS
+    AD <-.-> |Service Accounts| DS
+    
+    DS <-.-> |Read-only Access| W
+    DS <-.-> |Read-only Access| L
+    DS <-.-> |Read-only Access| M
+    DS <-.-> |Read-only Access| S
+    DS <-.-> |Read-only Access| A
 
-Collect data seamlessly from diverse operating systems (Windows, Linux, MacOS, and more) without third-party tools. VirtualMetric’s agentless approach leverages read-only user rights for secure access and integrates with Credential Stores or Active Directory, eliminating manual configurations while preserving data integrity.
+    style DS fill:#87CEEB
+    style CS fill:#98FB98
+    style AD fill:#98FB98
+    style W fill:#FFE4B5
+    style L fill:#FFE4B5
+    style M fill:#FFE4B5
+    style S fill:#FFE4B5
+    style A fill:#FFE4B5
+```
 
-## Flexible Data Routing
+The system leverages read-only user rights for secure remote access, ensuring data integrity and compliance. By integrating with _Credential Stores_ and _Active Directory Service Accounts_, it eliminates the need for user credentials, simplifying creation of secure connections.
 
-Utilize the Elastic Ingest Pipeline format to effortlessly create and manage pipelines with 50+ processors for tasks like parsing, filtering, and routing. Advanced routing options streamline data delivery to multiple SIEM endpoints with precision, empowering teams to scale efficiently.
+### Vectorized Processing Architecture
+
+Utilizing all available cores, **DataStream**'s pipeline engine processes large log volumes in record time and provides parallel data ingestion with target SIEMs.
+
+```mermaid
+graph TD
+    subgraph Cores[Multiple CPU Cores]
+        C1(Core 1)
+        C2(Core 2)
+        C3(Core 3)
+        C4(Core N)
+    end
+    
+    Data[Log Data] -.-> Pipeline([Pipeline Engine])
+    Pipeline -.-> Cores
+    
+    Cores -.-> |Parallel Ingestion| SIEM1[SIEM Target 1]
+    Cores -.-> |Parallel Ingestion| SIEM2[SIEM Target 2]
+    
+    style Pipeline fill:#87CEEB
+```
+
+With over _10 times_ the ingestion speed of traditional solutions, **DataStream** reduces bandwidth usage down to the bare minimum, delivering great cost savings.
+
+### Lossless Pipeline Engine
+
+Our _Write-Ahead Log_ (WAL) architecture provides a robust foundation for data integrity by securely storing all routing and pipeline states on disk.
+
+Unlike solutions that require additional components like Kafka, **DataStream** caps log duplication at just one message. This ensures zero data loss, even in the event of a crash.
+
+The _WAL_ approach also minimizes the risk of system downtime, ensuring that your telemetry pipeline is always up and running, and consistent, even under heavy loads.
+
+### Datasets and RBAC Structure
+
+We are revolutionizing the traditional concept of _source_ in telemetry pipelines with our introduction of _Datasets_.
+
+```mermaid
+flowchart TD
+    Input[Input Data] --> WAL[Write-Ahead Log]
+    WAL --> Disk[(Disk Storage)]
+    WAL --> Pipeline([Pipeline Processing])
+    Pipeline --> Output[Output Data]
+    
+    subgraph Recovery
+        Disk --> |Crash Restore| Pipeline
+    end
+    
+    style WAL fill:#98FB98
+    style Disk fill:#FFE4B5
+```
+
+Unlike other solutions that focus solely on data collection via protocols or third-party agents, _Datasets_ categorize telemetry data&mdash;i.e. Windows Event Logs, Windows User Activity, Linux Audit Logs, etc.&mdash;at the source, simplifying pipeline design and enabling advanced _Role-Based Access Control_ (RBAC).
+
+With _Datasets_, users can define role-based access at the data level to ensure that the teams working on the same source are fully isolated from each other. This innovative approach delivers greater flexibility and tighter security.
+
+### Dedicated Storage Format
+
+The _VirtualMetric File Format_ (VMF) was engineered specifically for high-performance pipeline engines.
+
+```mermaid
+graph LR
+    VMF[VMF]
+    
+    VMF -.-> Compression([99% Compression])
+    VMF -.-> Storage([Zero Trust Storage])
+    VMF -.-> Filters([Bloom Filters])
+    VMF -.-> Chain([Log Chaining])
+    VMF -.-> TSA[(TSA Integration)]
+    
+    subgraph Benefits
+        Compression -.-> |Efficient| Transport[/Network Transport/]
+        Filters -.-> |Fast| Search[/Search Capabilities/]
+        Chain -.-> |Enhanced| Forensics[/Forensic Integrity/]
+        Storage -.-> |Secure| DataHandling[/Data Handling/]
+    end
+    
+    style VMF fill:#FFCCCC
+```
+
+With its roots in Apache Avro, VMF combines the efficiency of a row-based format with the ability to handle massive volumes of small data chunks. Its design enables disk-level merging without consuming system resources, overcoming the limitations of Avro OCF.
+
+VMF achieves up to 99% compression, making it ideal for both storage and network transport. It also supports features like _Bloom Filters_, _Zero Trust Storage_, _Log Chaining_, and _TSA_ out of the box, making it the ultimate file format for fast searches, forensic integrity, and secure data handling.
+
+### Advanced Data Routing
+
+We have simplified data routing with our advanced `reroute` processor, eliminating the need for manual filtering that is necessary in other solutions.
+
+```mermaid
+graph TD
+    subgraph Sources[Data Sources]
+        S1[(Source 1)]
+        S2[(Source 2)]
+        S3[(Source 3)]
+    end
+    
+    subgraph Routing[Reroute Processor]
+        F([Advanced Filters])
+        P([Pipeline Level])
+        C([Content Pack Level])
+    end
+    
+    Sources -.-> Routing
+    Routing -.-> |Dataset Coalescing| SIEM[Single SIEM Endpoint]
+    
+    style Routing fill:#98FB98
+```
+
+This processor allows users to route data to destinations at the pipeline or content pack level. Advanced filters can be applied for precise data routing, and the _Dataset_ concept further streamlines this by enabling multiple data sources to coalesce around a single SIEM endpoint. 
+
+Design efficient and scalable routing strategies with ease.
+
+### Extensive Processor Support
+
+Our pipeline engine adopts the widely recognized Elastic Ingest Pipeline format, allowing IT and Security Engineers to create and manage pipelines effortlessly.
+
+```mermaid
+graph TD
+    EIP([Elastic Ingest Pipeline])
+    
+    subgraph Processors[50+ Processors]
+        P1(Parsing)
+        P2(Filtering)
+        P3(Enrichment)
+    end
+    
+    EIP -.-> |Low Code/No Code| Processors
+    Processors -.-> Routing([Routing])
+    Routing -.->  |Low Code/No Code| Engineers[(IT/Security Engineers)]
+    
+    style EIP fill:#87CEEB
+    style Processors fill:#98FB98
+```
+
+With 50+ processors, **DataStream** has the most comprehensive support in the industry for _low-code_/_no-code_ management enabling tasks like parsing, filtering, enrichment, routing, and more. Engineers with **Elastic** experience can leverage this robust and flexible pipeline engine, reducing onboarding time and enhancing operational efficiency.
+
+### Microsoft Sentinel Integration
+
+The pipeline engine was specifically crafted to integrate seamlessly with Microsoft Sentinel.
+
+```mermaid
+graph LR
+    Log[Log Messages] -.-> Context([Context Inference])
+    Context -.-> Filter{Contextual Filters}
+    
+    subgraph Sentinel[Microsoft Sentinel]
+        ASIM[(ASIM Tables)]
+    end
+    
+    Filter -.-> |Optimized Data| ASIM
+    
+    style Sentinel fill:#87CEEB
+    style Context fill:#98FB98
+```
+By inferring context from log messages, our solution automatically ingests data into the appropriate ASIM tables, drastically reducing the manual effort and accelerating integration.
+
+With contextual filters, users can easily optimize data ingestion to ensure only relevant information is sent to Sentinel, saving time and reducing costs by increasing efficiency.
+
+---
+
+<div className="about-byline">
+Whatever your telemetry needs, **DataStream** has something to offer to make your operations much more robust, secure, streamlined, and efficient at drastically reduced costs.
+</div>
+
+---

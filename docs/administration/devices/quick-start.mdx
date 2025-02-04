@@ -8,33 +8,57 @@ This guide will walk you through configuring your first device in **Director** u
 
 ## Configuration
 
-Director searches the `<vm_root>/config` directory recursively for files with `.yml` or `.yaml` extensions. You can organize your configurations in several ways:
+The user has the flexibility to organize the device configuration files as they wish using the files with a `.yml` extension that reside inside the `config` directory:
 
-<ExampleGrid>
-  <CommentCol>
-    Using the `.yaml` extension as a standalone file&hellip;\
-    or with a listener-based grouping:
-  </CommentCol>
-  <CodeCol>
-  ```bash
-    syslog.yaml
-  ```
-  ```bash
-    /device/listeners/syslog.yaml
-  ```
-  </CodeCol>
+```mermaid
+flowchart TD
+  config@{ shape: docs, label: "<code>config/</code>"}
+  devices@{ shape: docs, label: "<code>devices/</code>"}
+  windows@{ shape: tag-doc, label: "<code>windows/</code>"}
+  linux@{ shape: tag-doc, label: "<code>linux/</code>"}
+  network@{ shape: tag-doc, label: "<code>network/</code>"}
+  listeners@{ shape: tag-doc, label: "<code>listeners/</code>"}
+  integrations@{ shape: tag-doc, label: "<code>integrations/</code>"}
+  config --> devices
+  config --> listeners
+  config --> integrations
+  devices --> windows
+  devices --> linux
+  devices --> network
+```
 
-  <CommentCol>
-    Using the `.yml` extension, along with other devices:
-  </CommentCol>
-  <CodeCol>
-  ```bash
-    /devices/syslog.yml
-  ```
-  </CodeCol>
-</ExampleGrid>
+**Director** discovers all the configuration files regardless of the subfolder structure by scanning the `<vm_root>/config` directory recursively. You can organize your configurations in two ways:
 
-Choose the grouping that best fits your needs&mdash;**Director** will find them regardless of the folder structure.
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+  Using the `.yml` extension as a standalone file&hellip;
+  
+  ```PowerShell
+    C:\Users\<user-name>\Documents\syslog.yml
+  ```
+
+  -or- with a listener-based grouping:
+  
+  ```PowerShell
+    C:\<vm_root>\listeners\syslog.yml
+  ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+  Using the `.yml` extension as a standalone file&hellip;
+
+  ```bash
+    ~: syslog.yml
+  ```
+
+  -or- with a listener-based grouping:
+  
+  ```bash
+  ~: <vm_root>/listeners/syslog.yml
+  ```
+  </TabItem>
+</Tabs>
+
+Choose the grouping that best fits your needs.
 
 ## Basic UDP Setup
 

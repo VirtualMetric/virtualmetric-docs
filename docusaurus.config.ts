@@ -110,12 +110,12 @@ const config: Config = {
           label: "Docs",
         },
 
-        {
-          type: "docSidebar",
-          sidebarId: "tutorDocs",
-          position: "left",
-          label: "Tutorials",
-        },
+        // {
+        //   type: "docSidebar",
+        //   sidebarId: "tutorDocs",
+        //   position: "left",
+        //   label: "Tutorials",
+        // },
 
         // {
         //   href: "https://google.com",

@@ -157,7 +157,7 @@ The next on the list is the interactions between the pipelines. Real-world scena
 
   ```mermaid
   ---
-  title: Sequential Flow
+  title: Trigger Order
   ---
   graph LR
   ```
@@ -195,7 +195,7 @@ The next on the list is the interactions between the pipelines. Real-world scena
 
   ```mermaid
   ---
-  title: Relay Flow
+  title: Relay Order
   ---
   graph LR
   ```
@@ -216,35 +216,31 @@ The next on the list is the interactions between the pipelines. Real-world scena
 
 ## Best Practices
 
-Finally, we have to consider a few guidelines for designing effective and efficient pipelines. Always keep the following in mind.
+Finally, let us consider a few guidelines for designing effective and efficient pipelines.
 
 ### Modularity
 
-Reusability is one of the ever-present requirements in IT design. 
+Reusability is one of the ever-present requirements of design. 
   
 In the context of pipelines, this means focusing on specific transformations. If, for example, a string field needs to be stripped of formatting tags before extracting a certain value, it is best to keep these two together.
 
-### Simplicity
+In addition, complex pipelines are likely to bring an overhead which, if not handled carefully, may degrade performance. Therefore, it is essential to check whether every processor included is essential for its primary task. Keep in mind that performance is also related to modularity.
 
-Complex pipelines are likely to bring an overhead which, if not handled carefully, may degrade performance. Therefore, it is essential to check whether every processor included is absolutely essential for its primary task. Keep in mind that performance is also related to modularity.
-
-### Volumes
+### Volume
 
 Anticipate handling varying data volumes.
 
 Pipelines really shine at scale. It is best to keep in mind handling large amounts of data, a consideration which may expose inefficient design choices.
 
-### Failures
+### Data Integrity
 
-Always implement robust error handling.
+This requires consistent data typing across the processors, implementing validation steps, and handling edge cases and unexpected input formats. 
 
-This is particularly relevant to expensive computations repeating which is likely to consume extra system resources and therefore may become wasteful.
-
-Given the above, a well-designed logging mechanism is likely to be a good aid in the implementation of error handling.
+The most common challenge in this regard is **format variations**. Make sure that you have paid   enough attention to normalization.
 
 ### Optimization
 
-This requires observing the following:
+A few rules of thumb:
 
 * Use **parallel processing** where possible
 
@@ -252,18 +248,20 @@ This requires observing the following:
 
 * Streamline **data transformations**
 
-  Unless it is directly relevant to its goal, it is best not to include a data transformation in a pipeline. Managing intricate data manipulation requirements is always a challenge. Make sure that the pipeline serves a specific and clear purpose.
+  Unless directly relevant to its goal, do not to include a transformation in a pipeline. Managing intricate manipulations is always a challenge. Make sure that the pipeline serves a clear and specific purpose.
 
 * Reduce **computational complexity**
 
-  The key to achieving this is choosing the appropriate processor order. A sloppy design in that regard, i.e. not paying attention to the input-output sequence may increase the computational burden of a pipeline in unexpected ways.
+  The key to achieving this is choosing the appropriate processor order. A sloppy design, i.e. not paying attention to the input-output sequence, may increase the computational burden of a pipeline in unexpected ways.
 
-### Data Integrity
+* Build **incrementally** and **iteratively**
 
-This requires consistent data typing across the processors, implementing validation steps, and handling edge cases and unexpected input formats. 
+  Always review the available processors and their specific configurations first before embarking on a design, and at every step _test_ your design.
 
-The most common challenge in this regard is **format variations**. Make sure that you have paid enough attention to the stage.
+### Failures
 
-## Next Steps
+Lastly, always implement robust error handling.
 
-Always review the available processors and their specific configurations first before embarking on a specifi design. Build _incrementally_ and _iteratively_, and at every step _test_ your design.
+This is particularly relevant to expensive computations repeating which is likely to consume extra system resources and therefore may become wasteful.
+
+Given the above, a well-designed logging mechanism is likely to be a good aid in the implementation of error handling.

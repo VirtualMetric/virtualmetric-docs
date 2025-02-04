@@ -1,18 +1,6 @@
----
-description: Encrypts field values using AES encryption
----
-
 # Encrypt
 
-<span class="theme-doc-version-badge badge badge--primary">Security</span><span class="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
-
 ## Synopsis
-
-Encrypts string values using AES encryption with optional compression. Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation.
-
-When compression is enabled, data is compressed before encryption, significantly reducing the size of encrypted data.
-
-## Schema
 
 ```yaml {3-5}
 encrypt:
@@ -30,7 +18,48 @@ encrypt:
   - with_compression: <boolean>
 ```
 
-## Configuration
+## Description
+
+**Functionality**: Encrypts string values using AES encryption with optional compression. Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation.
+
+## Security Recommendations
+
+### Key Management
+- **Key Generation**: Use a cryptographically secure random number generator (CSPRNG) to generate encryption keys
+- **Key Rotation**: Implement regular key rotation (e.g., every 90 days)
+- **Key Storage**: 
+  - Never store encryption keys in plaintext
+  - Use a secure key management service (KMS) or hardware security module (HSM)
+  - Consider using envelope encryption for key protection
+  - Follow the principle of least privilege for key access
+
+### IV (Initialization Vector) Management
+- **IV Generation**: Use a CSPRNG to generate IVs
+- **IV Uniqueness**: Never reuse IVs with the same key
+- **IV Size**: Use appropriate IV sizes:
+  - GCM mode: 12 bytes (96 bits) recommended
+  - CFB mode: Must equal block size (16 bytes/128 bits for AES)
+- **IV Storage**: IVs can be stored with ciphertext as they don't need to be secret
+
+### Secure Storage Guidelines
+- **Data at Rest**:
+  - Store encrypted data and IVs separately from encryption keys
+  - Use authenticated encryption (GCM mode) for data integrity
+  - Implement secure backup procedures for encrypted data
+  - Consider filesystem encryption for additional protection
+
+- **Data in Transit**:
+  - Use TLS for transmitting encrypted data
+  - Verify data integrity using message authentication codes (MACs)
+  - Implement secure key exchange protocols
+
+### Auditing and Monitoring
+- Log all encryption/decryption operations (excluding sensitive data)
+- Monitor for unusual patterns that might indicate compromise
+- Regularly audit key usage and access patterns
+- Maintain detailed records of key rotations
+
+## Parameters
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -47,47 +76,27 @@ encrypt:
 |`tag`|N|-|Identifier|
 |`with_compression`|N|`false`|Enable compression before encryption to reduce data size|
 
-## Details
+## Supported Algorithms
 
-The compression feature provides significant benefits:
+### AES-256-GCM (Default)
+- Provides both confidentiality and authenticity
+- More secure against tampering
+- Slightly slower than CFB mode
+- Recommended for most use cases
 
-* **Storage Efficiency** - Reduces encrypted data size by 50-80% for text data, thereby lowering storage costs. It is particularly effective for repetitive content.
-
-* **Performance** - Smaller data size means faster transmission, thereby reducing network bandwidth consumption.
-
-Ideal uses are log files with repeating patterns, JSON/XML documents, text-heavy data, and backup data.
-
-:::warning
-Encryption key must be exactly 32 bytes for AES-256. Both the encrypted value and IV are returned as base64 strings. Compression may not be beneficial for already compressed data, e.g. images.
-:::
-
-The processor supports two AES-256 modes:
-
-* **AES-256-GCM** (Default) - Provides both confidentiality and authenticity. This is more secure against tampering, although slightly slower than the CFB mode.
-
-* **AES-256-CFB** -Provides confidentiality. This is faster than the GCM mode, although there is no built-in authentication.
-
-:::note
-The processor caches cipher instances for better performance when using the same encryption key multiple times.
-:::
-
-{/*
-
-TODO: Code rabbit bunları eklememizi önerdi
-
-- Key management recommendations
-- IV generation guidelines
-- Secure storage of encrypted data
-
-*/}
+### AES-256-CFB
+- Provides confidentiality
+- Faster than GCM mode
+- No built-in authentication
+- Use when performance is critical and data authenticity is handled separately
 
 ## Examples
 
-### AES-256-GCM
+### AES-256-GCM Encryption
 
 <ExampleGrid>
   <CommentCol>
-    Using the GCM mode...
+    Using GCM mode with proper key and IV handling...
   </CommentCol>
   <CodeCol>
     ```json
@@ -99,12 +108,12 @@ TODO: Code rabbit bunları eklememizi önerdi
     encrypt:
       - field: password
       - iv_field: password_iv
-      - encryption_key: 6B58703273357638792F423F4528482B
+      - encryption_key: "${ENCRYPTION_KEY}"  # Use environment variable
       - algorithm: AES-256-GCM
     ```
   </CodeCol>
   <CommentCol>
-    encrypts the sensitive data and IV:
+    creates encrypted data and IV:
   </CommentCol>
   <CodeCol>
     ```json
@@ -116,11 +125,11 @@ TODO: Code rabbit bunları eklememizi önerdi
   </CodeCol>
 </ExampleGrid>
 
-### Compression
+### Compression with Encryption
 
 <ExampleGrid>
   <CommentCol>
-    Enabling compression for large text data...
+    Enable compression for large text data...
   </CommentCol>
   <CodeCol>
     ```json
@@ -132,7 +141,7 @@ TODO: Code rabbit bunları eklememizi önerdi
     encrypt:
       - field: log_data
       - iv_field: log_iv
-      - encryption_key: 6B58703273357638792F423F4528482B
+      - encryption_key: "${ENCRYPTION_KEY}"
       - algorithm: AES-256-GCM
       - with_compression: true
     ```
@@ -143,74 +152,22 @@ TODO: Code rabbit bunları eklememizi önerdi
   <CodeCol>
     ```json
     {
-      "log_data": "Yh8dR2S2kZpsMkYoBN2tQ==",
+      "log_data": "Yh8dR2S2kZpsMkYoBN2tQ==",  # Compressed & encrypted
       "log_iv": "K+r8YorvFiFTC"
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### AES-256-CFB
+:::warning
+- Encryption keys must be exactly 32 bytes for AES-256
+- Both the encrypted value and IV are returned as base64 strings
+- Never reuse IVs with the same key
+- Store encryption keys securely using a key management service
+:::
 
-<ExampleGrid>
-  <CommentCol>
-    Using the CFB mode...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "message": "sensitive data"
-    }
-    ```
-    ```yaml
-    encrypt:
-      - field: message
-      - iv_field: message_iv
-      - encryption_key: 6B58703273357638792F423F4528482B
-      - algorithm: AES-256-CFB
-    ```
-  </CodeCol>
-  <CommentCol>
-    encrypts the data faster:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "message": "vFza",
-      "message_iv": "FmXUb0OPOWm1A2kw6diKYw=="
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Error Handling
-
-<ExampleGrid>
-  <CommentCol>
-    Handling missing fields gracefully...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "other_field": "value"
-    }
-    ```
-    ```yaml
-    encrypt:
-      - field: missing_field
-      - iv_field: missing_iv
-      - encryption_key: 6B58703273357638792F423F4528482B
-      - ignore_missing: true
-    ```
-  </CodeCol>
-  <CommentCol>
-    continues the processing:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "other_field": "value"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
+:::note
+- The processor caches cipher instances for performance when using the same key
+- Compression may not benefit already compressed data (e.g., images)
+- Consider using GCM mode unless performance is critical
+:::
