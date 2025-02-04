@@ -1,0 +1,275 @@
+---
+description: Extracts fields using named capture groups
+---
+
+# Regex Extract
+
+<span class="theme-doc-version-badge badge badge--primary">Extract</span><span class="theme-doc-version-badge badge badge--secondary">Cribl Compatible</span>
+
+## Synopsis
+
+Extracts named fields from text using regular expressions with named capture groups. Supports dynamic field naming using `_NAME_` and `_VALUE_` pattern pairs, field name formatting, and handling of multiple matches.
+
+## Schema
+
+```yaml {2-4}
+regex_extract:
+  - field: <ident>
+  - regex: <string>
+  - additional_regex: <string[]>
+  - description: <text>
+  - field_name_format: <string>
+  - if: <script>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
+  - max_exec: <integer>
+  - on_failure: <processor[]>
+  - on_success: <processor[]>
+  - overwrite_existing: <boolean>
+  - tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing text to extract from|
+|`regex`|Y|-|Regular expression with named capture groups|
+|`additional_regex`|N|-|Additional patterns to match after primary regex|
+|`description`|N|-|Explanatory note|
+|`field_name_format`|N|-|Template for formatting extracted field names (`${name}`)|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue on regex match failures|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`max_exec`|N|`100`|Maximum number of matches to process|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`overwrite_existing`|N|`false`|Replace existing fields instead of converting to array|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor uses Golang regular expressions with named capture groups to extract fields. Each named group becomes a field in the output. Special `_NAME_n` and `_VALUE_n` pairs allow dynamic field naming based on extracted content.
+
+### Key Features
+- Named capture groups for static field names
+- Dynamic field naming with `_NAME_n`/`_VALUE_n` pairs
+- Multiple regex patterns support
+- Array conversion for duplicate fields
+- Field name templating
+- Match count limiting
+
+## Examples
+
+### Basic Field Extraction
+
+<ExampleGrid>
+  <CommentCol>
+    Extract numeric value with static field name...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "metric1=23 metric2=42"
+    }
+    ```
+    ```yaml
+    regex_extract:
+      - field: message
+      - regex: "metric1=(?<metric1>\\d+)"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates new field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "metric1=23 metric2=42",
+      "metric1": "23"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Complex Log Parsing
+
+<ExampleGrid>
+  <CommentCol>
+    Extract multiple fields from structured log...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "462559d4a487[471]: 172.23.0.6 - - [26/Feb/2024:20:22:38 +0000] \"GET /path HTTP/1.1\" 200 87533"
+    }
+    ```
+    ```yaml
+    regex_extract:
+      - field: message
+      - regex: "^(?<container_id>[^\\s]+)\\[(?<process_id>\\d+)\\]:\\s+(?<remote_host>[^\\s]+)\\s+(?<remote_user>-)\\s+(?<auth_user>-)\\s+\\[(?<timestamp>[^\\]]+)\\]\\s+\"(?<request_method>\\w+)\\s+(?<requested_url>[^\\s]+)\\s+(?<http_version>[^\"]+)\"\\s+(?<status>\\d+)\\s+(?<bytes>.+)$"
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts HTTP log components:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "462559d4a487[471]: 172.23.0.6...",
+      "container_id": "462559d4a487",
+      "process_id": "471",
+      "remote_host": "172.23.0.6",
+      "request_method": "GET",
+      "requested_url": "/path",
+      "http_version": "HTTP/1.1",
+      "status": "200",
+      "bytes": "87533"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Dynamic Field Names
+
+<ExampleGrid>
+  <CommentCol>
+    Extract key-value pairs as dynamic fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "name=\"John Doe\" age=30 email=\"john@example.com\""
+    }
+    ```
+    ```yaml
+    regex_extract:
+      - field: message
+      - regex: "(?<_NAME_0>[^\\s=]+)=\"?(?<_VALUE_0>(?<=\")[^\"]*|[^\\s\"]+)"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates fields based on extracted names:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "name=\"John Doe\" age=30 email=\"john@example.com\"",
+      "name": "John Doe",
+      "age": "30",
+      "email": "john@example.com"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Field Name Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Format extracted field names...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "key=value"
+    }
+    ```
+    ```yaml
+    regex_extract:
+      - field: message
+      - regex: "(?<_NAME_0>[^=]+)=(?<_VALUE_0>.+)"
+      - field_name_format: "${name}_field"
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds suffix to field name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "key=value",
+      "key_field": "value"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Match Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Extract multiple matches with array conversion...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "value=1 value=2 value=3 value=4 value=5"
+    }
+    ```
+    ```yaml
+    regex_extract:
+      - field: message
+      - regex: "value=(?<value>\\d+)"
+      - max_exec: 3
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates array of matches up to max_exec:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "value=1 value=2 value=3 value=4 value=5",
+      "value": ["1", "2", "3"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Structured Data Extraction
+
+<ExampleGrid>
+  <CommentCol>
+    Extract structured data using multiple regexes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "<134>1 2020-12-22T17:06:08Z CORP_INT_NLB CheckPoint 18160 - [action:\"Accept\"; conn_direction:\"Internal\"]"
+    }
+    ```
+    ```yaml
+    regex_extract:
+      - field: message
+      - regex: "\\[(?<__fields>.*?)\\]"
+      - additional_regex:
+          - "(?<_NAME_0>[^:]+):\"(?<_VALUE_0>[^\"]+)\""
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts nested key-value pairs:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "<134>1 2020-12-22T17:06:08Z...",
+      "action": "Accept",
+      "conn_direction": "Internal"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+- Field names are automatically sanitized to remove invalid characters
+- The `_NAME_n` and `_VALUE_n` pairs must use matching indices (e.g., `_NAME_0` with `_VALUE_0`)
+- When `overwrite_existing` is false, duplicate matches are converted to arrays
+:::
+
+:::warning
+- Complex regular expressions on large texts may impact performance
+- Be careful with the `max_exec` setting on high-frequency matches
+- The `field_name_format` should produce valid field names
+- Consider using `ignore_failure` when regex patterns might not match all inputs
+:::
