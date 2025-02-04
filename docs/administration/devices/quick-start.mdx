@@ -8,7 +8,7 @@ This guide will walk you through configuring your first device in **Director** u
 
 ## Configuration
 
-The user has the flexibility to organize the device configuration files as they wish: the files a `.yml` extension and reside inside the `config` directory:
+The user has the flexibility to organize the device configuration files as they wish using the files with a `.yml` extension that reside inside the `config` directory:
 
 ```mermaid
 flowchart TD
@@ -27,35 +27,38 @@ flowchart TD
   devices --> network
 ```
 
-**Director** discovers all the configuration files recursively, regardless of the subfolder structure.
+**Director** discovers all the configuration files regardless of the subfolder structure by scanning the `<vm_root>/config` directory recursively. You can organize your configurations in two ways:
 
-Director searches the `<vm_root>/config` directory recursively for files with `.yml` extension. You can organize your configurations in several ways:
-
-<ExampleGrid>
-  <CommentCol>
-    Using the `.yaml` extension as a standalone file&hellip;\
-    or with a listener-based grouping:
-  </CommentCol>
-  <CodeCol>
-  ```bash
-    syslog.yaml
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+  Using the `.yml` extension as a standalone file&hellip;
+  
+  ```PowerShell
+    C:\Users\<user-name>\Documents\syslog.yml
   ```
-  ```bash
-    /device/listeners/syslog.yaml
-  ```
-  </CodeCol>
 
-  <CommentCol>
-    Using the `.yml` extension, along with other devices:
-  </CommentCol>
-  <CodeCol>
-  ```bash
-    /devices/syslog.yml
+  -or- with a listener-based grouping:
+  
+  ```PowerShell
+    C:\<vm_root>\listeners\syslog.yml
   ```
-  </CodeCol>
-</ExampleGrid>
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+  Using the `.yml` extension as a standalone file&hellip;
 
-Choose the grouping that best fits your needs&mdash;**Director** will find them regardless of the folder structure.
+  ```bash
+    ~: syslog.yml
+  ```
+
+  -or- with a listener-based grouping:
+  
+  ```bash
+  ~: <vm_root>/listeners/syslog.yml
+  ```
+  </TabItem>
+</Tabs>
+
+Choose the grouping that best fits your needs.
 
 ## Basic UDP Setup
 

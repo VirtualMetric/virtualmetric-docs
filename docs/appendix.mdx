@@ -2,11 +2,12 @@
 
 ## Log Format Standards
 
-### ASIM (Advanced Security Information Model)
+### ASIM
 
 The Advanced Security Information Model is a layer between the data and the user to configure what and how to ingest data from a source and to route it to a destination. ASIM provides standardization for security-focused log data.
 
 Available ASIM tables:
+
 - `ASimAuditEventLogs`
 - `ASimAuthenticationEventLogs` 
 - `ASimDhcpEventLogs`
@@ -17,7 +18,7 @@ Available ASIM tables:
 - `ASimRegistryEventLogs`
 - `ASimUserManagementActivityLogs`
 
-### CEF (Common Event Format)
+### CEF
 
 The Common Event Format is a standardized security event logging layout. Its creator is ArcSight, and it has been widely adopted by the industry. Features include:
 - Standard header with 7 required fields
@@ -25,18 +26,20 @@ The Common Event Format is a standardized security event logging layout. Its cre
 - Header fields include: version, device vendor, device product, device version, signature ID, name, and severity
 - Extension fields use a key=value format
 
-### CIM (Common Information Model)
+### CIM
 
 The Common Information Model (CIM) is a standardized data model developed by Splunk. It provides:
 
-Common Fields:
+**Common Fields**:
+
 | Field Category | Fields | Description |
 |---------------|---------|-------------|
 | Base Fields | `source`, `sourcetype`, `timestamp`, `host`, `index` | Core fields for event identification and source tracking |
 | Identity Fields | `user`, `src_user`, `dest_user` | User identification and authentication tracking |
 | Network Fields | `src_ip`, `dest_ip`, `src_port`, `dest_port` | Network communication endpoints |
 
-Data Models:
+**Data Models**:
+
 | Model Type | Fields | Purpose |
 |------------|--------|----------|
 | Authentication | `action`, `app`, `status`, `auth_method` | Track authentication events and access control |
@@ -45,7 +48,8 @@ Data Models:
 | Changes | - | Track system and configuration changes |
 | Intrusion Detection | - | Monitor security threats and intrusions |
 
-Event Categories:
+**Event Categories**:
+
 | Category | Event Types | Description |
 |----------|-------------|-------------|
 | Authentication | `success`, `failure`, `logout` | Authentication-related events and outcomes |
@@ -53,7 +57,7 @@ Event Categories:
 | System | `change`, `status`, `error` | System-level events and status changes |
 | Security | - | Security-related events and alerts |
 
-### ECS (Elastic Common Schema)
+### ECS
 
 Elastic Common Schema (ECS) is a specification that defines a common set of fields for ingesting data into Elasticsearch. Field groups include:
 
@@ -70,9 +74,12 @@ Elastic Common Schema (ECS) is a specification that defines a common set of fiel
 | Error | `error.code`, `error.message`, `error.type`, `error.stack_trace` | Error-related information |
 | Trace | `trace.id`, `span.id`, `transaction.id` | Distributed tracing data |
 
-### LEEF (Log Event Extended Format)
+### LEEF
 
-The Log Event Extended Format is an enterprise security event logging format created by IBM QRadar. Features:
+The Log Event Extended Format is an enterprise security event logging format created by IBM QRadar. 
+
+Features:
+
 - Lightweight parsing requirements
 - Fixed header fields: version, vendor, product, version, eventID
 - Variable attributes section
@@ -117,6 +124,7 @@ Common metadata fields used in log processing:
 Apache Parquet is a column-oriented storage format designed for efficiency:
 
 **Row-based storage** (traditional):
+
 ```plaintext
 id,name,last_name,age
 1,John,Buck,35
@@ -125,6 +133,7 @@ id,name,last_name,age
 ```
 
 **Column-based Storage** (Parquet):
+
 ```plaintext
 id:1,2,3
 name:John,Jane,Joe
@@ -133,6 +142,7 @@ age:35,27,42
 ```
 
 Key features:
+
 - Dictionary encoding
 - Compression and bit packing
 - Run-length encoding
@@ -150,12 +160,14 @@ MIIHzTCCBbWgAwIBAgIQaBYE3/M08XHYCnNVmcFBcjANBgkqhkiG9w0BAQsFADBy
 ```
 
 Common uses:
+
 - SSL/TLS certificates
 - SSH keys
 - RSA private keys
 - Certificate chains
 
 File characteristics:
+
 - Base64-encoded content
 - Begin/end markers
 - Can contain multiple certificates/keys
@@ -179,6 +191,7 @@ Standard protocol for system logging with severity levels:
 |7|Debug|Debug messages|
 
 Uses:
+
 - System monitoring
 - Security event logging
 - Compliance tracking

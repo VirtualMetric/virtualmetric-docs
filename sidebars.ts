@@ -4,6 +4,8 @@ const sidebars: SidebarsConfig = {
   userDocs: [
     "README",
     "getting-started",
+    "sentinel-integration",
+    "components",
 
     {
       type: "category",
