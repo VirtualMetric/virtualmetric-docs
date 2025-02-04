@@ -1,5 +1,5 @@
 ---
-description: Parses XML data into structured maps
+description: Parses XML into maps
 ---
 
 # XML
@@ -8,7 +8,7 @@ description: Parses XML data into structured maps
 
 ## Synopsis
 
-Parses XML-formatted strings into structured maps. The processor converts XML documents into nested map structures, handling complex scenarios like nested elements, attributes, and mixed content.
+Parses XML-formatted strings into structured maps.
 
 ## Schema
 
@@ -41,34 +41,28 @@ xml:
 |`on_success`|N|-|Processors to run after successful processing|
 |`tag`|N|-|Identifier for logging purposes|
 
-## Parsing Behavior
-
-### Attributes
-Attributes are stored in a special `_attributes` map within the element.
-
-### Content Handling
-- Text content is stored under `_text` (for elements with attributes)
-- Text content is stored under `_content` (for elements without attributes)
-- Mixed content preserves both element structure and text
-
-### Repeated Elements
-Repeated elements are automatically converted to arrays.
-
 ## Details
 
-The XML parsing provides special handling for:
-- XML attributes (stored under `_attributes`)
-- Mixed content (stored under `_text` or `_content`)
-- Repeated elements (converted to arrays)
-- Nested structures
+The processor converts XML documents into nested map structures, handling complex scenarios like nested elements, attributes, and mixed content.
+
+Attributes are stored in a special `_attributes` map within the element. Text content is stored under:
+
+- `_text` for elements with attributes
+- `_content` for elements without attributes
+
+For mixed content, such as nested structures, both the layout and the text is preserved. Repeated elements are automatically converted to arrays.
+
+:::warning
+Invalid XML will cause processing to fail unless `ignore_failure` is set to `true`.
+:::
 
 ## Examples
 
-### Basic XML Parsing
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Parse a simple XML structure...
+    Parsing a simple XML structure...
   </CommentCol>
   <CodeCol>
     ```json
@@ -99,11 +93,11 @@ The XML parsing provides special handling for:
   </CodeCol>
 </ExampleGrid>
 
-### XML with Attributes
+### Attributes
 
 <ExampleGrid>
   <CommentCol>
-    Parse XML with element attributes...
+    Parsing XML with element attributes...
   </CommentCol>
   <CodeCol>
     ```json
@@ -118,7 +112,7 @@ The XML parsing provides special handling for:
     ```
   </CodeCol>
   <CommentCol>
-    handles attributes separately:
+    handles each separately:
   </CommentCol>
   <CodeCol>
     ```json
@@ -141,7 +135,7 @@ The XML parsing provides special handling for:
 
 <ExampleGrid>
   <CommentCol>
-    Parse XML with repeated elements...
+    Parsing XML with repeated elements...
   </CommentCol>
   <CodeCol>
     ```json
@@ -175,7 +169,7 @@ The XML parsing provides special handling for:
 
 <ExampleGrid>
   <CommentCol>
-    Add parsed XML directly to log entry root...
+    Adding parsed XML directly to log entry root...
   </CommentCol>
   <CodeCol>
     ```json
@@ -190,7 +184,7 @@ The XML parsing provides special handling for:
     ```
   </CodeCol>
   <CommentCol>
-    adds elements directly to root:
+    adds the elements directly:
   </CommentCol>
   <CodeCol>
     ```json
@@ -204,11 +198,11 @@ The XML parsing provides special handling for:
   </CodeCol>
 </ExampleGrid>
 
-### Complex Nested Structure
+### Complex Nested
 
 <ExampleGrid>
   <CommentCol>
-    Parse complex XML with nested elements and attributes...
+    Parsing complex XML with nested elements and attributes...
   </CommentCol>
   <CodeCol>
     ```json
@@ -223,7 +217,7 @@ The XML parsing provides special handling for:
     ```
   </CodeCol>
   <CommentCol>
-    preserves nested structure and attributes:
+    preserves the layout and attributes:
   </CommentCol>
   <CodeCol>
     ```json
@@ -246,11 +240,3 @@ The XML parsing provides special handling for:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The XML processor handles complex XML structures by converting them into nested maps and arrays, preserving both content and attributes.
-:::
-
-:::warning
-Invalid XML will cause processing to fail unless `ignore_failure` is set to `true`.
-:::

@@ -1,5 +1,5 @@
 ---
-description: Filters events based on regex matches
+description: Filters events using regexes
 ---
 
 # Regex Filter
@@ -8,7 +8,7 @@ description: Filters events based on regex matches
 
 ## Synopsis
 
-Filters out events based on regular expression matches. When a pattern matches the specified field content, the event is dropped from the pipeline. Multiple patterns can be specified, and any match will trigger the filter.
+Filters out events based on regular expression matches.
 
 ## Schema
 
@@ -43,22 +43,31 @@ regex_filter:
 
 ## Details
 
-The processor uses Golang regular expressions to match field content. If either the primary `regex` or any pattern in `regexes` matches, the event is dropped from the pipeline. This is useful for filtering out unwanted events based on pattern matching.
+The processor uses Golang regular expressions to match field content.
+ 
+If either the primary `regex` or any pattern in `regexes` matches, the event is dropped from the pipeline. This is useful for filtering out unwanted events.
 
-### Key Features
-- Single or multiple pattern matching
-- Conditional execution
-- Field value validation
-- Error handling options
-- Success/failure processors
+Multiple patterns can be specified, and any match will trigger the filter.
+
+:::warning[caution]
+Complex regular expressions may impact performance.
+:::
+
+The processor can be nicely dove-tailed with conditional execution, field value validation, and error handling and success/failure processors.
+
+If no patterns are specified, all events pass through. Empty field content is treated as non-matching. Matching success triggers event dropping.
+
+:::warning
+Invalid regex patterns and non-string field values will cause errors unless `ignore_failure` is set. Missing fields can be skipped by setting `ignore_missing`.
+:::
 
 ## Examples
 
-### Basic Error Message Filtering
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Drop messages containing errors...
+    Messages containing errors...
   </CommentCol>
   <CodeCol>
     ```json
@@ -73,7 +82,7 @@ The processor uses Golang regular expressions to match field content. If either 
     ```
   </CodeCol>
   <CommentCol>
-    drops the event due to match:
+    are dropped when the event matches:
   </CommentCol>
   <CodeCol>
     ```text
@@ -82,11 +91,11 @@ The processor uses Golang regular expressions to match field content. If either 
   </CodeCol>
 </ExampleGrid>
 
-### Multiple Pattern Filtering
+### Multi-Pattern
 
 <ExampleGrid>
   <CommentCol>
-    Filter out both errors and warnings...
+    Filtering out both errors and warnings...
   </CommentCol>
   <CodeCol>
     ```json
@@ -103,7 +112,7 @@ The processor uses Golang regular expressions to match field content. If either 
     ```
   </CodeCol>
   <CommentCol>
-    matches warning pattern and drops event:
+    drops both the warning and the event:
   </CommentCol>
   <CodeCol>
     ```text
@@ -116,7 +125,7 @@ The processor uses Golang regular expressions to match field content. If either 
 
 <ExampleGrid>
   <CommentCol>
-    Allow non-matching messages through...
+    Allowing non-matching messages through...
   </CommentCol>
   <CodeCol>
     ```json
@@ -131,7 +140,7 @@ The processor uses Golang regular expressions to match field content. If either 
     ```
   </CodeCol>
   <CommentCol>
-    allows event to continue:
+    lets the event to continue:
   </CommentCol>
   <CodeCol>
     ```json
@@ -142,11 +151,11 @@ The processor uses Golang regular expressions to match field content. If either 
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Execution
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Only filter when condition is met...
+    Filtering only when a condition is met...
   </CommentCol>
   <CodeCol>
     ```json
@@ -163,7 +172,7 @@ The processor uses Golang regular expressions to match field content. If either 
     ```
   </CodeCol>
   <CommentCol>
-    skips filtering due to condition:
+    skips the event upon match:
   </CommentCol>
   <CodeCol>
     ```json
@@ -175,11 +184,11 @@ The processor uses Golang regular expressions to match field content. If either 
   </CodeCol>
 </ExampleGrid>
 
-### Error Handling for Missing Fields
+### Missing Fields
 
 <ExampleGrid>
   <CommentCol>
-    Handle missing fields gracefully...
+    Handling missing fields gracefully...
   </CommentCol>
   <CodeCol>
     ```json
@@ -193,7 +202,7 @@ The processor uses Golang regular expressions to match field content. If either 
     ```
   </CodeCol>
   <CommentCol>
-    continues processing:
+    continues the execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -202,11 +211,11 @@ The processor uses Golang regular expressions to match field content. If either 
   </CodeCol>
 </ExampleGrid>
 
-### Non-String Field Handling
+### Non-String Fields
 
 <ExampleGrid>
   <CommentCol>
-    Handle non-string field values...
+    Handling non-string field values...
   </CommentCol>
   <CodeCol>
     ```json
@@ -222,7 +231,7 @@ The processor uses Golang regular expressions to match field content. If either 
     ```
   </CodeCol>
   <CommentCol>
-    skips filtering for invalid type:
+    skips filtering upon invalid types:
   </CommentCol>
   <CodeCol>
     ```json
@@ -232,16 +241,3 @@ The processor uses Golang regular expressions to match field content. If either 
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- If no patterns are specified, all events pass through
-- Empty field content is treated as non-matching
-- Match success triggers event dropping
-:::
-
-:::warning
-- Complex regular expressions may impact performance
-- Invalid regex patterns will cause errors unless `ignore_failure` is true
-- Non-string field values will cause errors unless `ignore_failure` is true
-- Missing fields will cause errors unless `ignore_missing` is true
-:::

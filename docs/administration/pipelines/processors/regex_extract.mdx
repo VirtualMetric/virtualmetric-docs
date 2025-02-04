@@ -1,5 +1,5 @@
 ---
-description: Extracts fields using named capture groups
+description: Extracts fields with named capture groups
 ---
 
 # Regex Extract
@@ -8,7 +8,7 @@ description: Extracts fields using named capture groups
 
 ## Synopsis
 
-Extracts named fields from text using regular expressions with named capture groups. Supports dynamic field naming using `_NAME_` and `_VALUE_` pattern pairs, field name formatting, and handling of multiple matches.
+Extracts named fields from text using regular expressions with named capture groups.
 
 ## Schema
 
@@ -49,23 +49,37 @@ regex_extract:
 
 ## Details
 
-The processor uses Golang regular expressions with named capture groups to extract fields. Each named group becomes a field in the output. Special `_NAME_n` and `_VALUE_n` pairs allow dynamic field naming based on extracted content.
+The processor supports dynamic field naming using `_NAME_` and `_VALUE_` pattern pairs, field name formatting, and handling of multiple matches.
 
-### Key Features
-- Named capture groups for static field names
-- Dynamic field naming with `_NAME_n`/`_VALUE_n` pairs
-- Multiple regex patterns support
-- Array conversion for duplicate fields
-- Field name templating
-- Match count limiting
+Golang regular expressions provied named capture groups to extract fields.
+
+:::warning
+Complex regular expressions on large texts may impact performance
+:::
+
+Each named group becomes a field in the output. Special `_NAME_n` and `_VALUE_n` pairs allow dynamic field naming based on extracted content.
+
+:::note
+The `_NAME_n` and `_VALUE_n` pairs must use matching indices, e.g. `_NAME_0` with `_VALUE_0`
+:::
+
+Multiple regex patterns, array conversion for duplicate fields, field name templating, and match count limiting are also supported.
+
+Field names are automatically sanitized to remove invalid characters. However, the `field_name_format` should produce valid field names. Also, when `overwrite_existing` is set to `false`, duplicate matches are converted to arrays.
+
+:::warning
+Be careful with the `max_exec` setting when dealing with high-frequency matches.
+:::
+
+Consider using `ignore_failure` when regex patterns might not match all inputs.
 
 ## Examples
 
-### Basic Field Extraction
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Extract numeric value with static field name...
+    Extracting a numeric value with a static field name...
   </CommentCol>
   <CodeCol>
     ```json
@@ -80,7 +94,7 @@ The processor uses Golang regular expressions with named capture groups to extra
     ```
   </CodeCol>
   <CommentCol>
-    creates new field:
+    creates a new field:
   </CommentCol>
   <CodeCol>
     ```json
@@ -92,11 +106,11 @@ The processor uses Golang regular expressions with named capture groups to extra
   </CodeCol>
 </ExampleGrid>
 
-### Complex Log Parsing
+### Complex Logs
 
 <ExampleGrid>
   <CommentCol>
-    Extract multiple fields from structured log...
+    Extracting multiple fields from structured log...
   </CommentCol>
   <CodeCol>
     ```json
@@ -111,7 +125,7 @@ The processor uses Golang regular expressions with named capture groups to extra
     ```
   </CodeCol>
   <CommentCol>
-    extracts HTTP log components:
+    yields HTTP log components:
   </CommentCol>
   <CodeCol>
     ```json
@@ -130,11 +144,11 @@ The processor uses Golang regular expressions with named capture groups to extra
   </CodeCol>
 </ExampleGrid>
 
-### Dynamic Field Names
+### Dynamic Fields
 
 <ExampleGrid>
   <CommentCol>
-    Extract key-value pairs as dynamic fields...
+    Extracting key-value pairs as dynamic fields...
   </CommentCol>
   <CodeCol>
     ```json
@@ -149,7 +163,7 @@ The processor uses Golang regular expressions with named capture groups to extra
     ```
   </CodeCol>
   <CommentCol>
-    creates fields based on extracted names:
+    creates new fields based on the extracted names:
   </CommentCol>
   <CodeCol>
     ```json
@@ -163,11 +177,11 @@ The processor uses Golang regular expressions with named capture groups to extra
   </CodeCol>
 </ExampleGrid>
 
-### Field Name Formatting
+### Formatting
 
 <ExampleGrid>
   <CommentCol>
-    Format extracted field names...
+    Formatting extracted field names...
   </CommentCol>
   <CodeCol>
     ```json
@@ -183,7 +197,7 @@ The processor uses Golang regular expressions with named capture groups to extra
     ```
   </CodeCol>
   <CommentCol>
-    adds suffix to field name:
+    adds suffixes:
   </CommentCol>
   <CodeCol>
     ```json
@@ -195,11 +209,11 @@ The processor uses Golang regular expressions with named capture groups to extra
   </CodeCol>
 </ExampleGrid>
 
-### Multiple Match Handling
+### Multi-Match
 
 <ExampleGrid>
   <CommentCol>
-    Extract multiple matches with array conversion...
+    Extracting multiple matches with array conversion...
   </CommentCol>
   <CodeCol>
     ```json
@@ -215,7 +229,7 @@ The processor uses Golang regular expressions with named capture groups to extra
     ```
   </CodeCol>
   <CommentCol>
-    creates array of matches up to max_exec:
+    creates an array of up to `max_exec` matches:
   </CommentCol>
   <CodeCol>
     ```json
@@ -227,11 +241,11 @@ The processor uses Golang regular expressions with named capture groups to extra
   </CodeCol>
 </ExampleGrid>
 
-### Structured Data Extraction
+### Structured Data
 
 <ExampleGrid>
   <CommentCol>
-    Extract structured data using multiple regexes...
+    Using multiple regexes with structured data...
   </CommentCol>
   <CodeCol>
     ```json
@@ -260,16 +274,3 @@ The processor uses Golang regular expressions with named capture groups to extra
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- Field names are automatically sanitized to remove invalid characters
-- The `_NAME_n` and `_VALUE_n` pairs must use matching indices (e.g., `_NAME_0` with `_VALUE_0`)
-- When `overwrite_existing` is false, duplicate matches are converted to arrays
-:::
-
-:::warning
-- Complex regular expressions on large texts may impact performance
-- Be careful with the `max_exec` setting on high-frequency matches
-- The `field_name_format` should produce valid field names
-- Consider using `ignore_failure` when regex patterns might not match all inputs
-:::
