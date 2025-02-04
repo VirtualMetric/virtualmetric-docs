@@ -86,6 +86,7 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/grok",
                 "administration/pipelines/processors/gsub",
                 "administration/pipelines/processors/html_strip",
+                "administration/pipelines/processors/ipqualityscore",
                 "administration/pipelines/processors/join",
                 "administration/pipelines/processors/json",
                 "administration/pipelines/processors/kv",
