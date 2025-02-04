@@ -8,6 +8,10 @@ description: Enriches documents using lookup tables
 
 ## Synopsis
 
+Enriches log events by looking up values in a CSV file and adding corresponding fields to the event. Supports multiple matching modes, case-sensitive/insensitive matching, and various ways to handle multiple matches. 
+
+## Schema
+
 ```yaml {2-7}
 lookup:
   - lookup_file: <string>
@@ -25,13 +29,7 @@ lookup:
   - tag: <string>
 ```
 
-## Description
-
-**Functionality**: Enriches log events by looking up values in a CSV file and adding corresponding fields to the event. Supports multiple matching modes, case-sensitive/insensitive matching, and various ways to handle multiple matches.
-
-The processor reads the lookup data from a CSV file where the first row contains header names. It matches event fields against lookup fields and adds corresponding output fields to the event.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -75,6 +73,10 @@ The processor reads the lookup data from a CSV file where the first row contains
 - **first**: Use first matching entry found
 - **most_specific**: Use most specific match (primarily for CIDR matching)
 - **all**: Use all matching entries (creates array of values)
+
+## Details
+
+The processor reads the lookup data from a CSV file where the first row contains header names. It matches event fields against lookup fields and adds corresponding output fields to the event.
 
 ## Examples
 
