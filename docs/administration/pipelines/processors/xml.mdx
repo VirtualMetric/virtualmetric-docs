@@ -1,0 +1,254 @@
+---
+description: Parses XML data into structured maps
+---
+
+# XML
+
+<span class="theme-doc-version-badge badge badge--primary">Parse</span>
+
+## Synopsis
+
+```yaml {2-3}
+xml:
+  - field: <ident>
+  - target_field: <ident>
+  - description: <text>
+  - if: <script>
+  - add_to_root: <boolean>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
+  - on_failure: <processor[]>
+  - on_success: <processor[]>
+  - tag: <string>
+```
+
+## Description
+
+**Functionality**: Parses XML-formatted strings into structured maps. The processor converts XML documents into nested map structures, handling complex scenarios like nested elements, attributes, and mixed content.
+
+The XML parsing provides special handling for:
+- XML attributes (stored under `_attributes`)
+- Mixed content (stored under `_text` or `_content`)
+- Repeated elements (converted to arrays)
+- Nested structures
+
+## Parameters
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y||Field containing the XML string to parse|
+|`target_field`|N||Field to store the parsed XML structure. If omitted and `add_to_root` is false, an error is raised|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Conditional expression to determine if processing should occur|
+|`add_to_root`|N|`false`|If true, adds parsed XML elements directly to the log entry root|
+|`ignore_failure`|N|`false`|Skip processing if an error occurs|
+|`ignore_missing`|N|`false`|Skip processing if the source field is missing|
+|`on_failure`|N|-|Processors to run if processing fails|
+|`on_success`|N|-|Processors to run after successful processing|
+|`tag`|N|-|Identifier for logging purposes|
+
+## Parsing Behavior
+
+### Attributes
+Attributes are stored in a special `_attributes` map within the element.
+
+### Content Handling
+- Text content is stored under `_text` (for elements with attributes)
+- Text content is stored under `_content` (for elements without attributes)
+- Mixed content preserves both element structure and text
+
+### Repeated Elements
+Repeated elements are automatically converted to arrays.
+
+## Examples
+
+### Basic XML Parsing
+
+<ExampleGrid>
+  <CommentCol>
+    Parse a simple XML structure...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "xml_data": "<person><name>John</name><age>30</age></person>"
+    }
+    ```
+    ```yaml
+    xml:
+      - field: xml_data
+      - target_field: parsed_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a structured map:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "parsed_data": {
+        "person": {
+          "name": "John",
+          "age": "30"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### XML with Attributes
+
+<ExampleGrid>
+  <CommentCol>
+    Parse XML with element attributes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "xml_data": "<user id=\"123\" type=\"admin\"><name>Alice</name></user>"
+    }
+    ```
+    ```yaml
+    xml:
+      - field: xml_data
+      - target_field: parsed_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    handles attributes separately:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "parsed_data": {
+        "user": {
+          "_attributes": {
+            "id": "123",
+            "type": "admin"
+          },
+          "name": "Alice"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Repeated Elements
+
+<ExampleGrid>
+  <CommentCol>
+    Parse XML with repeated elements...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "xml_data": "<books><book>Book1</book><book>Book2</book></books>"
+    }
+    ```
+    ```yaml
+    xml:
+      - field: xml_data
+      - target_field: parsed_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts repeated elements to arrays:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "parsed_data": {
+        "books": {
+          "book": ["Book1", "Book2"]
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Adding to Root
+
+<ExampleGrid>
+  <CommentCol>
+    Add parsed XML directly to log entry root...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "xml_data": "<data><value>test</value><id>123</id></data>"
+    }
+    ```
+    ```yaml
+    xml:
+      - field: xml_data
+      - add_to_root: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds elements directly to root:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": {
+        "value": "test",
+        "id": "123"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Complex Nested Structure
+
+<ExampleGrid>
+  <CommentCol>
+    Parse complex XML with nested elements and attributes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "xml_data": "<library><category name=\"fiction\"><book id=\"1\"><title>Book1</title><authors><author>Author1</author><author>Author2</author></authors></book></category></library>"
+    }
+    ```
+    ```yaml
+    xml:
+      - field: xml_data
+      - target_field: parsed_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves nested structure and attributes:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "parsed_data": {
+        "library": {
+          "category": {
+            "_attributes": {"name": "fiction"},
+            "book": {
+              "_attributes": {"id": "1"},
+              "title": "Book1",
+              "authors": {
+                "author": ["Author1", "Author2"]
+              }
+            }
+          }
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The XML processor handles complex XML structures by converting them into nested maps and arrays, preserving both content and attributes.
+:::
+
+:::warning
+Invalid XML will cause processing to fail unless `ignore_failure` is set to `true`.
+:::
