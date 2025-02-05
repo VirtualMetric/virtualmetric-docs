@@ -1,5 +1,5 @@
 ---
-description: Processes content using Azure OpenAI API for intelligent analysis
+description: Processes content with Azure OpenAI API
 ---
 
 # Azure OpenAI
@@ -8,7 +8,7 @@ description: Processes content using Azure OpenAI API for intelligent analysis
 
 ## Synopsis
 
-Enriches events by sending field content to Azure OpenAI API for analysis and storing the response. Useful for automated analysis, context enrichment, and intelligent processing of log data.
+Enriches events by sending field content to Azure OpenAI API for analysis and storing the response.
 
 ## Schema
 
@@ -55,23 +55,37 @@ azureai:
 
 ## Details
 
-The processor uses Azure OpenAI API to analyze field content. It supports system context messages for customized analysis, temperature control for response variation, and token limits for response length management.
+The processor is useful for automated analysis, context enrichment, and intelligent processing of log data. It uses **Azure OpenAI** API to analyze field content, and supports system context messages for customized analysis, temperature control for response variation, and token limits for response length management.
 
-### Key Features
-- Intelligent content analysis using Azure OpenAI
-- Customizable system context
-- Response configuration
-- Azure deployment integration
-- Error handling options
-- Success/failure processors
+API responses are cached to improve performance.
+
+:::warning[caution]
+API calls add latency to event processing.
+:::
+
+Azure deployment integration is provided.
+
+:::warning
+Resource name and deployment name must match your Azure setup. Invalid resource or deployment names will cause processing errors. Make sure your Azure OpenAI resource has the required model deployments
+:::
+
+Developer messages help guide AI's analysis, and lower temperature values produce more focused responses. 
+
+:::note
+Consider rate limits and costs for high-volume processing, as long token limits control response length and costs and input texts may hit token limits.
+:::
+
+:::warning
+API keys must be securely stored and accessed.
+:::
 
 ## Examples
 
-### Basic Log Analysis
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Analyze a Cisco device log...
+    Analyzing a Cisco device log...
   </CommentCol>
   <CodeCol>
     ```json
@@ -90,7 +104,7 @@ The processor uses Azure OpenAI API to analyze field content. It supports system
     ```
   </CodeCol>
   <CommentCol>
-    adds AI analysis to the event:
+    adds information to the event:
   </CommentCol>
   <CodeCol>
     ```json
@@ -102,11 +116,11 @@ The processor uses Azure OpenAI API to analyze field content. It supports system
   </CodeCol>
 </ExampleGrid>
 
-### Precise Analysis Control
+### Precision
 
 <ExampleGrid>
   <CommentCol>
-    Configure analysis parameters...
+    Fine-tuning analysis parameters...
   </CommentCol>
   <CodeCol>
     ```json
@@ -127,7 +141,7 @@ The processor uses Azure OpenAI API to analyze field content. It supports system
     ```
   </CodeCol>
   <CommentCol>
-    produces focused security insight:
+    produces more focused security insights:
   </CommentCol>
   <CodeCol>
     ```json
@@ -139,11 +153,11 @@ The processor uses Azure OpenAI API to analyze field content. It supports system
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Analysis
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Only analyze critical errors...
+    Analyzing only critical errors...
   </CommentCol>
   <CodeCol>
     ```json
@@ -163,7 +177,7 @@ The processor uses Azure OpenAI API to analyze field content. It supports system
     ```
   </CodeCol>
   <CommentCol>
-    analyzes due to critical level:
+    is preferable due to level:
   </CommentCol>
   <CodeCol>
     ```json
@@ -176,11 +190,11 @@ The processor uses Azure OpenAI API to analyze field content. It supports system
   </CodeCol>
 </ExampleGrid>
 
-### Custom API Version
+### Custom API
 
 <ExampleGrid>
   <CommentCol>
-    Use specific API version...
+    Using a specific API version...
   </CommentCol>
   <CodeCol>
     ```json
@@ -199,7 +213,7 @@ The processor uses Azure OpenAI API to analyze field content. It supports system
     ```
   </CodeCol>
   <CommentCol>
-    uses specified API version:
+    produces results specific to that version:
   </CommentCol>
   <CodeCol>
     ```json
@@ -210,20 +224,3 @@ The processor uses Azure OpenAI API to analyze field content. It supports system
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- API responses are cached to improve performance
-- Developer messages help guide AI's analysis
-- Lower temperature values produce more focused responses
-- Token limits control response length and costs
-- Resource name and deployment name must match your Azure setup
-:::
-
-:::warning
-- API keys should be securely stored and accessed
-- Consider rate limits and costs for high-volume processing
-- Long input texts may hit token limits
-- API calls add latency to event processing
-- Invalid resource or deployment names will cause processing errors
-- Make sure your Azure OpenAI resource has the required model deployments
-:::
