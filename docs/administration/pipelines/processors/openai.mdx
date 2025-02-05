@@ -1,5 +1,5 @@
 ---
-description: Processes content using OpenAI's API for intelligent analysis
+description: Uses OpenAI's API for content analysis
 ---
 
 # OpenAI
@@ -8,7 +8,7 @@ description: Processes content using OpenAI's API for intelligent analysis
 
 ## Synopsis
 
-Enriches events by sending field content to OpenAI's API for analysis and storing the response. Useful for automated analysis, context enrichment, and intelligent processing of log data.
+Enriches events by sending field content to **OpenAI**'s API for analysis and stores the response.
 
 ## Schema
 
@@ -51,23 +51,31 @@ openai:
 
 ## Details
 
-The processor uses OpenAI's Chat API to analyze field content. It supports system context messages for customized analysis, temperature control for response variation, and token limits for response length management.
+This processor is useful for automated analysis, context enrichment, and intelligent processing of log data. It supports system context messages generated for analysis, temperature control for response variation, and token limits for response length management.
 
-### Key Features
-- Intelligent content analysis
-- Customizable system context
-- Response configuration
-- Multiple model support
-- Error handling options
-- Success/failure processors
+System messages help guide the AI's analysis.
+
+Multiple models can be accessed, and responses can be configured. Lower temperature values produce more focused responses.
+
+Token limits control response length and costs. Consider rate limits and costs for high-volume processing, as long input texts may hit token limits.
+
+:::note
+API responses are cached to improve performance since API calls add latency to event processing.
+:::
+
+Error recovery options and success/failure handing are also available.
+
+:::warning
+API keys should be securely stored and accessed.
+:::
 
 ## Examples
 
-### Basic Log Analysis
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Analyze a Cisco device log...
+    Analyzing a Cisco device log...
   </CommentCol>
   <CodeCol>
     ```json
@@ -84,7 +92,7 @@ The processor uses OpenAI's Chat API to analyze field content. It supports syste
     ```
   </CodeCol>
   <CommentCol>
-    adds AI analysis to the event:
+    adds information to the event:
   </CommentCol>
   <CodeCol>
     ```json
@@ -96,11 +104,11 @@ The processor uses OpenAI's Chat API to analyze field content. It supports syste
   </CodeCol>
 </ExampleGrid>
 
-### Precise Analysis Control
+### Precision
 
 <ExampleGrid>
   <CommentCol>
-    Configure analysis parameters...
+    Fine-tuning analysis parameters...
   </CommentCol>
   <CodeCol>
     ```json
@@ -120,7 +128,7 @@ The processor uses OpenAI's Chat API to analyze field content. It supports syste
     ```
   </CodeCol>
   <CommentCol>
-    produces focused security insight:
+    produces more focused security insights:
   </CommentCol>
   <CodeCol>
     ```json
@@ -132,11 +140,11 @@ The processor uses OpenAI's Chat API to analyze field content. It supports syste
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Analysis
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Only analyze critical errors...
+    Analyzing only critical errors...
   </CommentCol>
   <CodeCol>
     ```json
@@ -154,7 +162,7 @@ The processor uses OpenAI's Chat API to analyze field content. It supports syste
     ```
   </CodeCol>
   <CommentCol>
-    analyzes due to critical level:
+    is preferable due to level:
   </CommentCol>
   <CodeCol>
     ```json
@@ -171,7 +179,7 @@ The processor uses OpenAI's Chat API to analyze field content. It supports syste
 
 <ExampleGrid>
   <CommentCol>
-    Handle API failures gracefully...
+    Anticipating API failures...
   </CommentCol>
   <CodeCol>
     ```json
@@ -191,7 +199,7 @@ The processor uses OpenAI's Chat API to analyze field content. It supports syste
     ```
   </CodeCol>
   <CommentCol>
-    continues processing with error handling:
+    continues execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -202,17 +210,3 @@ The processor uses OpenAI's Chat API to analyze field content. It supports syste
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- API responses are cached to improve performance
-- System messages help guide the AI's analysis
-- Lower temperature values produce more focused responses
-- Token limits control response length and costs
-:::
-
-:::warning
-- API keys should be securely stored and accessed
-- Consider rate limits and costs for high-volume processing
-- Long input texts may hit token limits
-- API calls add latency to event processing
-:::
