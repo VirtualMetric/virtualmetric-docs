@@ -3,6 +3,6 @@ const links = {
   routes: "/administration/routes/index",
 };
 
-export function linkFor(chapter: string): string {
-  return links[chapter] || "Chapter not found";
-}
+// export function linkFor(chapter: string): string {
+//   return links[chapter] || "Chapter not found";
+// }
