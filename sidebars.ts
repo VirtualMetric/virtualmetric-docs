@@ -3,17 +3,20 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 const sidebars: SidebarsConfig = {
   userDocs: [
     "README",
-    "features",
+    "getting-started",
+    "sentinel-integration",
+    "components",
 
     {
       type: "category",
       label: "Administration",
-      link: {type: "doc", id: "administration/overview"},
+      link: {type: "doc", id: "administration/index"},
+      collapsed: false,
       items: [
         {
           type: "category",
           label: "Devices",
-          link: {type: "doc", id: "administration/devices/overview"},
+          link: {type: "doc", id: "administration/devices/index"},
           items: [
             "administration/devices/quick-start",
             "administration/devices/windows",
@@ -40,7 +43,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Pipelines",
-          link: {type: "doc", id: "administration/pipelines/overview"},
+          link: {type: "doc", id: "administration/pipelines/index"},
           items: [
             "administration/pipelines/quick-start",
             "administration/pipelines/pre-processing",
@@ -51,11 +54,15 @@ const sidebars: SidebarsConfig = {
               label: "Processors",
               link: {type: "doc", id: "administration/pipelines/processors/index"},
               items: [
+                "administration/pipelines/processors/anthropic",
                 "administration/pipelines/processors/append",
                 "administration/pipelines/processors/attachment",
+                "administration/pipelines/processors/azureai",
                 "administration/pipelines/processors/bytes",
                 "administration/pipelines/processors/cef",
                 "administration/pipelines/processors/circle",
+                "administration/pipelines/processors/cloudflare",
+                "administration/pipelines/processors/comment",
                 "administration/pipelines/processors/community_id",
                 "administration/pipelines/processors/compact",
                 "administration/pipelines/processors/contains",
@@ -65,6 +72,7 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/date_index_name",
                 "administration/pipelines/processors/decrypt",
                 "administration/pipelines/processors/dissect",
+                "administration/pipelines/processors/dns_lookup",
                 "administration/pipelines/processors/dot_expander",
                 "administration/pipelines/processors/dot_nester",
                 "administration/pipelines/processors/drop",
@@ -79,16 +87,22 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/grok",
                 "administration/pipelines/processors/gsub",
                 "administration/pipelines/processors/html_strip",
+                "administration/pipelines/processors/ipqualityscore",
                 "administration/pipelines/processors/join",
                 "administration/pipelines/processors/json",
                 "administration/pipelines/processors/kv",
                 "administration/pipelines/processors/leef",
+                "administration/pipelines/processors/lookup",
                 "administration/pipelines/processors/lowercase",
+                "administration/pipelines/processors/mask",
                 "administration/pipelines/processors/move",
                 "administration/pipelines/processors/network_direction",
                 "administration/pipelines/processors/normalize",
+                "administration/pipelines/processors/openai",
                 "administration/pipelines/processors/pipeline",
                 "administration/pipelines/processors/redact",
+                "administration/pipelines/processors/regex_extract",
+                "administration/pipelines/processors/regex_filter",
                 "administration/pipelines/processors/registered_domain",
                 "administration/pipelines/processors/remove",
                 "administration/pipelines/processors/rename",
@@ -103,6 +117,8 @@ const sidebars: SidebarsConfig = {
                 "administration/pipelines/processors/uri_parts",
                 "administration/pipelines/processors/urldecode",
                 "administration/pipelines/processors/user_agent",
+                "administration/pipelines/processors/virustotal",
+                "administration/pipelines/processors/xml",
               ],
             },
             "administration/pipelines/conditional-running",
@@ -113,7 +129,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Routes",
-          link: {type: "doc", id: "administration/routes/overview"},
+          link: {type: "doc", id: "administration/routes/index"},
           items: [
             'administration/routes/quick-start',
             'administration/routes/management',
@@ -122,7 +138,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Targets",
-          link: {type: "doc", id: "administration/targets/overview"},
+          link: {type: "doc", id: "administration/targets/index"},
           items: [
             "administration/targets/quick-start",
             "administration/targets/ms-sentinel",
@@ -143,8 +159,8 @@ const sidebars: SidebarsConfig = {
   ],
   tutorDocs: [
     "tutorials/quick-start",
-    // "tutorials/syslog-to-console",
-    // "tutorials/syslog-to-parquet-file",
+    "tutorials/syslog-to-console",
+    "tutorials/syslog-to-parquet-file",
   ],
 };
 

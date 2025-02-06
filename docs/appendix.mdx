@@ -1,22 +1,95 @@
 # Appendix
 
-## ASIM
+## Log Format Standards
 
-The _Advanced Security Information Model_ is a layer between the data and the user to configure what and how to ingest data from a source and to route it to a destination.
+### ASIM
 
-For details, see [this article](https://learn.microsoft.com/en-us/azure/sentinel/normalization).
+The Advanced Security Information Model is a layer between the data and the user to configure what and how to ingest data from a source and to route it to a destination. ASIM provides standardization for security-focused log data.
 
 Available ASIM tables:
 
-> `ASimAuditEventLogs` `ASimAuthenticationEventLogs` `ASimDhcpEventLogs` `ASimDnsActivityLogs` `ASimFileEventLogs` `ASimNetworkSessionLogs` `ASimProcessEventLogs` `ASimRegistryEventLogs` `ASimUserManagementActivityLogs` 
+- `ASimAuditEventLogs`
+- `ASimAuthenticationEventLogs` 
+- `ASimDhcpEventLogs`
+- `ASimDnsActivityLogs`
+- `ASimFileEventLogs`
+- `ASimNetworkSessionLogs`
+- `ASimProcessEventLogs`
+- `ASimRegistryEventLogs`
+- `ASimUserManagementActivityLogs`
 
-## CIM
+### CEF
 
-## ECS
+The Common Event Format is a standardized security event logging layout. Its creator is ArcSight, and it has been widely adopted by the industry. Features include:
+- Standard header with 7 required fields
+- Extensible key-value pair extension format
+- Header fields include: version, device vendor, device product, device version, signature ID, name, and severity
+- Extension fields use a key=value format
 
-## Grok Patterns
+### CIM
 
-The grok patterns used by **Director**'s selection process:
+The Common Information Model (CIM) is a standardized data model developed by Splunk. It provides:
+
+**Common Fields**:
+
+| Field Category | Fields | Description |
+|---------------|---------|-------------|
+| Base Fields | `source`, `sourcetype`, `timestamp`, `host`, `index` | Core fields for event identification and source tracking |
+| Identity Fields | `user`, `src_user`, `dest_user` | User identification and authentication tracking |
+| Network Fields | `src_ip`, `dest_ip`, `src_port`, `dest_port` | Network communication endpoints |
+
+**Data Models**:
+
+| Model Type | Fields | Purpose |
+|------------|--------|----------|
+| Authentication | `action`, `app`, `status`, `auth_method` | Track authentication events and access control |
+| Network Traffic | `bytes`, `protocol`, `direction`, `tcp_flags` | Monitor network communications and traffic patterns |
+| Vulnerability | `severity`, `signature`, `vulnerability_id` | Track security vulnerabilities and risks |
+| Changes | - | Track system and configuration changes |
+| Intrusion Detection | - | Monitor security threats and intrusions |
+
+**Event Categories**:
+
+| Category | Event Types | Description |
+|----------|-------------|-------------|
+| Authentication | `success`, `failure`, `logout` | Authentication-related events and outcomes |
+| Network | `connection`, `alert`, `traffic` | Network activity and communications |
+| System | `change`, `status`, `error` | System-level events and status changes |
+| Security | - | Security-related events and alerts |
+
+### ECS
+
+Elastic Common Schema (ECS) is a specification that defines a common set of fields for ingesting data into Elasticsearch. Field groups include:
+
+| Field Group | Core Fields | Description |
+|-------------|-------------|-------------|
+| Base Fields | `@timestamp`, `tags`, `labels`, `message` | Universal fields that appear in every event |
+| Host | `host.name`, `host.ip`, `host.os.*`, `host.mac` | Information about the host machine |
+| Network | `network.protocol`, `network.type`, `network.direction`, `network.bytes` | Network activity details |
+| Source/Destination | `source.ip`, `source.port`, `dest.ip`, `dest.port` | Communication endpoint information |
+| User | `user.id`, `user.name`, `user.domain`, `user.email` | User-related information |
+| Event | `event.category`, `event.type`, `event.action`, `event.outcome` | Event classification details |
+| File | `file.path`, `file.size`, `file.type`, `file.hash.*` | File-related information |
+| Process | `process.pid`, `process.name`, `process.args`, `process.parent.*` | Process execution details |
+| Error | `error.code`, `error.message`, `error.type`, `error.stack_trace` | Error-related information |
+| Trace | `trace.id`, `span.id`, `transaction.id` | Distributed tracing data |
+
+### LEEF
+
+The Log Event Extended Format is an enterprise security event logging format created by IBM QRadar. 
+
+Features:
+
+- Lightweight parsing requirements
+- Fixed header fields: version, vendor, product, version, eventID
+- Variable attributes section
+- Optimized for SIEM processing
+
+## Pattern Matching
+
+### Grok Patterns
+
+Common patterns used in log processing:
 
 |Category|Patterns|
 |---|---|
@@ -29,9 +102,9 @@ The grok patterns used by **Director**'s selection process:
 |System|`SYSLOGBASE` `SYSLOGHOST` `SYSLOGTIMESTAMP`|
 |Other|`EMAILADDRESS` `URIPARAM` `URIPATH` `UUID`|
 
-## Metadata Tags
+### Metadata Tags
 
-The metadata tags used by **Director**'s ingestion process:
+Common metadata fields used in log processing:
 
 |Field|Subfields|
 |---|---|
@@ -43,13 +116,14 @@ The metadata tags used by **Director**'s ingestion process:
 |`source`|`bytes` `ip` `user.domain` `group.name` `id` `xlatesrc`|
 |`observer`|`product` `type` `vendor`|
 |`related`|`hash` `ip`|
-|`vendor`|`__nsons` `__p_dport` `__pos` `_conf` `_ingest` `_temp` `_temp_` `action` `administrator` `bcc` `cc` `client_inbound_bytes` `client_inbound_packets` `client_ip` `client_outbound_bytes` `client_outbound_bytes` `client_outbound_packets` `contextnum` `destination_dns_hostname` `device_name` `device_type` `dst` `dst_machine_name` `dst_user_dn` `dst_user_name` `endpoint_ip` `file_size` `from` `hll_key` `ifname` `lastupdatetime` `mac_source_address` `operation` `operation_number` `origin_ip` `product` `product` `received_bytes` `received_bytes` `s_port` `s_port` `segment_time` `sent_byte` `sequencenum` `server_inbound_bytes` `server_inbound_packets` `server_outbound_bytes` `server_outbound_bytes` `server_outbound_interface` `server_outbound_packets` `server_outbound_packets` `service` `severity` `src` `src_machine_name` `src_user_group` `src_user_name` `subs_exp` `syslog5424_ts` `tags` `time` `to` `uid` `uid` `xlatedport` `xlatedst` `xlatedst` `xlatesport` `xlatesport` `xlatesrc` `xlatesrc`|
 
-## Parquet Files
+## File Formats
 
-The parquet file was designed by Apache as a column-based format. Unlike row-based formats like CSV, it stores the records in columns.
+### Parquet Files
 
-**Row-based storage** First row contains field names:
+Apache Parquet is a column-oriented storage format designed for efficiency:
+
+**Row-based storage** (traditional):
 
 ```plaintext
 id,name,last_name,age
@@ -58,64 +132,52 @@ id,name,last_name,age
 3,Joe,Dane,42
 ```
 
-**Column-based Storage** First column contains field names:
+**Column-based Storage** (Parquet):
 
 ```plaintext
 id:1,2,3
 name:John,Jane,Joe
 last_name:Buck,Doe,Dane
-age:35, 27,42
+age:35,27,42
 ```
 
-Parquet files use _dictionary encoding_, compression and _bit packing_, and _run-length encoding_, features which make it more efficient compared to row-based formats.
+Key features:
 
-## PEM Files
+- Dictionary encoding
+- Compressing and bit packing
+- Run-length encoding
+- Optimal for columnar queries
 
-A _Privacy Enhanced Mail_ file is a container format often used to store cryptographic keys, certificates, and other data. It is a base64-encoded file that starts with a header and ends with a footer, e.g.:
+### PEM Files
+
+Privacy Enhanced Mail (PEM) files are used for storing cryptographic keys and certificates:
 
 ```encoding
 -----BEGIN CERTIFICATE-----
-MIIH/TCCBeWgAwIBAgIQaBYE3/M08XHYCnNVmcFBcjANBgkqhkiG9w0BAQsFADBy
-MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMxEDAOBgNVBAcMB0hvdXN0b24x
-ETAPBgNVBAoMCFNTTCBDb3JwMS4wLAYDVQQDDCVTU0wuY29tIEVWIFNTTCBJbnRl
-cm1lZGlhdGUgQ0EgUlNBIFIzMB4XDTIwMDQwMTAwNTgzM1oXDTIxMDcxNjAwNTgz
-M1owgb0xCzAJBgNVBAYTAlVTMQ4wDAYDVQQIDAVUZXhhczEQMA4GA1UEBwwHSG91
+MIIHzTCCBbWgAwIBAgIQaBYE3/M08XHYCnNVmcFBcjANBgkqhkiG9w0BAQsFADBy
 ...
 -----END CERTIFICATE-----
 ```
 
-where `CERTIFICATE` can also be `PRIVATE KEY` or `RSA KEY`. These blocks communicate what is encoded in the file.
+Common uses:
 
-This is a text-based format, and the base64-encoded data can be uppercase and lowercase letters, digits, '+', and '/'.
+- SSL/TLS certificates
+- SSH keys
+- RSA private keys
+- Certificate chains
 
-A **PEM** file can contain multiple blocks of such data. These are generally used to encode for example **RSA** keys for **SSH** connections, certificates used for **SSL** encryption and the keys associated with them, etc.
+File characteristics:
 
-A **PEM** file for certificates can specify
+- Base64-encoded content
+- Begin/end markers
+- Can contain multiple certificates/keys
+- Text-based format
 
-* the end-user certificate assigned to a domain name by a **CA** (Certificate Authority)
-* up to 4 intermedidate certificates
-* a root certificate self-signed by the **CA**
+## Protocols
 
-These are generally issued by the **SSL** provider to be used in a web service.
+### Syslog
 
-**PEM** files are also used for **SSH**. Typical use on the command line is:
-
-```CLI-linux
-ssh -i keyfile.pem root@host
-```
-
-where the `-i` parameter specifies the PEM file to use to create a secure **SSH** connection `host`.
-
-## Syslog
-
-**SYSLOG** is a standard protocol used for system logging in computer networks. Using this protocol, devices and applications send log messages to central servers that store them for monitoring and analysis.
-
-**Syslog** has numeric severity levels, indicating their importance. The lower the value, the more critical the event. The levels are used for:
-
-* _Prioritization_ of critical issues
-* _Filtering_ of log messages
-* _Automation_ of specific types of events
-* _Compliance_ with regulatory standards
+Standard protocol for system logging with severity levels:
 
 |Level|Severity|Description|
 |---|---|---|
@@ -128,4 +190,9 @@ where the `-i` parameter specifies the PEM file to use to create a secure **SSH*
 |6|Info|Info messages|
 |7|Debug|Debug messages|
 
----
+Uses:
+
+- System monitoring
+- Security event logging
+- Compliance tracking
+- Performance monitoring

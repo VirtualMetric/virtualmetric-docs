@@ -1,5 +1,5 @@
 ---
-description: Encrypts field values using AES encryption
+description: Encrypts string values using AES encryption with optional compression
 ---
 
 # Encrypt
@@ -9,8 +9,6 @@ description: Encrypts field values using AES encryption
 ## Synopsis
 
 Encrypts string values using AES encryption with optional compression. Supports both AES-256-GCM (Galois/Counter Mode) and AES-256-CFB (Cipher Feedback) modes of operation.
-
-When compression is enabled, data is compressed before encryption, significantly reducing the size of encrypted data.
 
 ## Schema
 
@@ -34,60 +32,70 @@ encrypt:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`algorithm`|N|`AES-256-GCM`|Encryption algorithm to use. Valid values: `AES-256-GCM` or `AES-256-CFB`|
-|`encryption_key`|Y|-|32-byte key used for encryption|
-|`field`|Y|-|Field containing the value to be encrypted|
-|`iv_field`|Y|-|Field where the initialization vector will be stored|
+|`algorithm`|N|`AES-256-GCM`|Encryption algorithm. Valid values: `AES-256-GCM` or `AES-256-CFB`|
+|`encryption_key`|Y|-|32-byte key for encryption|
+|`field`|Y|-|Field containing the value to encrypt|
+|`iv_field`|Y|-|Field to store the initialization vector|
 |`description`|N|-|Explanatory note|
-|`if`|N|-|Condition to run|
-|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
-|`ignore_missing`|N|`false`|If `true` and `field` doesn't exist, exit quietly|
-|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
-|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
-|`tag`|N|-|Identifier|
-|`with_compression`|N|`false`|Enable compression before encryption to reduce data size|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Continue if encryption fails|
+|`ignore_missing`|N|`false`|Continue if source field is missing|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`tag`|N|-|Identifier for logging|
+|`with_compression`|N|`false`|Compress data before encryption|
 
 ## Details
 
-The compression feature provides significant benefits:
+The processor encrypts string values using AES encryption, with support for two encryption modes:
 
-* **Storage Efficiency** - Reduces encrypted data size by 50-80% for text data, thereby lowering storage costs. It is particularly effective for repetitive content.
+### Encryption Modes
+- **AES-256-GCM (Recommended)**: 
+  - Provides confidentiality and authenticity
+  - More secure against tampering
+  - Slightly slower performance
+- **AES-256-CFB**:
+  - Provides confidentiality
+  - Faster performance
+  - No built-in authentication
 
-* **Performance** - Smaller data size means faster transmission, thereby reducing network bandwidth consumption.
+### Compression
+When `with_compression` is enabled:
+- Data is compressed before encryption
+- Reduces encrypted data size
+- Most effective for text-based data
+- Minimal impact on already compressed content
 
-Ideal uses are log files with repeating patterns, JSON/XML documents, text-heavy data, and backup data.
+## Security Recommendations
 
-:::warning
-Encryption key must be exactly 32 bytes for AES-256. Both the encrypted value and IV are returned as base64 strings. Compression may not be beneficial for already compressed data, e.g. images.
-:::
+### Key Management
+- Use cryptographically secure random number generators
+- Implement regular key rotation (every 90 days)
+- Store keys securely using:
+  - Key Management Services (KMS)
+  - Hardware Security Modules (HSM)
+- Follow principle of least privilege
 
-The processor supports two AES-256 modes:
+### Initialization Vector (IV) Management
+- Generate using cryptographically secure random number generator
+- Never reuse IVs with the same key
+- Recommended IV sizes:
+  - GCM mode: 12 bytes (96 bits)
+  - CFB mode: 16 bytes (128 bits)
 
-* **AES-256-GCM** (Default) - Provides both confidentiality and authenticity. This is more secure against tampering, although slightly slower than the CFB mode.
-
-* **AES-256-CFB** -Provides confidentiality. This is faster than the GCM mode, although there is no built-in authentication.
-
-:::note
-The processor caches cipher instances for better performance when using the same encryption key multiple times.
-:::
-
-{/*
-
-TODO: Code rabbit bunları eklememizi önerdi
-
-- Key management recommendations
-- IV generation guidelines
-- Secure storage of encrypted data
-
-*/}
+### Secure Storage
+- Store encrypted data and IVs separately from encryption keys
+- Use filesystem-level encryption
+- Implement secure backup procedures
+- Use authenticated encryption (GCM mode)
 
 ## Examples
 
-### AES-256-GCM
+### Basic Encryption
 
 <ExampleGrid>
   <CommentCol>
-    Using the GCM mode...
+    Encrypt a sensitive field using GCM mode...
   </CommentCol>
   <CodeCol>
     ```json
@@ -99,12 +107,12 @@ TODO: Code rabbit bunları eklememizi önerdi
     encrypt:
       - field: password
       - iv_field: password_iv
-      - encryption_key: 6B58703273357638792F423F4528482B
+      - encryption_key: "${ENCRYPTION_KEY}"
       - algorithm: AES-256-GCM
     ```
   </CodeCol>
   <CommentCol>
-    encrypts the sensitive data and IV:
+    creates encrypted output:
   </CommentCol>
   <CodeCol>
     ```json
@@ -116,11 +124,11 @@ TODO: Code rabbit bunları eklememizi önerdi
   </CodeCol>
 </ExampleGrid>
 
-### Compression
+### Compression with Encryption
 
 <ExampleGrid>
   <CommentCol>
-    Enabling compression for large text data...
+    Compress and encrypt large text data...
   </CommentCol>
   <CodeCol>
     ```json
@@ -132,13 +140,13 @@ TODO: Code rabbit bunları eklememizi önerdi
     encrypt:
       - field: log_data
       - iv_field: log_iv
-      - encryption_key: 6B58703273357638792F423F4528482B
+      - encryption_key: "${ENCRYPTION_KEY}"
       - algorithm: AES-256-GCM
       - with_compression: true
     ```
   </CodeCol>
   <CommentCol>
-    produces smaller encrypted output:
+    reduces encrypted data size:
   </CommentCol>
   <CodeCol>
     ```json
@@ -150,44 +158,11 @@ TODO: Code rabbit bunları eklememizi önerdi
   </CodeCol>
 </ExampleGrid>
 
-### AES-256-CFB
-
-<ExampleGrid>
-  <CommentCol>
-    Using the CFB mode...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "message": "sensitive data"
-    }
-    ```
-    ```yaml
-    encrypt:
-      - field: message
-      - iv_field: message_iv
-      - encryption_key: 6B58703273357638792F423F4528482B
-      - algorithm: AES-256-CFB
-    ```
-  </CodeCol>
-  <CommentCol>
-    encrypts the data faster:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "message": "vFza",
-      "message_iv": "FmXUb0OPOWm1A2kw6diKYw=="
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
 ### Error Handling
 
 <ExampleGrid>
   <CommentCol>
-    Handling missing fields gracefully...
+    Handle missing or invalid fields...
   </CommentCol>
   <CodeCol>
     ```json
@@ -199,18 +174,36 @@ TODO: Code rabbit bunları eklememizi önerdi
     encrypt:
       - field: missing_field
       - iv_field: missing_iv
-      - encryption_key: 6B58703273357638792F423F4528482B
+      - encryption_key: "${ENCRYPTION_KEY}"
       - ignore_missing: true
+      - on_failure:
+          - set:
+              field: error_status
+              value: "encryption_failed"
     ```
   </CodeCol>
   <CommentCol>
-    continues the processing:
+    continues processing with error handling:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "other_field": "value"
+      "other_field": "value",
+      "error_status": "encryption_failed"
     }
     ```
   </CodeCol>
 </ExampleGrid>
+
+:::note
+- Encryption keys are cached for performance
+- Compression is most effective for text-based data
+- Use environment variables or secure key management for encryption keys
+:::
+
+:::warning
+- Use exactly 32-byte encryption keys
+- Never reuse initialization vectors
+- Protect encryption keys rigorously
+- Be aware of performance overhead
+:::

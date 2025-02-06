@@ -8,11 +8,42 @@ This guide will walk you through configuring your first target in **Director**, 
 
 ## Configuration
 
-Target uses the configuration files with `.yaml` or `.yml` extensions in the `config` directory under the root, e.g.
+All target configuration files reside in the `config` directory under the root, and have a `.yml` extension:
 
-* `<vm_root>/config/targets.yaml`
+```mermaid
+flowchart LR
+   vmroot@{shape: docs, label: "<code>&lt;vm_root&gt;</code>"}
+   config@{shape: docs, label: "<code>config/</code>"}
+      targets@{shape: docs, label: "<code>targets/</code>"}
+        local@{shape: tag-doc, label: "<code>local/</code>"}
+        cloud@{shape: tag-doc, label: "<code>cloud/</code>"}
+        sentinel@{shape: tag-doc, label: "<code>sentinel/</code>"}
+
+      outputs@{shape: tag-doc, label: "<code>outputs</code>"}
+      storage@{shape: tag-doc, label: "<code>storage</code>"}
+
+   vmroot --> config
+
+   config --> targets
+   config --> outputs
+   config --> storage
+
+   targets --> local
+   targets --> cloud
+   targets --> sentinel
+```
+
+**Director** recursively discovers all configuration files, regardless of subfolder structure.
+
+:::note
+Each target type provides specific configuration options detailed in its respective chapter.
+:::
+
+Targets use the configuration files with `.yml` extensions in the `config` directory under the root, e.g.
+
+* `<vm_root>/config/targets.yml`
 * `<vm_root>/config/targets/outputs.yml`
-* `<vm_root>/config/target/outputs/sentinel.yaml`
+* `<vm_root>/config/target/outputs/sentinel.yml`
 
 **Director** searches recursively through the directory to spot these files. Choose the organization that best fits your needs.
 
@@ -20,7 +51,7 @@ Target uses the configuration files with `.yaml` or `.yml` extensions in the `co
 
 Create a console configuration for a simple `stdout` output, e.g.:
 
-```yaml title="config/targets/console.yaml"
+```yaml title="config/targets/console.yml"
 - id: 1
   name: debug_output
   type: console
@@ -36,7 +67,7 @@ Various file formats are available for local storage.
 
 * The ever-present **JSON** format is supported:
 
-  ```yaml title="config/targets/file.yaml"
+  ```yaml title="config/targets/file.yml"
   - id: 2
     name: local_logs
     type: file
@@ -80,7 +111,7 @@ Cloud storage formats are also readily available.
 
 * **Azure Blob** can be configured for output:
 
-  ```yaml title="config/targets/azblob.yaml"
+  ```yaml title="config/targets/azblob.yml"
   - id: 4
     name: cloud_logs
     type: azblob
@@ -97,7 +128,7 @@ Cloud storage formats are also readily available.
 
 * **Microsoft Sentinel** with ASIM normalization can be used:
 
-  ```yaml title="config/targets/sentinel.yaml"
+  ```yaml title="config/targets/sentinel.yml"
   - id: 5
     name: sentinel_logs
     type: sentinel
@@ -145,10 +176,16 @@ Watch Director's logs for target initialization messages, upload/ingestion statu
 Use environment variables for sensitive credentials, and adjust buffer sizes based on your ingestion volume.
 :::
 
+:::warning[caution]
+When deploying in production environments, always implement appropriate security controls, and monitor storage capacity.
+:::
+
 ## Next Steps
 
-In addition to the above, it is good practice to set up data transformation pipelines, configure multiple targets for redundancy, implement custom normalization rules, and put in place alerts.
+You can now consider
 
-:::warning
-Always verify permissions and network connectivity before deploying to production.
-:::
+- configuring multiple targets for redundancy
+- implementing custom normalization rules
+- putting alerts in place for notifications and error handling
+
+to complete the process.
