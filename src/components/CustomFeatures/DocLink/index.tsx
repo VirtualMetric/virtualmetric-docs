@@ -8,6 +8,7 @@ interface DocLinkProps {
 const links = {
   normalization: "/administration/pipelines/normalization",
   routes: "/administration/routes",
+  eStreamer: "/appendix#estreamer", // Doesn't work
 };
 
 function linkFor(heading: string): string {
