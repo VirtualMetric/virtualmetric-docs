@@ -74,13 +74,6 @@ const config: Config = {
     ],
   ],
 
-  scripts: [
-    {
-      src: "ts/docLinks.ts",
-      async: true,
-    }
-  ],
-
   plugins: [require.resolve("docusaurus-lunr-search")],
 
   themeConfig: {
