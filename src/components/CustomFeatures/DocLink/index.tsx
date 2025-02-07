@@ -1,14 +1,14 @@
 import React from 'react';
 
 interface DocLinkProps {
-  caption: string;
+  title: string;
   heading: string;
 }
 
 const links = {
   normalization: "/administration/pipelines/normalization",
   routes: "/administration/routes",
-  eStreamer: "/appendix#estreamer", // Doesn't work
+  eStreamer: "appendix#estreamer",
 };
 
 function linkFor(heading: string): string {
@@ -17,7 +17,7 @@ function linkFor(heading: string): string {
 
 const DocLink = (props: DocLinkProps) => {
   return (
-    <a target="_self" href={linkFor(props.heading)}>{props.caption}</a>
+    <a target="_self" href={linkFor(props.heading)}>{props.title}</a>
   )
 }
 
