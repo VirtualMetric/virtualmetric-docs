@@ -52,11 +52,12 @@ const sidebars: SidebarsConfig = {
             {
               type: "category",
               label: "Processors",
-              link: {
-                type: "generated-index",
-                title: "Processors",
-                description: "The processors used in DataStream pipelines",
-              },
+              link: {type: "doc", id: "administration/pipelines/processors/index"},
+              // link: {
+              //   type: "generated-index",
+              //   title: "Processors",
+              //   description: "The processors used in DataStream pipelines",
+              // },
               items: [
                 "administration/pipelines/processors/anthropic",
                 "administration/pipelines/processors/append",
