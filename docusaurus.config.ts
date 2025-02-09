@@ -119,13 +119,13 @@ const config: Config = {
         },
 
         {
-          href: "https://community.virtualmetric.com/",
+          to: "https://community.virtualmetric.com/",
           position: "left",
           label: "Community",
         },
 
         {
-          href: "https://support.virtualmetric.com/",
+          to: "https://support.virtualmetric.com/",
           position: "left",
           label: "Support",
         },
