@@ -1,3 +1,7 @@
+---
+sidebar_label: Getting Started
+---
+
 # Getting Started
 
 To download, install, and run **VirtualMetric Director**, follow the instructions below.
@@ -12,82 +16,176 @@ To download, install, and run **VirtualMetric Director**, follow the instruction
 
 We recommend using a machine with at least 2 CPU cores. Since **VirtualMetric Director** uses a vectorized pipeline, it can utilize all available cores, so having more than one core will improve performance.
 
-## Download and Install
+## Installation Methods
 
-**VirtualMetric Director** does _not_ require any installation: you can place it in any directory you wish.
+You can install **VirtualMetric Director** online or offline, depending on your system's internet access.
+Installation does not require any dependencies or prerequisites.
+VirtualMetric Director is a single binary, so you can easily download and install it on your system.
+You can install Director on a traditional server or virtual machine on-premises, or in the cloud.
+It can also be deployed as Azure Apps for serverless requirements.
 
-You can download the **Director** ZIP package by clicking [this link](www.example.com). Once it is downloaded, unzip the contents and move them where you want.
+## Online Installation
 
-If you have access to **Platform**, you can also download it through the CLI by first navigating to the directory where you wish to install it (an existing or newly created one for VirtualMetric) and then entering the following one-liner:
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-  ```PowerShell
-  iwr dl.vget.me | iex
-  ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-  ```bash
-  curl -sL dl.vget.me | bash
-  ```
-  </TabItem>
-</Tabs>
-
-Once you press <kb-short>Enter</kb-short>, you will see the following screen showing the progress:
+If your system has internet access, you can use our automated installation scripts for quick setup.
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
-  ```PowerShell
-  __     ___      _                _ __  __      _        _
-  \ \   / (_)_ __| |_ _   _   ___ | |  \/  | ___| |_ _ __(_) ___
-   \ \ / /| | `__|  _| | | |/ _  || | |\/| |/ _ \ __| `__| |/ __|
-    \ v / | | |  | |_| |_| | (_| || | |  | | ___/ |_| |  | | (__
-     \_/  |_|_|   \__|\____|\___.||_|_|  |_|\___|\__|_|  |_|\___|
-
-  VirtualMetric Director Installation Script
   
-  This script will run the VirtualMetric Director as a background service by default.
-  If you want to install it as a service, don't forget to set the $p variable for the service path.
-  For example, $p="C:\Program Files\VirtualMetric"; iex (iwr http://vget.me/d/ps)
-  Please read the documentation for more information.
+To run as a background process:
+```PowerShell
+iwr dl.vget.me | iex
+```
 
-  Step 1: Downloading required packages... [OK]
-  Step 2: Setting service configuration... [OK]
-  Step 3: Starting process in the background... [OK]
-
-  Operations completed successfully.
-  PS C:\Users\<vm_root>
-  ```
+To install as a service:
+```PowerShell
+$p="C:\Program Files\VirtualMetric"; iwr dl.vget.me | iex
+```
   </TabItem>
   <TabItem value="bash" label="Bash">
-  ```bash
-  __     ___      _                _ __  __      _        _
-  \ \   / (_)_ __| |_ _   _   ___ | |  \/  | ___| |_ _ __(_) ___
-   \ \ / /| | `__|  _| | | |/ _  || | |\/| |/ _ \ __| `__| |/ __|
-    \ v / | | |  | |_| |_| | (_| || | |  | | ___/ |_| |  | | (__
-     \_/  |_|_|   \__|\____|\___.||_|_|  |_|\___|\__|_|  |_|\___|
-
-  VirtualMetric Director Installation Script
   
-  This script will run the VirtualMetric Director as a background service by default.
-  If you want to install it as a service, don't forget to set the $p variable for the service path.
-  For example, $p="C:\Program Files\VirtualMetric"; iex (iwr http://vget.me/d/ps)
-  Please read the documentation for more information.
+To run as a background process:
+```bash
+curl -sL dl.vget.me | bash
+```
 
-  Step 1: Downloading required packages... [OK]
-  Step 2: Setting service configuration... [OK]
-  Step 3: Starting process in the background... [OK]
-
-  Operations completed successfully.
-  ~:
-  ```
+To install as a service:
+```bash
+curl -sL dl.vget.me | p="/opt/virtualmetric" bash
+```
   </TabItem>
 </Tabs>
 
-## Configure
+The script will automatically:
+1. Detect your operating system and architecture
+2. Download the appropriate version
+3. Install and configure based on your selected method (service or background process)
+4. Start VirtualMetric Director
 
-You can start using **Director** without any initial configuration.
+## Offline Installation
+
+For systems without internet access, you can manually download and install VirtualMetric Director.
+
+### Download
+
+Download the appropriate binary for your system from our repository:
+- Windows: `vmetric-director.exe`
+- Linux/macOS: `vmetric-director`
+
+#### Step 2: Place Binary
+
+1. Create a directory for VirtualMetric Director:
+   - Windows: `C:\Program Files\VirtualMetric` (recommended)
+   - Linux: `/opt/virtualmetric` (recommended)
+   - macOS: `/Applications/VirtualMetric` (recommended)
+
+2. Copy the binary to the created directory
+
+#### Step 3: Installation
+
+##### A. Service Installation
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+```PowerShell
+# Run as Administrator
+cd "C:\Program Files\VirtualMetric"
+.\vmetric-director.exe -service install -path "C:\Program Files\VirtualMetric"
+Start-Service vmetric-director
+```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+```bash
+# Run as root/sudo
+cd /opt/virtualmetric
+./vmetric-director -service install -path /opt/virtualmetric
+systemctl start vmetric-director
+systemctl enable vmetric-director
+```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+```bash
+# Run as root/sudo
+cd /Applications/VirtualMetric
+./vmetric-director -service install -path /Applications/VirtualMetric
+launchctl load /Library/LaunchDaemons/com.virtualmetric.director.plist
+```
+  </TabItem>
+</Tabs>
+
+##### B. Background Process
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+```PowerShell
+# Add to Task Scheduler
+$action = New-ScheduledTaskAction -Execute "C:\Program Files\VirtualMetric\vmetric-director.exe" -Argument "-background"
+$trigger = New-ScheduledTaskTrigger -AtStartup
+Register-ScheduledTask -TaskName "VirtualMetric Director" -Action $action -Trigger $trigger -RunLevel Highest
+Start-ScheduledTask -TaskName "VirtualMetric Director"
+```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+```bash
+# Add to crontab
+(crontab -l 2>/dev/null; echo "@reboot /opt/virtualmetric/vmetric-director -background") | crontab -
+/opt/virtualmetric/vmetric-director -background
+```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+```bash
+# Create LaunchAgent
+cat << EOF > ~/Library/LaunchAgents/com.virtualmetric.director.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.virtualmetric.director</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Applications/VirtualMetric/vmetric-director</string>
+        <string>-background</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
+EOF
+launchctl load ~/Library/LaunchAgents/com.virtualmetric.director.plist
+```
+  </TabItem>
+</Tabs>
+
+## Post-Installation
 
 :::warning[attention]
-Do not forget to add the directory the package was placed in to the `PATH` environment variable.
+Don't forget to add the VirtualMetric Director directory to your system's `PATH` environment variable.
 :::
+
+After installation, you can verify the service is running:
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+```PowerShell
+Get-Service vmetric-director
+```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+```bash
+systemctl status vmetric-director
+```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+```bash
+launchctl list | grep virtualmetric
+```
+  </TabItem>
+</Tabs>
+
+## Configuration
+
+You can start using **Director** without any initial configuration. To configure settings later, use the `-config` flag:
+
+```bash
+vmetric-director -config "your-config-hash"
+```
