@@ -20,65 +20,6 @@ Key aspects of pipeline design include the _sequential relations_ and _interacti
 Pipeline design is iterative. Start simple and refine as you better understand specific requirements.
 :::
 
-### Order and Dependency
-
-Consider processor relationships:
-
-* **Independent Execution** - Processors run simultaneously without dependencies.
-  
-  ```yaml
-  pipelines:
-    processors:
-      - parser
-      - enricher
-  ```
-
-* **Sequential Execution** - A processor’s output serves as another’s input.
-  
-  ```yaml
-  pipelines:
-    processors:
-      - parser
-      - normalizer
-      - enricher
-  ```
-
-* **Conditional Execution** - Processors run based on conditions.
-  
-### Interaction Patterns
-
-Pipelines interact in different ways:
-
-* **Parallel Execution** - Pipelines run independently.
-
-  ```yaml
-  pipelines:
-    - name: network_logs
-      processors:
-        - network_parser
-        - network_enricher
-    - name: security_logs
-      processors:
-        - security_parser
-        - threat_detector
-  ```
-
-* **Triggered Execution** - A pipeline starts after another completes.
-
-  ```yaml
-  pipelines:
-    - name: primary
-      processors:
-        - initial_parser
-      on_complete:
-        trigger: secondary
-    - name: secondary
-      processors:
-        - advanced_enrichment
-  ```
-
-* **Hierarchical Execution** - Pipelines execute in a structured order.
-  
 ## Best Practices
 
 ### Purpose of Use
