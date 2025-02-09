@@ -17,6 +17,8 @@ virustotal:
   - field: <ident>
   - api_key: <string>
   - query_type: <enum>
+  - interval: <numeric>
+  - timeout: <numeric>
   - description: <text>
   - if: <script>
   - ignore_failure: <boolean>
@@ -32,8 +34,10 @@ virustotal:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`field`|Y|-|Field containing hash, URL, domain, or IP to query|
-|`api_key`|Y|-|VirusTotal API key for authentication|
+|`api_key`|Y|`${VIRUSTOTAL_API_KEY}`|VirusTotal API key for authentication|
 |`query_type`|N|`hash`|Type of query: `hash`, `url`, `domain`, or `ip`|
+|`interval`|N|1|Polling interval in seconds for URL analysis|
+|`timeout`|N|10|Maximum number of polling attempts|
 |`target_field`|N|`field`|Field to store the API response|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
@@ -190,7 +194,7 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
 
 <ExampleGrid>
   <CommentCol>
-    Analyze a URL...
+    Analyze a URL with custom polling settings...
   </CommentCol>
   <CodeCol>
     ```json
@@ -202,6 +206,8 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
     virustotal:
       - field: url
       - query_type: url
+      - interval: 2
+      - timeout: 15
       - target_field: url_analysis
       - api_key: "${VIRUSTOTAL_API_KEY}"
     ```
@@ -362,7 +368,8 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
 </ExampleGrid>
 
 :::note
-- URL analysis includes both scanning and result retrieval
+- URL analysis includes both scanning and result retrieval with configurable polling
+- API key can be specified directly or via environment variable
 - Responses are returned as structured objects
 - Analysis stats provide counts from multiple engines
 - API responses may include rich metadata
@@ -371,6 +378,7 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
 :::warning
 - API keys should be securely stored
 - Consider VirusTotal API rate limits
-- URL scanning may have additional delays
+- URL scanning may have additional delays based on polling settings
 - File scan results may not be immediately available
+- Long polling intervals may impact processing time
 :::
