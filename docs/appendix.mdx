@@ -21,6 +21,7 @@ Available ASIM tables:
 ### CEF
 
 The Common Event Format is a standardized security event logging layout. Its creator is ArcSight, and it has been widely adopted by the industry. Features include:
+
 - Standard header with 7 required fields
 - Extensible key-value pair extension format
 - Header fields include: version, device vendor, device product, device version, signature ID, name, and severity
@@ -74,6 +75,55 @@ Elastic Common Schema (ECS) is a specification that defines a common set of fiel
 | Error | `error.code`, `error.message`, `error.type`, `error.stack_trace` | Error-related information |
 | Trace | `trace.id`, `span.id`, `transaction.id` | Distributed tracing data |
 
+### eStreamer
+
+Cisco's event streaming protocol used by Firepower Management Center (FMC) to send events to export security event data, intrusion alerts, connection logs, and other network telemetry in real-time. It enables integration with external SIEMs and analytics platforms, providing deep visibility into network security events.
+
+|Field|Description|
+|---|---|
+|`eventType`|Type of event (e.g., intrusion, connection, malware)|
+|`timestamp`|Time the event occurred|
+|`sourceIP`|Source IP address|
+|`destinationIP`|Destination IP address|
+|`sourcePort`|Source port number|
+|`destinationPort`|Destination port number|
+|`protocol`|Transport protocol (TCP, UDP, etc.)|
+|`userIdentity`|Associated user (if available)|
+|`deviceUUID`|Unique identifier for the source device|
+|`application`|Detected application (e.g., HTTP, SSH)|
+|`threatScore`|Severity or risk rating of the event|
+|`signatureID`|Identifier for the security rule triggered|
+|`signatureName`|Description of the triggered security rule|
+|`malwareSHA256`|Hash of detected malware (if applicable)|
+|`fileName`|Name of the file involved in the event|
+
+eStreamer provides detailed security telemetry and integrates with SIEMs for real-time threat monitoring and forensic analysis.
+
+### IPFIX
+
+The IP Flow Information Export is an IETF-standardized protocol for exporting flow-based traffic data from routers, switches, and other network devices. It is an evolution of NetFlow, offering greater flexibility by supporting custom fields and templates for diverse network monitoring, security, and analytics applications. IPFIX allows vendors to define and export additional data types beyond traditional NetFlow fields.
+
+|Field|Description|
+|---|---|
+|`sourceIPv4Address`|Source IP address (IPv4)|
+|`destinationIPv4Address`|Destination IP address (IPv4)|
+|`sourceIPv6Address`|Source IP address (IPv6)|
+|`destinationIPv6Address`|Destination IP address (IPv6)|
+|`sourceTransportPort`|Source port number|
+|`destinationTransportPort`|Destination port number|
+|`protocolIdentifier`|Transport protocol (TCP, UDP, etc.)|
+|`packetTotalCount`|Number of packets in the flow|
+|`octetTotalCount`|Total bytes transferred|
+|`flowStartMilliseconds`|Start timestamp in milliseconds|
+|`flowEndMilliseconds`|End timestamp in milliseconds|
+|`tcpControlBits`|TCP control tcp_flags|
+|`ipClassOfService`|Type of Service (QoS marking)|
+|`bgpSourceAsNumber`|Source BGP Autonomous System (AS) number|
+|`bgpDestinationAsNumber`|Destination BGP AS number|
+|`flowEndReason`|Reason the flow ended (e.g. timeout, TCP FIN)|
+
+IPFIX extends NetFlow by supporting variable-length fields and user-defined templates, making it highly adaptable for modern network monitoring needs.
+
 ### LEEF
 
 The Log Event Extended Format is an enterprise security event logging format created by IBM QRadar. 
@@ -84,6 +134,54 @@ Features:
 - Fixed header fields: version, vendor, product, version, eventID
 - Variable attributes section
 - Optimized for SIEM processing
+
+### NetFlow
+
+A network protocol developed by Cisco for collecting, analyzing, and monitoring network traffic. It captures metadata about IP traffic flows, providing insights into bandwidth usage, security threats, and network performance. NetFlow records include key details such as source and destination IPs, ports, protocol types, and timestamps.
+
+|Field| Description|
+|---|---|
+|`SrcAddr`|Source IP address|
+|`DstAddr`|Destination IP address|
+|`SrcPort`|Source port number|
+|`DstPort`|Destination port number|
+|`Protocol`|Transport protocol (TCP, UDP, etc.)|
+|`Packets`|Number of packets in the flow|
+|`Bytes`|Total bytes transferred|
+|`StartTime`|Timestamp of the first packet in the flow|
+|`EndTime`|Timestamp of the last packet in the flow|
+|`SrcAS`|Source Autonomous System (AS) number|
+|`DstAS`|Destination Autonomous System (AS) number|
+|`TCPFlags`|TCP control flags for the flow|
+|`ToS`|Type of Service (QoS marking)|
+|`NextHop`|IP address of the next hop router|
+|`FlowDuration`|Duration of the flow in milliseconds|
+
+This is a general overview; actual fields may vary depending on the versions and implementations.
+
+### sFlow
+
+sFlow (Sampled Flow) is a network monitoring protocol designed for high-speed networks. Unlike NetFlow and IPFIX, which capture complete flow records, sFlow uses packet sampling to provide scalable and efficient traffic analysis. It operates by embedding monitoring agents in network devices that randomly sample packets and send them to a central collector for analysis.  
+
+|Field|Description|
+|---|---|
+|`sampleSequenceNumber`|Unique identifier for the sampled packet|
+|`sourceIP`|Source IP address|
+|`destinationIP`|Destination IP address|
+|`sourcePort`|Source port number|
+|`destinationPort`|Destination port number|
+|`protocol`|Transport protocol (TCP, UDP, etc.)|
+|`sampledPacketSize`|Size of the sampled packet in bytes|
+|`inputInterface`|Interface where the packet was received|
+|`outputInterface`|Interface where the packet was forwarded|
+|`vlanID`|VLAN identifier of the packet|
+|`tcpFlags`|TCP control flags|
+|`flowSampleType`|Type of sampling (e.g., packet, counter)|
+|`samplingRate`|Ratio of sampled packets to total packets|
+|`agentAddress`|IP address of the device performing sampling|
+|`collectorAddress`|IP address of the sFlow collector|
+
+sFlow's lightweight sampling approach makes it ideal for real-time traffic monitoring in large-scale, high-speed networks.
 
 ## Pattern Matching
 
@@ -181,16 +279,16 @@ Standard protocol for system logging with severity levels:
 
 |Level|Severity|Description|
 |---|---|---|
-|0|Emergency|System unusable|
-|1|Alert|Immediate action required|
-|2|Critical|Condition critical|
-|3|Error|Errors exist|
-|4|Warning|Warnings exist|
-|5|Notice|Significant condition|
-|6|Info|Info messages|
-|7|Debug|Debug messages|
+|`0`|Emergency|System unusable|
+|`1`|Alert|Immediate action required|
+|`2`|Critical|Condition critical|
+|`3`|Error|Errors exist|
+|`4`|Warning|Warnings exist|
+|`5`|Notice|Significant condition|
+|`6`|Info|Info messages|
+|`7`|Debug|Debug messages|
 
-Uses:
+The protocol is used for:
 
 - System monitoring
 - Security event logging

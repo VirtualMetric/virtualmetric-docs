@@ -1,5 +1,5 @@
 ---
-description: Performs DNS lookups and caches results
+description: Performs and caches DNS lookups
 ---
 
 # DNS Lookup
@@ -8,7 +8,7 @@ description: Performs DNS lookups and caches results
 
 ## Synopsis
 
-Performs DNS lookups on domains or IP addresses with result caching. Supports both forward and reverse lookups, multiple DNS record types, and custom DNS servers. Results are cached to improve performance and reduce external DNS queries.
+Performs DNS lookups on domains or IP addresses, and caches the results.
 
 ## Schema
 
@@ -49,24 +49,31 @@ dns_lookup:
 
 ## Details
 
-The processor performs DNS lookups with configurable caching to improve performance. It supports both forward lookups (domain to IP) and reverse lookups (IP to domain) for both IPv4 and IPv6 addresses. Results are cached based on the specified TTL to reduce DNS query load.
+The processor does both forward and reverse lookups, and can handle multiple DNS record types and custom DNS servers. IPv6 addresses are fully supported for both forward and reverse lookups.
 
-### Key Features
-- Forward and reverse DNS lookups
-- IPv4 and IPv6 support
-- Multiple DNS record type support
-- Result caching with TTL
-- Custom DNS server configuration
-- Success/failure processors
-- Conditional execution
+:::note
+Private IP addresses typically won't have PTR records.
+:::
+
+All results are cached to improve performance.
+
+:::note
+Cache entries expire based on the configured TTL. Large cache sizes can impact memory usage.
+:::
+
+Multiple results are returned as arrays. Non-string field values will cause errors. Conditional execution and success/failure handling are also supported.
+
+:::warning
+DNS lookups can introduce latency to event processing.
+:::
 
 ## Examples
 
-### Forward DNS Lookup (A Record)
+### Forward
 
 <ExampleGrid>
   <CommentCol>
-    Lookup IPv4 addresses for a domain...
+    Looking up IPv4 addresses for a domain...
   </CommentCol>
   <CodeCol>
     ```json
@@ -84,7 +91,7 @@ The processor performs DNS lookups with configurable caching to improve performa
     ```
   </CodeCol>
   <CommentCol>
-    adds resolved IPs to the event:
+    adds the resolved IPs to the event:
   </CommentCol>
   <CodeCol>
     ```json
@@ -96,11 +103,11 @@ The processor performs DNS lookups with configurable caching to improve performa
   </CodeCol>
 </ExampleGrid>
 
-### IPv4 Reverse DNS Lookup
+### IPv4 Reverse
 
 <ExampleGrid>
   <CommentCol>
-    Lookup hostname for IPv4 address...
+    Looking up the hostname for IPv4 address...
   </CommentCol>
   <CodeCol>
     ```json
@@ -116,7 +123,7 @@ The processor performs DNS lookups with configurable caching to improve performa
     ```
   </CodeCol>
   <CommentCol>
-    adds resolved hostname to the event:
+    adds the resolved hostname to the event:
   </CommentCol>
   <CodeCol>
     ```json
@@ -128,11 +135,11 @@ The processor performs DNS lookups with configurable caching to improve performa
   </CodeCol>
 </ExampleGrid>
 
-### IPv6 Reverse DNS Lookup
+### IPv6 Reverse
 
 <ExampleGrid>
   <CommentCol>
-    Lookup hostname for IPv6 address...
+    Looking up the hostname for IPv6 address...
   </CommentCol>
   <CodeCol>
     ```json
@@ -148,7 +155,7 @@ The processor performs DNS lookups with configurable caching to improve performa
     ```
   </CodeCol>
   <CommentCol>
-    resolves IPv6 address to hostname:
+    resolves the IPv6 address to the hostname:
   </CommentCol>
   <CodeCol>
     ```json
@@ -160,11 +167,11 @@ The processor performs DNS lookups with configurable caching to improve performa
   </CodeCol>
 </ExampleGrid>
 
-### MX Record Lookup
+### MX Record
 
 <ExampleGrid>
   <CommentCol>
-    Lookup mail servers for a domain...
+    Looking up mail servers for a domain...
   </CommentCol>
   <CodeCol>
     ```json
@@ -181,7 +188,7 @@ The processor performs DNS lookups with configurable caching to improve performa
     ```
   </CodeCol>
   <CommentCol>
-    adds MX records to the event:
+    adds the MX records to the event:
   </CommentCol>
   <CodeCol>
     ```json
@@ -196,11 +203,11 @@ The processor performs DNS lookups with configurable caching to improve performa
   </CodeCol>
 </ExampleGrid>
 
-### Custom DNS Server
+### Custom Server
 
 <ExampleGrid>
   <CommentCol>
-    Use Cloudflare DNS for lookups...
+    Using **Cloudflare** DNS for lookups...
   </CommentCol>
   <CodeCol>
     ```json
@@ -218,7 +225,7 @@ The processor performs DNS lookups with configurable caching to improve performa
     ```
   </CodeCol>
   <CommentCol>
-    resolves using specified DNS server:
+    resolves the specified DNS server:
   </CommentCol>
   <CodeCol>
     ```json
@@ -230,11 +237,11 @@ The processor performs DNS lookups with configurable caching to improve performa
   </CodeCol>
 </ExampleGrid>
 
-### Handling Private IPs
+### Private IPs
 
 <ExampleGrid>
   <CommentCol>
-    Handle lookup for private IP gracefully...
+    Handling lookup failures for private IPs...
   </CommentCol>
   <CodeCol>
     ```json
@@ -251,7 +258,7 @@ The processor performs DNS lookups with configurable caching to improve performa
     ```
   </CodeCol>
   <CommentCol>
-    continues processing without error:
+    continues the execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -262,11 +269,11 @@ The processor performs DNS lookups with configurable caching to improve performa
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Execution
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Only perform lookup for debug events...
+    Performing the look up only for debug events...
   </CommentCol>
   <CodeCol>
     ```json
@@ -284,7 +291,7 @@ The processor performs DNS lookups with configurable caching to improve performa
     ```
   </CodeCol>
   <CommentCol>
-    skips lookup due to condition:
+    skips irrelevant information:
   </CommentCol>
   <CodeCol>
     ```json
@@ -295,19 +302,3 @@ The processor performs DNS lookups with configurable caching to improve performa
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- Results are cached based on lookup type, resource type, and input value
-- Cache entries expire based on the configured TTL
-- Multiple results are returned as arrays
-- IPv6 addresses are fully supported for both forward and reverse lookups
-:::
-
-:::warning
-- DNS lookups can introduce latency to event processing
-- Failed lookups will cause errors unless `ignore_failure` is true
-- Missing fields will cause errors unless `ignore_missing` is true
-- Non-string field values will cause errors
-- Private IP addresses typically won't have PTR records
-- Large cache sizes can impact memory usage
-:::

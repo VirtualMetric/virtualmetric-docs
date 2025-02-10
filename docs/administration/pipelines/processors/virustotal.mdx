@@ -8,7 +8,7 @@ description: Enriches data with VirusTotal threat intelligence
 
 ## Synopsis
 
-Enriches events by querying the VirusTotal API for threat intelligence about files, URLs, domains, and IP addresses. Supports scanning new URLs, retrieving analysis results, and fetching reputation data.
+Enriches events by querying the **VirusTotal** API for threat intelligence about files, URLs, domains, and IP addresses.
 
 ## Schema
 
@@ -49,26 +49,33 @@ virustotal:
 
 ## Details
 
-The processor interfaces with VirusTotal's API to retrieve threat intelligence. It handles different query types:
-- File hashes (MD5, SHA-1, SHA-256)
-- URLs (includes scanning and analysis retrieval)
-- Domain names
-- IP addresses
+The processor supports queries for file hashes (e.g. MD5, SHA-1, SHA-256), URLs (including scanning and analysis retrieval), domain names, and IP addresses. It also fetches reputation data.
 
-### Key Features
-- Multiple query types
-- Automated URL scanning
-- Rich threat intelligence
-- Error handling options
-- Success/failure processors
+:::warning[caution]
+Consider **VirusTotal** API rate limits.
+:::
+
+Responses are returned as structured objects. Analysis stats provide counts from multiple engines.
+
+Automated URL scanning, and rich threat intelligence are also available, so responses may include rich metadata.
+
+:::note
+File scan results may not be immediately available, and URL scanning may have additional delays.
+:::
+
+Error handling and success/failure options are supported, as well.
+
+:::warning
+API keys should be securely stored.
+:::
 
 ## Examples
 
-### File Hash Lookup
+### File Hashes
 
 <ExampleGrid>
   <CommentCol>
-    Check a file hash...
+    Checking a file hash...
   </CommentCol>
   <CodeCol>
     ```json
@@ -84,7 +91,7 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
     ```
   </CodeCol>
   <CommentCol>
-    retrieves file analysis results:
+    retrieves the relevant results:
   </CommentCol>
   <CodeCol>
     ```json
@@ -190,7 +197,7 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
   </CodeCol>
 </ExampleGrid>
 
-### URL Analysis
+### URLs
 
 <ExampleGrid>
   <CommentCol>
@@ -213,7 +220,7 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
     ```
   </CodeCol>
   <CommentCol>
-    submits for scanning and retrieves results:
+    submits the scan and retrieves the results:
   </CommentCol>
   <CodeCol>
     ```json
@@ -266,11 +273,11 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
   </CodeCol>
 </ExampleGrid>
 
-### Domain Intelligence
+### Domains
 
 <ExampleGrid>
   <CommentCol>
-    Query domain reputation...
+    Querying domain reputation...
   </CommentCol>
   <CodeCol>
     ```json
@@ -334,7 +341,7 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
 
 <ExampleGrid>
   <CommentCol>
-    Handle API failures gracefully...
+    Anticipating API failures...
   </CommentCol>
   <CodeCol>
     ```json
@@ -355,7 +362,7 @@ The processor interfaces with VirusTotal's API to retrieve threat intelligence. 
     ```
   </CodeCol>
   <CommentCol>
-    continues processing with error handling:
+    continues execution:
   </CommentCol>
   <CodeCol>
     ```json

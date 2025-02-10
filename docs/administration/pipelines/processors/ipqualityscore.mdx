@@ -1,14 +1,14 @@
 ---
-description: Enriches data using IP Quality Score intelligence services
+description: Enriches data with IP Quality Score
 ---
 
-# IPQualityScore
+# IP Quality Score
 
 <span class="theme-doc-version-badge badge badge--primary">Enrichment</span><span class="theme-doc-version-badge badge badge--secondary">Fraud Detection</span><span class="theme-doc-version-badge badge badge--secondary">Threat Intelligence</span>
 
 ## Synopsis
 
-A multi-purpose enrichment processor that leverages IP Quality Score's APIs to provide fraud detection, validation, and threat intelligence for IP addresses, email addresses, URLs/domains, and phone numbers.
+A multi-purpose enrichment processor that leverages IP Quality Score APIs to provide fraud detection, validation, and threat intelligence for IP addresses, email addresses, URLs/domains, and phone numbers.
 
 ## Schema
 
@@ -55,29 +55,31 @@ ipqs:
 
 ## Details
 
-The processor provides fraud detection and validation services through multiple endpoints:
-- IP reputation & proxy detection
-- Email validation & disposable email detection
-- URL/domain intelligence & malicious URL scanning
-- Phone number validation & fraud scoring
+The processor provides its service through multiple endpoints such as IP reputation and proxy/VPN detection, email validation and disposable email detection, URL/domain intelligence and malicious URL scanning, and phone number validation and fraud scoring.
 
-### Key Features
-- Multiple validation services
-- Fraud detection
-- Proxy/VPN detection
-- Email verification
-- Phone validation
-- Malicious URL scanning
-- Configurable strictness levels
-- Performance optimization modes
+:::note
+Consider API rate limits in high-volume scenarios.
+:::
+
+Multiple validation services are used to gather intelligence. Phone and email validation checks multiple fraud indicators. 
+
+User agent and language can help improve URL analysis accuracy.
+
+Strictness level is configurable. Higher strictness levels provide more accurate fraud detection, while fast mode and light mode can reduce API response times. Similarly, higher strictness levels may increase false positives whereas fast mode may reduce detection accuracy.
+
+Performance optimization is also available.
+
+:::warning
+Store API keys securely using environment variables.
+:::
 
 ## Examples
 
-### IP Address Analysis
+### IPs
 
 <ExampleGrid>
   <CommentCol>
-    Check IP reputation...
+    Checking IP reputation...
   </CommentCol>
   <CodeCol>
     ```json
@@ -94,7 +96,7 @@ The processor provides fraud detection and validation services through multiple 
     ```
   </CodeCol>
   <CommentCol>
-    returns detailed IP analysis:
+    returns detailed IP information:
   </CommentCol>
   <CodeCol>
     ```json
@@ -132,11 +134,11 @@ The processor provides fraud detection and validation services through multiple 
   </CodeCol>
 </ExampleGrid>
 
-### Email Validation
+### Emails
 
 <ExampleGrid>
   <CommentCol>
-    Validate email address...
+    Checking an email address...
   </CommentCol>
   <CodeCol>
     ```json
@@ -214,11 +216,11 @@ The processor provides fraud detection and validation services through multiple 
   </CodeCol>
 </ExampleGrid>
 
-### URL Intelligence
+### URLs
 
 <ExampleGrid>
   <CommentCol>
-    Analyze URL for malicious content...
+    Analyzing URLs for malicious content...
   </CommentCol>
   <CodeCol>
     ```json
@@ -290,11 +292,11 @@ The processor provides fraud detection and validation services through multiple 
   </CodeCol>
 </ExampleGrid>
 
-### Fast Mode Analysis
+### Fast Mode
 
 <ExampleGrid>
   <CommentCol>
-    Quick IP check with reduced detail...
+    IP checks using reduced detail...
   </CommentCol>
   <CodeCol>
     ```json
@@ -350,11 +352,11 @@ The processor provides fraud detection and validation services through multiple 
   </CodeCol>
 </ExampleGrid>
 
-### Phone Validation
+### Phones
 
 <ExampleGrid>
   <CommentCol>
-    Validate phone number...
+    Validating phone number...
   </CommentCol>
   <CodeCol>
     ```json
@@ -417,17 +419,3 @@ The processor provides fraud detection and validation services through multiple 
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- Higher strictness levels provide more accurate fraud detection
-- Fast mode and light mode can reduce API response time
-- User agent and language help URL analysis accuracy
-- Phone and email validation check multiple fraud indicators
-:::
-
-:::warning
-- Consider API rate limits in high-volume scenarios
-- Higher strictness levels may increase false positives
-- Fast mode may reduce detection accuracy
-- Store API keys securely using environment variables
-:::

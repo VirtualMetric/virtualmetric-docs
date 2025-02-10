@@ -1,5 +1,5 @@
 ---
-description: Retrieves threat intelligence from AlienVault's OTX API
+description: Retrieves threat intelligence from AlienVault
 ---
 
 # AlienVault
@@ -8,7 +8,7 @@ description: Retrieves threat intelligence from AlienVault's OTX API
 
 ## Synopsis
 
-Enriches events by retrieving threat intelligence from AlienVault's Open Threat Exchange (OTX) API. The processor supports multiple indicator types including IP addresses, domains, URLs, file hashes, and CVEs.
+Enriches events by retrieving threat intelligence from AlienVault's Open Threat Exchange (OTX) API.
 
 ## Schema
 
@@ -47,49 +47,83 @@ alienvault:
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
-## Query Types and Sections
+## Details
 
-Each query type supports specific sections:
+The processor supports multiple indicator types including IP addresses, domains, URLs, file hashes, and CVEs.
 
-### IP Address (`ip`)
-- `general`: Basic information
-- `geo`: Geolocation data
-- `reputation`: Reputation scores
-- `malware`: Related malware
-- `url_list`: Associated URLs
-- `passive_dns`: Passive DNS records
+### Query Types
 
-### Domain (`domain`)
-- `general`: Basic information
-- `geo`: Geolocation data
-- `malware`: Related malware
-- `url_list`: Associated URLs
-- `passive_dns`: Passive DNS records
+Multiple query types are available each of which supports specific sections.
 
-### Hostname (`hostname`)
-- `general`: Basic information
-- `geo`: Geolocation data
-- `malware`: Related malware
-- `url_list`: Associated URLs
-- `passive_dns`: Passive DNS records
+The returned intelligence can vary by indicator type and section, and not all indicators will have intelligence data.
 
-### URL (`url`)
-- `general`: Basic information
-- `url_list`: URL details and categories
+:::note
+API rate limits may apply.
+:::
 
-### File (`file`)
-- `general`: File hash information
+Some sections may require a valid API key, and some may return empty results. Also, IPv4 addresses are automatically validated.
 
-### CVE (`cve`)
-- `general`: CVE details and references
+#### IP Address (`ip`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>Basic information</DefCol>
+  <TermCol>`geo`</TermCol><DefCol>Geolocation data</DefCol>
+  <TermCol>`malware`</TermCol><DefCol>Related malware</DefCol>
+  <TermCol>`passive_dns`</TermCol><DefCol>Passive DNS records</DefCol>
+  <TermCol>`reputation`</TermCol><DefCol>Reputation scores</DefCol>
+  <TermCol>`url_list`</TermCol><DefCol>Associated URLs</DefCol>
+</TermTable>
+
+#### Domain (`domain`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>Basic information</DefCol>
+  <TermCol>`geo`</TermCol><DefCol>Geolocation data</DefCol>
+  <TermCol>`malware`</TermCol><DefCol>Related malware</DefCol>
+  <TermCol>`passive_dns`</TermCol><DefCol>Passive DNS records</DefCol>
+  <TermCol>`url_list`</TermCol><DefCol>Associated URLs</DefCol>
+</TermTable>
+
+#### Hostname (`hostname`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>Basic information</DefCol>
+  <TermCol>`geo`</TermCol><DefCol>Geolocation data</DefCol>
+  <TermCol>`malware`</TermCol><DefCol>Related malware</DefCol>
+  <TermCol>`passive_dns`</TermCol><DefCol>Passive DNS records</DefCol>
+  <TermCol>`url_list`</TermCol><DefCol>Associated URLs</DefCol>
+</TermTable>
+
+#### URL (`url`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>Basic information</DefCol>
+  <TermCol>`url_list`</TermCol><DefCol>URL details and categories</DefCol>
+</TermTable>
+
+#### File (`file`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>File hash information</DefCol>
+</TermTable>
+
+#### CVE (`cve`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>CVE details and references</DefCol>
+</TermTable>
+
+:::warning
+Large result sets may impact performance.
+:::
 
 ## Examples
 
-### IP Intelligence
+### IPs
 
 <ExampleGrid>
   <CommentCol>
-    Query IP reputation data...
+    Querying IP reputation data...
   </CommentCol>
   <CodeCol>
     ```json
@@ -178,11 +212,11 @@ Each query type supports specific sections:
   </CodeCol>
 </ExampleGrid>
 
-### Domain Intelligence
+### Domains
 
 <ExampleGrid>
   <CommentCol>
-    Get domain malware data...
+    Querying domain malware data...
   </CommentCol>
   <CodeCol>
     ```json
@@ -274,11 +308,11 @@ Each query type supports specific sections:
   </CodeCol>
 </ExampleGrid>
 
-### URL Intelligence
+### URLs
 
 <ExampleGrid>
   <CommentCol>
-    Query URL details...
+    Querying URL details...
   </CommentCol>
   <CodeCol>
     ```json
@@ -356,11 +390,11 @@ Each query type supports specific sections:
   </CodeCol>
 </ExampleGrid>
 
-### File Hash Intelligence
+### File Hashes
 
 <ExampleGrid>
   <CommentCol>
-    Look up file hash information...
+    Looking up file hash information...
   </CommentCol>
   <CodeCol>
     ```json
@@ -414,11 +448,11 @@ Each query type supports specific sections:
   </CodeCol>
 </ExampleGrid>
 
-### CVE Intelligence
+### CVEs
 
 <ExampleGrid>
   <CommentCol>
-    Retrieve CVE details...
+    Retrieving CVE details...
   </CommentCol>
   <CodeCol>
     ```json
@@ -542,17 +576,3 @@ Each query type supports specific sections:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- Some endpoints may be accessible without an API key
-- IPv4 addresses are automatically validated
-- Intelligence data can vary by indicator type and section
-:::
-
-:::warning
-- Some sections may require a valid API key
-- API rate limits may apply
-- Large result sets may impact performance
-- Not all indicators will have intelligence data
-- Some sections may return empty results
-:::

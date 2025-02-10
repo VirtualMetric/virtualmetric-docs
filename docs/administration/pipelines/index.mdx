@@ -4,19 +4,19 @@ pagination_prev: null
 
 # Pipelines
 
-**Director** pipelines were designed to automate your processes dealing with data ingestion and data transformation. They can be used to extract values, transform or convert them, enrich them by correlating them with other available information, and to design the overall workflow of your telemetry data processing scheme.
+**Director** pipelines were designed to automate large-volume data processing. They can be used to extract values from various sources, transform or convert these values, enrich them by correlating them with other available information, and to forward them to various destinations for consumption. 
 
-Pipelines are created to route incoming data streams from _sources_ to _targeted_ outgoing streams or some other final destination.
-
-The sources can be devices, networks, or pipelines, and the targets can be the console, data storage files, or again other pipelines. Sources and targets can be connected to each other in _one-to-one_, _one-to-many_, _many-to-one_, and _many-to-many_ configurations.
-
-Each incoming stream can be queried with criteria specific to the properties of the data, and each outgoing stream can be enriched with inferences made from the data for further processing on the target side.
+In short, they are aimed at helping you design and implement your telemetry workflow.
 
 ## Definitions
 
-Pipelines are chains of processors that run sequentially, operating on the incoming data streamed from providers named sources, and routing their output to consumers called targets for consumption or further processing.
+A pipeline, in its simplest form, is a chain of processors that run sequentially, operating on the incoming data streamed from providers, and directing them to destinations for consumption.
 
-Schematically, this looks like so:
+The sources can be devices, networks, or other pipelines, and the targets can be consoles, files, storage systems, or other pipelines. Sources and targets can be connected to each other in _one-to-one_, _one-to-many_, _many-to-one_, and _many-to-many_ configurations.
+
+Each incoming stream can be queried with criteria specific to the information contained therein, and each outgoing stream can be enriched with inferences made from correlations for use on the destination side.
+
+Schematically:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
@@ -36,11 +36,11 @@ flowchart LR
 	provider --> pipeline --> consumer
 ```
 
-As can be expected, in real life scenarious the configurations connecting sources to targets will vary based on the requirements of the various actors.
+In real life scenarious, the level of complexity of the configurations will vary based on the requirements of the consumers and the intended destinations.
 
 ## Configurations
 
-A pipeline can consume data from multiple providers, and once it is finised processing them, can direct some of the processed data items to a specific consumer in a _one-to-one_ scheme:
+A pipeline can consume data from multiple providers, and once it is finished processing them, can direct some or all of the processed data to a specific consumer in a _one-to-one_ scheme:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
@@ -86,7 +86,7 @@ flowchart LR
 
 ```
 
-Finally, and in most real-life situations, we will have multiple providers and multiple consumers directed to each other in complex arrangements:
+Finally&mdash;and possibly in most real-life scenarios&mdash;there may be multiple providers and consumers connected to each other in much more complex arrangements:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
@@ -119,17 +119,17 @@ flowchart LR
 
 ```
 
-Effectively, each source may be the target of an upstream pipeline, and each target may serve as the source for a downstream one. The detail to keep in mind is that each **Provider** side is delegating some processing to the next pipeline based on some established requirements of the **Consumer** side. The pipeline is acting as the middleman for the data interchange. Even if it routes _some_ data items without any processing, this should be due to the demands of the **Consumer** side, so the pipeline is performing a meaningful role by at least fulfilling a configured routing policy.
+Effectively, each source may be the target of an upstream pipeline, and each target may serve as the source for a downstream one. The detail to keep in mind is that each provider side is delegating some processing to the next pipeline based on the established requirements of the consumer side. The pipeline is acting as the _middleman_ for the data interchange.
 
-## Telemetry
+Even if the pipeline routes some of the data without any processing, this will be due to the demands of the consumer side, so the pipeline is still performing a meaningful role by forwarding the data as per the consumer's policy.
 
-In telemetry, these basic configurations are clustered according to a scheme where the primary provider is named **Source** and the ultimate consumer is named **Target** or **Destination**.
+## Included Middle
 
-There is, however, a middle stage&mdash;where the software solutions do their real work&mdash;called **Routing**.
+Notwithstanding the above, there is also a middle stage&mdash;where most software solutions do their real work: **Routing**. However, this is a stage that in turn depends on two other interim stages that also act as consumers and providers, and these are the **Pre-processing** and **Post-processing** stages, respectively.
 
-Until now, we have not mentioned two interim stages&mdash;which also act as both consumers and providers&mdash;requried to link those stages in a chain. These are called **Pre-processing** and **Post-processing**, respectively, and they both involve what is known as [normalization](/docs/administration/pipelines/normalization.mdx), i.e. preparing the data for processing downstream.
+> As a side note, the implementation of these interim stages is based on a transformation known as [normalization](/administration/pipelines/normalization.mdx), i.e. preparing the data for easier handling further down the chain.
 
-Pipelines are, once again, our primary tool at these interim stages. Schematically:
+Pipelines are, once again, our primary tool for implementing these interim stages. Schematically:
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}}}%%
@@ -149,21 +149,23 @@ flowchart LR
   postprocess --> target1 & target2
 ```
 
-As can be seen from the graphics, the components in the middle of this setup are actually called [routes](/docs/administration/routes/index.mdx).
+As can be seen, routes are right in the middle of this setup.
 
-The purpose of these simple illustrations is to emphasize one thing: the primary purpose of pipelines is using _division of labor_ to simplify telemetry.
+---
 
-Let us illustrate.
+The purpose of the graphics provided above is to emphasize one thing: the primary purpose of pipelines is using _division of labor_ to simplify telemetry.
 
 ## Data Streams
 
-In any telemetry operation, the incoming raw data streams will naturally have their own structure. This structure, however, may not&mdash;and frequently _does not_&mdash;lend itself to use for specific purposes, such as analysis or transformation. Trying to do so would be time consuming, processor-intensive, and possibly error prone. Therefore, it is unwise to implement a _curating_ strategy on the **Source** side, i.e. where the data originates. Similarly, if the curated data needs to be transformed or enriched as per the requirements of a downstream consumer, it is unwise to try to delegate these transformation tasks to the **Target** side, i.e. where the data items to be consumed are expected to be in an easily consumable format.
+In any telemetry operation, the incoming raw data streams will naturally have their own structure. However, this structure may not&mdash;and frequently _does not_&mdash;lend itself to use for some specific purpose. Trying to do so would be time consuming, processor-intensive, and possibly error prone. Therefore, it is unwise to implement a curation strategy on the source side, where the data originates.
+
+Similarly, if the curated data needs to be transformed or enriched as per the requirements of a downstream consumer, it is unwise to try to delegate these transformation tasks to the target side where the data is expected to be in an easily consumable format.
 
 And these are exactly the places where pipelines enter the picture.
 
 ## Divide and Rule
 
-A pipeline is essentially based on the principle of _divide-and-rule_: divide the operations to be performed on the available data into the smallest meaningful and coherent actions, sequence them in a logical order based on the expected _inputs_ and the generated _outputs_, and run them as a chain.
+A pipeline is essentially based on the principle of _divide-and-rule_: divide the operations to be performed on the available data into the smallest meaningful and coherent actions, sequence them in a logical order based on the expected _inputs_ and _outputs_, and run them as a chain.
 
 The basic layout of the configuration for a typical pipeline looks like so:
 
@@ -199,7 +201,7 @@ Note that the pipeline definition contains a mixture of _required_ and _optional
 
 ## Simplified Functionality
 
-Let us point out here that the above pipeline may appear incomplete: it does _not_ explicitly specify what will happen to the selected values when the processors are run. Assume that, after this pipeline has been run, the data appears like so:
+The above pipeline may appear incomplete: it does _not_ explicitly specify what will happen to the selected values when the processors are run. Assume that, after this pipeline has been run, the data appears like so:
 
 ```yaml
 data:
@@ -208,21 +210,23 @@ data:
   -bar: true
 ```
 
-With a brief glance, one can notice that the value `A` in `foo` has become `Z`, that the `10` in `baz` has become `100`, whereas `bar` is left untouched since it was already `true`.
+One can easily notice that the value `A` in `foo` has become `Z`, that the `10` in `baz` has become `100`, whereas `bar` is left untouched since it was already `true`.
 
-Although the pipeline appears underspecified, the example is intended to illustrate that what a sequence of processors does is as simple as this. Each performs a single operation on a specific field, and that is the pipeline's power. Once the incoming data is normalized&mdash;i.e. converted into a structure making it easy to extract data items from it&mdash; it becomes very easy to curate, transform, and enrich its values into a desirable form on the fly.
+Although this pipeline may appear underspecified, the example is intended to illustrate that what a sequence of processors does can be as simple as this. Each processor performs a only single operation on a specific field, and that is the pipeline's power.
 
-Let us now explain the concepts of _curation_, _transformation_, and _enrichment_ a bit further.
+Once the incoming data is normalized&mdash;i.e. converted into a structure that makes it easy to extract items from it&mdash;it becomes very easy to curate, transform, and enrich its values into a desirable form on the fly.
+
+This brings us to the concepts of _curation_, _transformation_, and _enrichment_.
 
 ## Streamlined Streams
 
-As we have said earlier, the incoming raw data streams will have their own structure. As such, they will at best be partially suitable for analysis and, therefore, decision making. In its raw form, data is frequently not&mdash;at least may not be&mdash;what it seems to be. It has to be normalized and sifted through.
+As we have said earlier, the incoming data streams will have their own structure. As such, they will at best be only partially suitable for analysis and, later, decision making. In its raw form, data is frequently not&mdash;at least may not be&mdash;what it seems to be. It has to be sorted and sifted through to pick the relevant information from it.
 
-The process of selecting or filtering data based on specific criteria is called _curation_. This involves checking whether a field's value matches or contains specific values or fragments of values.
+The process of selecting or discarding items based on specific criteria is called _curation_. This involves checking whether a field's value matches or contains the values or fragments of values we are looking for.
 
-After this is done, the selected data may need to be converted into forms making them more suitable for analysis and consumption. This second phase is called _transformation_.
+After this, the remaining data may need to be converted into forms making them more suitable for analysis and use. This second phase is called _transformation_.
 
-Finally, the data may contain hints or fragments of information which, when correlated with other available data, may yield insights that may be required for analysis and use. The process of adding correlated information in order to render the data more relevant&mdash;or increase its relevance&mdash;is known as _enrichment_.
+Finally, the data may contain hints or fragments of information which, when correlated with other available information, may yield insights that may be prerequisite to analysis and use. Adding correlated information in order to render the data more relevant&mdash;or increase its relevance&mdash;is known as _enrichment_.
 
 The overall process can be represented schematically as:
 
@@ -248,48 +252,4 @@ flowchart LR
 	routing --> target
 ```
 
-It is through this three-fold staging that a pipeline truly shines and becomes indispensible.
-
-## Best Practices
-
-Processors are designed to select data points by a combination of field values. Their primary design principle, as stated above, is to serve one purpose only to streamline the work they do.
-
-### Choice and Sequencing
-
-This naturally has an impact on performance: the fewer the data points or field values a processor has to act upon, the better the overall performance. If processor **p** operates on field `foo` only when its values is `A`, whereas processor **q** operates on `bar` if its value is `B`, using the two in sequence guarantees that each completes its work in a shorter time.
-
-However, this implies that their overuse is likely to cancel whatever benefits they may offer, and their sequencing has to be carefully considered, particularly if the output of one is fed into the next as input.
-
-Additionally, their selection will generally be dictated by the consumers downstream. This is where premature optimization, as usual, can be a source of frustration.
-
-Therefore, the guiding principles should be
-
-* use only the processors directly relevant to the curation process
-* use them in the correct order
-* avoid any premature processing
-
-### Purpose of Use
-
-It is also essential to be cognizant of the _type_ of pipeline that is being designed.
-
-**Pre-processing** pipelines are attached to _sources_, and prepare the data before it enters the routing stage. They focus on:
-
-- _Data reduction_ - Filtering unnecessary events, removing redundant fields, sampling high-volume data, and aggregating similar events
-- _Initial normalization_ - Field and protocol standardization, and format conversion and time normalization
-- _Early enrichment_ - Geolocation data, asset information, basic threat intelligence, and custom metadata
-
-**Normalization** pipelines handle the conversion between different log formats throughout the processing chain. The primary transformations are field name standardization, data type normalization, structure unification, and time format alignment.
-
-**Post-processing** pipelines are attached to _targets_, and perform final transformations before data storage and analysis:
-
-- _Format finalization_ - Target-specific formatting, schema alignment, and final field mapping
-- _Storage optimization_ - Compression configuration, index preparation, partitioning strategy, and retention setup
-- _Integration_ - Target-specific transformations, protocol adaptation, authentication preparation, and error handling
-
-Keep the pipelines focused on their _purpose_, and minimize cross-type dependencies.
-
-Leverage the seperation of concerns this brings as it clarifies the role of each, enabling a modular architecture, which, in turn, reduces overhead through better resource utilization, improves scalability and routing efficiency, and makes robust testing possible.
-
-For _performance optimization_, deal with heavy transformations early, optimize routing decisions, and monitor type-specific metrics.
-
-For _error handling_, implement stage-appropriate ones, use type-specific failure responses, maintain clear error boundaries, and log errors with context.
+It is through this type of seamless three-stage design that a pipeline truly shines and proves itself indispensible for telemetry.

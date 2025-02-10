@@ -1,5 +1,5 @@
 ---
-description: Masks sensitive data using hashing functions
+description: Masks sensitive data with hashes
 ---
 
 # Mask
@@ -8,7 +8,7 @@ description: Masks sensitive data using hashing functions
 
 ## Synopsis
 
-Provides data masking capabilities using various hashing functions. This processor is particularly useful for protecting sensitive data like PII (Personally Identifiable Information) by applying hash functions while optionally preserving portions of the original value.
+Provides data masking capabilities using various hashing functions.
 
 ## Schema
 
@@ -57,27 +57,33 @@ mask:
 
 ## Details
 
-The processor uses regular expressions to identify sensitive data and applies hash functions to mask it. It supports preserving portions of the original value and multiple hash algorithms for different security requirements.
+This processor is particularly useful for protecting sensitive data like _Personally Identifiable Information_ (PII) by applying hash functions while optionally preserving portions of the original value.
 
-### Key Features
-- Multiple hash algorithms (MD5, SHA1, SHA256, SHA512)
-- Partial value preservation
-- Multiple field targeting
-- Configurable masking rules
-- Pattern-based matching
-- Conditional execution
+The processor uses regular expressions to identify sensitive data. It supports multiple hash algorithms (MD5, SHA1, SHA256, SHA512) for different security requirements.
 
 :::warning
-MD5 is cryptographically broken and should not be used for security purposes. It is only included for Cribl compatibility. VirtualMetric highly recommends using at least SHA-256 for any sensitive data masking.
+**MD5** is cryptographically broken and should not be used for security purposes. It is only included for **Cribl** compatibility.
+
+**VirtualMetric** highly recommends using at least **SHA-256** for any sensitive data, which the system defaults to if no hash type is specified.
 :::
+
+Multiple fields can be selected. The masking rules are configurable.
+
+Empty field content is treated as non-matching. If no rules match, the field remains unchanged. Non-string field values, missing fields, and invalid regex patterns will cause errors which must be handled.
+
+:::warning
+Complex regular expressions may impact performance.
+:::
+
+Conditional execution is also available.
 
 ## Examples
 
-### Basic Social Security Number Masking
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Mask social security numbers...
+    Masking social security numbers...
   </CommentCol>
   <CodeCol>
     ```json
@@ -95,7 +101,7 @@ MD5 is cryptographically broken and should not be used for security purposes. It
     ```
   </CodeCol>
   <CommentCol>
-    preserves "social=" and hashes numbers:
+    preserves "social=" and hashes the numbers:
   </CommentCol>
   <CodeCol>
     ```json
@@ -106,11 +112,11 @@ MD5 is cryptographically broken and should not be used for security purposes. It
   </CodeCol>
 </ExampleGrid>
 
-### Credit Card Number Masking
+### Credit Cards
 
 <ExampleGrid>
   <CommentCol>
-    Mask credit card while preserving ends...
+    Masking the credit card partially...
   </CommentCol>
   <CodeCol>
     ```json
@@ -129,7 +135,7 @@ MD5 is cryptographically broken and should not be used for security purposes. It
     ```
   </CodeCol>
   <CommentCol>
-    keeps first/last 4 digits:
+    keeps the first and last 4 digits:
   </CommentCol>
   <CodeCol>
     ```json
@@ -140,11 +146,11 @@ MD5 is cryptographically broken and should not be used for security purposes. It
   </CodeCol>
 </ExampleGrid>
 
-### Multiple Field Masking
+### Multiple Fields
 
 <ExampleGrid>
   <CommentCol>
-    Apply masking to multiple fields...
+    Applying masking to multiple fields...
   </CommentCol>
   <CodeCol>
     ```json
@@ -162,7 +168,7 @@ MD5 is cryptographically broken and should not be used for security purposes. It
     ```
   </CodeCol>
   <CommentCol>
-    masks all matching fields:
+    masks all of them:
   </CommentCol>
   <CodeCol>
     ```json
@@ -174,11 +180,11 @@ MD5 is cryptographically broken and should not be used for security purposes. It
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Masking
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Only mask when condition is met...
+    Masking only when a condition is met...
   </CommentCol>
   <CodeCol>
     ```json
@@ -197,7 +203,7 @@ MD5 is cryptographically broken and should not be used for security purposes. It
     ```
   </CodeCol>
   <CommentCol>
-    skips masking due to condition:
+    skips unmatching parts:
   </CommentCol>
   <CodeCol>
     ```json
@@ -209,11 +215,11 @@ MD5 is cryptographically broken and should not be used for security purposes. It
   </CodeCol>
 </ExampleGrid>
 
-### Missing Field Handling
+### Missing Fields
 
 <ExampleGrid>
   <CommentCol>
-    Handle missing fields gracefully...
+    Handling missing fields gracefully...
   </CommentCol>
   <CodeCol>
     ```json
@@ -229,7 +235,7 @@ MD5 is cryptographically broken and should not be used for security purposes. It
     ```
   </CodeCol>
   <CommentCol>
-    continues processing:
+    continues the execution:
   </CommentCol>
   <CodeCol>
     ```json
@@ -238,11 +244,11 @@ MD5 is cryptographically broken and should not be used for security purposes. It
   </CodeCol>
 </ExampleGrid>
 
-### Different Hash Types
+### Hash Types
 
 <ExampleGrid>
   <CommentCol>
-    Use different hash algorithms...
+    Using SHA256 specifically...
   </CommentCol>
   <CodeCol>
     ```json
@@ -259,7 +265,7 @@ MD5 is cryptographically broken and should not be used for security purposes. It
     ```
   </CodeCol>
   <CommentCol>
-    applies SHA256 hashing:
+    applies the algorithm:
   </CommentCol>
   <CodeCol>
     ```json
@@ -269,16 +275,3 @@ MD5 is cryptographically broken and should not be used for security purposes. It
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- If no rules match, the field remains unchanged
-- Empty field content is treated as non-matching
-- Hash type defaults to sha256 if not specified
-:::
-
-:::warning
-- Complex regular expressions may impact performance
-- Invalid regex patterns will cause errors unless ignore_failure is true
-- Non-string field values will cause errors unless ignore_failure is true
-- Missing fields will cause errors unless ignore_missing is true
-:::
