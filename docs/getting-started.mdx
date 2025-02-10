@@ -65,39 +65,64 @@ The script will automatically:
 
 For systems without internet access, you can manually download and install VirtualMetric Director.
 
-### Download
+### Download Binaries
 
-Download the appropriate binary for your system from our repository:
-- Windows: `vmetric-director.exe`
-- Linux/macOS: `vmetric-director`
+Choose the appropriate binary for your system from the table below:
 
-#### Step 2: Place Binary
+| Operating System | Architecture | Download Link |
+|-----------------|--------------|---------------|
+| Windows | AMD64 | `https://dl.vget.me/windows/amd64/vmetric-director.exe` |
+| Windows | ARM64 | `https://dl.vget.me/windows/arm64/vmetric-director.exe` |
+| Linux | AMD64 | `https://dl.vget.me/linux/amd64/vmetric-director` |
+| Linux | ARM64 | `https://dl.vget.me/linux/arm64/vmetric-director` |
+| macOS | AMD64 | `https://dl.vget.me/darwin/amd64/vmetric-director` |
+| macOS | ARM64 | `https://dl.vget.me/darwin/arm64/vmetric-director` |
+
+### Installation
 
 1. Create a directory for VirtualMetric Director:
    - Windows: `C:\Program Files\VirtualMetric` (recommended)
    - Linux: `/opt/virtualmetric` (recommended)
    - macOS: `/Applications/VirtualMetric` (recommended)
 
-2. Copy the binary to the created directory
+2. Copy the downloaded binary to the created directory
 
-#### Step 3: Installation
+3. Choose running mode:
 
-##### A. Service Installation
+#### A. Background Process
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+```PowerShell
+.\vmetric-director -background
+```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+```bash
+./vmetric-director -background
+```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+```bash
+./vmetric-director -background
+```
+  </TabItem>
+</Tabs>
+
+#### B. Service Installation
 
 <Tabs>
   <TabItem value="windows" label="Windows">
 ```PowerShell
 # Run as Administrator
-cd "C:\Program Files\VirtualMetric"
-.\vmetric-director.exe -service install -path "C:\Program Files\VirtualMetric"
+.\vmetric-director -service install
 Start-Service vmetric-director
 ```
   </TabItem>
   <TabItem value="linux" label="Linux">
 ```bash
 # Run as root/sudo
-cd /opt/virtualmetric
-./vmetric-director -service install -path /opt/virtualmetric
+./vmetric-director -service install
 systemctl start vmetric-director
 systemctl enable vmetric-director
 ```
@@ -105,53 +130,8 @@ systemctl enable vmetric-director
   <TabItem value="macos" label="macOS">
 ```bash
 # Run as root/sudo
-cd /Applications/VirtualMetric
-./vmetric-director -service install -path /Applications/VirtualMetric
+./vmetric-director -service install
 launchctl load /Library/LaunchDaemons/com.virtualmetric.director.plist
-```
-  </TabItem>
-</Tabs>
-
-##### B. Background Process
-
-<Tabs>
-  <TabItem value="windows" label="Windows">
-```PowerShell
-# Add to Task Scheduler
-$action = New-ScheduledTaskAction -Execute "C:\Program Files\VirtualMetric\vmetric-director.exe" -Argument "-background"
-$trigger = New-ScheduledTaskTrigger -AtStartup
-Register-ScheduledTask -TaskName "VirtualMetric Director" -Action $action -Trigger $trigger -RunLevel Highest
-Start-ScheduledTask -TaskName "VirtualMetric Director"
-```
-  </TabItem>
-  <TabItem value="linux" label="Linux">
-```bash
-# Add to crontab
-(crontab -l 2>/dev/null; echo "@reboot /opt/virtualmetric/vmetric-director -background") | crontab -
-/opt/virtualmetric/vmetric-director -background
-```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-```bash
-# Create LaunchAgent
-cat << EOF > ~/Library/LaunchAgents/com.virtualmetric.director.plist
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.virtualmetric.director</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/Applications/VirtualMetric/vmetric-director</string>
-        <string>-background</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-</dict>
-</plist>
-EOF
-launchctl load ~/Library/LaunchAgents/com.virtualmetric.director.plist
 ```
   </TabItem>
 </Tabs>
