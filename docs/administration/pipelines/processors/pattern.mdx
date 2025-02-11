@@ -85,6 +85,7 @@ The processor may modify the input message to create a generalized pattern. Long
     ```yaml
     pattern:
       - field: message
+      - target_field: log_pattern
     ```
   </CodeCol>
   <CommentCol>
@@ -93,7 +94,8 @@ The processor may modify the input message to create a generalized pattern. Long
   <CodeCol>
     ```json
     {
-      "message": {
+      "message": "2019-07-24 12:06:21,688 package.name [DEBUG] got 10 things in 3.1s",
+      "log_pattern": {
         "pattern": "package.name got things in",
         "hash": "...",
         "id": "..."
@@ -118,6 +120,7 @@ The processor may modify the input message to create a generalized pattern. Long
     ```yaml
     pattern:
       - field: message
+      - target_field: log_pattern
       - custom_patterns:
           ERROR_CODE: "ERR\\d{4}"
     ```
@@ -128,7 +131,8 @@ The processor may modify the input message to create a generalized pattern. Long
   <CodeCol>
     ```json
     {
-      "message": {
+      "message": "Application error ERR1234: connection timeout",
+      "log_pattern": {
         "pattern": "Application error <ERROR_CODE> connection timeout",
         "hash": "...",
         "id": "..."
@@ -153,6 +157,7 @@ The processor may modify the input message to create a generalized pattern. Long
     ```yaml
     pattern:
       - field: message
+      - target_field: log_pattern
       - tokenize_all: true
     ```
   </CodeCol>
@@ -162,7 +167,8 @@ The processor may modify the input message to create a generalized pattern. Long
   <CodeCol>
     ```json
     {
-      "message": {
+      "message": "User admin@example.com logged in from 192.168.1.100",
+      "log_pattern": {
         "pattern": "User <EMAIL> logged in from <IP>",
         "hash": "...",
         "id": "..."
@@ -187,6 +193,7 @@ The processor may modify the input message to create a generalized pattern. Long
     ```yaml
     pattern:
       - field: message
+      - target_field: log_pattern
       - ignore_failure: true
       - on_failure:
           - append:
