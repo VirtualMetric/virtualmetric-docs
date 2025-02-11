@@ -2,11 +2,11 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 
 const sidebars: SidebarsConfig = {
   userDocs: [
-    "README",
-    "getting-started",
-    "sentinel-integration",
+    "introduction",
+    "features",
     "components",
-
+    "getting-started",
+    "ms-sentinel-automation",
     {
       type: "category",
       label: "Administration",
@@ -53,7 +53,13 @@ const sidebars: SidebarsConfig = {
               type: "category",
               label: "Processors",
               link: {type: "doc", id: "administration/pipelines/processors/index"},
+              // link: {
+              //   type: "generated-index",
+              //   title: "Processors",
+              //   description: "The processors used in DataStream pipelines",
+              // },
               items: [
+                "administration/pipelines/processors/alienvault",
                 "administration/pipelines/processors/anthropic",
                 "administration/pipelines/processors/append",
                 "administration/pipelines/processors/attachment",

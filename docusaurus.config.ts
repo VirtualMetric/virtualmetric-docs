@@ -79,9 +79,15 @@ const config: Config = {
   themeConfig: {
     image: "telemetry-color.jpg",
 
+    colorMode: {
+      defaultMode: 'light',
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
+    },
+
     docs: {
       sidebar: {
-        hideable: true,
+        hideable: false,
         autoCollapseCategories: false,
       },
     },
@@ -97,9 +103,11 @@ const config: Config = {
 
       logo: {
         alt: "VirtualMetric Logo",
-        src: "img/VirtualMetric-Logo-Light.svg",
-        srcDark: "img/VirtualMetric-Logo-Dark.svg",
-        height: 60,
+        src: "img/logo.svg",
+        srcDark: "img/logo.svg",
+        target: '_self',
+        width: 161,
+        height: 18,
       },
 
       items: [
@@ -107,7 +115,19 @@ const config: Config = {
           type: "docSidebar",
           sidebarId: "userDocs",
           position: "left",
-          label: "Docs",
+          label: "Documentation",
+        },
+
+        {
+          to: "https://community.virtualmetric.com/",
+          position: "left",
+          label: "Community",
+        },
+
+        {
+          to: "https://support.virtualmetric.com/",
+          position: "left",
+          label: "Support",
         },
 
         // {
