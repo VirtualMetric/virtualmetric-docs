@@ -1,0 +1,208 @@
+---
+description: Extracts structured patterns from log messages
+---
+
+# Pattern
+
+<span class="theme-doc-version-badge badge badge--primary">Extract</span>
+
+## Synopsis
+
+Extracts structured patterns from log messages, identifying key components and normalizing variable content.
+
+## Schema
+
+```yaml {2}
+pattern:
+  - field: <ident>
+  - target_field: <ident>
+  - description: <text>
+  - if: <script>
+  - custom_patterns: <map[string]string>
+  - tokenize_all: <boolean>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
+  - on_failure: <processor[]>
+  - on_success: <processor[]>
+  - tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the message to analyze|
+|`target_field`|N|`field`|Field to store pattern information|
+|`description`|N|-|Documentation note|
+|`custom_patterns`|N|-|Map of custom regex patterns to use|
+|`tokenize_all`|N|`false`|Use all built-in patterns for tokenization|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|N|`false`|If `true`, skip if field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The Pattern processor extracts a normalized representation of log messages by:
+- Removing numeric and specific identifical values
+- Replacing standard patterns with tokens
+- Generating a consistent pattern representation
+
+### Built-in Patterns
+
+The processor includes these default patterns:
+- `IP`: IP address detection
+- `TIMESTAMP`: Date and time formats
+- `NUMBER`: Numeric values
+- `EMAIL`: Email address format
+- `PATH`: File system paths
+- `URL`: Web URLs
+
+:::note
+The processor generates a pattern string, a unique hash, and an identifier for each processed message. It limits the pattern to 100 words and requires words to be at least 2 characters long.
+:::
+
+:::warning
+The processor may modify the input message to create a generalized pattern. Long messages are truncated, and specific identifiers are replaced with generic tokens.
+:::
+
+## Examples
+
+### Basic Pattern Extraction
+
+<ExampleGrid>
+  <CommentCol>
+    Extract pattern from a log message...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "2019-07-24 12:06:21,688 package.name [DEBUG] got 10 things in 3.1s"
+    }
+    ```
+    ```yaml
+    pattern:
+      - field: message
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a normalized pattern:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": {
+        "pattern": "package.name got things in",
+        "hash": "...",
+        "id": "..."
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom Patterns
+
+<ExampleGrid>
+  <CommentCol>
+    Add custom pattern for error codes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Application error ERR1234: connection timeout"
+    }
+    ```
+    ```yaml
+    pattern:
+      - field: message
+      - custom_patterns:
+          ERROR_CODE: "ERR\\d{4}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies custom pattern:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": {
+        "pattern": "Application error <ERROR_CODE> connection timeout",
+        "hash": "...",
+        "id": "..."
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Tokenize All Patterns
+
+<ExampleGrid>
+  <CommentCol>
+    Use all built-in patterns...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "User admin@example.com logged in from 192.168.1.100"
+    }
+    ```
+    ```yaml
+    pattern:
+      - field: message
+      - tokenize_all: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    replaces known patterns:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": {
+        "pattern": "User <EMAIL> logged in from <IP>",
+        "hash": "...",
+        "id": "..."
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle non-string inputs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": 12345
+    }
+    ```
+    ```yaml
+    pattern:
+      - field: message
+      - ignore_failure: true
+      - on_failure:
+          - append:
+              field: tags
+              value: pattern_parse_error
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds error tag without failing:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": 12345,
+      "tags": ["pattern_parse_error"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
