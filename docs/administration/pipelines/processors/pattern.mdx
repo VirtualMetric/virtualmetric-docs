@@ -4,7 +4,7 @@ description: Extracts structured patterns from log messages
 
 # Pattern
 
-<span class="theme-doc-version-badge badge badge--primary">Extract</span>
+<span class="theme-doc-version-badge badge badge--primary">Parse</span>
 
 ## Synopsis
 
@@ -45,36 +45,32 @@ pattern:
 
 ## Details
 
-The Pattern processor extracts a normalized representation of log messages by:
-- Removing numeric and specific identifical values
-- Replacing standard patterns with tokens
-- Generating a consistent pattern representation
+The processor extracts a normalized representation of log messages by first removing numeric or other identifiable values, and then replacing the standard patterns with tokens in order to generate a consistent pattern representation. It uses the following patterns:
 
-### Built-in Patterns
+<TermTable>
+  <TermCol>`EMAIL`</TermCol><DefCol>Email address format</DefCol>
+  <TermCol>`IP`</TermCol><DefCol>IP address detection</DefCol>
+  <TermCol>`NUMBER`</TermCol><DefCol>Numeric values</DefCol>
+  <TermCol>`PATH`</TermCol><DefCol>File system paths</DefCol>
+  <TermCol>`TIMESTAMP`</TermCol><DefCol>Date and time formats</DefCol>
+  <TermCol>`URL`</TermCol><DefCol>Web URLs</DefCol>
+</TermTable>
 
-The processor includes these default patterns:
-- `IP`: IP address detection
-- `TIMESTAMP`: Date and time formats
-- `NUMBER`: Numeric values
-- `EMAIL`: Email address format
-- `PATH`: File system paths
-- `URL`: Web URLs
-
-:::note
-The processor generates a pattern string, a unique hash, and an identifier for each processed message. It limits the pattern to 100 words and requires words to be at least 2 characters long.
-:::
+For each processed message, the processor generates a pattern string, a unique hash, and an identifier. It limits the pattern to 100 words, and requires words to be at least 2 characters long.
 
 :::warning
-The processor may modify the input message to create a generalized pattern. Long messages are truncated, and specific identifiers are replaced with generic tokens.
+The processor may modify the input message to create a generalized pattern.
 :::
+
+Long messages are truncated, and specific identifiers are replaced with generic tokens.
 
 ## Examples
 
-### Basic Pattern Extraction
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Extract pattern from a log message...
+    Extracting a pattern from a log message...
   </CommentCol>
   <CodeCol>
     ```json
@@ -89,7 +85,7 @@ The processor may modify the input message to create a generalized pattern. Long
     ```
   </CodeCol>
   <CommentCol>
-    creates a normalized pattern:
+    creates a normalized one:
   </CommentCol>
   <CodeCol>
     ```json
@@ -105,11 +101,11 @@ The processor may modify the input message to create a generalized pattern. Long
   </CodeCol>
 </ExampleGrid>
 
-### Custom Patterns
+### Custom
 
 <ExampleGrid>
   <CommentCol>
-    Add custom pattern for error codes...
+    Adding a custom pattern for error codes...
   </CommentCol>
   <CodeCol>
     ```json
@@ -126,7 +122,7 @@ The processor may modify the input message to create a generalized pattern. Long
     ```
   </CodeCol>
   <CommentCol>
-    applies custom pattern:
+    applies it:
   </CommentCol>
   <CodeCol>
     ```json
@@ -142,11 +138,11 @@ The processor may modify the input message to create a generalized pattern. Long
   </CodeCol>
 </ExampleGrid>
 
-### Tokenize All Patterns
+### Tokenizing
 
 <ExampleGrid>
   <CommentCol>
-    Use all built-in patterns...
+    Using all built-in patterns...
   </CommentCol>
   <CodeCol>
     ```json
@@ -162,7 +158,7 @@ The processor may modify the input message to create a generalized pattern. Long
     ```
   </CodeCol>
   <CommentCol>
-    replaces known patterns:
+    replaces all the known patterns:
   </CommentCol>
   <CodeCol>
     ```json
@@ -182,7 +178,7 @@ The processor may modify the input message to create a generalized pattern. Long
 
 <ExampleGrid>
   <CommentCol>
-    Handle non-string inputs...
+    Handling non-string inputs...
   </CommentCol>
   <CodeCol>
     ```json
@@ -202,7 +198,7 @@ The processor may modify the input message to create a generalized pattern. Long
     ```
   </CodeCol>
   <CommentCol>
-    adds error tag without failing:
+    adds an error tag and continues execution:
   </CommentCol>
   <CodeCol>
     ```json

@@ -2,8 +2,6 @@ import MDXComponents from "@theme-original/MDXComponents";
 
 import { ExampleGrid, CommentCol, CodeCol } from "@site/src/components/CustomFeatures/ExampleGrid";
 import { TermTable, TermCol, DefCol } from "@site/src/components/CustomFeatures/TermTable";
-import ImageFrame from "@site/src/components/CustomFeatures/ImageFrame";
-import DocLink from "@site/src/components/CustomFeatures/DocLink";
 import FooterCopyright from "./Footer/Copyright";
 
 import Tabs from '@theme/Tabs';
@@ -18,8 +16,6 @@ export default {
 	CommentCol,
 	CodeCol,
 
-	ImageFrame,
-
 	Tabs,
 	TabItem,
 	FooterCopyright,
@@ -28,6 +24,4 @@ export default {
 	TermTable,
   TermCol,
   DefCol,
-
-	DocLink,
 };
