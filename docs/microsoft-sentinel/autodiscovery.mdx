@@ -1,7 +1,72 @@
 # Autodiscovery
 
 ## Overview
-VirtualMetric Director provides an experimental autodiscovery feature for Microsoft Sentinel integration. This feature enables automatic detection and configuration of Data Collection Rules (DCRs) and their associated streams, simplifying the setup process and providing dynamic updates as your Sentinel environment changes.
+
+VirtualMetric Director provides an autodiscovery feature for Microsoft Sentinel integration. This feature enables automatic detection and configuration of Data Collection Rules (DCRs) and their associated streams, simplifying the setup process and providing dynamic updates as your Sentinel environment changes.
+
+## Prerequisites
+
+- An Azure subscription with permissions to create resources
+- Microsoft Sentinel requires a Log Analytics workspace - we'll create one during this setup
+- Administrative access to run PowerShell or Bash commands
+
+Open a **PowerShell** or **Terminal** with _Admin_ rights, and navigate to `<vm_root>`. Then, type the following command and press <kb-short>Enter</kb-short>.
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+  ```PowerShell
+  C:\<vm_root>\vmetric-director -sentinel -autodiscovery
+  ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+  ```bash
+  ~/path/to/<vm_root>: ./vmetric-director -sentinel -autodiscovery
+  ```
+  </TabItem>
+</Tabs>
+
+Follow the on-screen prompts to complete the setup process. For detailed step-by-step instructions, refer to our [Microsoft Sentinel Automation](./index.mdx) documentation.
+
+## Required Permissions
+
+### Data Collection Rules (DCR) Permissions
+
+For each DCR with a name starting with "vmetric":
+
+1. Navigate to the DCR in Azure Portal
+2. Go to **Access Control (IAM)**
+3. Select **Add** > **Add role assignment**
+4. Assign these permissions:
+   - Role: `Monitoring Metrics Publisher`
+   - Assignee: Your Managed Identity or Application
+
+### Autodiscovery Permissions
+
+To enable DCR autodiscovery features:
+
+1. Navigate to the Resource Group containing your DCRs
+2. Go to **Access Control (IAM)**
+3. Select **Add** > **Add role assignment**
+4. Assign these permissions:
+   - Role: `Monitoring Reader`
+   - Assignee: Your Managed Identity or Application
+
+:::important
+The `Monitoring Reader` role must be assigned at the Resource Group level. Assigning it at a different scope will prevent DCR discovery.
+:::
+
+### Verification Steps
+After assigning permissions:
+1. Wait a few minutes for Azure RBAC to propagate
+2. Test the connection using VirtualMetric Director
+3. Check the logs for any permission-related errors
+
+:::tip
+If you encounter permission issues, verify that:
+- All role assignments are properly configured
+- Azure RBAC changes have propagated (can take up to 30 minutes)
+- The identity has the correct scope of access
+:::
 
 ## How It Works
 
