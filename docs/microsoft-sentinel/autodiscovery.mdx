@@ -6,6 +6,8 @@ VirtualMetric Director provides an autodiscovery feature for Microsoft Sentinel 
 
 ## Prerequisites
 
+VirtualMetric Sentinel Automation tool requires the following prerequisites:
+
 - An Azure subscription with permissions to create resources
 - Microsoft Sentinel requires a Log Analytics workspace - we'll create one during this setup
 - Administrative access to run PowerShell or Bash commands
@@ -27,7 +29,18 @@ Open a **PowerShell** or **Terminal** with _Admin_ rights, and navigate to `<vm_
 
 Follow the on-screen prompts to complete the setup process. For detailed step-by-step instructions, refer to our [Microsoft Sentinel Automation](./index.mdx) documentation.
 
+:::tip
+The Autodiscovery configuration is handled automatically when using the Automation tool.
+You only need to complete the "Required Permissions" step if you're using Managed Identity.
+:::
+
 ## Required Permissions
+
+VirtualMetric Director needs the following permissions to fetch Data Collection Rules and their associated streams:
+
+:::note
+If you used the Automation tool with App Registration, these permissions are already configured automatically.
+:::
 
 ### Data Collection Rules (DCR) Permissions
 
@@ -52,7 +65,11 @@ To enable DCR autodiscovery features:
    - Assignee: Your Managed Identity or Application
 
 :::important
-The `Monitoring Reader` role must be assigned at the Resource Group level. Assigning it at a different scope will prevent DCR discovery.
+The `Monitoring Reader` role should be assigned at the Resource Group level only. 
+
+Assigning this role at the Subscription level is **not recommended** as it:
+* Is unnecessary for functionality
+* Increases the autodiscovery scan duration
 :::
 
 ### Verification Steps
