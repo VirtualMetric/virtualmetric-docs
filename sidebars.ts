@@ -6,7 +6,16 @@ const sidebars: SidebarsConfig = {
     "features",
     "components",
     "getting-started",
-    "ms-sentinel-automation",
+    {
+      type: "category",
+      label: "Microsoft Sentinel Automation",
+      link: {type: "doc", id: "microsoft-sentinel/index"},
+      items: [
+        'microsoft-sentinel/autodiscovery',
+        'microsoft-sentinel/arm-templates',
+        'microsoft-sentinel/bicep-templates',
+      ],
+    },
     {
       type: "category",
       label: "Administration",
