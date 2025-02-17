@@ -4,6 +4,8 @@ import { ExampleGrid, CommentCol, CodeCol } from "@site/src/components/CustomFea
 import { TermTable, TermCol, DefCol } from "@site/src/components/CustomFeatures/TermTable";
 import FooterCopyright from "./Footer/Copyright";
 
+import DocCardList from "@theme/DocCardList";
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -24,4 +26,6 @@ export default {
 	TermTable,
   TermCol,
   DefCol,
+
+	DocCardList,
 };
