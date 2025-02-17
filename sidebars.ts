@@ -25,7 +25,12 @@ const sidebars: SidebarsConfig = {
       items: [
         'getting-started/single-node',
         'getting-started/cluster',
-        'getting-started/load-balancing',
+        'getting-started/virtual-ip-address',
+        'getting-started/example-device',
+        'getting-started/example-target',
+        'getting-started/example-route',
+        'getting-started/example-pipeline',
+        'getting-started/example-multi-route',
       ],
     },
     {
@@ -44,10 +49,11 @@ const sidebars: SidebarsConfig = {
       label: "Deployment",
       items: [
         'deployment/overview',
-        'deployment/on-premises',
+        'deployment/local',
         'deployment/azure-vm',
         'deployment/azure-app-service',
         'deployment/azure-functions',
+        'deployment/azure-arc-extension',
       ],
     },
     {
