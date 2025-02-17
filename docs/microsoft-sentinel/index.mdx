@@ -61,7 +61,7 @@ Press 'q' to quit.
 
    With this option, a code will be displayed in your terminal. Visit `microsoft.com/devicelogin` in any browser and enter the provided code. Sign in with your **Azure** credentials, and grant the necessary permissions when prompted.
 
-Select your preferred authentication method using the arrow keys and press <kb-short>Enter</kb-short>. The system will then guide you through the process.
+After selecting your preferred method using the arrow keys and pressing <kb-short>Enter</kb-short>, the system will then guide you through the process.
 
 ### Post-Authentication
 
@@ -188,7 +188,7 @@ Press 'b' to return, press 'q' to quit.
 
 ### Using an Existing Workspace
 
-Best if you have already the installed **Director** and authenticated. Skip the workspace creation steps, and verify that 
+Select this option if you have already installed **Director** and authenticated it. Skip the workspace creation steps, and verify that 
 
   - **Microsoft Sentinel** is enabled
   - the workspace is in a supported region
@@ -214,9 +214,13 @@ Press 'b' to return, press 'q' to quit.
 
 When you press <kb-short>R</kb-short>, you will proceed to _App Registration_. This will involve authentication via the browser which will launch automatically.
 
-Choose this method when you are running **Director** on non-Azure environments (on-premises servers, other cloud providers, etc.), you want to share access across multiple systems, or you need a more fine-grained control over permissions to manage credentials manually, e.g. when you require _credential rotation_ policies.
+Choose this method when 
 
-This method has more flexible deployment options as the credentials are portable. The method can be used anywhere with internet access, and it is easier to manage in multi-tenant scenarios.
+* you are running **Director** on non-Azure environments&mdash;e.g. on-premises servers, other cloud providers, etc.
+* you need a more fine-grained control over permissions to manage credentials manually&mdash;e.g. when you require _credential rotation_ policies
+* you want to share access across multiple systems
+
+This method has more flexible deployment options as the credentials are portable, and it can be used anywhere with internet access, and it is easier to manage in multi-tenant scenarios.
 
 ```PowerShell {1}
 Integration Complete
@@ -242,7 +246,7 @@ Press 's' to save the configuration to the current path, press 'q' to quit.
 
 ### Managed Identity
 
-Press <kb-short>M</kb-short> to proceed with _Managed Identity_ authentication:
+To proceed with _Managed Identity_ authentication, press <kb-short>M</kb-short> on your keyboard.
 
 Choose this method when you are running **Director** on **Azure** VMs, you have **Azure Arc**-enabled servers, or you want to avoid managing credentials manually and need enhanced security with automatic credential management.
 
@@ -284,15 +288,15 @@ For **Azure VMs**, the _Managed Identity_ is automatically created with the VM. 
 
 For **Azure Arc**-enabled servers, ensure **Azure Arc** is properly configured on your server. Then, use the **Arc**-enabled server's system-assigned identity name in role assignments.
 
-:::note
-If you encounter permission-related errors when running **Director**, verify that all required roles are properly assigned to your _Managed Identity_.
+:::tip
+If you encounter permission-related errors, verify that all required roles are properly assigned to your _Managed Identity_.
 :::
 
 ## Configuration
 
 From the configuration screen, copy the sentinel information by pressing <kb-short>S</kb-short> and paste it into a text editor like **Notepad**.
 
-Create the following directory structure if it doesn't exist:
+Create the following directory if it doesn't exist:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -307,15 +311,15 @@ Create the following directory structure if it doesn't exist:
   </TabItem>
 </Tabs>
 
-Then:
+After this, you have two options:
 
-- either create a new file named `sentinel.yml`, and paste the _properties_ block you have copied from the screen, or
-- move your saved `sentinel.yml` file containing the copied _properties_ block to this directory.
+- create a new file named `sentinel.yml`, and paste the _properties_ block you have copied from the screen
+- move your saved `sentinel.yml` file containing the copied _properties_ block to this directory
 
 ## Validation
 
-Once the editing of properties is completed, validate the automation by doing the following:
+Once the editing of properties is completed, validate the automation with the following steps:
 
-1. Open your browser and navigate to the **Azure Portal: Data Collection Rules (DCR)**
+1. Open your browser and navigate to **Azure Portal: Data Collection Rules (DCR)**
 2. Look for DCRs with the "`vmetric`" prefix
 3. In each DCR's details page, check the **Data Sources** section to verify that the tables were created correctly
