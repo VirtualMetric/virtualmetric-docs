@@ -1,6 +1,8 @@
 # Microsoft Sentinel Automation
 
-This section guides you through integrating **VirtualMetric Director** with Microsoft Sentinel from the command line.
+This section guides you through integrating **VirtualMetric Director** with Microsoft Sentinel using the command line.
+
+You can watch our video demonstrating the process below:
 
 <div className="video-responsive">
   <video controls poster="/img/thumbnail-sentinel-automation.png">
@@ -9,11 +11,14 @@ This section guides you through integrating **VirtualMetric Director** with Micr
 </div>
 
 ## Prerequisites
-- An Azure subscription with permissions to create resources
-- Microsoft Sentinel requires a Log Analytics workspace - we'll create one during this setup
-- Administrative access to run PowerShell or Bash commands
 
-Open a **PowerShell** or **Terminal** with _Admin_ rights, and navigate to `<vm_root>`. Then, type the following command and press <kb-short>Enter</kb-short>.
+To install **Director**, you need
+
+- an _Azure_ subscription with permissions to create resources
+- a Log Analytics workspace (required by **Microsoft Sentinel**)
+- a **PowerShell** or **Bash** terminal with _Administrative_ access
+
+Open the terminal and navigate to `<vm_root>`. Then, type the following command and press <kb-short>Enter</kb-short>.
 
 <Tabs groupId="cli-options">
   <TabItem value="powershell" label="PowerShell" default>
@@ -32,20 +37,6 @@ Open a **PowerShell** or **Terminal** with _Admin_ rights, and navigate to `<vm_
 
 You will be presented with two authentication options:
 
-1. **Browser Authentication**
-   - Recommended for desktop environments
-   - Opens a browser window automatically for Azure sign-in
-   - More user-friendly and secure
-   - Best for Windows/Linux systems with GUI
-
-2. **Device Code Authentication**
-   - Ideal for systems without a desktop environment (e.g., server installations, CLI-only environments)
-   - Provides a code to enter at microsoft.com/devicelogin
-   - Perfect for remote sessions or Linux servers without GUI
-   - Useful when browser access is restricted on the local machine
-
-Select your preferred authentication method using the arrow keys and press <kb-short>Enter</kb-short>.
-
 ```PowerShell {1,5,6}
 Welcome to the Microsoft Sentinel Integration!
 
@@ -58,25 +49,23 @@ Use up/down arrows to navigate and press enter to select.
 Press 'q' to quit.
 ```
 
-After selecting your authentication method, the system will guide you through the authentication process.
+* **Browser Authentication**
+   
+   Recommended for desktop GUI environments since it is user-friendly and secure.
 
-### Browser Authentication
+   With this option, a browser window will automatically open. Sign in with your **Azure** credentials, and grant the necessary permissions when prompted.
 
-* A browser window will automatically open
-* Sign in with your Azure credentials
-* Grant the necessary permissions when prompted
+* **Device Code Authentication**
+ 
+   Ideal for systems without a desktop environment&mdash;e.g. server installations, CLI-only environments, etc It is also useful when browser access is restricted on the local machine.
 
-### Device Code Authentication
+   With this option, a code will be displayed in your terminal. Visit `microsoft.com/devicelogin` in any browser and enter the provided code. Sign in with your **Azure** credentials, and grant the necessary permissions when prompted.
 
-* A code will be displayed in your terminal
-* Visit microsoft.com/devicelogin in any browser
-* Enter the provided code
-* Sign in with your Azure credentials
-* Grant the necessary permissions when prompted
+After selecting your preferred method using the arrow keys and pressing <kb-short>Enter</kb-short>, the system will then guide you through the process.
 
 ### Post-Authentication
 
-After successful authentication, you'll see this confirmation screen:
+After a successful authentication, you'll see this confirmation screen:
 
 ```PowerShell {1}
 Authentication Successful!
@@ -90,28 +79,13 @@ You have successfully authenticated! You can continue with the setup by pressing
 
 ## Log Analytics Workspace and Sentinel Setup
 
-After authentication, you'll set up the Log Analytics workspace, which is required for Microsoft Sentinel.
+After the authentication step is completed, you will need to set up the _Log Analytics_ workspace, which is required for **Microsoft Sentinel**. Here, we will focus on creating a new workspace as it's the most comprehensive one, but here's what you need to know about either option:
 
-This documentation will guide you through creating a new Log Analytics workspace. We'll focus on the new workspace setup as it's the most comprehensive path, but here's what you should know about both options:
+### Creating a New Workspace
 
-**Creating a New Workspace (This Guide):**
-- Best for fresh installations
-- Gives you full control over workspace configuration
-- Ensures all required features are properly enabled
-- Automatically sets up necessary permissions
+Recommended for fresh installations. It gives you full control over workspace configuration, ensures all required features are properly enabled, and automatically sets up necessary permissions.
 
-**Using an Existing Workspace:**
-- Skip the workspace creation steps
-- Verify these prerequisites in your existing workspace:
-  - Microsoft Sentinel is enabled
-  - You have the necessary permissions
-  - The workspace is in a supported region
-
-:::note
-If you choose to use an existing workspace, you can follow the same steps, but select "Use an existing Log Analytics Workspace" when prompted. The subsequent configuration steps will adapt accordingly.
-:::
-
-Select the first option and press <kb-short>Enter</kb-short> to start with new Log Analytics Worspace creation.
+Select the option and press <kb-short>Enter</kb-short> to start creating a new _Log Analytics_ Worspace.
 
 ```PowerShell {1,5,6}
 Integration Method
@@ -186,7 +160,7 @@ Enter the resource group name (default: vmetric):
 Press enter to confirm.
 ```
 
-You will now create a Log Analytics Workspace. Provide your `<instance_name>` and press <kb-short>Enter</kb-short>.
+You will now create the _Log Analytics_ Workspace. Provide your `<instance_name>` and press <kb-short>Enter</kb-short>.
 
 ```PowerShell {1,5}
 Instance Name
@@ -198,12 +172,9 @@ Enter the instance name (default: vmetric-loganalytics):
 Press enter to confirm.
 ```
 
-**VirtualMetric Director** will now create your workspace. During this process, it will:
+**Director** will now create the _Log Analytics_ workspace, enable **Microsoft Sentinel**, and configure the _Data Collection Endpoint_ and the necessary _Data Collection Rules_.
 
-* Create the Log Analytics workspace
-* Enable Microsoft Sentinel
-* Configure the Data Collection Endpoint
-* Configure necessary Data Collection Rules
+This step may take some time, as you will prompted on the screen.
 
 ```PowerShell {1,5}
 Creating Workspace
@@ -215,11 +186,17 @@ This may take a few minutes.
 Press 'b' to return, press 'q' to quit.
 ```
 
-This step may take a few minutes to complete.
+### Using an Existing Workspace
+
+Select this option if you have already installed **Director** and authenticated it. Skip the workspace creation steps, and verify that 
+
+  - **Microsoft Sentinel** is enabled
+  - the workspace is in a supported region
+  - you have the required access permissions
 
 ## Integration Methods
 
-After workspace setup, you'll choose between two integration methods:
+After the workspace is set up, you will need to choose an integration method:
 
 ```PowerShell {1,5,7}
 Setup Complete
@@ -235,20 +212,15 @@ Press 'b' to return, press 'q' to quit.
 
 ### App Registration
 
-When you press <kb-short>R</kb-short>, you will proceed to App Registration. This will involve authentication via the browser which will launch automatically.
+When you press <kb-short>R</kb-short>, you will proceed to _App Registration_. This will involve authentication via the browser which will launch automatically.
 
-**Choose this when:**
-- Running Director on non-Azure environments (on-premises servers, other cloud providers)
-- Need fine-grained control over permissions
-- Want to manage credentials manually
-- Require credential rotation policies
-- Need to share access across multiple systems
+Choose this method when 
 
-**Benefits:**
-- More flexible deployment options
-- Portable credentials
-- Can be used anywhere with internet access
-- Easier to manage in multi-tenant scenarios
+* you are running **Director** on non-Azure environments&mdash;e.g. on-premises servers, other cloud providers, etc.
+* you need a more fine-grained control over permissions to manage credentials manually&mdash;e.g. when you require _credential rotation_ policies
+* you want to share access across multiple systems
+
+This method has more flexible deployment options as the credentials are portable, and it can be used anywhere with internet access, and it is easier to manage in multi-tenant scenarios.
 
 ```PowerShell {1}
 Integration Complete
@@ -274,22 +246,13 @@ Press 's' to save the configuration to the current path, press 'q' to quit.
 
 ### Managed Identity
 
-Press <kb-short>M</kb-short> to proceed with Managed Identity authentication:
+To proceed with _Managed Identity_ authentication, press <kb-short>M</kb-short> on your keyboard.
 
-**Choose this when:**
-- Running Director on Azure VMs
-- Using Azure Arc-enabled servers
-- Want to avoid managing credentials manually
-- Need enhanced security with automatic credential management
+Choose this method when you are running **Director** on **Azure** VMs, you have **Azure Arc**-enabled servers, or you want to avoid managing credentials manually and need enhanced security with automatic credential management.
 
-**Benefits:**
-- No credential management required
-- Automatic rotation of credentials
-- Tighter integration with Azure security
-- Simpler setup and maintenance
-- Enhanced security as no secrets are stored in configuration files
+This method does not require any credential management; credentials are automatically rotated. It has tighter integration with **Azure** security due to which security is enhanced as no secrets are stored in configuration files. It is also simpler to set up and maintain.
 
-After the integration process completes, you will see the following output:
+After the integration process is completed, you will see the following screen:
 
 ```PowerShell {1}
 Integration Complete
@@ -311,46 +274,52 @@ Press 's' to save the configuration to the current path, press 'q' to quit.
 ```
 
 :::warning
-The automation program does not automatically configure permissions for the Managed Identity. You need to manually assign the required permissions in the Azure Portal.
+The automation program does not automatically configure permissions for _Managed Identity_. You will need to manually assign the required permissions in **Azure Portal**.
 :::
 
-To assign the necessary permissions, follow these steps for each Data Collection Rule (DCR) that starts with "vmetric":
+To assign the necessary permissions, follow these steps for each _Data Collection Rule_ (DCR) that starts with "`vmetric`":
 
-- Navigate to the DCR in the Azure Portal
-- Select **Access Control (IAM)**
-- Click **Add** > **Add role assignment**
-- Assign the `Monitoring Metrics Publisher` role to your Managed Identity
+1. Navigate to the DCR in the Azure Portal
+2. Select **Access Control (IAM)**
+3. Click **Add** > **Add role assignment**
+4. Assign the `Monitoring Metrics Publisher` role to your Managed Identity
 
-**For Azure VMs:**
-1. The Managed Identity is automatically created with the VM
-2. Use the VM's system-assigned identity name in the role assignments
+For **Azure VMs**, the _Managed Identity_ is automatically created with the VM. Use the VM's system-assigned identity name in role assignments.
 
-**For Azure Arc-enabled servers:**
-1. Ensure Azure Arc is properly configured on your server
-2. Use the Arc-enabled server's system-assigned identity name in the role assignments
+For **Azure Arc**-enabled servers, ensure **Azure Arc** is properly configured on your server. Then, use the **Arc**-enabled server's system-assigned identity name in role assignments.
 
-:::note
-If you encounter permission-related errors when running Director, verify that all required roles are properly assigned to your Managed Identity.
+:::tip
+If you encounter permission-related errors, verify that all required roles are properly assigned to your _Managed Identity_.
 :::
 
 ## Configuration
 
 From the configuration screen, copy the sentinel information by pressing <kb-short>S</kb-short> and paste it into a text editor like **Notepad**.
 
-Create the following directory structure if it doesn't exist:
+Create the following directory if it doesn't exist:
 
-```
-C:\<vm_root>\director\config\targets\
-```
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+  ```PowerShell
+  C:\path\to\<vm_root>\director\config\targets
+  ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+  ```bash
+  ~/path/to/<vm_root>: ./director/config/targets
+  ```
+  </TabItem>
+</Tabs>
 
-Then, either:
-- Create a new file named `sentinel.yml` in this directory and paste the _properties_ block you copied from the screen, or
-- Move your saved `sentinel.yml` file containing the copied _properties_ block to this directory.
+After this, you have two options:
+
+- create a new file named `sentinel.yml`, and paste the _properties_ block you have copied from the screen
+- move your saved `sentinel.yml` file containing the copied _properties_ block to this directory
 
 ## Validation
 
-Once completed, validate the automation by following these steps:
+Once the editing of properties is completed, validate the automation with the following steps:
 
-1. Open your browser and navigate to the **Azure Portal: Data Collection Rules (DCR)**
+1. Open your browser and navigate to **Azure Portal: Data Collection Rules (DCR)**
 2. Look for DCRs with the "`vmetric`" prefix
 3. In each DCR's details page, check the **Data Sources** section to verify that the tables were created correctly
