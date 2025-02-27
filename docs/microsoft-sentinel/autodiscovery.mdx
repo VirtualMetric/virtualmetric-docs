@@ -26,7 +26,7 @@ Open a terminal with _Administrative_ access and navigate to `<vm_root>`. Then, 
   </TabItem>
 </Tabs>
 
-Follow the on-screen prompts to complete the setup process. For a detailed step-by-step instructions, refer to [Microsoft Sentinel Automation](./index.mdx).
+Follow the on-screen prompts to complete the setup process. For detailed step-by-step instructions, refer to [Microsoft Sentinel Automation](./index.mdx).
 
 ## Required Permissions
 
@@ -90,31 +90,31 @@ When using a _Resource ID_, **Director** will discover all DCRs associated with 
 
 ### Caching Mechanism
 
-The default cache duration is **5 minutes**. The cache is automatically invalidated when the configuration file (`sentinel.yml`) is modified, or the cache timeout is reached
+The default cache duration is **5 minutes**. The cache is automatically invalidated when the configuration file (`sentinel.yml`) is modified or the cache timeout is reached.
 
 ### Dynamic Updates
 
-The autodiscovery feature continuously adapts to changes in your Sentinel environment thanks to which new DCRs are automatically detected, and changes to table schemas are recognized while custom tables and columns are discovered and integrated.
+The autodiscovery feature continuously adapts to changes in your **Sentinel** environment thanks to which new DCRs are automatically detected, and changes to table schemas are recognized while custom tables and columns are discovered and integrated.
 
 ## Phantom Field Prevention
 
-**Microsoft Sentinel** has moved to DCR-based log ingestion and manual schema management. This change, while powerful, can lead to _phantom fields_, i.e. data fields that are ingested and billed even though they are not part of the table schema and therefore are not accessible for querying, and yet are still incurring storage costs.
+**Microsoft Sentinel** has moved to DCR-based log ingestion and manual schema management. This change, while powerful, can lead to _phantom fields_, i.e. data fields that are ingested and billed even though they are not part of the table schema and therefore are inaccessible for querying, and yet are still incurring storage costs.
 
 > For a comprehensive understanding of phantom fields, see [Sentinel Phantom Fields](https://www.managedsentinel.com/sentinel-phantom-fields/) by ManagedSentinel.
 
 Among the common scenarios that cause these are log splitting with mismatched schemas, temporary fields in transformations, duplicate fields emerging from improper field mapping, and schema modifications without proper cleanup.
 
-**Director**'s autodiscovery feature includes a built-in phantom field prevention using the following:
+**Director**'s autodiscovery feature includes a built-in phantom field prevention mechanism based on the following:
 
 **Schema Validation** - Automatically discovers table schemas from DCRs, validates each field against the known schema, and discards fields not present in the table schema.
 
 **Dynamic Field Mapping** - Fields that exist in the schema or are required are kept while others are discarded.
 
-**Cost Optimization** - Prevents unnecessary data ingestion thereby reducing storage costs while maintaining data accessibility
+**Cost Optimization** - Prevents unnecessary data ingestion thereby reducing storage costs while maintaining data accessibility.
 
 The most salient reason for preventing phantom fields is to reduce their **impact on cost**. Some environments show up to 65% of table data as phantom fields.
 
-The following should be observed as guiding principles:
+The guiding principles here are:
 
 * For _schema management_, regularly review table schemas, update schemas when adding new fields, use autodiscovery to validate field usage.
 
