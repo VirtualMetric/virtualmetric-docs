@@ -17,17 +17,17 @@ Converts circle shape definitions to approximate polygons.
 
 ```yaml {2-4}
 circle:
-  - error_distance: <numeric>
-  - field: <ident>
-  - shape_type: <shape>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
-  - target_field: <ident>
+  error_distance: <numeric>
+  field: <ident>
+  shape_type: <shape>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+  target_field: <ident>
 ```
 
 ## Configuration
@@ -48,21 +48,9 @@ circle:
 
 ## Details
 
-The radius can be specified in the following units:
+The radius can be specified in the following units: `cm` `ft` `in` `km` `m` (default) `mi` `mm` `nmi` `yd`
 
-* `m` - meters (default if none specified)
-* `cm` - centimeters
-* `mm` - millimeters
-* `km` - kilometers
-* `in` - inches
-* `ft` - feet
-* `yd` - yards
-* `mi` - land miles
-* `nmi` - nautical miles
-
-:::note
 The processor automatically calculates the optimal number of points to use when approximating the circle as a polygon based on the `radius` and `error_distance` parameters. The number of points is capped at 1000 for performance.
-:::
 
 :::warning[attention]
 Circles containing poles cannot be converted.
@@ -70,11 +58,11 @@ Circles containing poles cannot be converted.
 
 ## Examples
 
-### Custom Format
+### Custom
 
 <ExampleGrid>
   <CommentCol>
-    Using center coordinates and radius...
+    Center coordinates and radius...
   </CommentCol>
   <CodeCol>
     ```json
@@ -87,14 +75,14 @@ Circles containing poles cannot be converted.
     ```
     ```yaml
     circle:
-      - field: vmetric
-      - error_distance: 28.0
-      - shape_type: geo_shape
-      - target_field: geo_shape.vmetric
+      field: vmetric
+      error_distance: 28.0
+      shape_type: geo_shape
+      target_field: geo_shape.vmetric
     ```
   </CodeCol>
   <CommentCol>
-    converts to polygon:
+    are converted to a polygon:
   </CommentCol>
   <CodeCol>
     ```json
@@ -117,11 +105,11 @@ Circles containing poles cannot be converted.
   </CodeCol>
 </ExampleGrid>
 
-### WKT Format
+### WKT
 
 <ExampleGrid>
   <CommentCol>
-    Using WKT circle definition...
+    WKT circle definition...
   </CommentCol>
   <CodeCol>
     ```json
@@ -131,14 +119,14 @@ Circles containing poles cannot be converted.
     ```
     ```yaml
     circle:
-      - field: circle
-      - error_distance: 28.0
-      - shape_type: geo_shape
-      - target_field: polygon
+      field: circle
+      error_distance: 28.0
+      shape_type: geo_shape
+      target_field: polygon
     ```
   </CodeCol>
   <CommentCol>
-    converts to GeoJSON polygon:
+    is converted to a GeoJSON polygon:
   </CommentCol>
   <CodeCol>
     ```json
@@ -159,11 +147,11 @@ Circles containing poles cannot be converted.
   </CodeCol>
 </ExampleGrid>
 
-### GeoJSON Format
+### GeoJSON
 
 <ExampleGrid>
   <CommentCol>
-    Using GeoJSON circle definition...
+    GeoJSON circle definition...
   </CommentCol>
   <CodeCol>
     ```json
@@ -177,14 +165,14 @@ Circles containing poles cannot be converted.
     ```
     ```yaml
     circle:
-      - field: circle
-      - error_distance: 28.0
-      - shape_type: geo_shape
-      - target_field: polygon
+      field: circle
+      error_distance: 28.0
+      shape_type: geo_shape
+      target_field: polygon
     ```
   </CodeCol>
   <CommentCol>
-    converts to GeoJSON polygon:
+    is converted to a GeoJSON polygon:
   </CommentCol>
   <CodeCol>
     ```json
@@ -209,7 +197,7 @@ Circles containing poles cannot be converted.
 
 <ExampleGrid>
   <CommentCol>
-    Using kilometers for large circles...
+    Kilometers for large circles...
   </CommentCol>
   <CodeCol>
     ```json
@@ -222,14 +210,14 @@ Circles containing poles cannot be converted.
     ```
     ```yaml
     circle:
-      - field: vmetric
-      - error_distance: 28000.0
-      - shape_type: geo_shape
-      - target_field: geo_shape.vmetric
+      field: vmetric
+      error_distance: 28000.0
+      shape_type: geo_shape
+      target_field: geo_shape.vmetric
     ```
   </CodeCol>
   <CommentCol>
-    converts to large polygon:
+    are converted to a large polygon:
   </CommentCol>
   <CodeCol>
     ```json

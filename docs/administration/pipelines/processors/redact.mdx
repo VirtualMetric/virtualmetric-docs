@@ -17,19 +17,19 @@ Uses Grok patterns to identify and redact sensitive information in text fields. 
 
 ```yaml {2-3}
 redact:
-  - field: <ident>
-  - patterns: <string[]>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - pattern_definitions: <map[string]string>
-  - prefix: <string>
-  - skip_if_unlicensed: <boolean>
-  - suffix: <string>
-  - tag: <string>
+  field: <ident>
+  patterns: <string[]>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  pattern_definitions: <map[string]string>
+  prefix: <string>
+  skip_if_unlicensed: <boolean>
+  suffix: <string>
+  tag: <string>
 ```
 
 ## Configuration
@@ -78,8 +78,8 @@ Applying many patterns to large volumes of text may impact performance. Consider
     ```
     ```yaml
     redact:
-      - field: message
-      - patterns:
+      field: message
+      patterns:
         - "%{EMAILADDRESS:email}"
     ```
   </CodeCol>
@@ -109,12 +109,12 @@ Applying many patterns to large volumes of text may impact performance. Consider
     ```
     ```yaml
     redact:
-      - field: log
-      - patterns:
+      field: log
+      patterns:
         - "%{IP:client}"
         - "%{EMAILADDRESS:email}"
-      - prefix: "["
-      - suffix: "]"
+      prefix: "["
+      suffix: "]"
     ```
   </CodeCol>
   <CommentCol>
@@ -143,11 +143,11 @@ Applying many patterns to large volumes of text may impact performance. Consider
     ```
     ```yaml
     redact:
-      - field: data
-      - patterns:
+      field: data
+      patterns:
         - "%{CUSTOMER_ID:id}"
-      - pattern_definitions:
-        CUSTOMER_ID: "[A-Z]{3}-\d{5}-[A-Z]{2}"
+      pattern_definitions:
+        - CUSTOMER_ID: "[A-Z]{3}-\d{5}-[A-Z]{2}"
     ```
   </CodeCol>
   <CommentCol>
@@ -171,11 +171,11 @@ Applying many patterns to large volumes of text may impact performance. Consider
   <CodeCol>
     ```yaml
     redact:
-      - field: nonexistent_field
-      - patterns:
+      field: nonexistent_field
+      patterns:
         - "%{IP:client}"
-      - ignore_missing: true
-      - on_failure:
+      ignore_missing: true
+      on_failure:
         - append:
             field: tags
             value: redaction_failed

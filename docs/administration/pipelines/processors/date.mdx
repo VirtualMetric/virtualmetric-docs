@@ -17,18 +17,18 @@ Parses dates from a field in various formats into a standardized timestamp.
 
 ```yaml {2}
 date:
-  - field: <ident>
-  - formats: <enum[]>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - locale: <string>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - output_format: <string>
-  - tag: <string>
-  - target_field: <ident>
-  - timezone: <string>
+  field: <ident>
+  formats: <enum[]>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  locale: <string>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  output_format: <string>
+  tag: <string>
+  target_field: <ident>
+  timezone: <string>
 ```
 
 ## Configuration
@@ -92,7 +92,7 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
 
 ## Examples
 
-### Standard Dates
+### Standard
 
 <ExampleGrid>
   <CommentCol>
@@ -106,10 +106,10 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
     ```
     ```yaml
     date:
-      - field: initial_date
-      - target_field: timestamp
-      - formats: ["02/01/2006 15:04:05"]
-      - timezone: "Europe/Amsterdam"
+      field: initial_date
+      target_field: timestamp
+      formats: ["02/01/2006 15:04:05"]
+      timezone: "Europe/Amsterdam"
     ```
   </CodeCol>
   <CommentCol>
@@ -125,7 +125,7 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
   </CodeCol>
 </ExampleGrid>
 
-### Automatic Detection
+### Detection
 
 <ExampleGrid>
   <CommentCol>
@@ -142,21 +142,21 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
     }
     ```
     ```yaml
-    date:
-      - field: date1
-      - target_field: time1
-    date:
-      - field: date2
-      - target_field: time2
-    date:
-      - field: date3
-      - target_field: time3
-    date:
-      - field: date4
-      - target_field: time4
-    date:
-      - field: date5
-      - target_field: time5
+    - date:
+      field: date1
+      target_field: time1
+    - date:
+      field: date2
+      target_field: time2
+    - date:
+      field: date3
+      target_field: time3
+    - date:
+      field: date4
+      target_field: time4
+    - date:
+      field: date5
+      target_field: time5
     ```
   </CodeCol>
   <CommentCol>
@@ -191,9 +191,9 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
     ```
     ```yaml
     date:
-      - field: user.login_date
-      - target_field: timestamp
-      - formats: ["2006-01-02T15:04:05.000Z07:00"]
+      field: user.login_date
+      target_field: timestamp
+      formats: ["2006-01-02T15:04:05.000Z07:00"]
     ```
   </CodeCol>
   <CommentCol>
@@ -225,14 +225,14 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
     ```
     ```yaml
     date:
-      - field: initial_date
-      - target_field: timestamp
-      - formats: ["02/01/2006 15:04:05"]
-      - output_format: "2006-01-02 15:04:05"
+      field: initial_date
+      target_field: timestamp
+      formats: ["02/01/2006 15:04:05"]
+      output_format: "2006-01-02 15:04:05"
     ```
   </CodeCol>
   <CommentCol>
-    generates the specified output:
+    result:
   </CommentCol>
   <CodeCol>
     ```json
@@ -260,11 +260,11 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
     ```
     ```yaml
     date:
-      - field: event_date
-      - target_field: timestamp
-      - formats: ["2006-01-02 15:04:05"]
-      - timezone: "{{{tz}}}"
-      - locale: "{{{lang}}}"
+      field: event_date
+      target_field: timestamp
+      formats: ["2006-01-02 15:04:05"]
+      timezone: "{{{tz}}}"
+      locale: "{{{lang}}}"
     ```
   </CodeCol>
   <CommentCol>

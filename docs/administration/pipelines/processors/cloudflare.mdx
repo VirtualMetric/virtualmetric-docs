@@ -17,18 +17,18 @@ Enriches events by retrieving intelligence information from **Cloudflare**'s API
 
 ```yaml {2-6}
 cloudflare:
-  - field: <ident>
-  - api_token: <string>
-  - account_id: <string>
-  - query_type: <enum>
-  - target_field: <ident>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
+  field: <ident>
+  api_token: <string>
+  account_id: <string>
+  query_type: <enum>
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
 ```
 
 ## Configuration
@@ -93,10 +93,10 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     ```
     ```yaml
     cloudflare:
-      - field: domain
-      - api_token: "${CLOUDFLARE_API_TOKEN}"
-      - account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      - query_type: whois
+      field: domain
+      api_token: "${CLOUDFLARE_API_TOKEN}"
+      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+      query_type: whois
     ```
   </CodeCol>
   <CommentCol>
@@ -162,11 +162,11 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     ```
     ```yaml
     cloudflare:
-      - field: source_ip
-      - target_field: ip_intel
-      - api_token: "${CLOUDFLARE_API_TOKEN}"
-      - account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      - query_type: ip
+      field: source_ip
+      target_field: ip_intel
+      api_token: "${CLOUDFLARE_API_TOKEN}"
+      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+      query_type: ip
     ```
   </CodeCol>
   <CommentCol>
@@ -215,11 +215,11 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     ```
     ```yaml
     cloudflare:
-      - field: asn
-      - target_field: asn_intel
-      - api_token: "${CLOUDFLARE_API_TOKEN}"
-      - account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      - query_type: asn
+      field: asn
+      target_field: asn_intel
+      api_token: "${CLOUDFLARE_API_TOKEN}"
+      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+      query_type: asn
     ```
   </CodeCol>
   <CommentCol>
@@ -255,12 +255,12 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     ```
     ```yaml
     cloudflare:
-      - field: domain
-      - if: "ctx.threat_level == 'high'"
-      - target_field: domain_threat_intel
-      - api_token: "${CLOUDFLARE_API_TOKEN}"
-      - account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      - query_type: domain
+      field: domain
+      if: "ctx.threat_level == 'high'"
+      target_field: domain_threat_intel
+      api_token: "${CLOUDFLARE_API_TOKEN}"
+      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+      query_type: domain
     ```
   </CodeCol>
   <CommentCol>
@@ -314,15 +314,15 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     ```
     ```yaml
     cloudflare:
-      - field: investigate_ip
-      - ignore_missing: true
-      - ignore_failure: true
-      - api_token: "${CLOUDFLARE_API_TOKEN}"
-      - account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      - on_failure:
-          - set:
-              field: lookup_status
-              value: "intelligence_lookup_failed"
+      field: investigate_ip
+      ignore_missing: true
+      ignore_failure: true
+      api_token: "${CLOUDFLARE_API_TOKEN}"
+      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+      on_failure:
+        - set:
+          field: lookup_status
+          value: "intelligence_lookup_failed"
     ```
   </CodeCol>
   <CommentCol>

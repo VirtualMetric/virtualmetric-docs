@@ -17,18 +17,18 @@ Enriches documents by performing SQL queries against lookup tables loaded from C
 
 ```yaml {2-5}
 enrich:
-  - lookup_table: <string[]>
-  - dataset_name: <string[]>
-  - query: <string>
-  - type: <string>
-  - description: <text>
-  - if: <script>
-  - tag: <string>
-  - on_success: <processor[]>
-  - on_failure: <processor[]>
-  - override: <boolean>
-  - ignore_missing: <boolean>
-  - ignore_failure: <boolean>
+  lookup_table: <string[]>
+  dataset_name: <string[]>
+  query: <string>
+  type: <string>
+  description: <text>
+  if: <script>
+  tag: <string>
+  on_success: <processor[]>
+  on_failure: <processor[]>
+  override: <boolean>
+  ignore_missing: <boolean>
+  ignore_failure: <boolean>
 ```
 
 ## Configuration
@@ -95,8 +95,8 @@ As large CSV files are loaded directly into memory, the impact of using very lar
     ```
     ```yaml
     enrich:
-      - lookup_table: ["event_codes.csv"]
-      - query: |
+      lookup_table: ["event_codes.csv"]
+      query: |
           SELECT 
             _ingest.*,
             lookup_table.description as event_description
@@ -134,8 +134,8 @@ As large CSV files are loaded directly into memory, the impact of using very lar
     ```
     ```yaml
     enrich:
-      - type: "kusto"
-      - query: |
+      type: "kusto"
+      query: |
           _ingest
           | where DeviceVendor == "Check Point"
           | extend isInternal = SourceIP startswith "192.168."
@@ -172,10 +172,10 @@ As large CSV files are loaded directly into memory, the impact of using very lar
     ```
     ```yaml
     enrich:
-      - lookup_table: 
-          - "users.csv"
-          - "departments.csv"
-      - query: |
+      lookup_table: 
+        - "users.csv"
+        - "departments.csv"
+      query: |
           SELECT 
             _ingest.*,
             u.name as user_name,
@@ -215,8 +215,8 @@ As large CSV files are loaded directly into memory, the impact of using very lar
     ```
     ```yaml
     enrich:
-      - override: true
-      - query: |
+      override: true
+      query: |
           SELECT event_type, 
                  'processed' as status
           FROM _ingest

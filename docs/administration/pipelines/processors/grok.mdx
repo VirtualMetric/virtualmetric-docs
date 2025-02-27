@@ -17,17 +17,17 @@ Extracts structured fields from unstructured log messages using predefined patte
 
 ```yaml {2-3}
 grok:
-  - field: <ident>
-  - patterns: <string[]>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - pattern_definitions: <map>
-  - tag: <string>
-  - trace_match: <boolean>
+  field: <ident>
+  patterns: <string[]>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  pattern_definitions: <map>
+  tag: <string>
+  trace_match: <boolean>
 ```
 
 ## Configuration
@@ -84,9 +84,9 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     ```
     ```yaml
     grok:
-      - field: message
-      - patterns:
-          - "%{COMMONAPACHELOG}"
+      field: message
+      patterns:
+        - "%{COMMONAPACHELOG}"
     ```
   </CodeCol>
   <CommentCol>
@@ -107,7 +107,7 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
   </CodeCol>
 </ExampleGrid>
 
-### Custom Patterns
+### Custom
 
 <ExampleGrid>
   <CommentCol>
@@ -121,13 +121,13 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     ```
     ```yaml
     grok:
-      - field: log_entry
-      - pattern_definitions:
-          USER_ID: "User\\[(?<user_id>\\d+)\\]"
-          ACTION: "Action=(?<action>\\w+)"
-          STATUS: "Status=(?<status>\\w+)"
-      - patterns:
-          - "%{USER_ID} %{ACTION} %{STATUS}"
+      field: log_entry
+      pattern_definitions:
+        - USER_ID: "User\\[(?<user_id>\\d+)\\]"
+        - ACTION: "Action=(?<action>\\w+)"
+        - STATUS: "Status=(?<status>\\w+)"
+      patterns:
+        - "%{USER_ID} %{ACTION} %{STATUS}"
     ```
   </CodeCol>
   <CommentCol>
@@ -139,6 +139,39 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
       "user_id": "123",
       "action": "LOGIN",
       "status": "SUCCESS"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple
+
+<ExampleGrid>
+  <CommentCol>
+    Trying multiple patterns in turn...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Error: Connection timeout after 30s"
+    }
+    ```
+    ```yaml
+    grok:
+      field: message
+      patterns:
+        - "Error: %{GREEDYDATA:error_message}"
+        - "Warning: %{GREEDYDATA:warning_message}"
+        - "Info: %{GREEDYDATA:info_message}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    where the first matches:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_message": "Connection timeout after 30s"
     }
     ```
   </CodeCol>
@@ -158,9 +191,9 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     ```
     ```yaml
     grok:
-      - field: metric
-      - patterns:
-          - "cpu_usage=%{NUMBER:cpu:int} memory=%{NUMBER:memory:long}"
+      field: metric
+      patterns:
+        - "cpu_usage=%{NUMBER:cpu:int} memory=%{NUMBER:memory:long}"
     ```
   </CodeCol>
   <CommentCol>
@@ -176,7 +209,7 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
   </CodeCol>
 </ExampleGrid>
 
-### Syslog Parsing
+### Parsing
 
 <ExampleGrid>
   <CommentCol>
@@ -190,9 +223,9 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     ```
     ```yaml
     grok:
-      - field: message
-      - patterns:
-          - "%{SYSLOG5424PRI}%{NONNEGINT:ver} +(?:%{TIMESTAMP_ISO8601:ts}|-) +(?:%{IPORHOST:host}|-) +(?:%{SYSLOG5424PRINTASCII:app}) +(?:%{NONNEGINT:pid}|-) +(?:%{SYSLOG5424PRINTASCII:msgid}|-) +\\[%{GREEDYDATA:structured_data}\\]"
+      field: message
+      patterns:
+        - "%{SYSLOG5424PRI}%{NONNEGINT:ver} +(?:%{TIMESTAMP_ISO8601:ts}|-) +(?:%{IPORHOST:host}|-) +(?:%{SYSLOG5424PRINTASCII:app}) +(?:%{NONNEGINT:pid}|-) +(?:%{SYSLOG5424PRINTASCII:msgid}|-) +\\[%{GREEDYDATA:structured_data}\\]"
     ```
   </CodeCol>
   <CommentCol>
@@ -207,39 +240,6 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
       "app": "app",
       "pid": "2700",
       "structured_data": "action:\"login\"; status:\"failed\""
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Multiple Patterns
-
-<ExampleGrid>
-  <CommentCol>
-    Trying multiple patterns in turn...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "message": "Error: Connection timeout after 30s"
-    }
-    ```
-    ```yaml
-    grok:
-      - field: message
-      - patterns:
-          - "Error: %{GREEDYDATA:error_message}"
-          - "Warning: %{GREEDYDATA:warning_message}"
-          - "Info: %{GREEDYDATA:info_message}"
-    ```
-  </CodeCol>
-  <CommentCol>
-    where the first matches:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "error_message": "Connection timeout after 30s"
     }
     ```
   </CodeCol>

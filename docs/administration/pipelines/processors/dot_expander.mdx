@@ -17,14 +17,14 @@ Expands fields containing dots in their names into nested objects.
 
 ```yaml {2}
 dot_expander:
-  - field: <ident>
-  - path: <string>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
+  field: <ident>
+  path: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
 ```
 
 ## Configuration
@@ -42,32 +42,25 @@ dot_expander:
 
 ## Details
 
-### Functionality
-The Dot Expander processor converts flat field names with dot notation into nested object structures. This is particularly useful for:
+The processor converts flat field names with dot notation into nested object structures. This is particularly useful for transforming flattened data into hierarchical formats, improving data readability and standardizing field structures for nested processing.
 
-- Transforming flattened data into hierarchical formats
-- Preparing data for nested processing
-- Standardizing field structures across different data sources
+:::note
+The field must contain at least one dot. Also, nested expansions create complex object structures.
+:::
 
-### Key Behaviors
-- Automatically creates intermediate objects as needed
-- Preserves original field values
-- Removes the original dot-separated field
-- Supports custom target paths for expanded structures
+By default, the processor automatically creates intermediate objects as needed, preserving original field values while removing the original dot-separated field. It also supports custom target paths for expanded structures.
 
-### Use Cases
-- Normalizing log data
-- Preparing data for specific processing pipelines
-- Converting flat configurations to nested formats
-- Improving data readability and structure
+:::warning
+Be cautious with deeply nested fields to avoid performance issues.
+:::
 
 ## Examples
 
-### Basic Field Expansion
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Expand a dotted field into nested objects...
+    Expanding a dotted field into nested objects...
   </CommentCol>
   <CodeCol>
     ```json
@@ -77,7 +70,7 @@ The Dot Expander processor converts flat field names with dot notation into nest
     ```
     ```yaml
     dot_expander:
-      - field: foo.bar.baz
+      field: foo.bar.baz
     ```
   </CodeCol>
   <CommentCol>
@@ -96,11 +89,11 @@ The Dot Expander processor converts flat field names with dot notation into nest
   </CodeCol>
 </ExampleGrid>
 
-### Custom Path Expansion
+### Path Expansion
 
 <ExampleGrid>
   <CommentCol>
-    Place expanded structure at specific path...
+    Placing an expanded structure on a specific path...
   </CommentCol>
   <CodeCol>
     ```json
@@ -110,12 +103,12 @@ The Dot Expander processor converts flat field names with dot notation into nest
     ```
     ```yaml
     dot_expander:
-      - field: source.field.value
-      - path: target
+      field: source.field.value
+      path: target
     ```
   </CodeCol>
   <CommentCol>
-    creates structure at specified location:
+    creates the structure at specified location:
   </CommentCol>
   <CodeCol>
     ```json
@@ -132,11 +125,11 @@ The Dot Expander processor converts flat field names with dot notation into nest
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Expansion
+### Conditionals
 
 <ExampleGrid>
   <CommentCol>
-    Expand only when condition is met...
+    Expand only when a condition is met...
   </CommentCol>
   <CodeCol>
     ```json
@@ -147,12 +140,12 @@ The Dot Expander processor converts flat field names with dot notation into nest
     ```
     ```yaml
     dot_expander:
-      - field: foo.bar.baz
-      - if: ctx.condition == true
+      field: foo.bar.baz
+      if: ctx.condition == true
     ```
   </CodeCol>
   <CommentCol>
-    expands when condition is true:
+    result:
   </CommentCol>
   <CodeCol>
     ```json
@@ -172,7 +165,7 @@ The Dot Expander processor converts flat field names with dot notation into nest
 
 <ExampleGrid>
   <CommentCol>
-    When field doesn't contain dots...
+    When a field doesn't contain any dots...
   </CommentCol>
   <CodeCol>
     ```json
@@ -182,16 +175,16 @@ The Dot Expander processor converts flat field names with dot notation into nest
     ```
     ```yaml
     dot_expander:
-      - field: foo
-      - ignore_failure: true
-      - on_failure:
-          - set:
-              field: error
-              value: "No dots in field name"
+      field: foo
+      ignore_failure: true
+      on_failure:
+        - set:
+          field: error
+          value: "No dots in field name"
     ```
   </CodeCol>
   <CommentCol>
-    handles error gracefully:
+    handle the error:
   </CommentCol>
   <CodeCol>
     ```json
@@ -202,15 +195,3 @@ The Dot Expander processor converts flat field names with dot notation into nest
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- The processor maintains the original data types during expansion
-- Intermediate objects are created automatically
-- The original dot-separated field is removed
-:::
-
-:::warning
-- The field must contain at least one dot
-- Nested expansions create complex object structures
-- Be cautious with deeply nested fields to avoid performance issues
-:::

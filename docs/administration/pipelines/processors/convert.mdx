@@ -17,17 +17,17 @@ Converts field values from one data type to another. Supports single values and 
 
 ```yaml {2,3}
 convert:
-  - field: <ident>
-  - type: <enum>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - precision: <numeric>
-  - tag: <string>
-  - target_field: <ident>
+  field: <ident>
+  type: <enum>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  precision: <numeric>
+  tag: <string>
+  target_field: <ident>
 ```
 
 ## Configuration
@@ -88,11 +88,11 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
 
 ## Examples
 
-### Basic Type Conversion
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Convert string to integer...
+    Convert to an integer...
   </CommentCol>
   <CodeCol>
     ```json
@@ -102,8 +102,8 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
     ```
     ```yaml
     convert:
-      - field: stringToInt
-      - type: integer
+      field: stringToInt
+      type: integer
     ```
   </CodeCol>
   <CommentCol>
@@ -118,11 +118,11 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
   </CodeCol>
 </ExampleGrid>
 
-### Floating Point with Precision
+### Floating with Precision
 
 <ExampleGrid>
   <CommentCol>
-    Convert to float with precision...
+    Convert to a float with precision...
   </CommentCol>
   <CodeCol>
     ```json
@@ -149,11 +149,11 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
   </CodeCol>
 </ExampleGrid>
 
-### Array Conversion
+### Arrays
 
 <ExampleGrid>
   <CommentCol>
-    Converting all elements of an array...
+    Convert all elements of an array...
   </CommentCol>
   <CodeCol>
     ```json
@@ -163,8 +163,8 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
     ```
     ```yaml
     convert:
-      - field: numbers
-      - type: integer
+      field: numbers
+      type: integer
     ```
   </CodeCol>
   <CommentCol>
@@ -179,43 +179,11 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
   </CodeCol>
 </ExampleGrid>
 
-### Using Target Field
+### Type Detection
 
 <ExampleGrid>
   <CommentCol>
-    Converting to a different field...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "source": "42"
-    }
-    ```
-    ```yaml
-    convert:
-      - field: source
-      - type: integer
-      - target_field: target
-    ```
-  </CodeCol>
-  <CommentCol>
-    result:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "source": "42",
-      "target": 42
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Auto Type Detection
-
-<ExampleGrid>
-  <CommentCol>
-    Automatically determining the type...
+    Automatically determine the type...
   </CommentCol>
   <CodeCol>
     ```json
@@ -228,12 +196,12 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
     ```
     ```yaml
     convert:
-      - field: value1
-      - type: auto
+      field: value1
+      type: auto
     ```
   </CodeCol>
   <CommentCol>
-    results in the appropriate types:
+    result:
   </CommentCol>
   <CodeCol>
     ```json
@@ -242,6 +210,38 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
       "value2": 3.14,
       "value3": true,
       "value4": "hello"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+Keep Original
+
+<ExampleGrid>
+  <CommentCol>
+    Write the converted values to a field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": "42"
+    }
+    ```
+    ```yaml
+    convert:
+      field: source
+      type: integer
+      target_field: target
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": "42",
+      "target": 42
     }
     ```
   </CodeCol>

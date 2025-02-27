@@ -17,16 +17,16 @@ Extracts values from strings using predefined patterns without regular expressio
 
 ```yaml {2,3}
 dissect:
-  - field: <ident>
-  - pattern: <string>
-  - append_separator: <char>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
+  field: <ident>
+  pattern: <string>
+  append_separator: <char>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
 ```
 
 ## Configuration
@@ -66,7 +66,7 @@ The separator in `append_separator` must be a single character. All named captur
 
 ## Examples
 
-### Basic Extraction
+### Basic
 
 <ExampleGrid>
   <CommentCol>
@@ -80,8 +80,8 @@ The separator in `append_separator` must be a single character. All named captur
     ```
     ```yaml
     dissect:
-      - field: message
-      - pattern: "%{firstname} %{lastname} %{age}"
+      field: message
+      pattern: "%{firstname} %{lastname} %{age}"
     ```
   </CodeCol>
   <CommentCol>
@@ -117,9 +117,9 @@ The separator in `append_separator` must be a single character. All named captur
     ```
     ```yaml
     dissect:
-      - field: checkpoint.additional_info
-      - pattern: "Administrator failed to log in: %{event.reason}"
-      - if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure'
+      field: checkpoint.additional_info
+      pattern: "Administrator failed to log in: %{event.reason}"
+      if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure'
     ```
   </CodeCol>
   <CommentCol>
@@ -155,9 +155,9 @@ The separator in `append_separator` must be a single character. All named captur
     ```
     ```yaml
     dissect:
-      - field: message
-      - pattern: "%{data}"
-      - ignore_failure: true
+      field: message
+      pattern: "%{data}"
+      ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>
@@ -189,9 +189,9 @@ The separator in `append_separator` must be a single character. All named captur
     ```
     ```yaml
     dissect:
-      - field: message
-      - pattern: "%{firstname} %{lastname} %{age}"
-      - ignore_failure: true
+      field: message
+      pattern: "%{firstname} %{lastname} %{age}"
+      ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>

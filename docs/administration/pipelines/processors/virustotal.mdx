@@ -17,19 +17,19 @@ Enriches events by querying the **VirusTotal** API for threat intelligence about
 
 ```yaml {2-4}
 virustotal:
-  - field: <ident>
-  - api_key: <string>
-  - query_type: <enum>
-  - interval: <numeric>
-  - timeout: <numeric>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
-  - target_field: <ident>
+  field: <ident>
+  api_key: <string>
+  query_type: <enum>
+  interval: <numeric>
+  timeout: <numeric>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+  target_field: <ident>
 ```
 
 ## Configuration
@@ -54,23 +54,23 @@ virustotal:
 
 The processor supports queries for file hashes (e.g. MD5, SHA-1, SHA-256), URLs (including scanning and analysis retrieval), domain names, and IP addresses. It also fetches reputation data.
 
-:::warning[caution]
-Consider **VirusTotal** API rate limits.
+:::note
+File scan results may not be immediately available, and URL scanning may have additional delays. Consider rate limits.
 :::
 
-Responses are returned as structured objects. Analysis stats provide counts from multiple engines.
+:::warning
+Long polling intervals may impact processing time.
+:::
+
+The API key can be specified directly or via an environment variable. Responses are returned as structured objects. Analysis stats provide counts from multiple engines.
+
+:::warning[caution]
+API keys should be stored securely.
+:::
 
 Automated URL scanning, and rich threat intelligence are also available, so responses may include rich metadata.
 
-:::note
-File scan results may not be immediately available, and URL scanning may have additional delays.
-:::
-
 Error handling and success/failure options are supported, as well.
-
-:::warning
-API keys should be securely stored.
-:::
 
 ## Examples
 
@@ -88,9 +88,9 @@ API keys should be securely stored.
     ```
     ```yaml
     virustotal:
-      - field: hash
-      - query_type: hash
-      - api_key: "${VIRUSTOTAL_API_KEY}"
+      field: hash
+      query_type: hash
+      api_key: "${VIRUSTOTAL_API_KEY}"
     ```
   </CodeCol>
   <CommentCol>
@@ -214,12 +214,12 @@ API keys should be securely stored.
     ```
     ```yaml
     virustotal:
-      - field: url
-      - query_type: url
-      - interval: 2
-      - timeout: 15
-      - target_field: url_analysis
-      - api_key: "${VIRUSTOTAL_API_KEY}"
+      field: url
+      query_type: url
+      interval: 2
+      timeout: 15
+      target_field: url_analysis
+      api_key: "${VIRUSTOTAL_API_KEY}"
     ```
   </CodeCol>
   <CommentCol>
@@ -290,10 +290,10 @@ API keys should be securely stored.
     ```
     ```yaml
     virustotal:
-      - field: domain
-      - query_type: domain
-      - target_field: domain_info
-      - api_key: "${VIRUSTOTAL_API_KEY}"
+      field: domain
+      query_type: domain
+      target_field: domain_info
+      api_key: "${VIRUSTOTAL_API_KEY}"
     ```
   </CodeCol>
   <CommentCol>
@@ -354,14 +354,14 @@ API keys should be securely stored.
     ```
     ```yaml
     virustotal:
-      - field: ip
-      - query_type: ip
-      - api_key: "invalid-key"
-      - ignore_failure: true
-      - on_failure:
-          - set:
-              field: lookup_status
-              value: "failed"
+      field: ip
+      query_type: ip
+      api_key: "invalid-key"
+      ignore_failure: true
+      on_failure:
+        - set:
+            field: lookup_status
+            value: "failed"
     ```
   </CodeCol>
   <CommentCol>
@@ -376,19 +376,3 @@ API keys should be securely stored.
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-- URL analysis includes both scanning and result retrieval with configurable polling
-- API key can be specified directly or via environment variable
-- Responses are returned as structured objects
-- Analysis stats provide counts from multiple engines
-- API responses may include rich metadata
-:::
-
-:::warning
-- API keys should be securely stored
-- Consider VirusTotal API rate limits
-- URL scanning may have additional delays based on polling settings
-- File scan results may not be immediately available
-- Long polling intervals may impact processing time
-:::

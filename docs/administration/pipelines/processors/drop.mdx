@@ -17,12 +17,12 @@ Conditionally stops processing of a document by dropping it from the pipeline.
 
 ```yaml {2}
 drop:
-  - if: <script>
-  - description: <text>
-  - ignore_failure: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
+  if: <script>
+  description: <text>
+  ignore_failure: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
 ```
 
 ## Configuration
@@ -48,7 +48,7 @@ Once dropped, a document cannot be recovered by the subsequent processors. Use c
 
 ## Examples
 
-### Basic Drop
+### Basic
 
 <ExampleGrid>
   <CommentCol>
@@ -64,7 +64,7 @@ Once dropped, a document cannot be recovered by the subsequent processors. Use c
     ```
     ```yaml
     drop:
-      - if: ctx.source.packets == 10
+      if: ctx.source.packets == 10
     ```
   </CodeCol>
   <CommentCol>
@@ -94,8 +94,8 @@ Once dropped, a document cannot be recovered by the subsequent processors. Use c
     ```
     ```yaml
     drop:
-      - if: ctx.user.role == 'guest' && ctx.user.access_level < 2
-      - description: "Drop low-privilege guest access"
+      if: ctx.user.role == 'guest' && ctx.user.access_level < 2
+      description: "Drop low-privilege guest access"
     ```
   </CodeCol>
   <CommentCol>
@@ -128,11 +128,11 @@ Once dropped, a document cannot be recovered by the subsequent processors. Use c
     ```
     ```yaml
     drop:
-      - if: >
+      if: >
           ctx.http?.request?.method == 'GET' &&
           ctx.http.request.path == '/health' &&
           ctx.http.request.source_ip.startsWith('10.')
-      - description: "Drop internal health checks"
+      description: "Drop internal health checks"
     ```
   </CodeCol>
   <CommentCol>
@@ -159,8 +159,8 @@ Once dropped, a document cannot be recovered by the subsequent processors. Use c
     ```
     ```yaml
     drop:
-      - if: ctx.nonexistent.field == true
-      - ignore_failure: true
+      if: ctx.nonexistent.field == true
+      ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>

@@ -17,17 +17,17 @@ Performs pattern-based string replacements using regular expressions.
 
 ```yaml {2-4}
 gsub:
-  - field: <ident>
-  - pattern: <string>
-  - replacement: <string>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
-  - target_field: <ident>
+  field: <ident>
+  pattern: <string>
+  replacement: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+  target_field: <ident>
 ```
 
 ## Configuration
@@ -60,7 +60,7 @@ Be careful with complex regular expressions on large text fields, as these may i
 
 ## Examples
 
-### Basic Replacement
+### Basic
 
 <ExampleGrid>
   <CommentCol>
@@ -74,9 +74,9 @@ Be careful with complex regular expressions on large text fields, as these may i
     ```
     ```yaml
     gsub:
-      - field: message
-      - pattern: "404"
-      - replacement: "200"
+      field: message
+      pattern: "404"
+      replacement: "200"
     ```
   </CodeCol>
   <CommentCol>
@@ -91,7 +91,7 @@ Be careful with complex regular expressions on large text fields, as these may i
   </CodeCol>
 </ExampleGrid>
 
-### IP Address Anonymization
+### Anonymization
 
 <ExampleGrid>
   <CommentCol>
@@ -105,9 +105,9 @@ Be careful with complex regular expressions on large text fields, as these may i
     ```
     ```yaml
     gsub:
-      - field: log
-      - pattern: "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b"
-      - replacement: "ANONYMIZED"
+      field: log
+      pattern: "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b"
+      replacement: "ANONYMIZED"
     ```
   </CodeCol>
   <CommentCol>
@@ -136,10 +136,10 @@ Be careful with complex regular expressions on large text fields, as these may i
     ```
     ```yaml
     gsub:
-      - field: message
-      - pattern: "Error"
-      - replacement: "Warning"
-      - target_field: new_message
+      field: message
+      pattern: "Error"
+      replacement: "Warning"
+      target_field: new_message
     ```
   </CodeCol>
   <CommentCol>
@@ -170,10 +170,10 @@ Be careful with complex regular expressions on large text fields, as these may i
     ```
     ```yaml
     gsub:
-      - field: message
-      - pattern: "Error"
-      - replacement: "Warning"
-      - if: "ctx.should_process == true"
+      field: message
+      pattern: "Error"
+      replacement: "Warning"
+      if: "ctx.should_process == true"
     ```
   </CodeCol>
   <CommentCol>
@@ -203,14 +203,14 @@ Be careful with complex regular expressions on large text fields, as these may i
     ```
     ```yaml
     gsub:
-      - field: message
-      - pattern: "Error"
-      - replacement: "Warning"
-      - ignore_missing: true
-      - on_failure:
-          - set:
-              - field: processing_status
-              - value: "field_missing"
+      field: message
+      pattern: "Error"
+      replacement: "Warning"
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: processing_status
+            value: "field_missing"
     ```
   </CodeCol>
   <CommentCol>

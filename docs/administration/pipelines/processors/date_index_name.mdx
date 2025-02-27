@@ -17,20 +17,20 @@ Creates dynamic index names based on date fields in documents by combining a con
 
 ```yaml {2,3}
 date_index_name:
-  - field: <ident>
-  - date_rounding: <enum>
-  - date_formats: <string[]>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - index_name_format: <string>
-  - index_name_prefix: <string>
-  - locale: <string>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
-  - time_zone: <string>
+  field: <ident>
+  date_rounding: <enum>
+  date_formats: <string[]>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  index_name_format: <string>
+  index_name_prefix: <string>
+  locale: <string>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+  time_zone: <string>
 ```
 
 ## Configuration
@@ -77,15 +77,15 @@ The date parsing will fail if none of the specified date formats match the input
   <CodeCol>
     ```json
     {
-      "date1": "2016-04-25T12:02:01.789Z"
+      "raw-date": "2016-04-25T12:02:01.789Z"
     }
     ```
     ```yaml
     date_index_name:
-      - field: date1
-      - date_rounding: "M"
-      - index_name_prefix: "my-index-"
-      - index_name_format: "2006-01-02"
+      field: raw-date
+      date_rounding: "M"
+      index_name_prefix: "monthly-"
+      index_name_format: "2006-01-02"
     ```
   </CodeCol>
   <CommentCol>
@@ -94,8 +94,8 @@ The date parsing will fail if none of the specified date formats match the input
   <CodeCol>
     ```json
     {
-      "date1": "2016-04-25T12:02:01.789Z",
-      "_index": "my-index-2016-04-01"
+      "raw-date": "2016-04-25T12:02:01.789Z",
+      "_index": "monthly-2016-04-01"
     }
     ```
   </CodeCol>
@@ -117,10 +117,10 @@ The date parsing will fail if none of the specified date formats match the input
     ```
     ```yaml
     date_index_name:
-      - field: "user.login"
-      - date_rounding: "d"
-      - index_name_prefix: "logins-"
-      - index_name_format: "2006-01-02"
+      field: "user.login"
+      date_rounding: "d"
+      index_name_prefix: "logins-"
+      index_name_format: "2006-01-02"
     ```
   </CodeCol>
   <CommentCol>
@@ -152,10 +152,10 @@ The date parsing will fail if none of the specified date formats match the input
     ```
     ```yaml
     date_index_name:
-      - field: timestamp
-      - date_rounding: "w"
-      - index_name_prefix: "weekly-"
-      - index_name_format: "2006-01-02"
+      field: timestamp
+      date_rounding: "w"
+      index_name_prefix: "weekly-"
+      index_name_format: "2006-01-02"
     ```
   </CodeCol>
   <CommentCol>

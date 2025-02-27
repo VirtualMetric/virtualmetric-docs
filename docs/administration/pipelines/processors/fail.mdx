@@ -17,13 +17,13 @@ Intentionally fails the pipeline with a custom error message on a certain condit
 
 ```yaml {2}
 fail:
-  - message: <string>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
+  message: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
 ```
 
 ## Configuration
@@ -50,24 +50,24 @@ Typical uses:
 
    ```yaml
    fail:
-     - message: "Invalid amount {{amount}} for currency {{currency}}"
-     - if: "ctx.amount <= 0"
+     message: "Invalid amount {{amount}} for currency {{currency}}"
+     if: "ctx.amount <= 0"
    ```
 
 * **Access Control**
 
    ```yaml
    fail:
-     - message: "User {{user.name}} lacks required permission: {{required_permission}}"
-     - if: "!ctx.user.permissions.contains(ctx.required_permission)"
+     message: "User {{user.name}} lacks required permission: {{required_permission}}"
+     if: "!ctx.user.permissions.contains(ctx.required_permission)"
    ```
 
 * **Data Quality**
 
    ```yaml
    fail:
-     - message: "Field {{field_name}} exceeds maximum length of {{max_length}}"
-     - if: "ctx.field_name.length() > ctx.max_length"
+     message: "Field {{field_name}} exceeds maximum length of {{max_length}}"
+     if: "ctx.field_name.length() > ctx.max_length"
    ```
 
 :::warning
@@ -84,7 +84,7 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
 
 ## Examples
 
-### Basic Failure
+### Basic
 
 <ExampleGrid>
   <CommentCol>
@@ -98,8 +98,8 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     ```
     ```yaml
     fail:
-      - message: "Intentional failure"
-      - tag: "test"
+      message: "Intentional failure"
+      tag: "test"
     ```
   </CodeCol>
   <CommentCol>
@@ -111,6 +111,41 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
       "error": {
         "message": "Intentional failure",
         "tag": "test"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Ignores
+
+<ExampleGrid>
+  <CommentCol>
+    Continuing despite failures...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status": "warning"
+    }
+    ```
+    ```yaml
+    fail:
+      message: "Warning status detected"
+      ignore_failure: true
+      tag: "status_check"
+    ```
+  </CodeCol>
+  <CommentCol>
+    logs the error without terminating:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status": "warning",
+      "error": {
+        "message": "Warning status detected",
+        "tag": "status_check"
       }
     }
     ```
@@ -135,9 +170,9 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     ```
     ```yaml
     fail:
-      - message: "User {{user.id}} with role {{user.role}} cannot access {{resource}}"
-      - if: "ctx.user.role != 'admin'"
-      - tag: "access_control"
+      message: "User {{user.id}} with role {{user.role}} cannot access {{resource}}"
+      if: "ctx.user.role != 'admin'"
+      tag: "access_control"
     ```
   </CodeCol>
   <CommentCol>
@@ -169,9 +204,9 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     ```
     ```yaml
     fail:
-      - message: "Conditional failure triggered"
-      - if: "ctx.condition == true"
-      - description: "Fail when condition is true"
+      message: "Conditional failure triggered"
+      if: "ctx.condition == true"
+      description: "Fail when condition is true"
     ```
   </CodeCol>
   <CommentCol>
@@ -182,41 +217,6 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     {
       "error": {
         "message": "Conditional failure triggered"
-      }
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Ignored Failure
-
-<ExampleGrid>
-  <CommentCol>
-    Continuing despite failures...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "status": "warning"
-    }
-    ```
-    ```yaml
-    fail:
-      - message: "Warning status detected"
-      - ignore_failure: true
-      - tag: "status_check"
-    ```
-  </CodeCol>
-  <CommentCol>
-    logs the error without terminating:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "status": "warning",
-      "error": {
-        "message": "Warning status detected",
-        "tag": "status_check"
       }
     }
     ```
