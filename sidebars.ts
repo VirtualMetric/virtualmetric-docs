@@ -62,27 +62,6 @@ const sidebars: SidebarsConfig = {
           label: "Devices",
           link: {type: "doc", id: "configuration/devices/index"},
           items: [
-<<<<<<< HEAD
-            "administration/devices/windows",
-            "administration/devices/linux",
-            "administration/devices/syslog",
-            "administration/devices/snmp-trap",
-            "administration/devices/estreamer",
-            "administration/devices/http",
-            "administration/devices/tcp",
-            "administration/devices/udp",
-            "administration/devices/smtp",
-            "administration/devices/tftp",
-            "administration/devices/kafka",
-            "administration/devices/nats",
-            "administration/devices/rabbitmq",
-            "administration/devices/redis",
-            "administration/devices/netflow",
-            "administration/devices/sflow",
-            "administration/devices/ipfix",
-            "administration/devices/ms-sentinel",
-            "administration/devices/azure-monitor",
-=======
             "configuration/devices/quick-start",
             "configuration/devices/windows",
             "configuration/devices/linux",
@@ -103,7 +82,6 @@ const sidebars: SidebarsConfig = {
             "configuration/devices/ipfix",
             "configuration/devices/ms-sentinel",
             "configuration/devices/azure-monitor",
->>>>>>> 10a77264d393ed6854da3f0798fe75b63e4f6c77
           ],
         },
         {
@@ -111,16 +89,10 @@ const sidebars: SidebarsConfig = {
           label: "Pipelines",
           link: {type: "doc", id: "configuration/pipelines/index"},
           items: [
-<<<<<<< HEAD
-            "administration/pipelines/pre-processing",
-            "administration/pipelines/normalization",
-            "administration/pipelines/post-processing",
-=======
             "configuration/pipelines/quick-start",
             "configuration/pipelines/pre-processing",
             "configuration/pipelines/normalization",
             "configuration/pipelines/post-processing",
->>>>>>> 10a77264d393ed6854da3f0798fe75b63e4f6c77
             {
               type: "category",
               label: "Processors",
@@ -206,12 +178,8 @@ const sidebars: SidebarsConfig = {
           label: "Routes",
           link: {type: "doc", id: "configuration/routes/index"},
           items: [
-<<<<<<< HEAD
-            "administration/routes/management"
-=======
             'configuration/routes/quick-start',
             'configuration/routes/management',
->>>>>>> 10a77264d393ed6854da3f0798fe75b63e4f6c77
           ],
         },
         {
@@ -219,17 +187,6 @@ const sidebars: SidebarsConfig = {
           label: "Targets",
           link: {type: "doc", id: "configuration/targets/index"},
           items: [
-<<<<<<< HEAD
-            "administration/targets/ms-sentinel",
-            "administration/targets/azure-data-explorer",
-            "administration/targets/azure-blob-storage",
-            "administration/targets/splunk-hec",
-            "administration/targets/elasticsearch",
-            "administration/targets/file",
-            "administration/targets/syslog",
-            "administration/targets/console",
-            "administration/targets/discard",
-=======
             "configuration/targets/quick-start",
             "configuration/targets/ms-sentinel",
             "configuration/targets/azure-data-explorer",
@@ -240,22 +197,12 @@ const sidebars: SidebarsConfig = {
             "configuration/targets/syslog",
             "configuration/targets/console",
             "configuration/targets/discard",
->>>>>>> 10a77264d393ed6854da3f0798fe75b63e4f6c77
           ],
         },
       ],
     },
     {
       type: "category",
-<<<<<<< HEAD
-      label: "Quick Start Guides",
-      link: {type: "doc", id: "quick-start-guides/index"},
-      items: [
-        "quick-start-guides/pipelines",
-        "quick-start-guides/devices",
-        "quick-start-guides/routes",
-        "quick-start-guides/targets",
-=======
       label: "Migration",
       items: [
         'migration/cribl',
@@ -311,7 +258,6 @@ const sidebars: SidebarsConfig = {
         'comparison/virtualmetric-vs-tenzir',
         'comparison/virtualmetric-vs-vector',
         'comparison/virtualmetric-vs-logstash',
->>>>>>> 10a77264d393ed6854da3f0798fe75b63e4f6c77
       ],
     },
     "appendix",
