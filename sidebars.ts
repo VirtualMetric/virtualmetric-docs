@@ -62,7 +62,6 @@ const sidebars: SidebarsConfig = {
           label: "Devices",
           link: {type: "doc", id: "configuration/devices/index"},
           items: [
-            "configuration/devices/quick-start",
             "configuration/devices/windows",
             "configuration/devices/linux",
             "configuration/devices/syslog",
@@ -89,7 +88,6 @@ const sidebars: SidebarsConfig = {
           label: "Pipelines",
           link: {type: "doc", id: "configuration/pipelines/index"},
           items: [
-            "configuration/pipelines/quick-start",
             "configuration/pipelines/pre-processing",
             "configuration/pipelines/normalization",
             "configuration/pipelines/post-processing",
@@ -178,7 +176,6 @@ const sidebars: SidebarsConfig = {
           label: "Routes",
           link: {type: "doc", id: "configuration/routes/index"},
           items: [
-            'configuration/routes/quick-start',
             'configuration/routes/management',
           ],
         },
@@ -187,7 +184,6 @@ const sidebars: SidebarsConfig = {
           label: "Targets",
           link: {type: "doc", id: "configuration/targets/index"},
           items: [
-            "configuration/targets/quick-start",
             "configuration/targets/ms-sentinel",
             "configuration/targets/azure-data-explorer",
             "configuration/targets/azure-blob-storage",
