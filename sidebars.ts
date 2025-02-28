@@ -27,7 +27,6 @@ const sidebars: SidebarsConfig = {
           label: "Devices",
           link: {type: "doc", id: "administration/devices/index"},
           items: [
-            "administration/devices/quick-start",
             "administration/devices/windows",
             "administration/devices/linux",
             "administration/devices/syslog",
@@ -54,7 +53,6 @@ const sidebars: SidebarsConfig = {
           label: "Pipelines",
           link: {type: "doc", id: "administration/pipelines/index"},
           items: [
-            "administration/pipelines/quick-start",
             "administration/pipelines/pre-processing",
             "administration/pipelines/normalization",
             "administration/pipelines/post-processing",
@@ -143,8 +141,7 @@ const sidebars: SidebarsConfig = {
           label: "Routes",
           link: {type: "doc", id: "administration/routes/index"},
           items: [
-            'administration/routes/quick-start',
-            'administration/routes/management',
+            "administration/routes/management"
           ],
         },
         {
@@ -152,7 +149,6 @@ const sidebars: SidebarsConfig = {
           label: "Targets",
           link: {type: "doc", id: "administration/targets/index"},
           items: [
-            "administration/targets/quick-start",
             "administration/targets/ms-sentinel",
             "administration/targets/azure-data-explorer",
             "administration/targets/azure-blob-storage",
@@ -164,6 +160,17 @@ const sidebars: SidebarsConfig = {
             "administration/targets/discard",
           ],
         },
+      ],
+    },
+    {
+      type: "category",
+      label: "Quick Start Guides",
+      link: {type: "doc", id: "quick-start-guides/index"},
+      items: [
+        "quick-start-guides/pipelines",
+        "quick-start-guides/devices",
+        "quick-start-guides/routes",
+        "quick-start-guides/targets",
       ],
     },
     "appendix",
