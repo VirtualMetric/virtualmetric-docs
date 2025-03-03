@@ -1,0 +1,189 @@
+---
+sidebar_label: Overview
+pagination_prev: null
+pagination_next: null
+---
+
+# Configuration
+
+**VirtualMetric DataStream&trade;** is a tool used primarily for telemetry purposes, and its administration involves the following key components:
+
+<TermTable>
+   <TermCol>[**Devices**](/configuration/devices/index.mdx) </TermCol>
+   <DefCol>Sources of log data, e.g. syslog or estreamer</DefCol>
+
+   <TermCol>[**Pipelines**](/configuration/pipelines/index.mdx) </TermCol>
+   <DefCol>Processing workflows for data transformation</DefCol>
+
+   <TermCol>[**Processors**](/configuration/pipelines/processors/index.mdx) </TermCol>
+   <DefCol>Individual data manipulation functions</DefCol>
+
+   <TermCol>[**Routes**](/configuration/routes/index.mdx) </TermCol>
+   <DefCol>Traffic control for directing data flows</DefCol>
+
+   <TermCol>[**Targets**](/configuration/targets/index.mdx)</TermCol>
+   <DefCol>Destinations for processed data, e.g. Sentinel or a storage system</DefCol>
+</TermTable>
+
+The following graphic illustrates the various stages where these components are used and how they connect to each other:
+
+```mermaid
+graph LR
+   subgraph A[SOURCES]
+      A1(Source 1)
+      A2(Source 2)
+   end
+   subgraph B[PREPROCESSING]
+      B1(Normalization)
+   end
+   subgraph C[ROUTES]
+      C1(Select)
+      C2(Transform)
+      C3(Enrich)
+   end
+   subgraph D[POSTPROCESSING]
+      D1(Normalization)
+   end
+   subgraph E[TARGETS]
+      E1(Target 1)
+      E2(Target 2)
+      E3(Target 3)
+   end
+   A1 & A2 --> B1
+   B1 --> C1 & C2 & C3 
+   C1 & C2 & C3 --> D1
+   D1 --> E1 & E2 & E3
+```
+
+For the PREPROCESSING, ROUTES, and POSTPROCESSING stages, **Director** uses **Pipelines**, which are composed of **Processors**.
+
+To ingest data from the SOURCES and to communicate with them, **Director** uses **Devices**.
+
+To forward processed data to TARGETS and to communicate with them, **Director** uses **Targets**.
+
+### Directories
+
+To help design the logic of the components that will define, combine, and run the above stages, **Director** uses the configuration files that can be found in the folders under `vm_root`:
+
+```mermaid
+flowchart LR
+   vmroot@{shape: docs, label: "<code>&lt;vm_root&gt;</code>"}
+   config@{shape: docs, label: "<code>config/</code>"}
+      devices@{shape: tag-doc, label: "<code>devices</code>"}
+         syslog("<code>syslog.yml</code>")
+         estreamer("<code>estreamer.yml</code>")
+         tcp("<code>tcp.yml</code>")
+      targets@{shape: tag-doc, label: "<code>targets</code>"}
+         sentinel("<code>sentinel.yml</code>")
+         storage("<code>storage.yml</code>")
+      routes@{shape: tag-doc, label: "<code>routes</code>"}
+         main("<code>main.yml</code>")
+      vmetric("<code>vmetric.yml</code>")
+
+   package@{shape: docs, label: "<code>package/</code>"}
+      packageDefinitions@{shape: docs, label: "<code>definitions/</code>"}
+         packageDefinitionsPipelines@{shape: tag-doc, label: "<code>pipelines/</code>"}
+            packageDefinitionsPipelinesCheckpoint("<code>checkpoint.yml</code>")
+            packageDefinitionsPipelinesCisco("<code>cisco.yml</code>")
+            packageDefinitionsPipelinesNormalize("<code>normalize.yml</code>")
+
+   user@{shape: docs, label: "<code>user/</code>"}
+      userDefinitions@{shape: docs, label: "<code>definitions/</code>"}
+         userDefinitionsPipelines@{shape: tag-doc, label: "<code>pipelines/</code>"}
+            userDefinitionsPipelinesCheckpoint("<code>checkpoint.yml</code>")
+            userDefinitionsPipelinesNormalize("<code>normalize.yml</code>")
+
+   vmroot --> config
+   vmroot --> package
+   vmroot --> user
+
+   config --> devices
+   config --> targets
+   config --> routes
+   config --> vmetric
+
+   devices --> syslog
+   devices --> estreamer
+   devices --> tcp
+
+   targets --> sentinel
+   targets --> storage
+
+   routes --> main
+
+   package --> packageDefinitions
+   packageDefinitions --> packageDefinitionsPipelines
+   packageDefinitionsPipelines --> packageDefinitionsPipelinesCheckpoint
+   packageDefinitionsPipelines --> packageDefinitionsPipelinesCisco
+   packageDefinitionsPipelines --> packageDefinitionsPipelinesNormalize
+
+   user --> userDefinitions
+   userDefinitions --> userDefinitionsPipelines
+   userDefinitionsPipelines --> userDefinitionsPipelinesCheckpoint
+   userDefinitionsPipelines --> userDefinitionsPipelinesNormalize
+
+```
+
+All administration tasks are carried out with these files.
+
+The YML configuration files for each type of component have their own directory. These files contain predefined fields that these components recognize, and **Director** uses the settings defined in them to spawn and run its processes.
+
+### Definition Files
+
+Two directories are of key significance: `package` and `user`.
+
+The `package` directory contains templates and ready-to-use definitions. These definitions are updated with newer versions of **Director**.
+
+:::warning
+Never modify the definition files under `package` directly. To create a configuration using one of these as a template, copy the relevant file to the corresponding location under `user` first, and then edit it to suit your needs.
+:::
+
+The `user` directory contains custom configurations. These definitions take precedence over those under the `package` directory.
+
+The definitions under `user` override the definitions under `package`, and they are preserved between updates.
+
+## Basic Tasks
+
+The system administrator's responsibilities cover the following.
+
+### Maintenance
+
+This entails maintaining an up-and-running system by attending to the following:
+
+* **Settings** - Creating and modifying the setting files, validating and applying them, and keeping backups of them.
+
+* **Devices** - Creating devices to listen new data sources, configuring their input parameters, monitoring their health, and troubleshooting connectivity issues.
+
+* **Pipelines** - Designing workflows, configuring processors, test the transformations, and optimizing performance
+
+* **Routes** - Defining traffic patterns, setting up filtering rules, configuring destinations, and monitoring data flows
+
+* **System monitoring** - Tracking performance metrics, monitoring resource usage, reviewing error logs, and generating reports
+
+### Security
+
+A crucial aspect of system administration is security. This requires attending to the following:
+
+* **Authentication** - Configuring access controls, managing credentials, setting up encryption, and monitoring access logs
+
+* **Networks** - Configuring TLS/SSL, setting up firewalls, managing certificates, and controlling port access
+
+* **Data protection** - Securing sensitive data, configuring encryption, managing data retention, and supervising compliance
+
+### Troubleshooting
+
+System administration frequently involves dealing with errors and failures.
+
+The most common issues are related to misconfiguration, connectivity, unhandled disruption of pipelines, and violated resource constraints.
+
+The resolution generally involves checking the configurations and reviewing the logs, verifying connectivity and resource availability, and testing the solution in its final state.
+
+## Best Practices
+
+In order to maintain the integrity, robustness, and health of a system, some guidelines should be observed:
+
+For _managing configurations_, use version control, document the changes, and always keep backups. Also, never forget to test before deploying.
+
+For _performance optimization_, first monitor the resource usage and balance the loads if necessary. Optimizing the configurations is the next thing to check. And do not forget to schedule maintenance. Error tracking and health checks must also be always kept in mind.
+
+Finally, to maintain a reliable level of _security_, updates are essential. Official security audits must be conducted regularly, particularly on access control and encryption.

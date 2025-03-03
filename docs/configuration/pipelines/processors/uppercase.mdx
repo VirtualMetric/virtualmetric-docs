@@ -1,0 +1,152 @@
+---
+description: Converts strings to uppercase
+sidebar_custom_props: 
+  customIcon: ⬆️
+  customCategory: Mutate
+---
+
+# Uppercase
+
+<span className="theme-doc-version-badge badge badge--primary">Mutate</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Converts string values to their uppercase equivalent.
+
+## Schema
+
+```yaml {2}
+uppercase:
+  field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+  target_field: <ident>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing string(s) to convert|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|N|`false`|If `true`, quietly exit if field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+|`target_field`|N|`field`|Field to store the converted value(s)|
+
+## Details
+
+The processor can handle both single string fields and arrays of strings. When processing an array, it converts each element to uppercase.
+
+:::note
+The processor uses the standard string uppercase conversion rules of the Go programming language, which handles Unicode characters appropriately.
+:::
+
+:::warning
+If the field contains non-string values, the processor will fail unless `ignore_failure` is set to `true`.
+:::
+
+## Examples
+
+### Single String
+
+<ExampleGrid>
+  <CommentCol>
+    Converting the username to uppercase...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "admin"
+    }
+    ```
+    ```yaml
+    uppercase:
+      field: username
+    ```
+  </CodeCol>
+  <CommentCol>
+    capitalizes all characters:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "ADMIN"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### String Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Processing an array of email addresses...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "emails": [
+        "email@example.com",
+        "admin@example.org"
+      ]
+    }
+    ```
+    ```yaml
+    uppercase:
+      field: emails
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts each element:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "emails": [
+        "EMAIL@EXAMPLE.COM",
+        "ADMIN@EXAMPLE.ORG"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keep Original
+
+<ExampleGrid>
+  <CommentCol>
+    Storing the uppercase values in a new field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "value"
+    }
+    ```
+    ```yaml
+    uppercase:
+      field: original
+      target_field: uppercase
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves the original:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "value",
+      "uppercase": "VALUE"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

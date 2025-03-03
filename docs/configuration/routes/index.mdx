@@ -1,0 +1,118 @@
+---
+pagination_prev: null
+pagination_next: null
+---
+
+# Routes
+
+Routes define how incoming data is filtered, processed, and directed to specific destinations. They act as traffic controllers, determining what data goes through which pipelines and ultimately reaches which targets.
+
+In the following chapters we will detail their structure and behavior.
+
+## Basics
+
+Routes are typically made up of filtering expressions and sequences of processors used to shape the format and flow of the data streams. As such, they curate data through a rich and complex evaluation process, and forward that data to consumers downstream.
+
+### Components
+
+It should be obvious from their name that routes fundamentally select and forward data. Therefore, their behavior is characterized by the following elements:
+
+<TermTable>
+  <TermCol>**Conditions**</TermCol>
+  <DefCol>Optional filter expressions that match specific events</DefCol>
+
+  <TermCol>**Pipelines**</TermCol>
+  <DefCol>Optional processing schemes applied to select events</DefCol>
+
+  <TermCol>**Targets**</TermCol>
+  <DefCol>One or more destinations to forward the processed data</DefCol>
+</TermTable>
+
+### Filtering
+
+Selecting events typically involves evaluating boolean expressions such as
+
+> `device.type == 'syslog'`\
+> `dataset.name == 'firewall_logs'`\
+> `log.severity > 4`\
+> `!(source.ip == '10.0.0.1' || source.ip == '10.0.0.2')`
+
+etc. which are applied to previously normalized data.
+
+### Data Flow
+
+Forwarding data involves controlling the flow, and there are several design patterns:
+
+  ```mermaid
+  ---
+  title: Single Source to Single Target
+  ---
+  graph LR
+    A("Route")
+    B[/"Normalize"\]
+    C[("Storage")]
+    A --> B --> C
+  ```
+---
+
+  ```mermaid
+  ---
+  title: Single Source to Multiple Targets (Mirroring)
+  ---
+  graph LR
+    A("Route")
+    B{"Enrich"}
+    C[("Monitoring")]
+    D[("Storage")]
+    E[("Backup")]
+    
+    A --> B
+    B --> C & D & E
+  ```
+
+---
+
+  ```mermaid
+  ---
+  title: Multiple Sources to Single Target
+  ---
+  graph LR
+    A("Syslog")
+    B("Winlog")
+    C("Apache")
+    D[/"Normalize"\]
+    E[("Central Analytics")]
+    
+    A & B & C --> D --> E
+  ```
+---
+
+### Pipelines
+
+Routes can include zero or more pipelines. Multiple pipelines will process data sequentially. A pipeline's processors can override routing by using the `reroute` processor. The `final` processor terminates the pipeline's execution.
+
+### Evaluation
+
+Routes are evaluated in order, and there are some critical aspect to take into consideration:
+
+* Route conditions are evaluated before the pipelines begin their work
+* The first route that has a match processes the event
+* The pipelines can then modify the flow or the direction of the data
+
+No need to mention, multiple targets receive identical copies of the same data, so the above do not impact who receives what.
+
+:::tip
+To optimize performance, in addition to minimizing the number of routes and avoiding unnecessary pipeline duplications, filter as early as possible&mdash;using clear, specific and effective expressions&mdash;and always consider the order of evaluation carefully.
+:::
+
+## Best Practices
+
+As usual, a number of guidelines are in order when designing, using, and maintaining routes:
+
+Use clear, descriptive names that bear the purpose, e.g. `apache_to_analytics`, and keep them consistent across similar routes.
+
+When filtering, start with the most specific routes, and use precise and effective conditions, avoiding overlapping ones.
+
+When assigning, use a single pipeline whenever possible. Document multi-pipeline routes as their intricacies may yield unexpected results. Duplicate data only if it is absolutely necessary.
+
+Collate similar targets, documenting any mirroring requirements, and consider the target capacity and throughput.
