@@ -13,28 +13,27 @@ Creates a target that writes log messages to _Azure Blob Storage_ with support f
 ## Schema
 
 ```yaml
-- id: <numeric>
+name: <string>
+description: <string>
+type: azblob
+pipelines: <pipeline[]>
+status: <boolean>
+properties:
+  account: <string>
+  tenant_id: <string>
+  client_id: <string>
+  client_secret: <string>
+  container: <string>
   name: <string>
-  description: <string>
-  type: azblob
-  pipelines: <pipeline[]>
-  status: <boolean>
-  properties:
-    account: <string>
-    tenant_id: <string>
-    client_id: <string>
-    client_secret: <string>
-    container: <string>
-    name: <string>
-    type: <string>
-    compression: <string>
-    schema: <string>
-    format: <string>
-    no_buffer: <boolean>
-    max_retry: <numeric>
-    retry_interval: <numeric>
-    timeout: <numeric>
-    max_size: <numeric>
+  type: <string>
+  compression: <string>
+  schema: <string>
+  format: <string>
+  no_buffer: <boolean>
+  max_retry: <numeric>
+  retry_interval: <numeric>
+  timeout: <numeric>
+  max_size: <numeric>
 ```
 
 ## Configuration
@@ -43,7 +42,6 @@ The following are the minimum requirements to define the target.
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y||Unique identifier|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
 |`type`|Y||Must be `azblob`|
@@ -93,13 +91,12 @@ The following upload configurations are available.
 The minimum configuration for a _JSON_ blob storage:
 
 ```yaml
-- id: 1
-  name: basic_blob
-  type: azblob
-  properties:
-    account: "mystorageaccount"
-    tenant_id: "00000000-0000-0000-0000-000000000000"
-    client_id: "00000000-0000-0000-0000-000000000000"
+name: basic_blob
+type: azblob
+properties:
+  account: "mystorageaccount"
+  tenant_id: "00000000-0000-0000-0000-000000000000"
+  client_id: "00000000-0000-0000-0000-000000000000"
     client_secret: "your-client-secret"
 ```
 
@@ -108,19 +105,18 @@ The minimum configuration for a _JSON_ blob storage:
 Configuration for daily partitioned _Parquet_ files:
 
 ```yaml
-- id: 2
-  name: parquet_blob
-  type: azblob
-  properties:
-    account: "mystorageaccount"
-    tenant_id: "00000000-0000-0000-0000-000000000000"
-    client_id: "00000000-0000-0000-0000-000000000000"
-    client_secret: "your-client-secret"
-    container: "logs"
-    type: "parquet"
-    compression: "zstd"
-    name: "logs/year={{.Year}}/month={{.Month}}/day={{.Day}}/data_{{.Timestamp}}.parquet"
-    max_size: 536870912  # 512MB
+name: parquet_blob
+type: azblob
+properties:
+  account: "mystorageaccount"
+  tenant_id: "00000000-0000-0000-0000-000000000000"
+  client_id: "00000000-0000-0000-0000-000000000000"
+  client_secret: "your-client-secret"
+  container: "logs"
+  type: "parquet"
+  compression: "zstd"
+  name: "logs/year={{.Year}}/month={{.Month}}/day={{.Day}}/data_{{.Timestamp}}.parquet"
+  max_size: 536870912  # 512MB
 ```
 
 ### High Reliability
@@ -128,20 +124,19 @@ Configuration for daily partitioned _Parquet_ files:
 Configuration with enhanced retry settings:
 
 ```yaml
-- id: 3
-  name: reliable_blob
-  type: azblob
-  pipelines:
-    - checkpoint
-  properties:
-    account: "mystorageaccount"
-    tenant_id: "00000000-0000-0000-0000-000000000000"
-    client_id: "00000000-0000-0000-0000-000000000000"
-    client_secret: "your-client-secret"
-    max_retry: 10
-    retry_interval: 30
-    timeout: 60
-    no_buffer: true
+name: reliable_blob
+type: azblob
+pipelines:
+  - checkpoint
+properties:
+  account: "mystorageaccount"
+  tenant_id: "00000000-0000-0000-0000-000000000000"
+  client_id: "00000000-0000-0000-0000-000000000000"
+  client_secret: "your-client-secret"
+  max_retry: 10
+  retry_interval: 30
+  timeout: 60
+  no_buffer: true
 ```
 
 :::warning

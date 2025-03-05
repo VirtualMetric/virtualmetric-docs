@@ -2,13 +2,13 @@
 sidebar_label: "Example: Target Configuration"
 ---
 
-# Target Configuration
+# Getting Started: Targets
 
-This guide will walk you through configuring your first target in **Director**, to illustrate various output options available for your log data.
+This chapter will help you get started with targets to write processed data to specific formats, walking you through some common scenarios.
 
 ## Folder Structure
 
-All target configuration files reside in the `config` directory under the root, and have a `.yml` extension:
+All target configuration files reside in the `config` directory under the `config` folder, and have a `.yml` extension:
 
 ```powershell
 ├───config
@@ -23,50 +23,70 @@ All target configuration files reside in the `config` directory under the root, 
 │           file.yml
 ```
 
-**Director** searches recursively through the directory to spot these files. Choose the organization that best fits your needs.
+**Director** discovers these files by traversing the subdirectories recursively.
+
+The files can be named as, e.g.
+
+* `<vm_root>/config/targets.yml`
+* `<vm_root>/config/targets/outputs.yml`
+* `<vm_root>/config/targets/outputs/sentinel.yml`
+
+You can use various target types to store your output. We will provide an example for each below.
 
 :::note
-Each target type provides specific options detailed in its respective chapter.
+Each target type provides specific options detailed in its respective [chapter](/docs/configuration/targets/).
 :::
+
+Choose the organization that best fits your needs.
 
 ## Console
 
-Create a console configuration for a simple `stdout` output, e.g.:
+The most basic target we can direct our output is a _console_. For this, we have to create a simple `stdout` configuration:
 
-```yaml title="config/targets/console.yml"
+```yaml
 - id: 1
-  name: debug_output
+  name: log_output
   type: console
   properties:             
     format: "ecs"
 ```
 
-Here, `1` is the unique identifier of the target, `console` is its type, and we intend to normalize the data to the ECS format, although this is optional.
+The `id` field value (`1` in our example) is the unique identifier of the target. The type is  `console`, and we intend to normalize the data to the [ECS](/docs/appendix.mdx#ecs) format, although this is optional.
 
-## Files
+You can place this configuration in a file named `config/targets/console.yml`.
 
-Various file formats are available for local storage.
+## Storage Files
 
-* The widely used **JSON** format is supported:
+The next type of output we can use is a local file. Various formats are available:
 
-  ```yaml title="config/targets/file.yml"
+* The widely used **JSON** format:
+
+  ```yaml
   - id: 2
-    name: local_logs
+    name: local_json_logs
     type: file
     properties:
-      location: "/var/log/vmetric"
+      location: "/path/to/directory"
       type: "json"
       name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.json"
   ```
 
-* For more efficient results, the **Parquet** format can be used:
+You can place this in a file named `config/targets/file.yml`.
+
+The first `name` parameter is used for naming our target. The nested `name` parameter is for the file in which we will store our output data, and we will create the name based on the internal field values of `Year`, `Month`, and `Day`. (See [Internal Fields] for details.)
+
+The `path` we have specified is where the data storage file will be created.
+
+{/* TODO: We need to create a chapter on Internal Fields */}
+
+* The **Parquet** format:
 
   ```yaml
   - id: 3
-    name: structured_logs
+    name: local_parquet_logs
     type: file
     properties:
-      location: "/var/log/vmetric"
+      location: "/path/to/directory"
       type: "parquet"
       compression: "zstd"
       schema: |
@@ -83,34 +103,40 @@ Various file formats are available for local storage.
         }
   ```
 
+Here, we are specifying the `schema` of the parquet file we will create. This is the layout of the data to be stored. Also, we are using _ZSTD_ compression.
+
 :::note
 File targets with no messages are automatically cleaned up when disposed.
 :::
 
 ## Cloud
 
-Cloud storage formats are also readily available.
+If you choose to store the output on the cloud, again various formats are available:
 
-* **Azure Blob** can be configured for output:
+* **Azure Blob**:
 
-  ```yaml title="config/targets/azblob.yml"
+  ```yaml
   - id: 4
-    name: cloud_logs
+    name: azure_logs
     type: azblob
     properties:
-      account: "mystorageaccount"
+      account: "<storage-account>"
       tenant_id: "${AZURE_TENANT_ID}"
       client_id: "${AZURE_CLIENT_ID}"
       client_secret: "${AZURE_CLIENT_SECRET}"
       container: "logs"
       type: "parquet"
       compression: "zstd"
-      max_size: 536870912  # 512MB
+      max_size: 536870912
   ```
 
-* **Microsoft Sentinel** with ASIM normalization can be used:
+Place this in a file named `config/targets/azblob.yml`.
 
-  ```yaml title="config/targets/sentinel.yml"
+For this type of configuration, we have to specify an **Azure** account, which requires a client id and secret for security. The size we want for storage is roughly 512MB.
+
+* **Microsoft Sentinel** with ASIM normalization:
+
+  ```yaml
   - id: 5
     name: sentinel_logs
     type: sentinel
@@ -125,18 +151,22 @@ Cloud storage formats are also readily available.
         - "Custom-ASimNetworkSessionLogs"
   ```
 
+You can place this in a file name `config/targets/sentinel.yml`.
+
+This configuration specifies the `sentinel` type. Once again, we have to specify our **Azure** account information. For this type of target, we also need to specify the type of stream we are using, and since that is ASIM, we have entered two names for our custom ASIM-based storage.
+
 ## Performance
 
-For high-volume environments
+We can fine tune the target streaming performance for high-volume environments.
 
-* With files, enable buffering and use compression:
+* With files, you can enable buffering and use compression:
 
   ```yaml
       no_buffer: false
       compression: "zstd"
   ```
 
-* For _Azure Blob_, increase the number of retry attempts and the retry interval, and use **512MB** chunks:
+* For _Azure Blob_, you can increase the number of retry attempts and the retry interval, and use **512MB** chunks:
 
   ```yaml
       max_retry: 10
@@ -152,7 +182,7 @@ For high-volume environments
 
 ## Monitoring
 
-Watch Director's logs for target initialization messages, upload/ingestion status, and buffers and retries.
+To monitor the streaming, observer **Director**'s logs for initialization messages, upload/ingestion status, and buffers and retries.
 
 :::tip
 Use environment variables for sensitive credentials, and adjust buffer sizes based on your ingestion volume.
@@ -164,10 +194,8 @@ When deploying in production environments, always implement appropriate security
 
 ## Next Steps
 
-You can now consider
+You can now proceed to 
 
 - configuring multiple targets for redundancy
 - implementing custom normalization rules
 - putting alerts in place for notifications and error handling
-
-to complete the process.
