@@ -256,17 +256,6 @@ const sidebars: SidebarsConfig = {
         'optimization/targets',
       ],
     },
-    // {
-    //   type: "category",
-    //   label: "Comparison",
-    //   collapsed: false,
-    //   items: [
-    //     'comparison/virtualmetric-vs-cribl',
-    //     'comparison/virtualmetric-vs-tenzir',
-    //     'comparison/virtualmetric-vs-vector',
-    //     'comparison/virtualmetric-vs-logstash',
-    //   ],
-    // },
     "appendix",
     "glossary"
   ],
