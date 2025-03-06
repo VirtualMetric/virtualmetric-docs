@@ -8,8 +8,8 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'about/introduction',
-        'about/features',
         'about/components',
+        'about/features',
         'about/benchmarks',
         'about/comparisons',
         'about/licensing',
