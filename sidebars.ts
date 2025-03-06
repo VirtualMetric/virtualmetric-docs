@@ -11,6 +11,7 @@ const sidebars: SidebarsConfig = {
         'about/features',
         'about/components',
         'about/benchmarks',
+        'about/comparisons',
         'about/licensing',
       ],
     },
@@ -42,6 +43,44 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Solutions",
+      collapsed: false,
+      items: [
+        {
+          type: "category",
+          label: "Microsoft Sentinel",
+          items: [
+            'solutions/microsoft-sentinel/overview',
+            {
+              type: "category",
+              label: "Integration",
+              items: [
+                'solutions/microsoft-sentinel/integration/autodiscovery',
+                'solutions/microsoft-sentinel/integration/manual',
+              ],
+            },
+            {
+              type: "category",
+              label: "Automation",
+              items: [
+                'solutions/microsoft-sentinel/automation/arm-templates',
+                'solutions/microsoft-sentinel/automation/bicep-templates',
+              ],
+            },
+            {
+              type: "category",
+              label: "Content Hub",
+              items: [
+                'solutions/microsoft-sentinel/content-hub/checkpoint',
+                'solutions/microsoft-sentinel/content-hub/fortigate',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Deployment",
       items: [
         'deployment/overview',
@@ -50,6 +89,16 @@ const sidebars: SidebarsConfig = {
         'deployment/azure-app-service',
         'deployment/azure-functions',
         'deployment/azure-arc-extension',
+      ],
+    },
+    {
+      type: "category",
+      label: "Migration",
+      items: [
+        'migration/cribl',
+        'migration/tenzir',
+        'migration/vector',
+        'migration/logstash',
       ],
     },
     {
@@ -199,63 +248,25 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Migration",
+      label: "Optimization",
       items: [
-        'migration/cribl',
-        'migration/tenzir',
-        'migration/vector',
-        'migration/logstash',
+        'optimization/pipelines',
+        'optimization/devices',
+        'optimization/routes',
+        'optimization/targets',
       ],
     },
-    {
-      type: "category",
-      label: "Solutions",
-      collapsed: false,
-      items: [
-        {
-          type: "category",
-          label: "Microsoft Sentinel",
-          items: [
-            'solutions/microsoft-sentinel/overview',
-            {
-              type: "category",
-              label: "Integration",
-              items: [
-                'solutions/microsoft-sentinel/integration/autodiscovery',
-                'solutions/microsoft-sentinel/integration/manual',
-              ],
-            },
-            {
-              type: "category",
-              label: "Automation",
-              items: [
-                'solutions/microsoft-sentinel/automation/arm-templates',
-                'solutions/microsoft-sentinel/automation/bicep-templates',
-              ],
-            },
-            {
-              type: "category",
-              label: "Content Hub",
-              items: [
-                'solutions/microsoft-sentinel/content-hub/checkpoint',
-                'solutions/microsoft-sentinel/content-hub/fortigate',
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "Comparison",
-      collapsed: false,
-      items: [
-        'comparison/virtualmetric-vs-cribl',
-        'comparison/virtualmetric-vs-tenzir',
-        'comparison/virtualmetric-vs-vector',
-        'comparison/virtualmetric-vs-logstash',
-      ],
-    },
+    // {
+    //   type: "category",
+    //   label: "Comparison",
+    //   collapsed: false,
+    //   items: [
+    //     'comparison/virtualmetric-vs-cribl',
+    //     'comparison/virtualmetric-vs-tenzir',
+    //     'comparison/virtualmetric-vs-vector',
+    //     'comparison/virtualmetric-vs-logstash',
+    //   ],
+    // },
     "appendix",
     "glossary"
   ],
