@@ -1,12 +1,12 @@
 ---
-sidebar_label: "Example: Target Configuration"
+sidebar_label: "Targets"
 ---
 
 # Getting Started: Targets
 
-This chapter will help you get started with targets to write processed data to specific formats, walking you through some common scenarios.
+This chapter will help you get started with targets to write processed data to specific formats, walking you through common scenarios.
 
-## Folder Structure
+## Configuration Files
 
 All target configuration files reside in the `config` directory under the `config` folder, and have a `.yml` extension:
 
@@ -34,14 +34,14 @@ The files can be named as, e.g.
 You can use various target types to store your output. We will provide an example for each below.
 
 :::note
-Each target type provides specific options detailed in its respective [chapter](/docs/configuration/targets/).
+Each target type provides specific options detailed in its respective [chapter](/docs/configuration/targets/index.mdx).
 :::
 
 Choose the organization that best fits your needs.
 
 ## Console
 
-The most basic target we can direct our output is a _console_. For this, we have to create a simple `stdout` configuration:
+The most basic target to which we can direct our output is a _console_. For this purpose, we have to create a simple `stdout` configuration:
 
 ```yaml
 - id: 1
@@ -55,7 +55,7 @@ The `id` field value (`1` in our example) is the unique identifier of the target
 
 You can place this configuration in a file named `config/targets/console.yml`.
 
-## Storage Files
+## Storage File
 
 The next type of output we can use is a local file. Various formats are available:
 
@@ -132,7 +132,7 @@ If you choose to store the output on the cloud, again various formats are availa
 
 Place this in a file named `config/targets/azblob.yml`.
 
-For this type of configuration, we have to specify an **Azure** account, which requires a client id and secret for security. The size we want for storage is roughly 512MB.
+For this type of configuration, we have to specify an **Azure** account, which requires a client id and a secret for security. The size we want for storage is roughly 512MB.
 
 * **Microsoft Sentinel** with ASIM normalization:
 
@@ -151,9 +151,9 @@ For this type of configuration, we have to specify an **Azure** account, which r
         - "Custom-ASimNetworkSessionLogs"
   ```
 
-You can place this in a file name `config/targets/sentinel.yml`.
+Place this in a file name `config/targets/sentinel.yml`.
 
-This configuration specifies the `sentinel` type. Once again, we have to specify our **Azure** account information. For this type of target, we also need to specify the type of stream we are using, and since that is ASIM, we have entered two names for our custom ASIM-based storage.
+This configuration uses the `sentinel` type. Once again, we have to specify our **Azure** account information. For this target, we also need to specify the type of stream we are using. Since that is ASIM, we have entered two names for our custom ASIM-based storage.
 
 ## Performance
 
@@ -192,10 +192,11 @@ Use environment variables for sensitive credentials, and adjust buffer sizes bas
 When deploying in production environments, always implement appropriate security controls, and monitor storage capacity.
 :::
 
-## Next Steps
-
-You can now proceed to 
+{/* 
+TODO:
 
 - configuring multiple targets for redundancy
-- implementing custom normalization rules
+- implementing normalization rules
 - putting alerts in place for notifications and error handling
+ 
+*/}
