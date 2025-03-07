@@ -20,8 +20,8 @@ const sidebars: SidebarsConfig = {
       label: "Getting Started",
       collapsed: false,
       items: [
-        'getting-started/single-node',
-        'getting-started/cluster',
+        'getting-started/single-node-deployment',
+        'getting-started/cluster-deployment',
         'getting-started/virtual-ip-address',
         'getting-started/pipelines',
         'getting-started/devices',
