@@ -72,7 +72,7 @@ const sidebars: SidebarsConfig = {
           type: "category",
           label: "Microsoft Sentinel",
           items: [
-            'solutions/microsoft-sentinel/overview',
+            "solutions/microsoft-sentinel/overview",
             {
               type: "category",
               label: "Integration",
