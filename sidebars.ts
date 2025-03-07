@@ -109,7 +109,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Devices",
-          // link: {type: "doc", id: "configuration/devices/index"},
+          link: {type: "doc", id: "configuration/devices/index"},
           items: [
             "configuration/devices/windows",
             "configuration/devices/linux",
@@ -135,7 +135,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Pipelines",
-          // link: {type: "doc", id: "configuration/pipelines/index"},
+          link: {type: "doc", id: "configuration/pipelines/index"},
           items: [
             "configuration/pipelines/pre-processing",
             "configuration/pipelines/normalization",
@@ -223,7 +223,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Routes",
-          // link: {type: "doc", id: "configuration/routes/index"},
+          link: {type: "doc", id: "configuration/routes/index"},
           items: [
             'configuration/routes/management',
           ],
@@ -231,7 +231,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Targets",
-          // link: {type: "doc", id: "configuration/targets/index"},
+          link: {type: "doc", id: "configuration/targets/index"},
           items: [
             "configuration/targets/ms-sentinel",
             "configuration/targets/azure-data-explorer",
