@@ -32,6 +32,28 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Deployment",
+      link: {type: "doc", id: "deployment/index"},
+      items: [
+        'deployment/local',
+        'deployment/azure-vm',
+        'deployment/azure-app-service',
+        'deployment/azure-functions',
+        'deployment/azure-arc-extension',
+      ],
+    },
+    {
+      type: "category",
+      label: "Migration",
+      items: [
+        'migration/cribl',
+        'migration/tenzir',
+        'migration/vector',
+        'migration/logstash',
+      ],
+    },
+    {
+      type: "category",
       label: "Architecture",
       items: [
         'architecture/overview',
@@ -81,31 +103,9 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Deployment",
-      items: [
-        'deployment/overview',
-        'deployment/local',
-        'deployment/azure-vm',
-        'deployment/azure-app-service',
-        'deployment/azure-functions',
-        'deployment/azure-arc-extension',
-      ],
-    },
-    {
-      type: "category",
-      label: "Migration",
-      items: [
-        'migration/cribl',
-        'migration/tenzir',
-        'migration/vector',
-        'migration/logstash',
-      ],
-    },
-    {
-      type: "category",
       label: "Configuration",
+      link: {type: "doc", id: "configuration/index"},
       items: [
-        "configuration/overview",
         {
           type: "category",
           label: "Devices",
