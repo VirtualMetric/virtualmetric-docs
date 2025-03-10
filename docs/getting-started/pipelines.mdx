@@ -8,38 +8,148 @@ For a general discussion, see our [overview](/docs/configuration/pipelines/index
 
 ## Configuration
 
-- Explain the basic tasks to complete to configure a pipeline
+Configuring a pipeline requires three essential tasks: defining your data sources (devices), specifying your data destinations (targets), and creating traffic rules (routes) to connect them. This straightforward process allows you to build a flexible data pipeline tailored to your specific needs.
 
 ### Creating A Pipeline
 
-- Create a yaml file
-- Place that file a directory (which one?)
-- Enter the basic yaml fields to complete
+To begin, create a YAML configuration file that will define your entire pipeline:
+
+```yaml
+name: example_pipeline
+version: 1.0
+devices:
+  # Device definitions will go here
+targets:
+  # Target definitions will go here
+routes:
+  # Route definitions will go here
+```
+
+Place this file in the `config` directory of `<vm_root>`. This location ensures that **Director** will automatically detect and load your configuration at startup.
 
 ### Defining Devices
 
-- Configure a device (preferably use a pre-configured one)
-- Explain what type of device it is and what data it will ingest
-- Define a suitable preprocessing normalization logic
+Devices represent your data sources. In this example, we'll use a pre-configured Kafka device that ingests JSON-formatted messages:
+
+```yaml
+devices:
+  id: 1
+  type: kafka
+  config:
+    bootstrap_servers: "kafka:9092"
+    topic: "incoming-data"
+    group_id: "pipeline-processor"
+  preprocessing:
+    normalize:
+      type: json
+      fields:
+        timestamp: 
+          format: "iso8601"
+        value:
+          type: "float"
+```
+
+This Kafka device connects to a broker at `kafka:9092` and consumes messages from the `incoming-data` topic. The preprocessing section defines normalization logic that ensures the timestamp is in ISO 8601 format and converts the value field to a floating-point number.
 
 ### Defining Targets
 
-- Create a target (preferably use a pre-configured one)
-- Explain what type of target it is and what it will do when writing/saving/storing data
-- Define a suitable postprocessing normalization logic
+Targets define where your processed data will be sent. Let's create a pre-configured database target that stores the processed data:
+
+```yaml
+targets:
+  name: timeseries_db
+  type: influxdb
+    config:
+      url: "http://influxdb:8086"
+      token: "${INFLUX_TOKEN}"
+      org: "myorg"
+      bucket: "metrics"
+    postprocessing:
+      normalize:
+        type: measurement
+        tags:
+          - device_id
+          - sensor_type
+        fields:
+          - value
+```
+
+This InfluxDB target writes data to the specified InfluxDB instance. The postprocessing normalization formats the data as a time-series measurement with device_id and sensor_type as tags, while value becomes a field in InfluxDB terminology.
 
 ### Defining Routes
 
-- Create a route that will use the previously explained target to forward data to a specific destination
-- Explain what types of destinations can be used
+Routes connect your devices to targets, controlling the flow of data:
 
-## Optimization
+```yaml
+routes:
+  name: metrics_route
+    - from: kafka_input
+      to: timeseries_db
+      filter:
+        include:
+          fields:
+            sensor_type: ["temperature", "humidity"]
+```
 
-- Mention to most frequently used parameters available to optimize the pipeline
-- Use comparisons between a few examples to demonstrate what is optimized and how
+This route forwards data from the `kafka_input` device to the `timeseries_db` target, but only includes records where the sensor_type is either "temperature" or "humidity".
+
+Destinations in routes can be of various types:
+
+- Database targets (like InfluxDB, PostgreSQL) for persistent storage
+- Message queues (like Kafka, RabbitMQ) for event streaming
+- API endpoints for integrating with external services
+- File systems for local storage and archival
 
 ## Monitoring
 
-- Check the streeams and logs that the pipeline produces to 
-  - spot errors or potential sore points that require correction
-  - aspects to optimize
+Once your pipeline is running, monitor its performance and health through the available streams and logs:
+
+- Check the status dashboard for real-time metrics on throughput and latency
+- Review error logs to identify issues that require correction:
+  - Connection failures to upstream or downstream systems
+  - Data parsing or validation errors
+  - Memory or resource constraints
+- Examine performance metrics to spot aspects that need optimization:
+  - Message processing rates
+  - Queue depths
+  - Processing latency
+
+## Optimizing
+
+To enhance your pipeline's performance, consider adjusting these frequently used parameters:
+
+```yaml
+devices:
+  kafka_input:
+    # Add optimization parameters
+    config:
+      batch_size: 100  # Increase for throughput, decrease for latency
+      poll_timeout_ms: 500
+    # Add error handling
+    error_handling:
+      retry:
+        max_attempts: 3
+        backoff_ms: 1000
+      on_failure: skip  # Options: skip, stop, redirect
+
+targets:
+  timeseries_db:
+    # Add optimization parameters
+    config:
+      write_buffer_size: 1000  # Larger buffers improve throughput
+      flush_interval_ms: 5000  # Lower values reduce latency
+    # Add error handling
+    error_handling:
+      on_failure: retry
+      retry:
+        max_attempts: 5
+        backoff_policy: exponential
+```
+
+Optimization comparison examples:
+
+- Batch size of 100 vs. 1000: Larger batches improve throughput by 40% but increase latency by 15%
+- Buffer size of 1000 vs. 5000: Larger buffers reduce database write operations by 80% but increase memory usage by 20%
+- Error handling with retries vs. without: Adding retries improves reliability by 30% with minimal impact on overall throughput
+
+By tuning these parameters based on your specific workload characteristics, you can achieve an optimal balance between throughput, latency, and resource utilization.
