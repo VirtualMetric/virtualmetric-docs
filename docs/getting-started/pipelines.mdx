@@ -25,7 +25,7 @@ routes:
   # Route definitions will go here
 ```
 
-Place this file in the `config` directory of `<vm_root>`. This location ensures that **Director** will automatically detect and load your configuration at startup.
+Place this file in the `config` directory of `<vm_root>`. {/* TODO: Hangi directory? */} This location ensures that **Director** will automatically detect and load your configuration at startup. {/* TODO: Böyle mi? */}
 
 ### Defining Devices
 
@@ -34,22 +34,21 @@ Devices represent your data sources. In this example, we'll use a pre-configured
 ```yaml
 devices:
   id: 1
-  type: kafka
-  config:
-    bootstrap_servers: "kafka:9092"
-    topic: "incoming-data"
-    group_id: "pipeline-processor"
-  preprocessing:
-    normalize:
-      type: json
-      fields:
-        timestamp: 
-          format: "iso8601"
-        value:
-          type: "float"
+  type: device türü
+  port: 9092
+  topic: "incoming-data"
+  normalize:
+    type: json
+    fields:
+      timestamp: 
+        format: "iso8601"
+      value:
+        type: "float"
 ```
 
-This Kafka device connects to a broker at `kafka:9092` and consumes messages from the `incoming-data` topic. The preprocessing section defines normalization logic that ensures the timestamp is in ISO 8601 format and converts the value field to a floating-point number.
+{/* TODO: Add valid device configuration */}
+
+This Kafka device connects to a broker at `9092` and consumes messages from the `incoming-data` topic. The preprocessing section defines normalization logic that ensures the timestamp is in ISO 8601 format and converts the value field to a floating-point number.
 
 ### Defining Targets
 
@@ -59,20 +58,18 @@ Targets define where your processed data will be sent. Let's create a pre-config
 targets:
   name: timeseries_db
   type: influxdb
-    config:
-      url: "http://influxdb:8086"
-      token: "${INFLUX_TOKEN}"
-      org: "myorg"
-      bucket: "metrics"
-    postprocessing:
-      normalize:
-        type: measurement
-        tags:
-          - device_id
-          - sensor_type
-        fields:
-          - value
+    url: "http://influxdb:8086"
+    token: "${INFLUX_TOKEN}"
+    bucket: "metrics"
+  normalize:
+    tags:
+      - device_id
+      - sensor_type
+    fields:
+      - value
 ```
+
+{/* TODO: Add valid target configuration */}
 
 This InfluxDB target writes data to the specified InfluxDB instance. The postprocessing normalization formats the data as a time-series measurement with device_id and sensor_type as tags, while value becomes a field in InfluxDB terminology.
 
@@ -86,10 +83,10 @@ routes:
     - from: kafka_input
       to: timeseries_db
       filter:
-        include:
-          fields:
-            sensor_type: ["temperature", "humidity"]
+          sensor_type: ["temperature", "humidity"]
 ```
+
+{/* TODO: Add valid route configuration */}
 
 This route forwards data from the `kafka_input` device to the `timeseries_db` target, but only includes records where the sensor_type is either "temperature" or "humidity".
 
@@ -120,31 +117,29 @@ To enhance your pipeline's performance, consider adjusting these frequently used
 
 ```yaml
 devices:
-  kafka_input:
-    # Add optimization parameters
-    config:
-      batch_size: 100  # Increase for throughput, decrease for latency
-      poll_timeout_ms: 500
-    # Add error handling
-    error_handling:
-      retry:
-        max_attempts: 3
-        backoff_ms: 1000
-      on_failure: skip  # Options: skip, stop, redirect
+  id: 1
+  # Add optimization parameters
+  batch_size: 100  # Increase for throughput, decrease for latency
+  poll_timeout_ms: 500
+  # Add error handling
+  on_failure: skip  # Options: skip, stop, redirect
+    retry:
+      max_attempts: 3
+      backoff_ms: 1000
 
 targets:
-  timeseries_db:
-    # Add optimization parameters
-    config:
-      write_buffer_size: 1000  # Larger buffers improve throughput
-      flush_interval_ms: 5000  # Lower values reduce latency
-    # Add error handling
-    error_handling:
-      on_failure: retry
-      retry:
-        max_attempts: 5
-        backoff_policy: exponential
+  name: timeseries_db
+  # Add optimization parameters
+  write_buffer_size: 1000  # Larger buffers improve throughput
+  flush_interval_ms: 5000  # Lower values reduce latency
+  # Add error handling
+  on_failure: retry
+    retry:
+      max_attempts: 5
+      backoff_policy: exponential
 ```
+
+{/* TODO: Update this based on the previous configurations */}
 
 Optimization comparison examples:
 
@@ -153,3 +148,5 @@ Optimization comparison examples:
 - Error handling with retries vs. without: Adding retries improves reliability by 30% with minimal impact on overall throughput
 
 By tuning these parameters based on your specific workload characteristics, you can achieve an optimal balance between throughput, latency, and resource utilization.
+
+{/* TODO: These figures are based on other solutions using Kafka. Update them! */}
