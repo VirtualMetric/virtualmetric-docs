@@ -61,40 +61,33 @@ const sidebars: SidebarsConfig = {
         'architecture/file-system',
         'architecture/persistency',
         'architecture/zero-trust',
-      ],
-    },
-    {
-      type: "category",
-      label: "Solutions",
-      collapsed: false,
-      items: [
         {
           type: "category",
           label: "Microsoft Sentinel",
           items: [
-            "solutions/microsoft-sentinel/overview",
+            "architecture/microsoft-sentinel/overview",
             {
               type: "category",
               label: "Integration",
               items: [
-                'solutions/microsoft-sentinel/integration/autodiscovery',
-                'solutions/microsoft-sentinel/integration/manual',
+                'architecture/microsoft-sentinel/integration/autodiscovery',
+                'architecture/microsoft-sentinel/integration/manual',
               ],
             },
             {
               type: "category",
               label: "Automation",
               items: [
-                'solutions/microsoft-sentinel/automation/arm-templates',
-                'solutions/microsoft-sentinel/automation/bicep-templates',
+                'architecture/microsoft-sentinel/automation/arm-templates',
+                'architecture/microsoft-sentinel/automation/bicep-templates',
               ],
             },
             {
               type: "category",
               label: "Content Hub",
               items: [
-                'solutions/microsoft-sentinel/content-hub/checkpoint',
-                'solutions/microsoft-sentinel/content-hub/fortigate',
+                'architecture/microsoft-sentinel/content-hub/checkpoint',
+                'architecture/microsoft-sentinel/content-hub/fortigate',
               ],
             },
           ],
@@ -260,7 +253,7 @@ const sidebars: SidebarsConfig = {
     "glossary"
   ],
   tutorDocs: [
-    "tutorials/quick-start",
+    "tutorials/overview",
     "tutorials/syslog-to-console",
     "tutorials/syslog-to-parquet-file",
   ],
