@@ -2,151 +2,205 @@
 
 This chapter will help you get started with configuring and running pipelines, walking you through common scenarios.
 
+-or-
+
+This guide walks you through configuring a basic pipeline that processes Syslog messages and forwards them to Microsoft Sentinel in the Advanced Security Information Model (ASIM) format.
+
 :::note
 For a general discussion, see our [overview](/docs/configuration/pipelines/index.mdx) chapter.
 :::
 
-## Configuration
+## Overview
 
-Configuring a pipeline requires three essential tasks: defining your data sources (devices), specifying your data destinations (targets), and creating traffic rules (routes) to connect them. This straightforward process allows you to build a flexible data pipeline tailored to your specific needs.
+We'll create a pipeline that:
+1. Ingests logs from a Syslog source
+2. Processes the logs using a series of processors
+3. Forwards the processed logs to Microsoft Sentinel ASIM
 
-### Defining A Pipeline
+## Prerequisites
 
-To begin, create a YAML configuration file that will define your entire pipeline:
+- Configured environment with access to Syslog inputs
+- Microsoft Sentinel workspace with proper permissions
+- Basic understanding of YAML configuration
 
-```yaml
-name: example_pipeline
-version: 1.0
-devices:
-  # Device definitions will go here
-targets:
-  # Target definitions will go here
-routes:
-  # Route definitions will go here
-```
+## Step 1: Configure the Syslog Device
 
-Place this file in the `config` directory under `<vm_root>`. {/* TODO: Hangi directory? */} This location ensures that **Director** will automatically detect and load your configuration at startup. {/* TODO: Böyle mi? */}
-
-### Defining Devices
-
-Devices represent your data sources. In this example, we'll use a pre-configured Kafka device that ingests JSON-formatted messages:
+First, let's create a Syslog input device to receive log data. Create a file named `devices.yaml`:
 
 ```yaml
-devices:
-  id: 1
-  type: device türü
-  port: 9092
-  topic: "incoming-data"
-  normalize:
-    type: json
-    fields:
-      timestamp: 
-        format: "iso8601"
-      value:
-        type: "float"
+- id: 1
+  name: syslog_server
+  description: "Syslog server for security logs"
+  type: syslog
+  tags:
+    - security
+    - network
+  properties:
+    protocol: tcp
+    port: 1514
+    framing: delimiter
+    line_delimiter: "\n"
+    buffer_size: 16384
+    batch_size: 1000
 ```
 
-{/* TODO: Add valid device configuration */}
+This configuration:
+- Creates a TCP Syslog server listening on port 1514
+- Uses newline delimiter for message framing
+- Sets appropriate buffer and batch sizes for performance
 
-This Kafka device connects to a broker at `9092` and consumes messages from the `incoming-data` topic. The preprocessing section defines normalization logic that ensures the timestamp is in ISO 8601 format and converts the value field to a floating-point number.
+## Step 2: Configure the Microsoft Sentinel ASIM Target
 
-### Defining Targets
-
-Targets define where your processed data will be sent. Let's create a pre-configured database target that stores the processed data:
+Next, create a target for Microsoft Sentinel in a file named `targets.yaml`:
 
 ```yaml
-targets:
-  name: timeseries_db
-  type: influxdb
-    url: "http://influxdb:8086"
-    token: "${INFLUX_TOKEN}"
-    bucket: "metrics"
-  normalize:
-    tags:
-      - device_id
-      - sensor_type
-    fields:
-      - value
+- id: 1
+  name: sentinel_asim
+  description: "Microsoft Sentinel ASIM target"
+  type: sentinel
+  properties:
+    tenant_id: "${AZURE_TENANT_ID}"
+    client_id: "${AZURE_CLIENT_ID}"
+    client_secret: "${AZURE_CLIENT_SECRET}"
+    workspace_id: "${SENTINEL_WORKSPACE_ID}"
+    format: asim
+    batch_size: 100
+    flush_interval: 60
 ```
 
-{/* TODO: Add valid target configuration */}
+This configuration:
+- Sets up authentication with Azure using environment variables
+- Specifies the target format as ASIM (Advanced Security Information Model)
+- Configures batching and flush intervals for optimal performance
 
-This InfluxDB target writes data to the specified InfluxDB instance. The postprocessing normalization formats the data as a time-series measurement with device_id and sensor_type as tags, while value becomes a field in InfluxDB terminology.
+## Step 3: Create a Processing Pipeline
 
-### Defining Routes
-
-Routes connect your devices to targets, controlling the flow of data:
+Now, let's create a pipeline that processes Syslog data and transforms it into the ASIM format. Create a file named `pipelines.yaml`:
 
 ```yaml
-routes:
-  name: metrics_route
-    - from: kafka_input
-      to: timeseries_db
-      filter:
-          sensor_type: ["temperature", "humidity"]
+- id: 1
+  name: syslog_to_sentinel
+  description: "Process Syslog data for Microsoft Sentinel ASIM"
+  processors:
+    # Parse Syslog header information
+    - grok:
+        - field: message
+        - patterns:
+            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
+    
+    # Extract authentication events
+    - grok:
+        - field: syslog.message
+        - patterns:
+            - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
+        - ignore_failure: true
+    
+    # Set event metadata
+    - set:
+        - field: event.kind
+        - value: event
+    
+    # Set event category based on program
+    - script:
+        - lang: golang
+        - source: |
+            package main
+            
+            func main() {
+              if program, ok := logEntry["program"].(string); ok {
+                switch program {
+                case "sshd":
+                  setField(logEntry, "event.category", []string{"authentication"})
+                case "firewalld":
+                  setField(logEntry, "event.category", []string{"network"})
+                default:
+                  setField(logEntry, "event.category", []string{"process"})
+                }
+              }
+            }
+    
+    # Map fields to ASIM schema
+    - rename:
+        - fields:
+            - from: timestamp
+              to: event.created
+            - from: source.ip
+              to: src.ip
+            - from: user.name
+              to: user.name_orig
+    
+    # Clean up temporary fields
+    - remove:
+        - field:
+            - syslog.message
+            - message
+        - ignore_missing: true
 ```
 
-{/* TODO: Add valid route configuration */}
+This pipeline:
+1. Parses the Syslog header information using grok
+2. Extracts authentication event details
+3. Sets common event metadata
+4. Uses a script to categorize events based on the program
+5. Maps fields to the ASIM schema structure
+6. Cleans up temporary fields
 
-This route forwards data from the `kafka_input` device to the `timeseries_db` target, but only includes records where the sensor_type is either "temperature" or "humidity".
+## Step 4: Configure the Route
 
-Destinations in routes can be of various types:
-
-- Database targets (like InfluxDB, PostgreSQL) for persistent storage
-- Message queues (like Kafka, RabbitMQ) for event streaming
-- API endpoints for integrating with external services
-- File systems for local storage and archival
-
-## Monitoring
-
-Once your pipeline is running, monitor its performance and health through the available streams and logs:
-
-- Check the status dashboard for real-time metrics on throughput and latency
-- Review error logs to identify issues that require correction:
-  - Connection failures to upstream or downstream systems
-  - Data parsing or validation errors
-  - Memory or resource constraints
-- Examine performance metrics to spot aspects that need optimization:
-  - Message processing rates
-  - Queue depths
-  - Processing latency
-
-## Optimizing
-
-To enhance your pipeline's performance, consider adjusting these frequently used parameters:
+Finally, create a route to connect the Syslog device to the pipeline and Microsoft Sentinel target. Create a file named `routes.yaml`:
 
 ```yaml
-devices:
-  id: 1
-  # Add optimization parameters
-  batch_size: 100  # Increase for throughput, decrease for latency
-  poll_timeout_ms: 500
-  # Add error handling
-  on_failure: skip  # Options: skip, stop, redirect
-    retry:
-      max_attempts: 3
-      backoff_ms: 1000
-
-targets:
-  name: timeseries_db
-  # Add optimization parameters
-  write_buffer_size: 1000  # Larger buffers improve throughput
-  flush_interval_ms: 5000  # Lower values reduce latency
-  # Add error handling
-  on_failure: retry
-    retry:
-      max_attempts: 5
-      backoff_policy: exponential
+- name: syslog_to_sentinel_route
+  description: "Route Syslog data to Microsoft Sentinel ASIM"
+  sources:
+    - name: syslog_server
+  pipeline: syslog_to_sentinel
+  destinations:
+    - name: sentinel_asim
 ```
 
-{/* TODO: Update this based on the previous configurations */}
+This route configuration:
+- Connects the Syslog server as the source
+- Applies the `syslog_to_sentinel` pipeline for processing
+- Sends the processed data to the Microsoft Sentinel ASIM target
 
-Optimization comparison examples:
+## Complete Example
 
-- Batch size of 100 vs. 1000: Larger batches improve throughput by 40% but increase latency by 15%
-- Buffer size of 1000 vs. 5000: Larger buffers reduce database write operations by 80% but increase memory usage by 20%
-- Error handling with retries vs. without: Adding retries improves reliability by 30% with minimal impact on overall throughput
+Let's put it all together. Your file structure should look like:
 
-By tuning these parameters based on your specific workload characteristics, you can achieve an optimal balance between throughput, latency, and resource utilization.
+```
+config/
+├── devices.yaml
+├── targets.yaml
+├── pipelines.yaml
+└── routes.yaml
+```
 
-{/* TODO: These figures are based on other solutions using Kafka. Update them! */}
+## Verification
+
+To verify your configuration:
+
+1. Start your server with the configuration files
+2. Send test Syslog messages to port 1514
+3. Check the logs for any errors
+4. Verify in Microsoft Sentinel that data is being received in the ASIM format
+
+## Troubleshooting
+
+If you encounter issues:
+
+- Check that your Syslog server is receiving messages (network connectivity)
+- Verify your Microsoft Sentinel credentials are correct
+- Examine the processor logs for any failures in the pipeline
+- Ensure the mapped fields match the ASIM schema requirements
+
+## Next Steps
+
+Now that you have a basic pipeline running, consider:
+
+- Adding more complex field mappings for specific log types
+- Implementing additional processors for data enrichment
+- Creating multiple pipelines for different Syslog sources
+- Configuring alerts or dashboards in Microsoft Sentinel based on your data
+
+With these building blocks, you can create sophisticated log processing workflows tailored to your security monitoring needs.
