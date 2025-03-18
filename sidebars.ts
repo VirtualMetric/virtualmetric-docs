@@ -8,9 +8,10 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'about/introduction',
-        'about/features',
         'about/components',
+        'about/features',
         'about/benchmarks',
+        'about/comparisons',
         'about/licensing',
       ],
     },
@@ -19,14 +20,36 @@ const sidebars: SidebarsConfig = {
       label: "Getting Started",
       collapsed: false,
       items: [
-        'getting-started/single-node',
-        'getting-started/cluster',
+        'getting-started/single-node-deployment',
+        'getting-started/cluster-deployment',
         'getting-started/virtual-ip-address',
-        'getting-started/example-device',
-        'getting-started/example-target',
-        'getting-started/example-route',
-        'getting-started/example-pipeline',
-        'getting-started/example-multi-route',
+        'getting-started/pipelines',
+        'getting-started/devices',
+        'getting-started/targets',
+        'getting-started/routes',
+        'getting-started/multi-event-routing',
+      ],
+    },
+    {
+      type: "category",
+      label: "Deployment",
+      link: {type: "doc", id: "deployment/index"},
+      items: [
+        'deployment/local',
+        'deployment/azure-vm',
+        'deployment/azure-app-service',
+        'deployment/azure-functions',
+        'deployment/azure-arc-extension',
+      ],
+    },
+    {
+      type: "category",
+      label: "Migration",
+      items: [
+        'migration/cribl',
+        'migration/tenzir',
+        'migration/vector',
+        'migration/logstash',
       ],
     },
     {
@@ -38,29 +61,48 @@ const sidebars: SidebarsConfig = {
         'architecture/file-system',
         'architecture/persistency',
         'architecture/zero-trust',
-      ],
-    },
-    {
-      type: "category",
-      label: "Deployment",
-      items: [
-        'deployment/overview',
-        'deployment/local',
-        'deployment/azure-vm',
-        'deployment/azure-app-service',
-        'deployment/azure-functions',
-        'deployment/azure-arc-extension',
+        {
+          type: "category",
+          label: "Microsoft Sentinel",
+          items: [
+            "architecture/microsoft-sentinel/overview",
+            {
+              type: "category",
+              label: "Integration",
+              items: [
+                'architecture/microsoft-sentinel/integration/autodiscovery',
+                'architecture/microsoft-sentinel/integration/manual',
+              ],
+            },
+            {
+              type: "category",
+              label: "Automation",
+              items: [
+                'architecture/microsoft-sentinel/automation/arm-templates',
+                'architecture/microsoft-sentinel/automation/bicep-templates',
+              ],
+            },
+            {
+              type: "category",
+              label: "Content Hub",
+              items: [
+                'architecture/microsoft-sentinel/content-hub/checkpoint',
+                'architecture/microsoft-sentinel/content-hub/fortigate',
+              ],
+            },
+          ],
+        },
       ],
     },
     {
       type: "category",
       label: "Configuration",
+      link: {type: "doc", id: "configuration/index"},
       items: [
-        "configuration/overview",
         {
           type: "category",
           label: "Devices",
-          // link: {type: "doc", id: "configuration/devices/index"},
+          link: {type: "doc", id: "configuration/devices/index"},
           items: [
             "configuration/devices/windows",
             "configuration/devices/linux",
@@ -86,7 +128,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Pipelines",
-          // link: {type: "doc", id: "configuration/pipelines/index"},
+          link: {type: "doc", id: "configuration/pipelines/index"},
           items: [
             "configuration/pipelines/pre-processing",
             "configuration/pipelines/normalization",
@@ -174,7 +216,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Routes",
-          // link: {type: "doc", id: "configuration/routes/index"},
+          link: {type: "doc", id: "configuration/routes/index"},
           items: [
             'configuration/routes/management',
           ],
@@ -182,7 +224,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Targets",
-          // link: {type: "doc", id: "configuration/targets/index"},
+          link: {type: "doc", id: "configuration/targets/index"},
           items: [
             "configuration/targets/ms-sentinel",
             "configuration/targets/azure-data-explorer",
@@ -199,68 +241,19 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Migration",
+      label: "Optimization",
       items: [
-        'migration/cribl',
-        'migration/tenzir',
-        'migration/vector',
-        'migration/logstash',
-      ],
-    },
-    {
-      type: "category",
-      label: "Solutions",
-      collapsed: false,
-      items: [
-        {
-          type: "category",
-          label: "Microsoft Sentinel",
-          items: [
-            'solutions/microsoft-sentinel/overview',
-            {
-              type: "category",
-              label: "Integration",
-              items: [
-                'solutions/microsoft-sentinel/integration/autodiscovery',
-                'solutions/microsoft-sentinel/integration/manual',
-              ],
-            },
-            {
-              type: "category",
-              label: "Automation",
-              items: [
-                'solutions/microsoft-sentinel/automation/arm-templates',
-                'solutions/microsoft-sentinel/automation/bicep-templates',
-              ],
-            },
-            {
-              type: "category",
-              label: "Content Hub",
-              items: [
-                'solutions/microsoft-sentinel/content-hub/checkpoint',
-                'solutions/microsoft-sentinel/content-hub/fortigate',
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "Comparison",
-      collapsed: false,
-      items: [
-        'comparison/virtualmetric-vs-cribl',
-        'comparison/virtualmetric-vs-tenzir',
-        'comparison/virtualmetric-vs-vector',
-        'comparison/virtualmetric-vs-logstash',
+        'optimization/pipelines',
+        'optimization/devices',
+        'optimization/routes',
+        'optimization/targets',
       ],
     },
     "appendix",
     "glossary"
   ],
   tutorDocs: [
-    "tutorials/quick-start",
+    "tutorials/overview",
     "tutorials/syslog-to-console",
     "tutorials/syslog-to-parquet-file",
   ],

@@ -9,20 +9,19 @@ Creates a file target that writes log messages to files in various formats like 
 ## Schema
 
 ```yaml
-- id: <numeric>
+name: <string>
+description: <string>
+type: file
+pipelines: <pipeline[]>
+status: <boolean>
+properties:
+  location: <string>
   name: <string>
-  description: <string>
-  type: file
-  pipelines: <pipeline[]>
-  status: <boolean>
-  properties:
-    location: <string>
-    name: <string>
-    type: <string>
-    compression: <string>
-    schema: <string>
-    format: <string>
-    no_buffer: <boolean>
+  type: <string>
+  compression: <string>
+  schema: <string>
+  format: <string>
+  no_buffer: <boolean>
 ```
 
 ## Configuration
@@ -31,7 +30,6 @@ The following are the minimum requirements to define the target.
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y||Unique identifier|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
 |`type`|Y||Must be `file`|
@@ -90,11 +88,10 @@ The following template variables can be used in the file name:
 The minimum configuration for JSON file output:
 
 ```yaml
-- id: 1
-  name: json_logs
-  type: file
-  properties:
-    location: "/var/log/vmetric"
+name: json_logs
+type: file
+properties:
+  location: "/var/log/vmetric"
 ```
 
 ### Parquet
@@ -102,25 +99,24 @@ The minimum configuration for JSON file output:
 Configuration for Parquet output with compression and schema:
 
 ```yaml
-- id: 2
-  name: parquet_logs
-  type: file
-  properties:
-    location: "/var/log/vmetric"
-    type: "parquet"
-    compression: "zstd"
-    schema: |
-      {
-        "timestamp": {
-          "type": "INT",
-          "bitWidth": 64,
-          "signed": true
-        },
-        "message": {
-          "type": "STRING",
-          "compression": "ZSTD"
-        }
+name: parquet_logs
+type: file
+properties:
+  location: "/var/log/vmetric"
+  type: "parquet"
+  compression: "zstd"
+  schema: |
+    {
+      "timestamp": {
+        "type": "INT",
+        "bitWidth": 64,
+        "signed": true
+      },
+      "message": {
+        "type": "STRING",
+        "compression": "ZSTD"
       }
+    }
 ```
 
 ### OCF
@@ -128,14 +124,13 @@ Configuration for Parquet output with compression and schema:
 Configuration for OCF output with daily file rotation:
 
 ```yaml
-- id: 3
-  name: ocf_logs
-  type: file
-  properties:
-    location: "/var/log/vmetric"
-    type: "ocf"
-    compression: "zstd"
-    name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.ocf"
+name: ocf_logs
+type: file
+properties:
+  location: "/var/log/vmetric"
+  type: "ocf"
+  compression: "zstd"
+  name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.ocf"
 ```
 
 ### Windows
@@ -143,14 +138,13 @@ Configuration for OCF output with daily file rotation:
 Configuration for a Windows environment with a proper path structure:
 
 ```yaml
-- id: 4
-  name: windows_logs
-  type: file
-  properties:
-    location: "C:\\ProgramData\\VMetric\\Logs"
-    type: "json"
-    compression: "zstd"
-    name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
+name: windows_logs
+type: file
+properties:
+  location: "C:\\ProgramData\\VMetric\\Logs"
+  type: "json"
+  compression: "zstd"
+  name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
 ```
 
 :::warning

@@ -1,0 +1,276 @@
+# Quick Start: Devices
+
+This chapter will help you get started with devices to ingest data with specific protocols, walking you through common scenarios.
+
+:::note
+For a general discussion, see our [overview](/docs/configuration/devices/index.mdx) chapter.
+:::
+
+## Configuration Files
+
+The device configuration files reside in the `devices` directory under the `config` folder, and have a `.yml` extension:
+
+```powershell
+├───config
+│   ├───devices
+│   │       syslog.yml
+│   │
+│   ├───routes
+│   │       default.yml
+│   │
+│   └───targets
+│           console.yml
+│           file.yml
+```
+
+**Director** discovers these files by traversing the subdirectories recursively.
+
+:::note
+Each device type provides specific options detailed in its respective [chapter](/docs/configuration/devices/index.mdx).
+:::
+
+You can organize your device files as you wish, regardless of the above folder tree. This can be done in two ways:
+
+- Using a standalone file:
+
+    <Tabs groupId="cli-options">
+      <TabItem value="powershell" label="PowerShell" default>
+        ```PowerShell
+        C:\Users\<user-name>\Documents\syslog.yml
+        ```
+      </TabItem>
+      <TabItem value="bash" label="Bash">  
+        ```bash
+        ~: syslog.yml
+        ```
+      </TabItem>
+    </Tabs>
+
+- Using a listener-based grouping:
+
+    <Tabs groupId="cli-options">
+      <TabItem value="powershell" label="PowerShell" default>
+        ```PowerShell
+        C:\<vm_root>\listeners\syslog.yml
+        ```
+      </TabItem>
+      <TabItem value="bash" label="Bash">  
+        ```bash
+        ~: <vm_root>/listeners/syslog.yml
+        ```
+      </TabItem>
+    </Tabs>
+
+Choose the one that best fits your needs.
+
+## Basic UDP Setup
+
+### 1. Create Configuration
+
+Create a text file with a `.yml` extension in your preferred location, and then open it with a text editor to enter the following:
+
+```yaml
+- id: 1
+  name: syslog_udp
+  type: syslog
+  properties:
+    protocol: udp
+    address: 0.0.0.0
+    port: 514
+```
+
+This YAML code specifies that your device is a _Syslog_, and that you will use **UDP** as your listening protocol on port `514`. You can enter any integer as your `id` value.
+
+### 2. Test Configuration
+
+You can now test this configuration using either **Director**'s cross-platform companion **Generator** or traditional tools available:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    Using **Generator**
+
+    ```powershell
+    vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
+    ```
+  </TabItem>
+
+  <TabItem value="linux" label="Linux">
+    Using **Generator**
+
+    ```bash
+    vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
+    ```
+
+    Using **System Logger**
+
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Test message"
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS">
+    Using **System Logger**
+
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Test message"
+    ```
+  </TabItem>
+</Tabs>
+
+## Secure TCP Setup
+
+We will now create a secure TLS configuration.
+
+### 1. Prepare Certificates
+
+First we have to prepare the TLS certificates. This can be done using either **Director** or **OpenSSL**.
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    Using **Director**
+
+    ```powershell
+    vmetric-director -pfx2pem=./cert-file.pfx # Windows
+    ```
+  </TabItem>
+
+  <TabItem value="linux" label="Linux">
+    Using **Director**
+
+    ```bash
+    vmetric-director -pfx2pem=./cert-file.pfx
+    ```
+
+    Using **OpenSSL**
+
+    ```bash
+    openssl genrsa -out server.key 2048
+    openssl req -new -x509 -key server.key -out server.crt -days 365
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS">
+    Using **Director**
+
+    ```bash
+    vmetric-director -pfx2pem=./cert-file.pfx
+    ```
+    
+    Using **OpenSSL**
+
+    ```bash
+    openssl genrsa -out server.key 2048
+    openssl req -new -x509 -key server.key -out server.crt -days 365
+    ```
+  </TabItem>
+</Tabs>
+
+This generates the `key.pem` and `cert.pem` files.
+
+:::warning
+Always use TLS encryption in production environments, especially over untrusted networks. Ensure proper file permissions are set on these files:
+
+- the private key file (`key.pem`) should be readable only by the **Director** process
+- the certificate file (`cert.pem`) can be world-readable
+:::
+
+### 2. Place Certificates
+
+Now that we have created these files files, we must copy them to our installation root directory:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    Copy-Item cert.pem key.pem <vm_root>/
+    ```
+  </TabItem>
+  
+  <TabItem value="linux" label="Linux" default>
+    ```bash
+    cp cert.pem key.pem <vm_root>/
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS" default>
+    ```bash
+    cp cert.pem key.pem <vm_root>/
+    ```
+  </TabItem>
+</Tabs>
+
+### 3. Create Secure Configuration
+
+We will now prepare a secure configuration by creating another `.yml` file named `secure_syslog.yml`:
+
+```yaml
+- id: 2
+  name: syslog_secure
+  type: syslog
+  properties:
+    protocol: tcp
+    address: 0.0.0.0
+    port: 6514
+    tls:
+      status: true
+      cert_name: cert.pem
+      key_name: key.pem
+    framing: octet
+    max_connections: 1000
+    timeout: 300
+    batch_size: 5000
+    queue:
+      interval: 2
+```
+
+Note that we have specified the certificate files we have previously created.
+
+### 4. Test Configuration
+
+Test the secure connection:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    Write-Output "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+    ```
+  </TabItem>
+  
+  <TabItem value="linux" label="Linux" default>
+    ```bash
+    echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS" default>
+    ```bash
+    echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+    ```
+  </TabItem>
+</Tabs>
+
+## Monitoring
+
+Check **Director**'s logs for success messages on launching and initialization, connection acceptance, and configuration validation.
+
+:::tip
+Worker counts, buffer sizes, and batch settings can be adjusted based on your volumes.
+:::
+
+{/*
+
+TODO: Add the next steps, i.e. proceed to configuring and using advanced authentication options.
+
+*/}
+
+## Optimizing
+
+For high-volume environments, add the following to your configuration:
+
+```yaml
+  reuse: true
+  workers: 4
+  buffer_size: 32768
+  flush_interval: 5
+```
+
+These parameters will all have an impact on performance.

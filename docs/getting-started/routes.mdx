@@ -1,0 +1,163 @@
+# Quick Start: Routes
+
+This chapter will help you get started with routes to forward data to specific destinations, walking you through common scenarios.
+
+:::note
+For a general discussion, see our [overview](/docs/configuration/routes/index.mdx) chapter.
+:::
+
+## Configuration Files
+
+{/* TODO: Where do we put the YAML files? */}
+
+:::note
+Before configuring routes, verify that the pipelines and targets to be used in the routes are already configured and accessible.
+
+See the introductory chapters for configuring [targets](/docs/getting-started/targets.mdx) and [pipelines](/docs/getting-started/pipelines.mdx).
+:::
+
+The simplest route that can be configured only relays the data as is:
+
+```yaml
+routes:
+  - name: basic_forward
+    description: "Forward all logs to storage"
+    targets:
+      - name: storage
+```
+
+Here, we are forwarding the raw data to a previously configured target named `storage`.
+
+## Using Pipelines
+
+A route can use a pipeline as part of its forwarding process.
+
+We can have a single pipeline:
+
+```yaml
+routes:
+  - name: process_logs
+    description: "Process and store logs"
+    pipelines:
+      - name: normalize_logs
+    targets:
+      - name: storage
+```
+
+This configuration is intended to [normalize](/docs/configuration/pipelines/normalization.mdx) the data before sending it to the target named `storage`.
+
+We can also use several pipelines consecutively:
+
+```yaml
+routes:
+  - name: complex_processing
+    description: "Multi-stage processing"
+    pipelines:
+      - name: normalize
+      - name: enrich
+      - name: aggregate
+    targets:
+      - name: analytics
+```
+
+This time we are using 3 different pipelines whose intended purposes should be obvious from their names: normalizing, enriching, and aggregating. The data is then routed to a target used for analytics.
+
+## Selection
+
+Since the routing operation is in the middle of a telemetry traffic, we can also use pipelines for the purpose of selecting specific types of data.
+
+This can be done using device types:
+
+```yaml
+routes:
+  - name: syslog_route
+    if: device.type == 'syslog'
+    pipelines:
+      - name: syslog_normalize
+    targets:
+      - name: syslog_storage
+
+  - name: windows_route
+    if: device.type == 'windows'
+    pipelines:
+      - name: windows_normalize
+    targets:
+      - name: windows_storage
+```
+
+Our route collects two streams of data from a _syslog_ device and a _windows_ device, normalizes them using their own pipelines, and then directs them to their respective targets.
+
+The selection can also be done using datasets:
+
+```yaml
+routes:
+  - name: security_dataset
+    if: dataset.name == 'security_logs'
+    pipelines:
+      - name: security_process
+    targets:
+      - name: security_analytics
+
+  - name: performance_dataset
+    if: dataset.name == 'performance_metrics'
+    pipelines:
+      - name: metrics_process
+    targets:
+      - name: metrics_platform
+```
+
+Our first route collects data from a dataset used for security logs, and the second from another one used for performance metrics.
+
+## Forwarding
+
+The same data can be sent to multiple targets, a technique known as _mirroring_:
+
+```yaml
+routes:
+  - name: mirror_logs
+    description: "Store logs in multiple locations"
+    pipelines:
+      - name: normalize
+    targets:
+      - name: primary_storage
+      - name: backup_storage
+      - name: analytics_platform
+```
+
+The data here is received by 3 different targets: a primary and a backup storage, plus an analytics platform.
+
+## Conditionals
+
+The filtering required for selecting the data for a route can be done using conditional statements, as seen from some of the examples above. The conditions can be as simple as picking a specific device type:
+
+```yaml
+routes:
+  - name: firewall_logs
+    description: "Process firewall logs"
+    if: device.type == 'firewall'
+    pipelines:
+      - name: firewall_pipeline
+    targets:
+      - name: security_storage
+```
+
+Or they can be complex, drilling down to the attributes of the data to be collected such as severity of security breaches, date range of the data collected, etc.:
+
+```yaml
+routes:
+  - name: critical_errors
+    if: log.severity == 'critical' && log.date >= '2024.05.01'
+    pipelines:
+      - name: urgent_process
+    targets:
+      - name: alerts
+      - name: storage
+```
+
+This route collects critical errors that occurred after a certain date and forwards them to two separate targets.
+
+## Monitoring
+
+## Optimizing
+
+{/* TODO: */}

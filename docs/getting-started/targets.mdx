@@ -1,0 +1,206 @@
+# Quick Start: Targets
+
+This chapter will help you get started with targets to write processed data to specific formats, walking you through common scenarios.
+
+:::note
+For a general discussion, see our [overview](/docs/configuration/targets/index.mdx) chapter.
+:::
+
+## Configuration Files
+
+All target configuration files reside in the `config` directory under the `config` folder, and have a `.yml` extension:
+
+```powershell
+├───config
+│   ├───devices
+│   │       syslog.yml
+│   │
+│   ├───routes
+│   │       default.yml
+│   │
+│   └───targets
+│           console.yml
+│           file.yml
+```
+
+**Director** discovers these files by traversing the subdirectories recursively.
+
+The files can be named as, e.g.
+
+* `<vm_root>/config/targets.yml`
+* `<vm_root>/config/targets/outputs.yml`
+* `<vm_root>/config/targets/outputs/sentinel.yml`
+
+As can be seen, the names get more specific as the nested folder level increases, each level providing more information for classification. Choose the organization that best fits your needs.
+
+You can use various target types to store your output. We will provide an example for each below.
+
+:::note
+Each target type provides specific options detailed in its respective [chapter](/docs/configuration/targets/index.mdx).
+:::
+
+## Console
+
+The most basic target to which we can direct our output is a _console_. For this purpose, we have to create a simple `stdout` configuration:
+
+```yaml
+name: log_output
+type: console
+properties:             
+  format: "ecs"
+```
+
+Here, we have named our target as `log_output`. Its type is `console`, and we intend to normalize the data to the [ECS](/docs/appendix.mdx#ecs) format, although this is optional.
+
+You can place this configuration in a file named `config/targets/console.yml`.
+
+## Storage File
+
+The next type of output we can use is a local file. Various formats are available:
+
+* The widely used **JSON** format:
+
+  ```yaml
+    name: local_json_logs
+    type: file
+    properties:
+      location: "/path/to/directory"
+      type: "json"
+      name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.json"
+  ```
+
+You can place this in a file named `config/targets/file.yml`.
+
+The first `name` parameter is used for naming the target. The nested `name` parameter is for the file in which we will store our output data. Here, we intend to create the storage file name based on the internal field values of `Year`, `Month`, and `Day`.
+
+{/*
+
+(See [Internal Fields] for details.)
+
+TODO: We need to create a chapter on Internal Fields
+
+*/}
+
+The `path` we have specified is where the data storage file will be created.
+
+
+* The **Parquet** format:
+
+  ```yaml
+    name: local_parquet_logs
+    type: file
+    properties:
+      location: "/path/to/directory"
+      type: "parquet"
+      compression: "zstd"
+      schema: |
+        {
+          "timestamp": {
+            "type": "INT",
+            "bitWidth": 64,
+            "signed": true
+          },
+          "message": {
+            "type": "STRING",
+            "compression": "ZSTD"
+          }
+        }
+  ```
+
+Here, we are specifying the `schema` of the parquet file we will create. This is the layout of the data to be stored. Also, we are using _ZSTD_ compression.
+
+:::tip
+File targets with no messages are automatically cleaned up when disposed.
+:::
+
+## Cloud
+
+If you choose to store the output on the cloud, again various formats are available:
+
+* **Azure Blob**:
+
+  ```yaml
+    name: azure_logs
+    type: azblob
+    properties:
+      account: "<storage-account>"
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${AZURE_CLIENT_ID}"
+      client_secret: "${AZURE_CLIENT_SECRET}"
+      container: "logs"
+      type: "parquet"
+      compression: "zstd"
+      max_size: 536870912
+  ```
+
+Place this in a file named `config/targets/azblob.yml`.
+
+For this type of configuration, we have to specify an **Azure** account, which requires a client id and a secret for security.
+
+:::tip
+Use environment variables for credentials.
+:::
+
+The size we want for storage here is roughly _512MB_.
+
+* **Microsoft Sentinel** with ASIM normalization:
+
+  ```yaml
+    name: sentinel_logs
+    type: sentinel
+    properties:
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${AZURE_CLIENT_ID}"
+      client_secret: "${AZURE_CLIENT_SECRET}"
+      rule_id: "${DCR_RULE_ID}"
+      endpoint: "${DCR_ENDPOINT}"
+      stream:
+        - "Custom-ASimProcessEventLogs"
+        - "Custom-ASimNetworkSessionLogs"
+  ```
+
+Place this in a file named `config/targets/sentinel.yml`.
+
+This configuration uses the `sentinel` type. Once again, we have to specify our **Azure** account information. For this target, we also need to specify the type of stream we are using. Since that is ASIM, we have entered two names for our custom ASIM-based storage.
+
+## Monitoring
+
+To monitor the streaming, check **Director**'s logs for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
+
+:::tip
+Adjust buffer sizes based on your ingestion volume.
+:::
+
+{/* 
+TODO:
+  
+- configuring multiple targets for redundancy
+- implementing normalization rules
+- putting alerts in place for notifications and error handling
+ 
+*/}
+
+## Optimizing
+
+We can fine tune the streaming performance for high-volume environments.
+
+* With files, you can enable buffering and use compression:
+
+  ```yaml
+      no_buffer: false
+      compression: "zstd"
+  ```
+
+* For **Azure Blob**, you can increase the number of retry attempts and the retry interval, and use **512MB** chunks:
+
+  ```yaml
+      max_retry: 10
+      retry_interval: 30
+      max_size: 536870912
+  ```
+
+* For **Microsoft Sentinel**, a **5MB** buffer is recommended:
+
+  ```yaml
+      buffer_size: 5242880
+  ```

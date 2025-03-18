@@ -4,40 +4,39 @@
 
 ## Synopsis
 
-Creates a target that ingests log messages into Microsoft Sentinel workspace tables using Data Collection Rules (DCRs). Supports automatic table selection, ASim normalization, advanced filtering options, and autodiscovery capabilities.
+Creates a target that ingests log messages into Microsoft Sentinel workspace tables using Data Collection Rules (DCRs).
 
 ## Schema
 
 ```yaml
-- id: <numeric>
-  name: <string>
-  description: <string>
-  type: sentinel
-  pipelines: <pipeline[]>
-  status: <boolean>
-  properties:
-    # Authentication
-    tenant_id: <string>
-    client_id: <string>
-    client_secret: <string>
+name: <string>
+description: <string>
+type: sentinel
+pipelines: <pipeline[]>
+status: <boolean>
+properties:
+  # Authentication
+  tenant_id: <string>
+  client_id: <string>
+  client_secret: <string>
 
-    # Data Collection Rules
-    rule_id: <string>
-    endpoint: <string>
-    
-    # Stream Configuration
-    stream: <string[]>
-    streams:
-      - name: <string>
-        rule_id: <string>
-    
-    # Performance & Behavior
-    buffer_size: <numeric>
-    keep_phantom_fields: <boolean>
-    drop_unknown_stream_events: <boolean>
-    cache:
-      timeout: <numeric>
-    format: <string>
+  # Data Collection Rules
+  rule_id: <string>
+  endpoint: <string>
+  
+  # Stream Configuration
+  stream: <string[]>
+  streams:
+    - name: <string>
+      rule_id: <string>
+  
+  # Performance & Behavior
+  buffer_size: <numeric>
+  keep_phantom_fields: <boolean>
+  drop_unknown_stream_events: <boolean>
+  cache:
+    timeout: <numeric>
+  format: <string>
 ```
 
 ## Configuration
@@ -48,7 +47,6 @@ The following are the minimum requirements to define the target.
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`id`|Y||Unique identifier|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
 |`type`|Y||Must be `sentinel`|
@@ -101,117 +99,121 @@ When `stream` is not specified, tables are automatically selected based on input
 **ASim Tables** (Prefix: `Custom-` or `Microsoft-`)
 > `ASimAuditEventLogs` `ASimAuthenticationEventLogs` `ASimDhcpEventLogs` `ASimDnsActivityLogs` `ASimFileEventLogs` `ASimNetworkSessionLogs` `ASimProcessEventLogs` `ASimRegistryEventLogs` `ASimUserManagementActivityLogs`
 
-## Autodiscovery
+## Details
 
-VirtualMetric Director provides autodiscovery capabilities that automatically configure Data Collection Rules and their associated streams.
+The target supports automatic table selection, ASim normalization, advanced filtering options, and autodiscovery capabilities.
 
-### How It Works
+Data is automatically normalized to the specified format, which is by default: ASim.
 
-- Uses Resource IDs to discover DCRs and their configurations
-- Automatically detects table schemas and validates fields
-- Prevents phantom fields through schema validation
-- Adapts to environment changes automatically
-- Maintains performance through caching (default: 5 minutes)
-
-### Required Permissions
-
-1. **For Data Collection Rules**:
-   - Role: `Monitoring Metrics Publisher`
-   - Scope: Each DCR with name starting with "vmetric"
-
-2. **For Resource Group**:
-   - Role: `Monitoring Reader`
-   - Scope: Resource Group containing your DCE
+Stream configurations are cached for improved performance. Large messages are stored temporarily and retried during finalization.
 
 :::warning
-Always assign the `Monitoring Reader` role at the Resource Group level, not at the Subscription level.
+Large buffer sizes increase memory usage.
 :::
 
-For detailed explanation, refer to our [Microsoft Sentinel Automation](../../solutions/microsoft-sentinel/overview.mdx) and [Microsoft Sentinel Autodiscovery](../../solutions/microsoft-sentinel/integration/autodiscovery.mdx) documentation.
+## Autodiscovery
+
+**Director** provides an autodiscovery feature that automatically configures _Data Collection Rules_ and their associated streams.
+
+The required permissions are:
+
+- For **Data Collection Rules**
+
+  |Role|Scope|
+  |---|---|
+  |`Monitoring Metrics Publisher`|Each DCR with name starting with `vmetric`|
+
+- For **Resource Groups**
+
+  |Role|Scope|
+  |---|---|
+  |`Monitoring Reader`|Resource Group containing your DCE|
+
+:::warning
+Always assign the `Monitoring Reader` role at the **Resource Group** level, not at the **Subscription** level.
+:::
+
+The feature uses _Resource IDs_ to discover DCRs and their configurations. It then automatically detects table schemas and validates fields, and prevents phantom fields through schema validation.
+
+Autodiscovery adapts to environment changes automatically.
 
 ## Examples
 
-### Basic Autodiscovery
+### Basic
 
 Configuration using Resource ID-based autodiscovery:
 
 ```yaml
-- id: 1
-  name: auto_sentinel
-  type: sentinel
-  properties:
-    tenant_id: "00000000-0000-0000-0000-000000000000"
-    client_id: "00000000-0000-0000-0000-000000000000"
-    client_secret: "your-client-secret"
-    endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+name: auto_sentinel
+type: sentinel
+properties:
+  tenant_id: "00000000-0000-0000-0000-000000000000"
+  client_id: "00000000-0000-0000-0000-000000000000"
+  client_secret: "your-client-secret"
+  endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
 ```
 
-### Managed Identity Authentication
+### Managed Identity
 
-Configuration using Managed Identity authentication instead of App Registration:
+Using _Managed Identity Authentication_ instead of _App Registration_:
 
 ```yaml
-- id: 2
-  name: managed_identity_sentinel
-  type: sentinel
-  properties:
-    endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+name: managed_identity_sentinel
+type: sentinel
+properties:
+  endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
 ```
 
-### Filtered Autodiscovery
+### Filtered
 
-Configuration with specific stream filtering and custom cache timeout:
+Using specific stream filtering and custom cache timeout:
 
 ```yaml
-- id: 3
-  name: filtered_autodiscovery
-  type: sentinel
-  properties:
-    tenant_id: "00000000-0000-0000-0000-000000000000"
-    client_id: "00000000-0000-0000-0000-000000000000"
-    client_secret: "your-client-secret"
-    endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
-    streams:
-      - name: "Custom-WindowsEvent"
-      - name: "Custom-SecurityEvent"
-    cache:
-      timeout: 300  # 5 minutes
-    keep_phantom_fields: false
-    drop_unknown_stream_events: true
+name: filtered_autodiscovery
+type: sentinel
+properties:
+  tenant_id: "00000000-0000-0000-0000-000000000000"
+  client_id: "00000000-0000-0000-0000-000000000000"
+  client_secret: "your-client-secret"
+  endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+  streams:
+    - name: "Custom-WindowsEvent"
+    - name: "Custom-SecurityEvent"
+  cache:
+    timeout: 300  # 5 minutes
+  keep_phantom_fields: false
+  drop_unknown_stream_events: true
 ```
 
-### High-Performance Configuration
-
-Configuration optimized for high-volume ingestion:
-
-```yaml
-- id: 4
-  name: optimized_sentinel
-  type: sentinel
-  pipelines:
-    - normalization
-  properties:
-    tenant_id: "00000000-0000-0000-0000-000000000000"
-    client_id: "00000000-0000-0000-0000-000000000000"
-    client_secret: "your-client-secret"
-    endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
-    buffer_size: 5242880  # 5MB
-    format: "asim"
-    stream:
-      - "Custom-ASimProcessEventLogs"
-      - "Custom-ASimNetworkSessionLogs"
-```
-
-:::note
-- Data is automatically normalized to the specified format (default: ASim)
-- Stream configurations are cached for improved performance
-- Large messages are stored temporarily and retried during finalization
-- Use Resource IDs instead of URLs for autodiscovery features
+:::warning
+Disabling `keep_phantom_fields` may result in data loss for undefined fields.
 :::
 
 :::warning
-- Large buffer sizes increase memory usage
-- Enabling `drop_unknown_stream_events` silently discards unmatched events
-- Disabling `keep_phantom_fields` may result in data loss for undefined fields
-- Always test configuration changes in a non-production environment first
+Enabling `drop_unknown_stream_events` silently discards unmatched events.
+:::
+
+### High-Performance
+
+Optimization for high-volume ingestion:
+
+```yaml
+name: optimized_sentinel
+type: sentinel
+pipelines:
+  - normalization
+properties:
+  tenant_id: "00000000-0000-0000-0000-000000000000"
+  client_id: "00000000-0000-0000-0000-000000000000"
+  client_secret: "your-client-secret"
+  endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+  buffer_size: 5242880  # 5MB
+  format: "asim"
+  stream:
+    - "Custom-ASimProcessEventLogs"
+    - "Custom-ASimNetworkSessionLogs"
+```
+
+:::tip
+For more details, refer to our [Microsoft Sentinel Automation](/docs/architecture/microsoft-sentinel/overview.mdx) and [Microsoft Sentinel Autodiscovery](/docs/architecture/microsoft-sentinel/integration/autodiscovery.mdx) documentation.
 :::
