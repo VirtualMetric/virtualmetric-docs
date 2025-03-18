@@ -16,6 +16,20 @@ To achieve this goal, we must have an environment with access to _Syslog_ inputs
 
 Also, a basic understanding of the YAML format is necessary to create the configuration files.
 
+For convenience, we will place all our files directly under `<vm_root>/config`.
+
+```
+config/
+├── demo_pipeline.yml
+├── demo_device.yml
+├── demo_target.yml
+└── demo_route.yml
+```
+
+:::note
+We can place those files any where we wish since **Director** will discover them by iterating the folder tree. Pick the organization that best fits your needs.
+:::
+
 ## Step 1: Configure the Syslog Device
 
 First, let's create a _Syslog_ input device to receive log data. Create a file named `demo_device.yml` with the following entries:
@@ -98,7 +112,7 @@ Now, let's create a pipeline that processes _Syslog_ data and transforms it into
                 switch program {
                 case "sshd":
                   setField(logEntry, "event.category", []string{"authentication"})
-                case "firewalld":
+                case "firewall":
                   setField(logEntry, "event.category", []string{"network"})
                 default:
                   setField(logEntry, "event.category", []string{"process"})
@@ -124,7 +138,7 @@ Now, let's create a pipeline that processes _Syslog_ data and transforms it into
         - ignore_missing: true
 ```
 
-This pipeline parses the _Syslog_ header information using the `grok` processors and extracts authentication event details. It then sets the common event metadata. Next, using a `script`, it categorizes the events based on the program, and maps the fields to the ASIM schema structure. Afterwards, it cleans up temporary fields.
+This pipeline parses the _Syslog_ header information using the `grok` processors and extracts authentication event details. It then sets the common event metadata. Next, using a script, it categorizes the events based on `program`, and maps the fields to the ASIM schema structure. Afterwards, it cleans up temporary fields.
 
 You have also specified to ignore the missing fields in order to avoid raising an exception.
 
@@ -144,23 +158,9 @@ Finally, create a route to connect the _Syslog_ device to the pipeline and **Mic
 
 This route configuration connects the Syslog server as the source, applies the `syslog_to_sentinel` pipeline for processing, and sends the processed data to the **Microsoft Sentinel** ASIM target.
 
-## Complete Example
+## Monitoring
 
-Let's put it all together. We have created a number of files to configure our pipeline. For convenience, we will place all our files directly under `<vm_root>/config`.
-
-:::note
-We can place those files any where we wish since **Director** will discover them by iterating the folder tree. Pick the organization that best fits your needs.
-:::
-
-```
-config/
-├── demo_pipeline.yml
-├── demo_device.yml
-├── demo_target.yml
-└── demo_route.yml
-```
-
-Now we will run our pipeline and see the results:
+Let's put it all together. We have created a number of files to configure our pipeline. Now we will run our pipeline and see the results:
 
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows">
@@ -179,7 +179,6 @@ Now we will run our pipeline and see the results:
     ```
   </TabItem>
 </Tabs>
-
 
 ## Verification
 
