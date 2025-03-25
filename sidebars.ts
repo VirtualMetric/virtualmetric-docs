@@ -18,82 +18,31 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Getting Started",
+      link: {type: "doc", id: "getting-started/index"},
       collapsed: false,
       items: [
         'getting-started/single-node-deployment',
         'getting-started/cluster-deployment',
-        'getting-started/virtual-ip-address',
-        'getting-started/devices',
-        'getting-started/targets',
-        'getting-started/routes',
-        'getting-started/pipelines',
-        'getting-started/multi-event-routing',
+        // 'getting-started/virtual-ip-address',
+        'getting-started/example-devices',
+        'getting-started/example-targets',
+        'getting-started/example-routes',
+        // 'getting-started/example-multi-event-routing',
+        'getting-started/example-pipelines',
       ],
     },
-    {
-      type: "category",
-      label: "Deployment",
-      link: {type: "doc", id: "deployment/index"},
-      items: [
-        'deployment/local',
-        'deployment/azure-vm',
-        'deployment/azure-app-service',
-        'deployment/azure-functions',
-        'deployment/azure-arc-extension',
-      ],
-    },
-    {
-      type: "category",
-      label: "Migration",
-      items: [
-        'migration/cribl',
-        'migration/tenzir',
-        'migration/vector',
-        'migration/logstash',
-      ],
-    },
-    {
-      type: "category",
-      label: "Architecture",
-      items: [
-        'architecture/overview',
-        'architecture/clustering',
-        'architecture/file-system',
-        'architecture/persistency',
-        'architecture/zero-trust',
-        {
-          type: "category",
-          label: "Microsoft Sentinel",
-          items: [
-            "architecture/microsoft-sentinel/overview",
-            {
-              type: "category",
-              label: "Integration",
-              items: [
-                'architecture/microsoft-sentinel/integration/autodiscovery',
-                'architecture/microsoft-sentinel/integration/manual',
-              ],
-            },
-            {
-              type: "category",
-              label: "Automation",
-              items: [
-                'architecture/microsoft-sentinel/automation/arm-templates',
-                'architecture/microsoft-sentinel/automation/bicep-templates',
-              ],
-            },
-            {
-              type: "category",
-              label: "Content Hub",
-              items: [
-                'architecture/microsoft-sentinel/content-hub/checkpoint',
-                'architecture/microsoft-sentinel/content-hub/fortigate',
-              ],
-            },
-          ],
-        },
-      ],
-    },
+    // {
+    //   type: "category",
+    //   label: "Deployment",
+    //   link: {type: "doc", id: "deployment/index"},
+    //   items: [
+    //     'deployment/local',
+    //     'deployment/azure-vm',
+    //     'deployment/azure-app-service',
+    //     'deployment/azure-functions',
+    //     'deployment/azure-arc-extension',
+    //   ],
+    // },
     {
       type: "category",
       label: "Configuration",
@@ -239,6 +188,59 @@ const sidebars: SidebarsConfig = {
         },
       ],
     },
+    // {
+    //   type: "category",
+    //   label: "Migration",
+    //   link: {type: "doc", id: "migration/index"},
+    //   items: [
+    //     'migration/cribl',
+    //     'migration/tenzir',
+    //     'migration/vector',
+    //     'migration/logstash',
+    //   ],
+    // },
+    // {
+    //   type: "category",
+    //   label: "Architecture",
+    //   link: {type: "doc", id: "architecture/index"},
+    //   items: [
+    //     'architecture/clustering',
+    //     'architecture/file-system',
+    //     'architecture/persistency',
+    //     'architecture/zero-trust',
+    //     {
+    //       type: "category",
+    //       label: "Microsoft Sentinel",
+    //       link: {type: "doc", id: "architecture/microsoft-sentinel/index"},
+    //       items: [
+    //         {
+    //           type: "category",
+    //           label: "Integration",
+    //           items: [
+    //             'architecture/microsoft-sentinel/integration/autodiscovery',
+    //             'architecture/microsoft-sentinel/integration/manual',
+    //           ],
+    //         },
+    //         {
+    //           type: "category",
+    //           label: "Automation",
+    //           items: [
+    //             'architecture/microsoft-sentinel/automation/arm-templates',
+    //             'architecture/microsoft-sentinel/automation/bicep-templates',
+    //           ],
+    //         },
+    //         {
+    //           type: "category",
+    //           label: "Content Hub",
+    //           items: [
+    //             'architecture/microsoft-sentinel/content-hub/checkpoint',
+    //             'architecture/microsoft-sentinel/content-hub/fortigate',
+    //           ],
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // },
     "appendix",
     "glossary"
   ],
