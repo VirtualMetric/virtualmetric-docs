@@ -12,7 +12,7 @@ For a general discussion, see our [overview](/docs/configuration/pipelines/index
 
 ## Overview
 
-We'll create a pipeline that ingests logs from a _Syslog_ source, processes them, and forwards them to **Microsoft Sentinel** in ASIM format.
+We will create a pipeline that ingests logs from a _Syslog_ source, processes them, and forwards them to **Microsoft Sentinel** in ASIM format.
 
 ## Prerequisites
 
@@ -22,30 +22,18 @@ Also, a basic understanding of the YAML format is necessary to create the config
 
 For convenience, we will place all our files directly under `<vm_root>/config`.
 
-```
-config/
-├── <pipeline>.yml
-├── <device>.yml
-├── <target>.yml
-└── <route>.yml
-```
-
 :::note
 We can place those files any where we wish since **Director** will discover them by iterating the folder tree. Pick the organization that best fits your needs.
 :::
 
-## Step 1: Configure the Syslog Device
+## Step 1: Configure The Device
 
-First, let's create a _Syslog_ input device to receive log data. Create a file named `demo_device.yml` with the following entries:
+First, we have to define a device to receive log data. We will use the configuration we have created in the device example as our starting, modifying some settings to fit our needs here:
 
 ```yml
 - id: 1
-  name: syslog_server
-  description: "Syslog server for security logs"
+  name: syslog_tcp
   type: syslog
-  tags:
-    - security
-    - network
   properties:
     protocol: tcp
     port: 1514
@@ -55,11 +43,13 @@ First, let's create a _Syslog_ input device to receive log data. Create a file n
     batch_size: 1000
 ```
 
-This configuration will create a _TCP Syslog_ server listening on port `1514`. You specfied the newline character as a delimiter for message framing. You also set the appropriate buffer and batch sizes. The tags you have entered are optional but may be helpful.
+Place this in a file named `pipeline-device.yml` under `<vm_root>`.
 
-## Step 2: Configure the Microsoft Sentinel ASIM Target
+This configuration will create a _TCP Syslog_ server listening on port `1514`. We have specfied the line feed character as the delimiter for message framing. We also set the appropriate buffer and batch sizes.
 
-Next, create a target for **Microsoft Sentinel** in a file named `demo_target.yml`:
+## Step 2: Configure The Target
+
+Next, we will create a target for **Microsoft Sentinel** in a file named `pipeline-target.yml`:
 
 ```yml
 - id: 1
@@ -78,9 +68,9 @@ Next, create a target for **Microsoft Sentinel** in a file named `demo_target.ym
 
 With this configuration, you are setting up the authentication with **Azure** using environment variables. You have specified the target format as ASIM, and configured batching and flush intervals for optimal performance.
 
-## Step 3: Create a Processing Pipeline
+## Step 3: Create A Processing Pipeline
 
-Now, let's create a pipeline that processes _Syslog_ data and transforms it into the ASIM format. Create a file named `demo_pipeline.yml`:
+We are now ready to configure our pipeline. Create a file named `example-pipeline.yml` under the root, and place the following in it:
 
 ```yml
 - id: 1
@@ -142,13 +132,15 @@ Now, let's create a pipeline that processes _Syslog_ data and transforms it into
         - ignore_missing: true
 ```
 
-This pipeline parses the _Syslog_ header information using the `grok` processors and extracts authentication event details. It then sets the common event metadata. Next, using a script, it categorizes the events based on `program`, and maps the fields to the ASIM schema structure. Afterwards, it cleans up temporary fields.
+This configuration will parse the _Syslog_ header information using the `grok` processor and will extract authentication event details. It will then set the common event metadata. Next, using a script, it will categorize the events based on `program`, and map the fields to the ASIM schema structure. Once done, it will clean up the temporary fields.
 
-You have also specified to ignore the missing fields in order to avoid raising an exception.
+:::note
+In order to avoid raising an exception, we chose to ignore the missing fields.
+:::
 
 ## Step 4: Configure the Route
 
-Finally, create a route to connect the _Syslog_ device to the pipeline and **Microsoft Sentinel** target. Create a file named `demo_route.yml`:
+Finally, we have to create a route to connect our device to the pipeline and then to our target. Create a file named `pipeline-route.yml`:
 
 ```yml
 - name: syslog_to_sentinel_route
@@ -160,11 +152,21 @@ Finally, create a route to connect the _Syslog_ device to the pipeline and **Mic
     - name: sentinel_asim
 ```
 
-This route configuration connects the Syslog server as the source, applies the `syslog_to_sentinel` pipeline for processing, and sends the processed data to the **Microsoft Sentinel** ASIM target.
+This configuration will connect the _Syslog_ server as the source, apply the `syslog_to_sentinel` pipeline for processing the ingested data, and then send that processed data to the **Microsoft Sentinel** ASIM target we have specified.
 
 ## Monitoring
 
-Let's put it all together. We have created a number of files to configure our pipeline. Now we will run our pipeline and see the results:
+Let's put it all together. We have created a number of files to configure our pipeline, and at this point we should have them ready:
+
+```
+config/
+├── example-pipeline.yml
+├── pipeline-device.yml
+├── pipeline-target.yml
+└── pipeline-route.yml
+```
+
+Now we will run our pipeline and see the results:
 
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows">
@@ -206,4 +208,4 @@ Now that you have a basic pipeline running, consider:
 
 With these building blocks, you can create sophisticated log processing workflows tailored to your security monitoring needs.
 
-{/* TODO: Review and update additional configuration details if necessary. */}
+{/* TODO: Review and update the configuration details if necessary. */}
