@@ -1,9 +1,9 @@
-# Example: Routing Telemetry Data
+# Example: Route Telemetry Data
 
 This chapter will help you get started with routes to forward data to specific destinations, walking you through common scenarios.
 
 :::note
-For a general discussion, see our [overview](/docs/configuration/routes/index.mdx) chapter.
+For a general discussion, see the [overview](/docs/configuration/routes/index.mdx).
 :::
 
 ## Configuration Files
@@ -13,7 +13,7 @@ For a general discussion, see our [overview](/docs/configuration/routes/index.md
 :::note
 Before configuring routes, verify that the pipelines and targets to be used in the routes are already configured and accessible.
 
-See the introductory chapters for configuring [targets](/docs/getting-started/example-targets.mdx) and [pipelines](/docs/getting-started/example-pipelines.mdx).
+See the introductory chapters for configuring [targets](/docs/getting-started/example-target.mdx) and [pipelines](/docs/getting-started/example-pipeline.mdx).
 :::
 
 The simplest route that can be configured only relays the data as is:
@@ -44,7 +44,7 @@ routes:
       - name: storage
 ```
 
-This configuration is intended to [normalize](/docs/configuration/pipelines/normalization.mdx) the data before sending it to the target named `storage`.
+This configuration will [normalize](/docs/configuration/pipelines/normalization.mdx) the data before sending it to the target named `storage`.
 
 We can also use several pipelines consecutively:
 
@@ -60,11 +60,11 @@ routes:
       - name: analytics
 ```
 
-This time we are using 3 different pipelines whose intended purposes should be obvious from their names: normalizing, enriching, and aggregating. The data is then routed to a target used for analytics.
+The specified 3 pipelines will be used for purposes that should be obvious from their names: normalizing, enriching, and aggregating. The data will then be routed to a target used for analytics.
 
 ## Selection
 
-Since the routing operation occurs amidst high telemetry traffic, pipelines can also be used to selectively process specific data streams
+Since the routing operation occurs amidst high telemetry traffic, pipelines can also be used to selectively process specific data streams.
 
 This can be done using device types:
 
@@ -85,7 +85,7 @@ routes:
       - name: windows_storage
 ```
 
-Our route collects two streams of data from a _syslog_ device and a _windows_ device, normalizes them using their own pipelines, and then directs them to their respective targets.
+This route will collect two streams of data from a _syslog_ device and a _windows_ device, normalize them using the specific pipelines of each, and then direct them to their respective targets.
 
 The selection can also be done using datasets:
 
@@ -106,7 +106,7 @@ routes:
       - name: metrics_platform
 ```
 
-Our first route collects data from a dataset used for security logs, and the second from another one used for performance metrics.
+The first route will collect data from a dataset used for security logs, whereas the second from another one used for performance metrics.
 
 ## Forwarding
 
@@ -124,7 +124,7 @@ routes:
       - name: analytics_platform
 ```
 
-The data here is received by 3 different targets: a primary and a backup storage, plus an analytics platform.
+Here, the data will be received by 3 different targets: a primary and a backup storage, and an analytics platform.
 
 ## Conditionals
 
@@ -154,10 +154,10 @@ routes:
       - name: storage
 ```
 
-This route collects critical errors that occurred after a certain date and forwards them to two separate targets.
+This route will collect critical errors that have occurred after a certain date, and will forward them to two separate targets.
 
 ## Monitoring
 
-## Optimizing
+Once we have configured our route, we can monitor the stream they will manage using the command line.
 
-{/* TODO: Fill in the subheadings */}
+## Optimizing
