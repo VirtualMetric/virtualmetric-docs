@@ -1,9 +1,9 @@
-# Quick Start: Targets
+# Example: Send Data To Sentinel
 
 This chapter will help you get started with targets to write processed data to specific formats, walking you through common scenarios.
 
 :::note
-For a general discussion, see our [overview](/docs/configuration/targets/index.mdx) chapter.
+For a general discussion, see the [overview](/docs/configuration/targets/index.mdx).
 :::
 
 ## Configuration Files
@@ -25,15 +25,15 @@ All target configuration files reside in the `config` directory under the `confi
 
 **Director** discovers these files by traversing the subdirectories recursively.
 
-The files can be named as, e.g.
+The file can be named as, e.g.
 
 * `<vm_root>/config/targets.yml`
 * `<vm_root>/config/targets/outputs.yml`
 * `<vm_root>/config/targets/outputs/sentinel.yml`
 
-As can be seen, the names get more specific as the nested folder level increases, each level providing more information for classification. Choose the organization that best fits your needs.
+As can be seen, the names get more specific as the nesting level increases, each level providing more information for classification. Choose the organization that best fits your needs.
 
-You can use various target types to store your output. We will provide an example for each below.
+You can use various target types to store your output. We will show an example for each of them below.
 
 :::note
 Each target type provides specific options detailed in its respective [chapter](/docs/configuration/targets/index.mdx).
@@ -69,9 +69,9 @@ The next type of output we can use is a local file. Various formats are availabl
       name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.json"
   ```
 
-You can place this in a file named `config/targets/file.yml`.
+You can place this configuration in a file named `config/targets/file.yml`.
 
-The first `name` parameter is used for naming the target. The nested `name` parameter is for the file in which we will store our output data. Here, we intend to create the storage file name based on the internal field values of `Year`, `Month`, and `Day`.
+The first `name` parameter is the one we will use for our target configuration. The nested `name` parameter is for the file in which we will store our output data. We intend to create a storage file name based on the internal field values of `Year`, `Month`, and `Day`.
 
 {/*
 
@@ -82,7 +82,6 @@ TODO: We need to create a chapter on Internal Fields
 */}
 
 The `path` we have specified is where the data storage file will be created.
-
 
 * The **Parquet** format:
 
@@ -107,7 +106,7 @@ The `path` we have specified is where the data storage file will be created.
         }
   ```
 
-Here, we are specifying the `schema` of the parquet file we will create. This is the layout of the data to be stored. Also, we are using _ZSTD_ compression.
+This describes the `schema` of the parquet file we will create, i.e. the layout of the data to be stored. Also, we are using _ZSTD_ compression.
 
 :::tip
 File targets with no messages are automatically cleaned up when disposed.
@@ -115,7 +114,7 @@ File targets with no messages are automatically cleaned up when disposed.
 
 ## Cloud
 
-If you choose to store the output on the cloud, again various formats are available:
+If you choose to store the output in the cloud, there are again various formats available:
 
 * **Azure Blob**:
 
@@ -135,13 +134,13 @@ If you choose to store the output on the cloud, again various formats are availa
 
 Place this in a file named `config/targets/azblob.yml`.
 
-For this type of configuration, we have to specify an **Azure** account, which requires a client id and a secret for security.
+For this type of configuration, we have to specify an **Azure** account, which requires a _client id_ and a _client secret_ for security.
 
 :::tip
-Use environment variables for credentials.
+You can use environment variables for these credentials.
 :::
 
-The size we want for storage here is roughly _512MB_.
+The size we want for storage here is roughly **512MB**.
 
 * **Microsoft Sentinel** with ASIM normalization:
 
@@ -165,7 +164,7 @@ This configuration uses the `sentinel` type. Once again, we have to specify our 
 
 ## Monitoring
 
-To monitor the streaming, check **Director**'s logs for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
+To monitor the stream, check **Director**'s logs for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
 
 :::tip
 Adjust buffer sizes based on your ingestion volume.

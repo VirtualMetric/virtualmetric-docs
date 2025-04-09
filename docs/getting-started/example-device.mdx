@@ -1,9 +1,9 @@
-# Quick Start: Devices
+# Example: Ingest Data From Syslog
 
 This chapter will help you get started with devices to ingest data with specific protocols, walking you through common scenarios.
 
 :::note
-For a general discussion, see our [overview](/docs/configuration/devices/index.mdx) chapter.
+For a general discussion, see the [overview](/docs/configuration/devices/index.mdx).
 :::
 
 ## Configuration Files
@@ -24,10 +24,6 @@ The device configuration files reside in the `devices` directory under the `conf
 ```
 
 **Director** discovers these files by traversing the subdirectories recursively.
-
-:::note
-Each device type provides specific options detailed in its respective [chapter](/docs/configuration/devices/index.mdx).
-:::
 
 You can organize your device files as you wish, regardless of the above folder tree. This can be done in two ways:
 
@@ -63,9 +59,13 @@ You can organize your device files as you wish, regardless of the above folder t
 
 Choose the one that best fits your needs.
 
+:::tip
+Each device provides specific options detailed in its respective chapter.
+:::
+
 ## Basic UDP Setup
 
-### 1. Create Configuration
+### Step 1. Create Configuration
 
 Create a text file with a `.yml` extension in your preferred location, and then open it with a text editor to enter the following:
 
@@ -79,11 +79,11 @@ Create a text file with a `.yml` extension in your preferred location, and then 
     port: 514
 ```
 
-This YAML code specifies that your device is a _Syslog_, and that you will use **UDP** as your listening protocol on port `514`. You can enter any integer as your `id` value.
+This YAML code specifies that this is a _Syslog_ device, and that you will use **UDP** as its listening protocol on port `514`. You can enter any integer as the `id` value.
 
-### 2. Test Configuration
+### Step 2. Test Configuration
 
-You can now test this configuration using either **Director**'s cross-platform companion **Generator** or traditional tools available:
+You can now test this configuration using either **Director**'s cross-platform companion **Generator** or the traditional tools available:
 
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows" default>
@@ -117,13 +117,22 @@ You can now test this configuration using either **Director**'s cross-platform c
   </TabItem>
 </Tabs>
 
+You can observe the results on the command line as the device reads _syslog_ data.
+
 ## Secure TCP Setup
 
-We will now create a secure TLS configuration.
+We will now create secure device that uses TLS.
 
-### 1. Prepare Certificates
+:::warning
+Always use TLS encryption in production environments, especially over untrusted networks. Ensure proper file permissions are set on these files:
 
-First we have to prepare the TLS certificates. This can be done using either **Director** or **OpenSSL**.
+- the private key file (`key.pem`) should be readable only by the **Director** process
+- the certificate file (`cert.pem`) can be world-readable
+:::
+
+### Step 1. Prepare Certificates
+
+First, we have to prepare the TLS certificates. This can be done using either **Director** or **OpenSSL**.
 
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows" default>
@@ -165,16 +174,9 @@ First we have to prepare the TLS certificates. This can be done using either **D
   </TabItem>
 </Tabs>
 
-This generates the `key.pem` and `cert.pem` files.
+The above commands will generate the required `key.pem` and `cert.pem` files.
 
-:::warning
-Always use TLS encryption in production environments, especially over untrusted networks. Ensure proper file permissions are set on these files:
-
-- the private key file (`key.pem`) should be readable only by the **Director** process
-- the certificate file (`cert.pem`) can be world-readable
-:::
-
-### 2. Place Certificates
+### Step 2. Place Certificates
 
 Now that we have created these files, we must copy them to our installation root directory:
 
@@ -198,9 +200,9 @@ Now that we have created these files, we must copy them to our installation root
   </TabItem>
 </Tabs>
 
-### 3. Create Secure Configuration
+### Step 3. Create Secure Configuration
 
-We will now prepare a secure configuration by creating another `.yml` file named `secure_syslog.yml`:
+We will now prepare a secure configuration by creating another `.yml` file named `secure-syslog.yml`:
 
 ```yaml
 - id: 2
@@ -222,11 +224,11 @@ We will now prepare a secure configuration by creating another `.yml` file named
       interval: 2
 ```
 
-Note that we have specified the certificate files we have previously created.
+Note that we have specified the certificate files we have created in the previous step.
 
-### 4. Test Configuration
+### Step 4. Test Configuration
 
-Test the secure connection:
+Now we can test the connection:
 
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows" default>
@@ -256,15 +258,9 @@ Check **Director**'s logs for success messages on launching and initialization, 
 Worker counts, buffer sizes, and batch settings can be adjusted based on your volumes.
 :::
 
-{/*
-
-TODO: Add the next steps, i.e. proceed to configuring and using advanced authentication options.
-
-*/}
-
 ## Optimizing
 
-For high-volume environments, add the following to your configuration:
+For high-volume environments, you can add the following to your configuration:
 
 ```yaml
   reuse: true
@@ -272,5 +268,3 @@ For high-volume environments, add the following to your configuration:
   buffer_size: 32768
   flush_interval: 5
 ```
-
-These parameters will all have an impact on performance.
