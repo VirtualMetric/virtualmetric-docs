@@ -43,7 +43,7 @@ First, we have to define a device to receive the log data. We will use the confi
     batch_size: 1000
 ```
 
-Place this in a file named `pipeline.yml` under `<vm_root>`.
+Put this in a file named `pipeline-device.yml` placed under `<vm_root>`.
 
 This configuration will create a _TCP Syslog_ server listening on port `1514`. We have specfied the line feed character as the delimiter for message framing. We also set the appropriate buffer and batch sizes.
 
@@ -66,11 +66,11 @@ Next, we will create a target for **Microsoft Sentinel** in a file named `pipeli
     flush_interval: 60
 ```
 
-With this configuration, you are setting up the authentication with **Azure** using environment variables. You have specified the target format as ASIM, and configured batching and flush intervals for optimal performance.
+With this configuration, we are setting up the authentication with **Azure** using environment variables. We have specified the target format as ASIM, and configured batching and flush intervals for optimal performance.
 
 ## Step 3: Create A Processing Pipeline
 
-We are now ready to configure our pipeline. Create a file named `example-pipeline.yml` under the root, and place the following in it:
+We are now ready to configure our pipeline. Create a file named `pipeline.yml` under the root, and put the following in it:
 
 ```yml
 - id: 1
@@ -160,13 +160,13 @@ Let's put it all together. We have created a number of files to configure our pi
 
 ```
 config/
-├── example-pipeline.yml
+├── pipeline.yml
 ├── pipeline-device.yml
 ├── pipeline-target.yml
 └── pipeline-route.yml
 ```
 
-Now we will run our pipeline and see the results:
+We will now run our pipeline and see the results:
 
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows">
@@ -186,7 +186,7 @@ Now we will run our pipeline and see the results:
   </TabItem>
 </Tabs>
 
-After we start **Director** with our configuration files, it should send test Syslog messages to port **1514**. Check the logs for any errors, and verify in **Microsoft Sentinel** that data is being received in the ASIM format.
+After we start **Director** with our configuration files, it should send test _Syslog_ messages to port **1514**. Check the logs for any errors, and verify in **Microsoft Sentinel** that data is being received in the ASIM format.
 
 ## Troubleshooting
 
