@@ -4,7 +4,7 @@ pagination_next: null
 
 # Example: A Syslog-To-Sentinel Data Pipeline
 
-This chapter will help you get started with configuring and running pipelines, walking you through a common scenario. The pipeline processes Syslog messages and forwards them to Microsoft Sentinel in the Advanced Security Information Model (ASIM) format.
+This chapter will help you get started with configuring and running a pipeline, walking you through a common scenario.
 
 :::note
 For a general discussion, see our [overview](/docs/configuration/pipelines/index.mdx) chapter.
@@ -12,7 +12,7 @@ For a general discussion, see our [overview](/docs/configuration/pipelines/index
 
 ## Overview
 
-We will create a pipeline that ingests logs from a _Syslog_ source, processes them, and forwards them to **Microsoft Sentinel** in ASIM format.
+We will create a pipeline that ingests logs from a _Syslog_ source, processes them, and forwards them to **Microsoft Sentinel** in _Advanced Security Information Model_ (ASIM) format.
 
 ## Prerequisites
 
@@ -23,12 +23,12 @@ Also, a basic understanding of the YAML format is necessary to create the config
 For convenience, we will place all our files directly under `<vm_root>/config`.
 
 :::note
-We can place those files any where we wish since **Director** will discover them by iterating the folder tree. Pick the organization that best fits your needs.
+You can place these files anywhere you wish since **Director** discovers them by iterating the folder tree. Pick the organization that best fits your needs.
 :::
 
 ## Step 1: Configure The Device
 
-First, we have to define a device to receive log data. We will use the configuration we have created in the device example as our starting, modifying some settings to fit our needs here:
+First, we have to define a device to receive the log data. We will use the configuration we have created in our [device example](/docs/getting-started/example-device.mdx) as our starting point, modifying the settings to fit our needs here:
 
 ```yml
 - id: 1
@@ -43,7 +43,7 @@ First, we have to define a device to receive log data. We will use the configura
     batch_size: 1000
 ```
 
-Place this in a file named `pipeline-device.yml` under `<vm_root>`.
+Place this in a file named `pipeline.yml` under `<vm_root>`.
 
 This configuration will create a _TCP Syslog_ server listening on port `1514`. We have specfied the line feed character as the delimiter for message framing. We also set the appropriate buffer and batch sizes.
 
