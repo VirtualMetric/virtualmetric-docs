@@ -6,29 +6,36 @@ pagination_next: null
 
 This chapter will help you get started with configuring and running a pipeline, walking you through a common scenario.
 
+## Purpose
+
+Pipelines are used to grab data from producers, to reshape them with [processors](/docs/configuration/pipelines/processors/index.mdx), and then to send them to consumers.
+
 :::note
 For a general discussion, see our [overview](/docs/configuration/pipelines/index.mdx) chapter.
 :::
 
-## Overview
-
-We will create a pipeline that ingests logs from a _Syslog_ source, processes them, and forwards them to **Microsoft Sentinel** in _Advanced Security Information Model_ (ASIM) format.
+Here, we will create a pipeline that ingests logs from a _Syslog_ source, selects certain items and categorizes them, and forwards them to **Microsoft Sentinel** in _Advanced Security Information Model_ (ASIM) format.
 
 ## Prerequisites
 
-To achieve this goal, we must have an environment with access to _Syslog_ inputs. We also need a **Microsoft Sentinel** workspace with proper permissions.
+To achieve this, we must have an environment with access to _Syslog_ messages. We also need a **Microsoft Sentinel** workspace with proper permissions.
 
-Also, a basic understanding of the YAML format is necessary to create the configuration files.
+Also, a basic understanding of the YAML format will be helpful in configuring the files.
 
-For convenience, we will place all our files directly under `<vm_root>/config`.
+For convenience, we will place all our files directly under `<vm_root>`.
 
 :::note
-You can place these files anywhere you wish since **Director** discovers them by iterating the folder tree. Pick the organization that best fits your needs.
+You can place these files anywhere you wish under `config` since **Director** discovers them by iterating the folder tree. Your pipeline configuration file may be, e.g.
+
+* `<vm_root>/config/pipeline.yml`
+* `<vm_root>/config/routes/pipeline.yml`
+
+Pick the organization that best fits your needs.
 :::
 
 ## Step 1: Configure The Device
 
-First, we have to define a device to receive the log data. We will use the configuration we have created in our [device example](/docs/getting-started/example-device.mdx) as our starting point, modifying the settings to fit our needs here:
+First, we have to define a device that will receive the log data. We will use the configuration we have created in our [device example](/docs/getting-started/example-device.mdx) as our starting point, modifying it as fits our needs:
 
 ```yml
 - id: 1
@@ -43,7 +50,7 @@ First, we have to define a device to receive the log data. We will use the confi
     batch_size: 1000
 ```
 
-Put this in a file named `pipeline-device.yml` placed under `<vm_root>`.
+Put this in a file named `pipeline-device.yml` under `<vm_root>`.
 
 This configuration will create a _TCP Syslog_ server listening on port `1514`. We have specfied the line feed character as the delimiter for message framing. We also set the appropriate buffer and batch sizes.
 
@@ -95,7 +102,7 @@ We are now ready to configure our pipeline. Create a file named `pipeline.yml` u
         - field: event.kind
         - value: event
     
-    # Set event category based on program
+    # Set event category based on mail
     - script:
         - lang: golang
         - source: |
@@ -132,10 +139,10 @@ We are now ready to configure our pipeline. Create a file named `pipeline.yml` u
         - ignore_missing: true
 ```
 
-This configuration will parse the _Syslog_ header information using the `grok` processor and will extract authentication event details. It will then set the common event metadata. Next, using a script, it will categorize the events based on `program`, and map the fields to the ASIM schema structure. Once done, it will clean up the temporary fields.
+This configuration will parse the _Syslog_ header information using the `grok` processor and will extract authentication event details. It will then set the common event metadata. Next, using a script, it will categorize the events based on the type of `program` generating the log, and map the fields to the ASIM schema structure. Once done, it will clean up the temporary fields.
 
 :::note
-In order to avoid raising an exception, we chose to ignore the missing fields.
+To avoid raising an exception, we chose to ignore the missing fields.
 :::
 
 ## Step 4: Configure the Route
@@ -152,11 +159,11 @@ Finally, we have to create a route to connect our device to the pipeline and the
     - name: sentinel_asim
 ```
 
-This configuration will connect the _Syslog_ server as the source, apply the `syslog_to_sentinel` pipeline for processing the ingested data, and then send that processed data to the **Microsoft Sentinel** ASIM target we have specified.
+This routing configuration will connect to the _Syslog_ server as the source, apply the `syslog_to_sentinel` pipeline for processing the ingested data, and then send that data to the **Microsoft Sentinel** ASIM target we have specified.
 
 ## Monitoring
 
-Let's put it all together. We have created a number of files to configure our pipeline, and at this point we should have them ready:
+Let's put it all together. We have created a device, a target, and a route to use in our pipeline, we included them in our pipeline configuration, and at this point we should have these files ready as:
 
 ```
 config/
