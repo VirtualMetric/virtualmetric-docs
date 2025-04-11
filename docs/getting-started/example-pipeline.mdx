@@ -62,10 +62,10 @@ As the nesting level increases, file names become more specific, offering additi
 Pick the organization that best fits your needs.
 :::
 
-For convenience, we will place all our files directly under `<vm_root>`.
+For convenience, we will place all our configurations in a single file name `pipeline.yml`  and place it directly under `config`.
 
 :::tip
-When configuring the pipeline, devices are referred to with their _filenames_ whereas targets, routes, and other pipelines are referred to with the identifiers used in their `name` parameters.
+When configuring the pipeline, devices are referred to with their `id` parameter, whereas targets, routes, and other pipelines are referred to with the identifiers used in their `name` parameters.
 :::
 
 ## Step 1: Configure The Device
@@ -85,13 +85,13 @@ First, we have to define a device that will receive the log data. We will use th
     batch_size: 1000
 ```
 
-Put this in a file named `pipeline-device.yml` under `<vm_root>`.
+Put this device configuration in our file.
 
 This configuration will create a _TCP Syslog_ server listening on port `1514`. We have specfied the line feed character as the delimiter for message framing. We also set the appropriate buffer and batch sizes.
 
 ## Step 2: Configure The Target
 
-Next, we will create a target for **Microsoft Sentinel** in a file named `pipeline-target.yml`, again using the configuration we have created in our [target example](/docs/getting-started/example-target.mdx) as the basis:
+Next, we will define a target for **Microsoft Sentinel** in our file, again using the configuration we have created in our [target example](/docs/getting-started/example-target.mdx) as the basis:
 
 ```yml
 - id: 1
@@ -112,7 +112,7 @@ With this configuration, we are setting up the authentication with **Azure** usi
 
 ## Step 3: Create A Processing Pipeline
 
-We are now ready to configure our pipeline. Create a file named `pipeline.yml` under the root, and put the following in it:
+We are now ready to configure our pipeline. Put the following in our configuration file:
 
 ```yml
 - id: 1
@@ -190,7 +190,7 @@ To avoid raising an exception, we chose to ignore the missing fields.
 
 ## Step 4: Configure the Route
 
-Finally, we have to create a route to connect our device to the pipeline and then to our target. Create a file named `pipeline-route.yml`:
+Finally, we have to create a route to connect our device to the pipeline and then to our target. Put the following definition in our configuration file:
 
 ```yml
 - name: syslog_to_sentinel_route
@@ -202,33 +202,37 @@ Finally, we have to create a route to connect our device to the pipeline and the
     - name: sentinel_asim
 ```
 
-This routing configuration will connect to the _Syslog_ server as the source, apply the `syslog_to_sentinel` pipeline for processing the ingested data, and then send that data to the **Microsoft Sentinel** ASIM target we have specified.
+This configuration will connect to the _Syslog_ server as the source, apply the `syslog_to_sentinel` pipeline for processing the ingested data, and then send that data to the **Microsoft Sentinel** ASIM target we have specified.
 
 ## Monitoring
 
-Let's put it all together. We have created a device, a target, and a route to use in our pipeline, we included them in our pipeline configuration, and at this point we should have all our files ready.
+Let's put it all together: we have defined a device and a target, configured a pipeline to specify how the data will be processed, and specified a route that will use this pipeline. At this point we have everything ready.
 
 We will now run our pipeline and see the results:
 
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows">
     ```PowerShell
-    # CLI code for running the pipeline
+    .\vmetric-director -mode=pipeline -name=syslog_to_sentinel
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    # CLI code for running the pipeline
+    ./vmetric-director -mode=pipeline -name=syslog_to_sentinel
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    # CLI code for running the pipeline
+    ./vmetric-director -mode=pipeline -name=syslog_to_sentinel
     ```
   </TabItem>
 </Tabs>
 
-After we start **Director** with our configuration files, it should send test _Syslog_ messages to port **1514**. Check the logs for any errors, and verify in **Microsoft Sentinel** that data is being received in the ASIM format.
+:::note
+We can use the name we have specified for our pipeline to run it. All we have to do is use the `mode` parameter to tell **Director** that we will run a "pipeline", and then `name` it on the CLI.
+:::
+
+After we call **Director** with our configuration file, it should send test _Syslog_ messages to port **1514**. Check the logs for any errors, and verify in **Microsoft Sentinel** that data is being received in the ASIM format.
 
 ## Troubleshooting
 
