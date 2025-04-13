@@ -4,7 +4,7 @@ sidebar_label: Management
 
 # Getting Started: Management
 
-**VirtualMetric Director** uses YAML files to configure and run its telemetry processes. In this chapter, we will give a brief summary of how these files are used to manage your data streams.
+Management of **VirtualMetric Director** telemetry processes is done through configuration files in YAML format. In this chapter, we will give a brief summary of how these files are used and the minimum configurations required.
 
 The configurations may be placed in separate files or they may be grouped together in common files according to what suits your requirements.
 
@@ -86,28 +86,7 @@ Choose the one that best fits your needs.
 Each device type provides specific options detailed in its respective [chapter](/docs/configuration/devices/index.mdx).
 :::
 
-## Pipelines
-
-Pipelines define data processing workflows with processors that transform and enrich data. The required fields are:
-
-- `name`: Unique identifier
-- `processors`: List of processors with their configurations
-
-Use the `name` of the pipeline to refer to it in your configurations.
-
-**Example**:
-
-```yaml
-- id: checkpoint
-  processors:
-    - grok:
-      field: message
-      patterns:
-        - "%{COMMONAPACHELOG}"
-    - set:
-      field: event.provider
-      value: "checkpoint"
-```
+For a general discussion, see the [overview](/docs/configuration/devices/index.mdx).
 
 ## Targets
 
@@ -139,11 +118,38 @@ Your target files can be named as, e.g.
 
 As the nesting level increases, file names become more specific, offering additional context for classification. Select the organizational method that best meets your requirements.
 
-You can use various target types to store your output. We will show an example for each of them below.
-
-:::note
+:::tip
 Each target type provides specific options detailed in its respective [chapter](/docs/configuration/targets/index.mdx).
 :::
+
+You can use various target types to store your output. We will show an example for each of them below.
+
+For a general discussion, see the [overview](/docs/configuration/targets/index.mdx).
+
+## Pipelines
+
+Pipelines define data processing workflows with processors that transform and enrich data. The required fields are:
+
+- `name`: Unique identifier
+- `processors`: List of processors with their configurations
+
+Use the `name` of the pipeline to refer to it in your configurations.
+
+**Example**:
+
+```yaml
+- id: checkpoint
+  processors:
+    - grok:
+      field: message
+      patterns:
+        - "%{COMMONAPACHELOG}"
+    - set:
+      field: event.provider
+      value: "checkpoint"
+```
+
+For a general discussion, see the [overview](/docs/configuration/pipelines/index.mdx).
 
 ## Routes
 
@@ -163,33 +169,37 @@ The enlisted devices, targets, and pipelines must be pre-configured to be usable
   targets: ["elasticsearch", "s3_backup"]
 ```
 
-## Common Configuration Patterns
+## Streamlining
 
-### Environment Variables:
+When dealing with your configurations, you can use:
 
-Use `${ENV_VAR}` syntax to reference environment variables:
+* **Environment Variables**:
 
-```yaml
-password: "${ES_PASSWORD}"
-```
+  Use `${ENV_VAR}` syntax to reference environment variables:
 
-### Conditional Logic:
+  ```yaml
+  password: "${ES_PASSWORD}"
+  ```
 
-Some components support conditional execution where an `if` clause that serves as the selector directs the data to a processor such as `set`:
+  For a general discussion, see the [overview](/docs/configuration/routes/index.mdx).
 
-```yaml
-- if: '{{event.type}} == "error"'
-  set:
-    field: alert.level
-    value: high
-```
+* **Conditional Logic**:
 
-### Templates:
+  Some components support conditional execution where an `if` clause that serves as the selector directs the data to a processor such as `set`:
 
-Use mustache-style templates to reference field values:
+  ```yaml
+  - if: '{{event.type}} == "error"'
+    set:
+      field: alert.level
+      value: high
+  ```
 
-```yaml
-- set:
-  field: user.full_name
-  value: "{{user.first_name}} {{user.last_name}}"
-```
+* **Templates**:
+
+  Use mustache-style templates to reference field values:
+
+  ```yaml
+  - set:
+    field: user.full_name
+    value: "{{user.first_name}} {{user.last_name}}"
+  ```
