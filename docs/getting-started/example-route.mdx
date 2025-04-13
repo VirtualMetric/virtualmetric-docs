@@ -7,10 +7,23 @@ This chapter will help you get started with routes to forward data to specific d
 :::note
 Before configuring routes, verify that the pipelines and targets to be used in the routes are already configured and accessible.
 
-See the introductory chapters for configuring [targets](/docs/getting-started/example-target.mdx) and [pipelines](/docs/getting-started/example-pipeline.mdx).
+See the previous example chapters for configuring [targets](/docs/getting-started/example-target.mdx) and [pipelines](/docs/getting-started/example-pipeline.mdx).
 :::
 
-The simplest route that can be configured only relays the data as is:
+## Overview
+
+Route configurations can be classified as follows&mdash;in each case, use of pipelines is optional:
+
+|Source|Target|Description|
+|---|---|---|
+|Single|Single|Data from a single source e.g. _S1_ directed to a single destination e.g. _T1_|
+||Multiple|The same data e.g. _S1_ distributed to multiple destinations e.g. _T1_ and _T2_|
+|Multiple|Single|Data from multiple sources e.g. _S1_ and _S2_ directed to a single target e.g. _T1_|
+||Multiple|Data from multiple sources directed to multiple targets. The combinations may get complex such as sources _S1_ and _S3_ distributed to targets _T2_, _T3_, and _T4_ while source _S2_ is distributed to targets _T1_ and _T4_|
+
+The data may be transformed by one or more pipelines before being forwarded to destinations.
+
+The simplest route only relays the data as is:
 
 ```yaml
 routes:
@@ -20,11 +33,13 @@ routes:
       - name: storage
 ```
 
-Here, we are forwarding the raw data to a previously configured target named `storage`.
+As the syntax indicates, multiples routes can be specified. The same source data can be forwarded to multiple destinations, or a destination may receive data from multiple sources.
+
+In the above example, we are forwarding raw data to a previously configured target named `storage`.
 
 ## Using Pipelines
 
-A route can use a pipeline as part of its forwarding process.
+A route can use pipelines as part of its operation. Multiple pipelines can be specified to be applied to various streams of data.
 
 We can have a single pipeline:
 
@@ -54,13 +69,13 @@ routes:
       - name: analytics
 ```
 
-The specified 3 pipelines will be used for purposes that should be obvious from their names: normalizing, enriching, and aggregating. The data will then be routed to a target used for analytics.
+The specified 3 pipelines are used for purposes that should be obvious from their names: normalizing, enriching, and aggregating. The data will then be routed to a target used for analytics.
 
 ## Selection
 
 Since the routing operation occurs amidst high telemetry traffic, pipelines can also be used to selectively process specific data streams.
 
-This can be done using device types:
+This can be done using multiple device types:
 
 ```yaml
 routes:
@@ -79,7 +94,7 @@ routes:
       - name: windows_storage
 ```
 
-This route will collect two streams of data from a _syslog_ device and a _windows_ device, normalize them using the specific pipelines of each, and then direct them to their respective targets.
+This route will collect two streams of data, one from a _syslog_ and one from a _windows_ device, normalize them using the specific pipelines of each, and then direct them to their respective targets.
 
 The selection can also be done using datasets:
 
@@ -101,24 +116,6 @@ routes:
 ```
 
 The first route will collect data from a dataset used for security logs, whereas the second from another one used for performance metrics.
-
-## Forwarding
-
-The same data can be sent to multiple targets, a technique known as _mirroring_:
-
-```yaml
-routes:
-  - name: mirror_logs
-    description: "Store logs in multiple locations"
-    pipelines:
-      - name: normalize
-    targets:
-      - name: primary_storage
-      - name: backup_storage
-      - name: analytics_platform
-```
-
-Here, the data will be received by 3 different targets: a primary and a backup storage, and an analytics platform.
 
 ## Conditionals
 
@@ -150,12 +147,46 @@ routes:
 
 This route will collect critical errors that have occurred after a certain date, and will forward them to two separate targets.
 
+## Forwarding
+
+The same data can be sent to multiple targets, a technique known as _mirroring_:
+
+```yaml
+routes:
+  - name: mirror_logs
+    description: "Store logs in multiple locations"
+    pipelines:
+      - name: normalize
+    targets:
+      - name: primary_storage
+      - name: backup_storage
+      - name: analytics_platform
+```
+
+Here, the data will be received by 3 different targets: a primary storage, a backup storage, and an analytics platform.
+
 ## Monitoring
 
-Once we configure our route, we can monitor the stream it will generate using the command line.
+Once we configure our route, we can monitor the stream it generates using the command line:
 
-{/* TODO: Complete */}
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    .\vmetric-director -mode=route -name=critical_errors
+    ```
+  </TabItem>
+  
+  <TabItem value="linux" label="Linux" default>
+    ```bash
+    ./vmetric-director -mode=route -name=critical_errors
+    ```
+  </TabItem>
 
-## Optimizing
+  <TabItem value="macos" label="macOS" default>
+    ```bash
+    ./vmetric-director -mode=route -name=critical_errors
+    ```
+  </TabItem>
+</Tabs>
 
 {/* TODO: Complete */}

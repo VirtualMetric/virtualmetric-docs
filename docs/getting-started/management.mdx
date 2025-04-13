@@ -6,26 +6,35 @@ sidebar_label: Management
 
 Management of **VirtualMetric Director** telemetry processes is done through configuration files in YAML format. In this chapter, we will give a brief summary of how these files are used and the minimum configurations required.
 
-The configurations may be placed in separate files or they may be grouped together in common files according to what suits your requirements.
-
 ## Configuration Files
 
-By default, device configuration files reside in the `devices` directory under the `config` folder and have a `.yml` extension:
+The configurations may be placed in separate files or they may be grouped together based on your telemetry operation requirements.
 
-```powershell
+By default, configuration files reside in the directories under the `config` folder and have a `.yml` extension:
+
+{/* ```
 ├───config
 │   ├───devices
 │   │       syslog.yml
-│   │
 │   ├───routes
 │   │       default.yml
-│   │
 │   └───targets
 │           console.yml
 │           file.yml
+``` */}
+
+```mermaid
+graph LR
+    config --> devices
+    config --> routes
+    config --> targets
+    devices --> syslog["syslog.yml"]
+    routes --> default["default.yml"]
+    targets --> console["console.yml"]
+    targets --> file["file.yml"]
 ```
 
-You can place your configuration files anywhere you wish under `config` since **Director** discovers them by traversing the subdirectories recursively.
+You can place your files anywhere you wish under `config` since **Director** discovers them by traversing the subdirectories recursively.
 
 ## Devices
 
@@ -101,7 +110,7 @@ Use the `name` of the target to refer to it in your configurations.
 **Example**:
 
 ```yaml
-- id: elasticsearch
+- name: elasticsearch
   type: elasticsearch
   properties:
     hosts: ["http://elasticsearch:9200"]
@@ -138,7 +147,7 @@ Use the `name` of the pipeline to refer to it in your configurations.
 **Example**:
 
 ```yaml
-- id: checkpoint
+- name: checkpoint
   processors:
     - grok:
       field: message
@@ -148,6 +157,15 @@ Use the `name` of the pipeline to refer to it in your configurations.
       field: event.provider
       value: "checkpoint"
 ```
+
+Pipelines can also access metadata available in processors. These are:
+
+* `ctx`: Processing context
+* `logEntry`: Log entry being processed
+* `tag`: Identifier used for logging/tracking processor execution
+* `params`: Map of parameters available to scripts
+
+{/* TODO: Enlist */}
 
 For a general discussion, see the [overview](/docs/configuration/pipelines/index.mdx).
 
