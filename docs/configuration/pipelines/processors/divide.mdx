@@ -1,0 +1,202 @@
+---
+description: Performs division operations on numeric values
+---
+
+# Divide
+
+## Synopsis
+
+```yaml {2-4}
+divide:
+  field: <ident>
+  left_operand: <string>
+  right_operand: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Description
+
+**Functionality**: Performs a division operation between two numeric values and stores the result in a target field. The processor can use literal values or extract values from existing fields in the log entry.
+
+The processor automatically handles type conversion for numeric values and provides proper error handling for division by zero and missing fields.
+
+## Parameters
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the division result|
+|`left_operand`|Y|-|Dividend (numerator) - can be a literal value or field reference|
+|`right_operand`|Y|-|Divisor (denominator) - can be a literal value or field reference|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if division fails|
+|`ignore_missing`|N|`false`|Skip if referenced fields don't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Examples
+
+### Basic Division
+
+<ExampleGrid>
+  <CommentCol>
+    Divide two literal values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": {}
+    }
+    ```
+    ```yaml
+    divide:
+      field: metrics.ratio
+      left_operand: "100"
+      right_operand: "25"
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates and stores the result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": {
+        "ratio": 4
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Field-Based Division
+
+<ExampleGrid>
+  <CommentCol>
+    Divide values from existing fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "bytes_sent": 15000,
+        "packets_sent": 30
+      }
+    }
+    ```
+    ```yaml
+    divide:
+      field: network.bytes_per_packet
+      left_operand: "network.bytes_sent"
+      right_operand: "network.packets_sent"
+    ```
+  </CodeCol>
+  <CommentCol>
+    computes the ratio:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "bytes_sent": 15000,
+        "packets_sent": 30,
+        "bytes_per_packet": 500
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Operands
+
+<ExampleGrid>
+  <CommentCol>
+    Combine field value and literal...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "disk": {
+        "used_bytes": 8589934592
+      }
+    }
+    ```
+    ```yaml
+    divide:
+      field: disk.used_gb
+      left_operand: "disk.used_bytes"
+      right_operand: "1073741824"
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts units:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "disk": {
+        "used_bytes": 8589934592,
+        "used_gb": 8
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle potential errors gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cpu": {
+        "total_time": 3600,
+        "idle_time": 1800
+      }
+    }
+    ```
+    ```yaml
+    divide:
+      field: cpu.active_percentage
+      left_operand: "cpu.idle_time"
+      right_operand: "cpu.total_time" 
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: cpu.error
+            value: "Failed to calculate CPU percentage"
+    ```
+  </CodeCol>
+  <CommentCol>
+    with comprehensive error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cpu": {
+        "total_time": 3600,
+        "idle_time": 1800,
+        "active_percentage": 0.5
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Numeric values are automatically converted to appropriate types for calculation. The processor accepts both literal values and field references for operands.
+:::
+
+:::warning
+Division by zero will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate input data or provide proper error handling for cases where the right operand might be zero.
+:::

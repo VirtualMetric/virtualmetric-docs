@@ -1,0 +1,223 @@
+---
+description: Calculates the minimum value between two numeric operands
+---
+
+# Min
+
+## Synopsis
+
+```yaml {2-4}
+- min:
+  field: <ident>
+  left_operand: <string>
+  right_operand: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Description
+
+**Functionality**: Compares two numeric values and stores the smaller value in the target field. The processor can use literal values or extract values from existing fields in the log entry.
+
+This processor is useful for finding minimum values, implementing floor functions, and ensuring values don't exceed maximum thresholds.
+
+## Parameters
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the minimum value|
+|`left_operand`|Y|-|First value to compare - can be a literal value or field reference|
+|`right_operand`|Y|-|Second value to compare - can be a literal value or field reference|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if comparison fails|
+|`ignore_missing`|N|`false`|Skip if referenced fields don't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Examples
+
+### Basic Minimum Value
+
+<ExampleGrid>
+  <CommentCol>
+    Compare two literal values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": {}
+    }
+    ```
+    ```yaml
+    - min:
+        field: values.min_value
+        left_operand: "42"
+        right_operand: "17"
+    ```
+  </CodeCol>
+  <CommentCol>
+    stores the smaller value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": {
+        "min_value": 17
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Field-Based Comparison
+
+<ExampleGrid>
+  <CommentCol>
+    Find minimum between field values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": {
+        "morning": 15.2,
+        "afternoon": 23.8,
+        "evening": 18.5
+      }
+    }
+    ```
+    ```yaml
+    - min:
+        field: temperature.min_morning_afternoon
+        left_operand: "temperature.morning"
+        right_operand: "temperature.afternoon"
+    - min:
+        field: temperature.daily_min
+        left_operand: "temperature.min_morning_afternoon"
+        right_operand: "temperature.evening"
+    ```
+  </CodeCol>
+  <CommentCol>
+    finds lowest temperature of the day:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": {
+        "morning": 15.2,
+        "afternoon": 23.8,
+        "evening": 18.5,
+        "min_morning_afternoon": 15.2,
+        "daily_min": 15.2
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Setting Maximum Thresholds
+
+<ExampleGrid>
+  <CommentCol>
+    Ensure value doesn't exceed threshold...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "bandwidth": {
+        "requested": 2000
+      },
+      "limits": {
+        "max_bandwidth": 1500
+      }
+    }
+    ```
+    ```yaml
+    - min:
+        field: bandwidth.allocated
+        left_operand: "bandwidth.requested"
+        right_operand: "limits.max_bandwidth"
+    ```
+  </CodeCol>
+  <CommentCol>
+    enforces maximum limit:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "bandwidth": {
+        "requested": 2000,
+        "allocated": 1500
+      },
+      "limits": {
+        "max_bandwidth": 1500
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Resource Allocation
+
+<ExampleGrid>
+  <CommentCol>
+    Allocate resources based on availability...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "process": {
+        "requested_memory": 8192,
+        "requested_cpu": 4
+      },
+      "system": {
+        "available_memory": 4096,
+        "available_cpu": 8
+      }
+    }
+    ```
+    ```yaml
+    - min:
+        field: process.allocated_memory
+        left_operand: "process.requested_memory"
+        right_operand: "system.available_memory"
+    - min:
+        field: process.allocated_cpu
+        left_operand: "process.requested_cpu"
+        right_operand: "system.available_cpu"
+    ```
+  </CodeCol>
+  <CommentCol>
+    allocates based on minimum of requested vs. available:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "process": {
+        "requested_memory": 8192,
+        "requested_cpu": 4,
+        "allocated_memory": 4096,
+        "allocated_cpu": 4
+      },
+      "system": {
+        "available_memory": 4096,
+        "available_cpu": 8
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Numeric values are automatically converted to appropriate types for comparison. The processor accepts both literal values and field references for operands.
+:::
+
+:::warning
+If either operand cannot be converted to a number, the processor will fail unless `ignore_failure` is set to `true`. Always ensure inputs are valid numbers or provide proper error handling.
+:::

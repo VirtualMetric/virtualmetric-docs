@@ -1,0 +1,217 @@
+---
+description: Calculates the remainder after division of two numeric values
+---
+
+# Modulo
+
+## Synopsis
+
+```yaml {2-4}
+- modulo:
+  field: <ident>
+  left_operand: <string>
+  right_operand: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Description
+
+**Functionality**: Calculates the remainder when dividing the left operand by the right operand and stores the result in the target field. The processor uses floating-point modulo calculation to handle both integer and decimal values.
+
+This processor is useful for cyclic calculations, determining if numbers are divisible evenly, and implementing various bucketing or grouping logic.
+
+## Parameters
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the remainder result|
+|`left_operand`|Y|-|Dividend (numerator) - can be a literal value or field reference|
+|`right_operand`|Y|-|Divisor (denominator) - can be a literal value or field reference|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if calculation fails|
+|`ignore_missing`|N|`false`|Skip if referenced fields don't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Examples
+
+### Basic Modulo Calculation
+
+<ExampleGrid>
+  <CommentCol>
+    Calculate remainder with literal values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "math": {}
+    }
+    ```
+    ```yaml
+    - modulo:
+        field: math.remainder
+        left_operand: "17"
+        right_operand: "5"
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates and stores the result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "math": {
+        "remainder": 2
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Checking Divisibility
+
+<ExampleGrid>
+  <CommentCol>
+    Determine if a number is divisible by another...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "number": 15,
+      "check": {
+        "divisor": 3
+      }
+    }
+    ```
+    ```yaml
+    - modulo:
+        field: check.remainder
+        left_operand: "number"
+        right_operand: "check.divisor"
+    - set:
+        field: check.is_divisible
+        value: "{{#eq check.remainder 0}}true{{else}}false{{/eq}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    and flag divisibility status:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "number": 15,
+      "check": {
+        "divisor": 3,
+        "remainder": 0,
+        "is_divisible": true
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Time Cycle Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Map time-of-day to cycle position...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": {
+        "hour": 23
+      }
+    }
+    ```
+    ```yaml
+    - modulo:
+        field: timestamp.day_cycle
+        left_operand: "timestamp.hour"
+        right_operand: "12"
+    - set:
+        field: timestamp.period
+        value: "{{#eq timestamp.day_cycle 0}}12{{else}}{{timestamp.day_cycle}}{{/eq}}"
+    - set:
+        field: timestamp.am_pm
+        value: "{{#lt timestamp.hour 12}}AM{{else}}PM{{/eq}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    for 12-hour clock formatting:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": {
+        "hour": 23,
+        "day_cycle": 11,
+        "period": 11,
+        "am_pm": "PM"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Data Partitioning
+
+<ExampleGrid>
+  <CommentCol>
+    Assign requests to backend servers...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request": {
+        "id": "74fc316a",
+        "hash": 1273809654,
+        "path": "/api/user/profile"
+      },
+      "cluster": {
+        "server_count": 5
+      }
+    }
+    ```
+    ```yaml
+    - modulo:
+        field: request.server_index
+        left_operand: "request.hash"
+        right_operand: "cluster.server_count"
+    ```
+  </CodeCol>
+  <CommentCol>
+    distributes load with consistent hashing:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request": {
+        "id": "74fc316a",
+        "hash": 1273809654,
+        "path": "/api/user/profile",
+        "server_index": 4
+      },
+      "cluster": {
+        "server_count": 5
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The modulo operation uses floating-point division, which means it can handle both integer and non-integer values. For integer division, consider using a combination of the `divide` and `floor` operations.
+:::
+
+:::warning
+Division by zero will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate the right operand or provide proper error handling to avoid this error.
+:::

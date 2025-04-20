@@ -1,0 +1,232 @@
+---
+description: Converts a map of key-value pairs to a formatted string
+---
+
+# Join KV
+
+## Synopsis
+
+```yaml {2-5}
+- join_kv:
+  field: <ident>
+  target_field: <ident>
+  separator: <string>
+  kv_separator: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Description
+
+**Functionality**: Converts a map (object) of key-value pairs into a single formatted string. The processor joins all key-value pairs from the source map using specified separators, creating a consistent string representation of the structured data.
+
+The processor sorts keys alphabetically to ensure consistent output ordering, which is useful for creating deterministic string representations of maps for logging, display, or further processing.
+
+## Parameters
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing the map of key-value pairs|
+|`target_field`|Y|-|Destination field to store the resulting string|
+|`separator`|N|`;`|Character(s) used to separate key-value pairs|
+|`kv_separator`|N|`=`|Character(s) used to separate keys from values|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip if source field doesn't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Examples
+
+### Basic Key-Value Joining
+
+<ExampleGrid>
+  <CommentCol>
+    Convert map to string using default separators...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "attributes": {
+          "name": "John",
+          "role": "admin",
+          "active": true
+        }
+      }
+    }
+    ```
+    ```yaml
+    - join_kv:
+        field: user.attributes
+        target_field: user.attributes_string
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a string with default separators:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "attributes": {
+          "name": "John",
+          "role": "admin",
+          "active": true
+        },
+        "attributes_string": "active=true;name=John;role=admin"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom Separators
+
+<ExampleGrid>
+  <CommentCol>
+    Use custom field and pair separators...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "user-agent": "Mozilla/5.0",
+          "accept": "text/html"
+        }
+      }
+    }
+    ```
+    ```yaml
+    - join_kv:
+        field: request.headers
+        target_field: request.header_string
+        separator: ", "
+        kv_separator: ": "
+    ```
+  </CodeCol>
+  <CommentCol>
+    formats headers in HTTP style:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "user-agent": "Mozilla/5.0",
+          "accept": "text/html"
+        },
+        "header_string": "accept: text/html, content-type: application/json, user-agent: Mozilla/5.0"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URL Query Parameters
+
+<ExampleGrid>
+  <CommentCol>
+    Create URL query string format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "query": {
+        "params": {
+          "q": "search term",
+          "page": 1,
+          "limit": 25
+        }
+      }
+    }
+    ```
+    ```yaml
+    - join_kv:
+        field: query.params
+        target_field: query.string
+        separator: "&"
+        kv_separator: "="
+    ```
+  </CodeCol>
+  <CommentCol>
+    builds a properly formatted query string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "query": {
+        "params": {
+          "q": "search term",
+          "page": 1,
+          "limit": 25
+        },
+        "string": "limit=25&page=1&q=search term"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Field Formatting with Tags
+
+<ExampleGrid>
+  <CommentCol>
+    Format map with XML-style tags...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": {
+        "cpu": 75.2,
+        "memory": 85.6,
+        "disk": 45.3
+      }
+    }
+    ```
+    ```yaml
+    - join_kv:
+        field: metrics
+        target_field: metrics_string
+        separator: " "
+        kv_separator: "=\""
+        on_success:
+          - set:
+              field: metrics_string
+              value: "{{metrics_string}}\""
+    ```
+  </CodeCol>
+  <CommentCol>
+    with additional processing:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": {
+        "cpu": 75.2,
+        "memory": 85.6,
+        "disk": 45.3
+      },
+      "metrics_string": "cpu=\"75.2\" disk=\"45.3\" memory=\"85.6\""
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Keys in the resulting string are always sorted alphabetically to ensure consistent output regardless of the original map order. This makes the output deterministic, which is important for scenarios like generating hash values or signatures from the string.
+:::
+
+:::warning
+When converting complex nested objects, only the string representation of the value is included. Nested objects will be formatted using their default string representation, which may not be ideal in all cases. For complex nested structures, consider flattening the data first.
+:::

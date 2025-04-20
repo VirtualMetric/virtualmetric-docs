@@ -1,0 +1,253 @@
+---
+description: Converts IANA protocol numbers to their corresponding protocol names
+---
+
+# Protocol
+
+## Synopsis
+
+```yaml {2-3}
+- protocol:
+  field: <ident>
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Description
+
+**Functionality**: Maps numeric protocol identifiers to their corresponding protocol names according to the IANA Protocol Numbers registry. The processor converts numeric protocol values (such as those found in IP packet headers) to human-readable protocol names, making log data more interpretable.
+
+The processor supports various input formats (integer, float, string) and provides detailed protocol names for 140+ standardized protocols, including common ones like TCP, UDP, ICMP, and many others.
+
+## Parameters
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing the protocol number to convert|
+|`target_field`|N|*value of `field`*|Destination field to store the protocol name|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip if source field doesn't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Examples
+
+### Basic Protocol Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Convert a protocol number to its name...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "protocol_number": 6
+      }
+    }
+    ```
+    ```yaml
+    - protocol:
+        field: network.protocol_number
+        target_field: network.protocol_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds a human-readable protocol name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "protocol_number": 6,
+        "protocol_name": "TCP"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### In-Place Transformation
+
+<ExampleGrid>
+  <CommentCol>
+    Replace the numeric value with its name...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "packet": {
+        "ip": {
+          "protocol": 17
+        }
+      }
+    }
+    ```
+    ```yaml
+    - protocol:
+        field: packet.ip.protocol
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts the value in place:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "packet": {
+        "ip": {
+          "protocol": "UDP"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Field Format Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Process protocol numbers in various formats...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network_data": {
+        "proto1": 1,
+        "proto2": "50",
+        "proto3": 47.0
+      }
+    }
+    ```
+    ```yaml
+    - protocol:
+        field: network_data.proto1
+        target_field: network_data.proto1_name
+    - protocol:
+        field: network_data.proto2
+        target_field: network_data.proto2_name
+    - protocol:
+        field: network_data.proto3
+        target_field: network_data.proto3_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    handles different input formats:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network_data": {
+        "proto1": 1,
+        "proto2": "50",
+        "proto3": 47.0,
+        "proto1_name": "ICMP",
+        "proto2_name": "ESP",
+        "proto3_name": "GRE"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Firewall Log Enrichment
+
+<ExampleGrid>
+  <CommentCol>
+    Enrich firewall logs with protocol information...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "firewall": {
+        "action": "ALLOW",
+        "src_ip": "192.168.1.100",
+        "dst_ip": "10.0.0.1",
+        "src_port": 49152,
+        "dst_port": 80,
+        "protocol": 6
+      }
+    }
+    ```
+    ```yaml
+    - protocol:
+        field: firewall.protocol
+        target_field: firewall.protocol_name
+    - set:
+        field: firewall.summary
+        value: "{{firewall.action}} {{firewall.protocol_name}} from {{firewall.src_ip}}:{{firewall.src_port}} to {{firewall.dst_ip}}:{{firewall.dst_port}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a more readable security log:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "firewall": {
+        "action": "ALLOW",
+        "src_ip": "192.168.1.100",
+        "dst_ip": "10.0.0.1",
+        "src_port": 49152,
+        "dst_port": 80,
+        "protocol": 6,
+        "protocol_name": "TCP",
+        "summary": "ALLOW TCP from 192.168.1.100:49152 to 10.0.0.1:80"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Handling Unknown Protocols
+
+<ExampleGrid>
+  <CommentCol>
+    Process an unregistered protocol number...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "packet": {
+        "protocol": 200
+      }
+    }
+    ```
+    ```yaml
+    - protocol:
+        field: packet.protocol
+        target_field: packet.protocol_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    provides informative output for unregistered protocols:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "packet": {
+        "protocol": 200,
+        "protocol_name": "UNKNOWN(200)"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The processor maps protocol numbers according to the IANA Protocol Numbers registry, which is the official reference for IP protocol numbers. For unregistered or unknown protocol numbers, the processor returns "UNKNOWN(n)" where n is the protocol number.
+:::
+
+:::warning
+The protocol processor expects numeric values or strings that can be converted to integers. Invalid input formats will cause the processor to fail unless `ignore_failure` is set to `true`.
+:::

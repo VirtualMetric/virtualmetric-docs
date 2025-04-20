@@ -1,0 +1,171 @@
+---
+description: Dynamically adjusts sampling rates based on event volume
+---
+
+# Dynamic Sample
+
+## Synopsis
+
+```yaml {2-8}
+- dynamic_sample:
+  sample_mode: <string>
+  sample_group_key: <string>
+  sample_period_sec: <numeric>
+  minimum_events: <numeric>
+  max_sampling_rate: <numeric>
+  exclude_filters: <string[]>
+  tag: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+```
+
+## Description
+
+**Functionality**: Provides intelligent event sampling that automatically adjusts sampling rates based on event volume. The processor monitors event frequency within defined groups and time periods, then dynamically calculates appropriate sampling rates to maintain data representativeness while reducing volume.
+
+This adaptive approach ensures that during high-volume periods, sampling becomes more aggressive to prevent overwhelming downstream systems, while during low-volume periods, more or all events are preserved. The processor supports different sampling algorithms and can exclude specific events from sampling.
+
+## Parameters
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`sample_mode`|N|`"logarithmic"`|Algorithm used to calculate sampling rate (`"logarithmic"` or `"square_root"`)|
+|`sample_group_key`|N|`"{{host}}"`|Template expression to group events for sampling (can reference event fields)|
+|`sample_period_sec`|N|`30`|Time period in seconds for measuring event volume and adjusting rates|
+|`minimum_events`|N|`30`|Minimum number of events within a period before sampling starts|
+|`max_sampling_rate`|N|`100`|Maximum sampling ratio (e.g., 100 means at most 1:100 events kept)|
+|`exclude_filters`|N|-|List of conditions to exclude events from sampling|
+|`tag`|N|-|Identifier for logging|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if sampling fails|
+|`ignore_missing`|N|`false`|Skip if referenced fields don't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+
+## Sampling Modes
+
+The processor supports two primary algorithms for calculating sampling rates:
+
+1. **Logarithmic** (`logarithmic`): Uses natural log of event count to determine sampling rate.
+   - More aggressive reduction at high volumes.
+   - Formula: `sampling_rate = ceiling(log(event_count))`
+
+2. **Square Root** (`square_root`): Uses square root of event count to determine sampling rate.
+   - More gradual reduction than logarithmic.
+   - Formula: `sampling_rate = ceiling(sqrt(event_count))`
+
+## Examples
+
+### Basic Dynamic Sampling
+
+<ExampleGrid>
+  <CommentCol>
+    Apply simple host-based sampling...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - dynamic_sample:
+        sample_mode: logarithmic
+        sample_period_sec: 60
+        minimum_events: 50
+    ```
+  </CodeCol>
+  <CommentCol>
+    begins sampling when a host sends more than 50 events per minute
+  </CommentCol>
+</ExampleGrid>
+
+### Service-Based Sampling with Exclusions
+
+<ExampleGrid>
+  <CommentCol>
+    Sample by service with critical events excluded...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - dynamic_sample:
+        sample_group_key: "{{service.name}}"
+        sample_mode: square_root
+        sample_period_sec: 120
+        minimum_events: 100
+        max_sampling_rate: 50
+        exclude_filters:
+          - "logEntry.log.level == 'error'"
+          - "logEntry.event.severity >= 70"
+    ```
+  </CodeCol>
+  <CommentCol>
+    maintains all error/critical events while sampling normal traffic
+  </CommentCol>
+</ExampleGrid>
+
+### Multi-Dimension Sampling
+
+<ExampleGrid>
+  <CommentCol>
+    Group by multiple attributes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - dynamic_sample:
+        sample_group_key: "{{host.name}}:{{container.name}}"
+        sample_mode: logarithmic
+        sample_period_sec: 30
+        minimum_events: 20
+        on_success:
+          - set:
+              field: event.sample_info
+              value: "Sampled at {{_vmetric.sampled}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    handles high-volume containers independently from others
+  </CommentCol>
+</ExampleGrid>
+
+### Sampling with Metadata Enrichment
+
+<ExampleGrid>
+  <CommentCol>
+    Track sampling rate in the event data...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - dynamic_sample:
+          sample_group_key: "{{source.type}}"
+          sample_mode: square_root
+          sample_period_sec: 60
+          minimum_events: 100
+          max_sampling_rate: 20
+      - set:
+          field: meta.sampling_applied
+          value: true
+          if: "hasField(logEntry, '_vmetric.sampled')"
+      - set:
+          field: meta.sampling_rate
+          value: "{{_vmetric.sampled}}"
+          if: "hasField(logEntry, '_vmetric.sampled')"
+    ```
+  </CodeCol>
+  <CommentCol>
+    records sampling metadata for proper event interpretation
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+The dynamic sampler adds two metadata fields to sampled events:
+- `_vmetric.sampled`: Shows the current sampling rate (e.g., "10:1")
+- `_vmetric.sample_group`: Contains the evaluated sample group key
+
+These fields can be used for analysis or referenced in downstream processors.
+:::
+
+:::warning
+Sampling inherently discards data, so use with caution for critical events. Always use `exclude_filters` to preserve important events like errors, alerts, or security incidents that require 100% preservation regardless of volume.
+:::
