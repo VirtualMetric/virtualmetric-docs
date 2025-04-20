@@ -123,32 +123,3 @@ This configuration uses the `sentinel` target type. Once again, we have to speci
 ## Monitoring
 
 To monitor the stream, check **Director**'s logs for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
-
-:::tip
-Adjust buffer sizes based on your ingestion volume.
-:::
-
-## Optimizing
-
-We can fine tune the streaming performance for high-volume environments.
-
-* With files, you can enable buffering and use compression:
-
-  ```yaml
-      no_buffer: false
-      compression: "zstd"
-  ```
-
-* For **Azure Blob**, you can increase the number of retry attempts and the retry interval, and use **512MB** chunks:
-
-  ```yaml
-      max_retry: 10
-      retry_interval: 30
-      max_size: 536870912
-  ```
-
-* For **Microsoft Sentinel**, a **5MB** buffer is recommended:
-
-  ```yaml
-      buffer_size: 5242880
-  ```

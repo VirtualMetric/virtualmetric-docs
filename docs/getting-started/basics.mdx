@@ -1,18 +1,14 @@
 ---
-sidebar_label: Basics
+sidebar_label: Configuration Basics
 ---
 
-# Getting Started: Basics
+# Getting Started: Configuration Basics
 
-Management of **VirtualMetric Director** telemetry processes is done through configuration files in YAML format. In this chapter, we will give a brief summary of how these files are used and the minimum configurations required.
+**VirtualMetric Director** telemetry processes are configured with files in YAML format. In this chapter, we will give you a brief summary of how these files are used and the minimum configurations required.
 
 ## Configuration Files
 
 The configurations may be placed in separate files or they may be grouped together based on your requirements.
-
-:::tip
-You can place your files anywhere you wish under `config` since **Director** discovers them by traversing the subdirectories recursively.
-:::
 
 By default, the files reside in the directories under the `config` folder and have a `.yml` extension:
 
@@ -27,7 +23,31 @@ graph LR
     targets --> file["file.yml"]
 ```
 
-Choose the style that best fits your needs.
+:::tip
+You can place your files anywhere you wish under `config` since **Director** discovers them by traversing the subdirectories recursively.
+:::
+
+To illustrate, a target file can be named as, e.g.
+
+* `config/target.yml`
+* `config/targets/outputs.yml`
+* `config/targets/outputs/sentinel.yml`
+
+As the nesting level increases, file names become more specific, offering additional context for classification. Select the organizational method that best meets your requirements.
+
+However, wherever you place your files, you have to keep one detail in mind while creating or editing the configuration:
+
+:::warning[attention]
+In the YAML file, the type of the component (device, target, pipeline, or route) has to be specified at the top level prefixed with a dash and followed by a colon, e.g.
+
+`- devices:` 
+
+-or- 
+
+`- pipelines:`
+
+Then, you can enlist the relevant details of the component, i.e. fields, formats, patterns, etc.
+:::
 
 ## Devices
 
@@ -38,58 +58,28 @@ Devices are data sources that collect or receive telemetry data. The required fi
 - `type`: Device type (e.g. `http`, `tcp`, `udp`, `syslog`, `estreamer`, `azmon`, `windows`)
 - `properties`: Type-specific configuration settings
 
+:::tip
+Each device type provides specific options detailed in its respective [chapter](/docs/configuration/devices/index.mdx).
+:::
+
 Use the `id` of the device to refer to it in your configurations.
 
 **Example**:
 
 ```yaml
 - devices:
-  id: 1
-  type: http
-  properties:
-    port: 8080
-    content_type: "application/json"
+    id: 1
+    type: http
+    properties:
+      port: 8080
+      content_type: "application/json"
 ```
 
-You can organize your device files in two ways:
+This is an HTTP device listening on port `8080`, and it expects to be streamed data in JSON format.
 
-- Using standalone files
-
-    <Tabs groupId="cli-options">
-      <TabItem value="powershell" label="PowerShell" default>
-        ```PowerShell
-        C:\Users\<user-name>\Documents\syslog.yml
-        ```
-      </TabItem>
-      <TabItem value="bash" label="Bash">  
-        ```bash
-        ~: syslog.yml
-        ```
-      </TabItem>
-    </Tabs>
-
-- Using listener-based groupings:
-
-    <Tabs groupId="cli-options">
-      <TabItem value="powershell" label="PowerShell" default>
-        ```PowerShell
-        C:\path\to\<vm_root>\listeners\syslog.yml
-        ```
-      </TabItem>
-      <TabItem value="bash" label="Bash">  
-        ```bash
-        ~ ./path/to/<vm_root>/listeners/syslog.yml
-        ```
-      </TabItem>
-    </Tabs>
-
-Choose the one that best fits your needs.
-
-:::tip
-Each device type provides specific options detailed in its respective [chapter](/docs/configuration/devices/index.mdx).
+:::note
+For a general discussion of devices, see the [overview](/docs/configuration/devices/index.mdx).
 :::
-
-For a general discussion, see the [overview](/docs/configuration/devices/index.mdx).
 
 ## Targets
 
@@ -98,6 +88,10 @@ Targets define destinations where processed data is sent. The required fields ar
 - `name`: Unique identifier
 - `type`: Target type (destination system)
 - `properties`: Type-specific configuration (connection details, authentication, etc.)
+
+:::tip
+Each target type provides specific options detailed in its respective [chapter](/docs/configuration/targets/index.mdx).
+:::
 
 Use the `name` of the target to refer to it in your configurations.
 
@@ -114,21 +108,17 @@ Use the `name` of the target to refer to it in your configurations.
       password: "${ES_PASSWORD}"
 ```
 
-Your target files can be named as, e.g.
-
-* `<vm_root>/config/target.yml`
-* `<vm_root>/config/targets/outputs.yml`
-* `<vm_root>/config/targets/outputs/sentinel.yml`
-
-As the nesting level increases, file names become more specific, offering additional context for classification. Select the organizational method that best meets your requirements.
+The target listed here is of type `elasticsearch`. It specifies the host that it will forward the data to and the index on the host which the data will be apppended to. To access the host, it specifies a username and a password.
 
 :::tip
-Each target type provides specific options detailed in its respective [chapter](/docs/configuration/targets/index.mdx).
+You can use environment variables to specify you acccess credentials.
 :::
 
 Multiple targets can be used for redundancy, [normalization](/docs/configuration/pipelines/normalization.mdx) rules can be implemented, and alerts can be put in place for notifications and error handling.
 
-For a general discussion, see the [overview](/docs/configuration/targets/index.mdx).
+:::note
+For a general discussion of targets, see the [overview](/docs/configuration/targets/index.mdx).
+:::
 
 ## Pipelines
 
@@ -146,13 +136,15 @@ Use the `name` of the pipeline to refer to it in your configurations.
     name: checkpoint
     processors:
       - grok:
-        field: message
-        patterns:
-          - "%{COMMONAPACHELOG}"
+          field: message
+          patterns:
+            - "%{COMMONAPACHELOG}"
       - set:
-        field: event.provider
-        value: "checkpoint"
+          field: event.provider
+          value: "checkpoint"
 ```
+
+This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
 
 Pipelines can also access metadata available in processors. These are:
 
@@ -163,7 +155,9 @@ Pipelines can also access metadata available in processors. These are:
 
 {/* TODO: Enlist */}
 
-For a general discussion, see the [overview](/docs/configuration/pipelines/index.mdx).
+:::note
+For a general discussion of pipelines, see the [overview](/docs/configuration/pipelines/index.mdx).
+:::
 
 ## Routes
 
@@ -191,3 +185,9 @@ The enlisted devices, targets, and pipelines must be pre-configured to be usable
     targets: 
       - backup
 ```
+
+This route receives its data from all the devices with the suffix `syslog` in their names, uses the `normalize` and `enrich` pipelines to extract and transform data points, and the forwards them to the target named `backup`.
+
+:::note
+For a general discussion of routes, see the [overview](/docs/configuration/routes/index.mdx).
+:::
