@@ -24,7 +24,7 @@ const sidebars: SidebarsConfig = {
         'getting-started/single-node-deployment',
         'getting-started/cluster-deployment',
         // 'getting-started/virtual-ip-address',
-        'getting-started/management',
+        'getting-started/basics',
         'getting-started/example-device',
         'getting-started/example-target',
         'getting-started/example-route',

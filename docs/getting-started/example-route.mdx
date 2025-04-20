@@ -117,36 +117,6 @@ routes:
 
 The first route will collect data from a dataset used for security logs, whereas the second from another one used for performance metrics.
 
-## Conditionals
-
-The filtering required for selecting the data for a route can be done using conditional statements, as seen from some of the examples above. The conditions can be as simple as picking a specific device type:
-
-```yaml
-routes:
-  - name: firewall_logs
-    description: "Process firewall logs"
-    if: device.type == 'firewall'
-    pipelines:
-      - name: firewall_pipeline
-    targets:
-      - name: security_storage
-```
-
-Or they can be complex, drilling down to the attributes of the data to be collected such as severity of security breaches, date range of the data collected, etc.:
-
-```yaml
-routes:
-  - name: critical_errors
-    if: log.severity == 'critical' && log.date >= '2024.05.01'
-    pipelines:
-      - name: urgent_process
-    targets:
-      - name: alerts
-      - name: storage
-```
-
-This route will collect critical errors that have occurred after a certain date, and will forward them to two separate targets.
-
 ## Forwarding
 
 The same data can be sent to multiple targets, a technique known as _mirroring_:
