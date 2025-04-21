@@ -1,0 +1,331 @@
+---
+description: Performs mathematical operations on numeric values
+---
+
+# Math
+
+## Synopsis
+
+Performs mathematical operations on numeric values.
+
+## Schema
+
+```yaml {2-6}
+- math:
+  field: <ident>
+  operation: <string>
+  left_operand: <string>
+  right_operand: <string>
+  precision: <numeric>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the calculation result|
+|`operation`|Y|-|Mathematical operation to perform|
+|`left_operand`|Y|-|First operand value or field reference|
+|`right_operand`|N|-|Second operand value or field reference (required for binary operations)|
+|`precision`|N|`0`|Number of decimal places for rounding operations|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if calculation fails|
+|`ignore_missing`|N|`false`|Skip if referenced fields don't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Supported Operations
+
+### Binary Operations (two operands)
+
+|Operation|Aliases|Description|
+|---|---|---|
+|`add`|`+`|Addition|
+|`subtract`|`-`|Subtraction|
+|`multiply`|`*`|Multiplication|
+|`divide`|`/`|Division|
+|`modulo`|`%`|Remainder after division|
+|`pow`|`^`|Exponentiation (power)|
+|`min`|-|Minimum of two values|
+|`max`|-|Maximum of two values|
+
+### Unary Operations (one operand)
+
+|Operation|Description|
+|---|---|
+|`abs`|Absolute value|
+|`sqrt`|Square root|
+|`ceil`|Round up to nearest integer|
+|`floor`|Round down to nearest integer|
+|`round`|Round to nearest integer or decimal places (using `precision`)|
+
+## Details
+
+Performs mathematical operations on numeric values and stores the result in a target field. The processor supports both binary operations (requiring two operands) and unary operations (requiring a single operand).
+
+The processor can extract values from existing fields, use literal numeric values, and applies appropriate error handling for mathematical edge cases like division by zero or invalid operations.
+
+
+:::note
+Numeric values are automatically converted to appropriate types for calculation. The processor accepts both literal values and field references for operands, and can handle expressions like `field1 / field2` in the operands.
+:::
+
+:::warning
+Some operations have mathematical constraints and will fail in certain conditions:
+- Division or modulo by zero
+- Square root of negative numbers
+- 0 raised to the power of 0 (indeterminate)
+- Negative numbers raised to non-integer powers
+
+Always provide appropriate error handling for operations that might encounter these edge cases.
+:::
+
+## Examples
+
+### Basic Arithmetic
+
+<ExampleGrid>
+  <CommentCol>
+    Perform addition with literal values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": {}
+    }
+    ```
+    ```yaml
+    - math:
+        field: metrics.total
+        operation: add
+        left_operand: "100"
+        right_operand: "50"
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates and stores the result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": {
+        "total": 150
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Field-Based Calculations
+
+<ExampleGrid>
+  <CommentCol>
+    Calculate percentage from field values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "disk": {
+        "used": 8589934592,
+        "total": 17179869184
+      }
+    }
+    ```
+    ```yaml
+    - math:
+        field: disk.usage_percent
+        operation: multiply
+        left_operand: "disk.used / disk.total"
+        right_operand: "100"
+        precision: 2
+    ```
+  </CodeCol>
+  <CommentCol>
+    computes disk usage percentage:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "disk": {
+        "used": 8589934592,
+        "total": 17179869184,
+        "usage_percent": 50
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Unary Operations
+
+<ExampleGrid>
+  <CommentCol>
+    Apply unary operations...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": {
+        "celsius": -5.7
+      }
+    }
+    ```
+    ```yaml
+    - math:
+        field: temperature.absolute
+        operation: abs
+        left_operand: "temperature.celsius"
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates absolute value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": {
+        "celsius": -5.7,
+        "absolute": 5.7
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Rounding with Precision
+
+<ExampleGrid>
+  <CommentCol>
+    Round to specified decimal places...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stats": {
+        "raw_value": 123.45678
+      }
+    }
+    ```
+    ```yaml
+    - math:
+        field: stats.rounded
+        operation: round
+        left_operand: "stats.raw_value"
+        precision: 2
+    ```
+  </CodeCol>
+  <CommentCol>
+    rounds to two decimal places:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stats": {
+        "raw_value": 123.45678,
+        "rounded": 123.46
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Complex Expressions
+
+<ExampleGrid>
+  <CommentCol>
+    Combine operations in a pipeline...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "circle": {
+        "radius": 5
+      }
+    }
+    ```
+    ```yaml
+    - math:
+        field: circle.radius_squared
+        operation: pow
+        left_operand: "circle.radius"
+        right_operand: "2"
+    - math:
+        field: circle.area
+        operation: multiply
+        left_operand: "circle.radius_squared"
+        right_operand: "3.14159"
+        precision: 2
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates area in multiple steps:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "circle": {
+        "radius": 5,
+        "radius_squared": 25,
+        "area": 78.54
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle potential calculation errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stats": {
+        "numerator": 100,
+        "denominator": 0
+      }
+    }
+    ```
+    ```yaml
+    - math:
+        field: stats.result
+        operation: divide
+        left_operand: "stats.numerator"
+        right_operand: "stats.denominator"
+        ignore_failure: true
+        on_failure:
+          - set:
+              field: stats.error
+              value: "Division by zero error"
+          - set:
+              field: stats.result
+              value: 0
+    ```
+  </CodeCol>
+  <CommentCol>
+    with graceful error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stats": {
+        "numerator": 100,
+        "denominator": 0,
+        "error": "Division by zero error",
+        "result": 0
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
