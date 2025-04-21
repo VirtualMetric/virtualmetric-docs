@@ -6,6 +6,10 @@ description: Keeps only specified fields and removes all others
 
 ## Synopsis
 
+Keeps only specified fields and removes all others.
+
+## Schema
+
 ```yaml {2}
 - keep:
   field: <string|string[]>
@@ -17,13 +21,7 @@ description: Keeps only specified fields and removes all others
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Removes all fields from the log entry except those explicitly specified. This processor performs the inverse operation of `remove`, allowing you to specify which fields to retain while discarding all others.
-
-The processor is useful for creating a minimal document with only essential fields, reducing the size of log entries, or ensuring consistent field presence for downstream systems.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -34,6 +32,21 @@ The processor is useful for creating a minimal document with only essential fiel
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Removes all fields from the log entry except those explicitly specified. This processor performs the inverse operation of `remove`, allowing you to specify which fields to retain while discarding all others.
+
+The processor is useful for creating a minimal document with only essential fields, reducing the size of log entries, or ensuring consistent field presence for downstream systems.
+
+
+:::note
+The `keep` processor operates at the top level of the log entry. When specifying nested fields like `user.id`, the processor will keep the entire parent object (`user`) and not just the specific nested field.
+:::
+
+:::warning
+Using the `keep` processor is a destructive operation that removes all non-specified fields. This can lead to loss of potentially useful data. Consider creating a copy of important data before applying keep operations or ensure that your field list is comprehensive.
+:::
 
 ## Examples
 
@@ -213,11 +226,3 @@ The processor is useful for creating a minimal document with only essential fiel
     keeps different sets of fields based on log level
   </CommentCol>
 </ExampleGrid>
-
-:::note
-The `keep` processor operates at the top level of the log entry. When specifying nested fields like `user.id`, the processor will keep the entire parent object (`user`) and not just the specific nested field.
-:::
-
-:::warning
-Using the `keep` processor is a destructive operation that removes all non-specified fields. This can lead to loss of potentially useful data. Consider creating a copy of important data before applying keep operations or ensure that your field list is comprehensive.
-:::

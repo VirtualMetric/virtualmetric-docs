@@ -6,6 +6,8 @@ description: Subtracts one numeric value from another
 
 ## Synopsis
 
+Subtracts one numeric value from another.
+
 ```yaml {2-4}
 - subtract:
   field: <ident>
@@ -26,7 +28,7 @@ description: Subtracts one numeric value from another
 
 This processor is useful for calculating differences, performing adjustments, implementing mathematical operations, and deriving new metrics from existing values.
 
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -40,6 +42,15 @@ This processor is useful for calculating differences, performing adjustments, im
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+
+:::note
+Numeric values are automatically converted to appropriate types for subtraction. The processor accepts both literal values and field references for operands.
+:::
+
+:::warning
+When `ignore_missing` is set to `true`, the processor will replace any missing fields with 0 instead of failing. This can lead to unexpected results if you're not careful, as missing fields will be treated as having a value of 0 in the calculation.
+:::
 
 ## Examples
 
@@ -284,11 +295,3 @@ This processor is useful for calculating differences, performing adjustments, im
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Numeric values are automatically converted to appropriate types for subtraction. The processor accepts both literal values and field references for operands.
-:::
-
-:::warning
-When `ignore_missing` is set to `true`, the processor will replace any missing fields with 0 instead of failing. This can lead to unexpected results if you're not careful, as missing fields will be treated as having a value of 0 in the calculation.
-:::

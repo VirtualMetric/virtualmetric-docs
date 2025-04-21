@@ -1,10 +1,14 @@
 ---
-description: Rounds a number up to the nearest integer
+description: Rounds numbers
 ---
 
 # Ceil
 
 ## Synopsis
+
+Rounds a number up to the nearest integer.
+
+## Schema
 
 ```yaml {2-3}
 - ceil:
@@ -19,13 +23,7 @@ description: Rounds a number up to the nearest integer
     tag: <string>
 ```
 
-## Description
-
-**Functionality**: Rounds a floating-point number up to the nearest integer (ceiling function) and stores the result in the specified field. The processor takes a numeric value, applies the mathematical ceiling operation, and returns the smallest integer greater than or equal to the input.
-
-The processor can evaluate numeric values from a field reference or a numeric literal. The result is always an integer value, represented as a float with no decimal portion.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -38,6 +36,21 @@ The processor can evaluate numeric values from a field reference or a numeric li
 |`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Rounds a floating-point number up to the nearest integer (ceiling function) and stores the result in the specified field. The processor takes a numeric value, applies the mathematical ceiling operation, and returns the smallest integer greater than or equal to the input.
+
+The processor can evaluate numeric values from a field reference or a numeric literal. The result is always an integer value, represented as a float with no decimal portion.
+
+
+:::note
+The processor will automatically convert string representations of numbers to their numeric values before applying the ceiling function. For negative numbers, the ceiling function will return the closest integer toward positive infinity (e.g., ceil(-4.3) = -4).
+:::
+
+:::warning
+If the specified value or referenced field cannot be converted to a number, the processor will fail unless `ignore_failure` is set to `true`. Always ensure that the input value is numeric or can be parsed as a number.
+:::
 
 ## Examples
 
@@ -197,11 +210,3 @@ The processor can evaluate numeric values from a field reference or a numeric li
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor will automatically convert string representations of numbers to their numeric values before applying the ceiling function. For negative numbers, the ceiling function will return the closest integer toward positive infinity (e.g., ceil(-4.3) = -4).
-:::
-
-:::warning
-If the specified value or referenced field cannot be converted to a number, the processor will fail unless `ignore_failure` is set to `true`. Always ensure that the input value is numeric or can be parsed as a number.
-:::

@@ -6,6 +6,10 @@ description: Generates a Common Process ID (CPID) according to RFC 9562
 
 ## Synopsis
 
+Generates a Common Process ID (CPID) according to RFC 9562.
+
+## Schema
+
 ```yaml {2-5}
 - cpid:
   hostname_field: <ident>
@@ -21,13 +25,7 @@ description: Generates a Common Process ID (CPID) according to RFC 9562
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Generates a Common Process ID (CPID) according to RFC 9562, providing a consistent way to identify unique process instances across systems and log sources. The processor creates a UUID (Version 8, Variant 1) by combining hostname, process ID, and time information.
-
-The CPID ensures that the same process instance will have the same identifier across different log entries and sources, enabling correlation and tracking of process activity throughout its lifecycle.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -42,6 +40,21 @@ The CPID ensures that the same process instance will have the same identifier ac
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier for logging|
+
+## Details
+
+Generates a Common Process ID (CPID) according to RFC 9562, providing a consistent way to identify unique process instances across systems and log sources. The processor creates a UUID (Version 8, Variant 1) by combining hostname, process ID, and time information.
+
+The CPID ensures that the same process instance will have the same identifier across different log entries and sources, enabling correlation and tracking of process activity throughout its lifecycle.
+
+
+:::note
+When using `ignore_missing: true`, missing time values will be replaced with the current processing time, while missing hostname or process ID values will be treated as empty strings.
+:::
+
+:::warning
+The CPID algorithm uses SHA-256 hashing to generate consistent identifiers. For optimal correlation, ensure that the input fields contain stable and consistent values across log sources.
+:::
 
 ## Examples
 
@@ -168,11 +181,3 @@ The CPID ensures that the same process instance will have the same identifier ac
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-When using `ignore_missing: true`, missing time values will be replaced with the current processing time, while missing hostname or process ID values will be treated as empty strings.
-:::
-
-:::warning
-The CPID algorithm uses SHA-256 hashing to generate consistent identifiers. For optimal correlation, ensure that the input fields contain stable and consistent values across log sources.
-:::

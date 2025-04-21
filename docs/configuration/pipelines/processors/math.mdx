@@ -6,6 +6,10 @@ description: Performs mathematical operations on numeric values
 
 ## Synopsis
 
+Performs mathematical operations on numeric values.
+
+## Schema
+
 ```yaml {2-6}
 - math:
   field: <ident>
@@ -22,13 +26,7 @@ description: Performs mathematical operations on numeric values
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Performs mathematical operations on numeric values and stores the result in a target field. The processor supports both binary operations (requiring two operands) and unary operations (requiring a single operand).
-
-The processor can extract values from existing fields, use literal numeric values, and applies appropriate error handling for mathematical edge cases like division by zero or invalid operations.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -69,6 +67,27 @@ The processor can extract values from existing fields, use literal numeric value
 |`ceil`|Round up to nearest integer|
 |`floor`|Round down to nearest integer|
 |`round`|Round to nearest integer or decimal places (using `precision`)|
+
+## Details
+
+Performs mathematical operations on numeric values and stores the result in a target field. The processor supports both binary operations (requiring two operands) and unary operations (requiring a single operand).
+
+The processor can extract values from existing fields, use literal numeric values, and applies appropriate error handling for mathematical edge cases like division by zero or invalid operations.
+
+
+:::note
+Numeric values are automatically converted to appropriate types for calculation. The processor accepts both literal values and field references for operands, and can handle expressions like `field1 / field2` in the operands.
+:::
+
+:::warning
+Some operations have mathematical constraints and will fail in certain conditions:
+- Division or modulo by zero
+- Square root of negative numbers
+- 0 raised to the power of 0 (indeterminate)
+- Negative numbers raised to non-integer powers
+
+Always provide appropriate error handling for operations that might encounter these edge cases.
+:::
 
 ## Examples
 
@@ -310,17 +329,3 @@ The processor can extract values from existing fields, use literal numeric value
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Numeric values are automatically converted to appropriate types for calculation. The processor accepts both literal values and field references for operands, and can handle expressions like `field1 / field2` in the operands.
-:::
-
-:::warning
-Some operations have mathematical constraints and will fail in certain conditions:
-- Division or modulo by zero
-- Square root of negative numbers
-- 0 raised to the power of 0 (indeterminate)
-- Negative numbers raised to non-integer powers
-
-Always provide appropriate error handling for operations that might encounter these edge cases.
-:::

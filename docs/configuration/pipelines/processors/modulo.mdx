@@ -6,6 +6,10 @@ description: Calculates the remainder after division of two numeric values
 
 ## Synopsis
 
+Calculates the remainder after division of two numeric values.
+
+## Schema
+
 ```yaml {2-4}
 - modulo:
   field: <ident>
@@ -20,13 +24,7 @@ description: Calculates the remainder after division of two numeric values
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Calculates the remainder when dividing the left operand by the right operand and stores the result in the target field. The processor uses floating-point modulo calculation to handle both integer and decimal values.
-
-This processor is useful for cyclic calculations, determining if numbers are divisible evenly, and implementing various bucketing or grouping logic.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -40,6 +38,21 @@ This processor is useful for cyclic calculations, determining if numbers are div
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Calculates the remainder when dividing the left operand by the right operand and stores the result in the target field. The processor uses floating-point modulo calculation to handle both integer and decimal values.
+
+This processor is useful for cyclic calculations, determining if numbers are divisible evenly, and implementing various bucketing or grouping logic.
+
+
+:::note
+The modulo operation uses floating-point division, which means it can handle both integer and non-integer values. For integer division, consider using a combination of the `divide` and `floor` operations.
+:::
+
+:::warning
+Division by zero will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate the right operand or provide proper error handling to avoid this error.
+:::
 
 ## Examples
 
@@ -207,11 +220,3 @@ This processor is useful for cyclic calculations, determining if numbers are div
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The modulo operation uses floating-point division, which means it can handle both integer and non-integer values. For integer division, consider using a combination of the `divide` and `floor` operations.
-:::
-
-:::warning
-Division by zero will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate the right operand or provide proper error handling to avoid this error.
-:::

@@ -6,6 +6,10 @@ description: Calculates the square root of a numeric value
 
 ## Synopsis
 
+Calculates the square root of a numeric value.
+
+## Schema
+
 ```yaml {2-3}
 - sqrt:
   field: <ident>
@@ -19,13 +23,7 @@ description: Calculates the square root of a numeric value
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Calculates the square root of a numeric value and stores the result in the target field. The processor can extract values from existing fields or use literal numeric values.
-
-This processor is useful for mathematical transformations, statistical calculations, and implementing various formulas that require square root operations.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -38,6 +36,21 @@ This processor is useful for mathematical transformations, statistical calculati
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Calculates the square root of a numeric value and stores the result in the target field. The processor can extract values from existing fields or use literal numeric values.
+
+This processor is useful for mathematical transformations, statistical calculations, and implementing various formulas that require square root operations.
+
+
+:::note
+The square root calculation uses the `math.Sqrt` function from Go's standard library, which provides accurate results for all non-negative numbers.
+:::
+
+:::warning
+Attempting to calculate the square root of a negative number will result in an error unless `ignore_failure` is set to `true`. Real-valued square roots are only defined for non-negative numbers.
+:::
 
 ## Examples
 
@@ -244,11 +257,3 @@ This processor is useful for mathematical transformations, statistical calculati
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The square root calculation uses the `math.Sqrt` function from Go's standard library, which provides accurate results for all non-negative numbers.
-:::
-
-:::warning
-Attempting to calculate the square root of a negative number will result in an error unless `ignore_failure` is set to `true`. Real-valued square roots are only defined for non-negative numbers.
-:::

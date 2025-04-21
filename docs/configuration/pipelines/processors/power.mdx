@@ -6,6 +6,10 @@ description: Raises a numeric value to a specified power
 
 ## Synopsis
 
+Raises a numeric value to a specified power
+
+## Schema
+
 ```yaml {2-4}
 - power:
   field: <ident>
@@ -20,13 +24,7 @@ description: Raises a numeric value to a specified power
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Raises a numeric value (the base) to a specified power (the exponent) and stores the result in the target field. The processor handles various special cases and mathematical constraints associated with exponentiation.
-
-This processor is useful for exponential calculations, scaling operations, scientific computations, and implementing mathematical formulas that involve powers.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -40,6 +38,27 @@ This processor is useful for exponential calculations, scaling operations, scien
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Raises a numeric value (the base) to a specified power (the exponent) and stores the result in the target field. The processor handles various special cases and mathematical constraints associated with exponentiation.
+
+This processor is useful for exponential calculations, scaling operations, scientific computations, and implementing mathematical formulas that involve powers.
+
+
+:::note
+The processor uses the `math.Pow` function from Go's standard library to perform the calculation, which provides accurate results for a wide range of inputs.
+:::
+
+:::warning
+The processor handles several special mathematical cases:
+- 0^0 is considered indeterminate and will cause an error
+- Negative numbers raised to non-integer powers will result in complex numbers and cause an error
+- Very large results might overflow and cause an error
+- Results that are not finite numbers (NaN or Infinity) will cause an error
+
+Always provide appropriate error handling for operations that might encounter these edge cases.
+:::
 
 ## Examples
 
@@ -248,17 +267,3 @@ This processor is useful for exponential calculations, scaling operations, scien
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor uses the `math.Pow` function from Go's standard library to perform the calculation, which provides accurate results for a wide range of inputs.
-:::
-
-:::warning
-The processor handles several special mathematical cases:
-- 0^0 is considered indeterminate and will cause an error
-- Negative numbers raised to non-integer powers will result in complex numbers and cause an error
-- Very large results might overflow and cause an error
-- Results that are not finite numbers (NaN or Infinity) will cause an error
-
-Always provide appropriate error handling for operations that might encounter these edge cases.
-:::

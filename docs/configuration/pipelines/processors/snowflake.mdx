@@ -6,6 +6,10 @@ description: Generates a unique Snowflake ID and stores it in a target field
 
 ## Synopsis
 
+Generates a unique Snowflake ID and stores it in a target field.
+
+## Schema
+
 ```yaml {2}
 - snowflake:
   target_field: <ident>
@@ -18,13 +22,7 @@ description: Generates a unique Snowflake ID and stores it in a target field
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Generates a unique Snowflake ID and stores it in the specified target field. Snowflake IDs are 64-bit unique identifiers designed for distributed systems, combining a timestamp, worker ID, and sequence number to create globally unique values that are also roughly time-sortable.
-
-This processor is useful for assigning unique identifiers to log entries, tracking events across distributed systems, and creating correlation IDs without coordination between nodes.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -36,6 +34,21 @@ This processor is useful for assigning unique identifiers to log entries, tracki
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Generates a unique Snowflake ID and stores it in the specified target field. Snowflake IDs are 64-bit unique identifiers designed for distributed systems, combining a timestamp, worker ID, and sequence number to create globally unique values that are also roughly time-sortable.
+
+This processor is useful for assigning unique identifiers to log entries, tracking events across distributed systems, and creating correlation IDs without coordination between nodes.
+
+
+:::note
+Snowflake IDs are 64-bit integers typically represented as strings. They are time-sortable (IDs created later will generally be larger than IDs created earlier), which makes them useful for chronological sorting in databases.
+:::
+
+:::warning
+While Snowflake IDs are designed to be unique across distributed systems, they should not be used for cryptographic purposes. If you need IDs for security-sensitive operations, consider using a dedicated cryptographic random generator.
+:::
 
 ## Examples
 
@@ -205,11 +218,3 @@ This processor is useful for assigning unique identifiers to log entries, tracki
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Snowflake IDs are 64-bit integers typically represented as strings. They are time-sortable (IDs created later will generally be larger than IDs created earlier), which makes them useful for chronological sorting in databases.
-:::
-
-:::warning
-While Snowflake IDs are designed to be unique across distributed systems, they should not be used for cryptographic purposes. If you need IDs for security-sensitive operations, consider using a dedicated cryptographic random generator.
-:::

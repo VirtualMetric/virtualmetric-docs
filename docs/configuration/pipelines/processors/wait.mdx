@@ -6,6 +6,10 @@ description: Introduces a time delay in the processing pipeline
 
 ## Synopsis
 
+Introduces a time delay in the processing pipeline.
+
+## Schema
+
 ```yaml {2}
 - wait:
   timeout: <numeric>
@@ -17,13 +21,7 @@ description: Introduces a time delay in the processing pipeline
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Introduces a deliberate time delay (pause) in the processing pipeline. The processor waits for the specified number of seconds before allowing the pipeline to continue processing.
-
-This processor is useful for rate limiting, implementing backoff strategies, synchronizing with external systems, or creating deliberate delays for testing and debugging purposes.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -34,6 +32,21 @@ This processor is useful for rate limiting, implementing backoff strategies, syn
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Introduces a deliberate time delay (pause) in the processing pipeline. The processor waits for the specified number of seconds before allowing the pipeline to continue processing.
+
+This processor is useful for rate limiting, implementing backoff strategies, synchronizing with external systems, or creating deliberate delays for testing and debugging purposes.
+
+
+:::note
+The wait processor blocks the current pipeline thread for the specified duration. During this time, other log entries can continue processing in parallel through their own pipeline instances, so overall system throughput is maintained.
+:::
+
+:::warning
+Using long timeouts can impact performance by keeping threads and resources allocated longer than necessary. For very long delays (minutes or hours), consider using a different approach such as a message queue with delayed delivery instead of the wait processor.
+:::
 
 ## Examples
 
@@ -157,11 +170,3 @@ This processor is useful for rate limiting, implementing backoff strategies, syn
     increases the wait time exponentially between retry attempts
   </CommentCol>
 </ExampleGrid>
-
-:::note
-The wait processor blocks the current pipeline thread for the specified duration. During this time, other log entries can continue processing in parallel through their own pipeline instances, so overall system throughput is maintained.
-:::
-
-:::warning
-Using long timeouts can impact performance by keeping threads and resources allocated longer than necessary. For very long delays (minutes or hours), consider using a different approach such as a message queue with delayed delivery instead of the wait processor.
-:::

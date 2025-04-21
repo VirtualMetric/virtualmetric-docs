@@ -1,10 +1,14 @@
 ---
-description: Logs debugging information for monitoring and troubleshooting pipelines
+description: Logs debugging information
 ---
 
 # Debug
 
 ## Synopsis
+
+Logs debugging information for monitoring and troubleshooting pipelines.
+
+## Schema
 
 ```yaml {2-5}
 - debug:
@@ -19,13 +23,7 @@ description: Logs debugging information for monitoring and troubleshooting pipel
   on_success: <processor[]>
 ```
 
-## Description
-
-**Functionality**: Logs debugging information about the current log entry being processed. The processor captures the state of the log entry, adds custom messages and metadata, and stores this information for troubleshooting and diagnostic purposes.
-
-Captured debug messages can be used to analyze pipeline behavior, verify data transformations, and diagnose issues in processing flows. The processor supports different logging levels and additional context through keywords and tags.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -38,6 +36,20 @@ Captured debug messages can be used to analyze pipeline behavior, verify data tr
 |`ignore_failure`|N|`false`|Continue processing if debug logging fails|
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
+
+## Details
+
+**Functionality**: Logs debugging information about the current log entry being processed. The processor captures the state of the log entry, adds custom messages and metadata, and stores this information for troubleshooting and diagnostic purposes.
+
+Captured debug messages can be used to analyze pipeline behavior, verify data transformations, and diagnose issues in processing flows. The processor supports different logging levels and additional context through keywords and tags.
+
+:::note
+Debug messages are stored in the pipeline configuration and do not modify the log entry itself. They are only visible in debugging tools and logs, not in the processed output.
+:::
+
+:::warning
+Extensive use of debug processors in production pipelines may impact performance. Consider using conditional debugging with the `if` parameter to limit debug message generation to specific scenarios.
+:::
 
 ## Examples
 
@@ -136,11 +148,3 @@ Captured debug messages can be used to analyze pipeline behavior, verify data tr
     creates a trace of processing stages
   </CommentCol>
 </ExampleGrid>
-
-:::note
-Debug messages are stored in the pipeline configuration and do not modify the log entry itself. They are only visible in debugging tools and logs, not in the processed output.
-:::
-
-:::warning
-Extensive use of debug processors in production pipelines may impact performance. Consider using conditional debugging with the `if` parameter to limit debug message generation to specific scenarios.
-:::

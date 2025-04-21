@@ -6,6 +6,10 @@ description: Converts a map of key-value pairs to a formatted string
 
 ## Synopsis
 
+Converts a map of key-value pairs to a formatted string.
+
+## Schema
+
 ```yaml {2-5}
 - join_kv:
   field: <ident>
@@ -21,13 +25,7 @@ description: Converts a map of key-value pairs to a formatted string
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Converts a map (object) of key-value pairs into a single formatted string. The processor joins all key-value pairs from the source map using specified separators, creating a consistent string representation of the structured data.
-
-The processor sorts keys alphabetically to ensure consistent output ordering, which is useful for creating deterministic string representations of maps for logging, display, or further processing.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -42,6 +40,21 @@ The processor sorts keys alphabetically to ensure consistent output ordering, wh
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Converts a map (object) of key-value pairs into a single formatted string. The processor joins all key-value pairs from the source map using specified separators, creating a consistent string representation of the structured data.
+
+The processor sorts keys alphabetically to ensure consistent output ordering, which is useful for creating deterministic string representations of maps for logging, display, or further processing.
+
+
+:::note
+Keys in the resulting string are always sorted alphabetically to ensure consistent output regardless of the original map order. This makes the output deterministic, which is important for scenarios like generating hash values or signatures from the string.
+:::
+
+:::warning
+When converting complex nested objects, only the string representation of the value is included. Nested objects will be formatted using their default string representation, which may not be ideal in all cases. For complex nested structures, consider flattening the data first.
+:::
 
 ## Examples
 
@@ -222,11 +235,3 @@ The processor sorts keys alphabetically to ensure consistent output ordering, wh
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Keys in the resulting string are always sorted alphabetically to ensure consistent output regardless of the original map order. This makes the output deterministic, which is important for scenarios like generating hash values or signatures from the string.
-:::
-
-:::warning
-When converting complex nested objects, only the string representation of the value is included. Nested objects will be formatted using their default string representation, which may not be ideal in all cases. For complex nested structures, consider flattening the data first.
-:::

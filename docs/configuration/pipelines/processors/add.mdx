@@ -1,10 +1,12 @@
 ---
-description: Adds two numeric values and stores the result
+description: Adds numeric values
 ---
 
 # Add
 
-## Synopsis
+Adds two numeric values and stores the result in a field.
+
+## Schema
 
 ```yaml {2-4}
 - add:
@@ -20,13 +22,7 @@ description: Adds two numeric values and stores the result
     tag: <string>
 ```
 
-## Description
-
-**Functionality**: Adds two numeric values and stores the result in a specified field. This processor supports arithmetic addition between numeric literals, field values, or a combination of both.
-
-The processor evaluates both operands, performs the addition operation, and sets the result in the target field. If operand fields don't exist and `ignore_missing` is enabled, the processor will substitute a value of 0 for the missing field.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -41,13 +37,28 @@ The processor evaluates both operands, performs the addition operation, and sets
 |`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
 |`tag`|N|-|Identifier|
 
+## Details
+
+Adds two numeric values and stores the result in a specified field. This processor supports arithmetic addition between numeric literals, field values, or a combination of both.
+
+The processor evaluates both operands, performs the addition operation, and sets the result in the target field. If operand fields don't exist and `ignore_missing` is enabled, the processor will substitute a value of 0 for the missing field.
+
+
+:::note
+The processor automatically converts string representations of numbers to their numeric values before performing addition. This makes it flexible when working with different data types or values extracted from text fields.
+:::
+
+:::warning
+If either operand cannot be converted to a number, the processor will fail unless `ignore_failure` is set to `true`. For missing fields, use `ignore_missing: true` to substitute zeros instead of failing.
+:::
+
 ## Examples
 
-### Basic Addition
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Add two numeric values...
+    Adding two numeric values...
   </CommentCol>
   <CodeCol>
     ```json
@@ -77,11 +88,11 @@ The processor evaluates both operands, performs the addition operation, and sets
   </CodeCol>
 </ExampleGrid>
 
-### Using Numeric Literals
+### Using Literals
 
 <ExampleGrid>
   <CommentCol>
-    Add a field value to a constant...
+    Adding a field value to a constant...
   </CommentCol>
   <CodeCol>
     ```json
@@ -109,11 +120,11 @@ The processor evaluates both operands, performs the addition operation, and sets
   </CodeCol>
 </ExampleGrid>
 
-### In-Place Addition
+### In-Place
 
 <ExampleGrid>
   <CommentCol>
-    Increment a field's value...
+    Incrementing a field's value...
   </CommentCol>
   <CodeCol>
     ```json
@@ -173,7 +184,7 @@ The processor evaluates both operands, performs the addition operation, and sets
   </CodeCol>
 </ExampleGrid>
 
-### Nested Field Operations
+### Nested Fields
 
 <ExampleGrid>
   <CommentCol>
@@ -210,11 +221,3 @@ The processor evaluates both operands, performs the addition operation, and sets
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor automatically converts string representations of numbers to their numeric values before performing addition. This makes it flexible when working with different data types or values extracted from text fields.
-:::
-
-:::warning
-If either operand cannot be converted to a number, the processor will fail unless `ignore_failure` is set to `true`. For missing fields, use `ignore_missing: true` to substitute zeros instead of failing.
-:::

@@ -6,6 +6,10 @@ description: Multiplies two numeric values together
 
 ## Synopsis
 
+Multiplies two numeric values together.
+
+## Schema
+
 ```yaml {2-4}
 - multiply:
   field: <ident>
@@ -20,13 +24,7 @@ description: Multiplies two numeric values together
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Multiplies two numeric values together and stores the result in the target field. The processor can use literal values or extract values from existing fields in the log entry.
-
-This processor is useful for scaling values, performing unit conversions, calculating derived metrics, and implementing various mathematical transformations.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -40,6 +38,21 @@ This processor is useful for scaling values, performing unit conversions, calcul
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Multiplies two numeric values together and stores the result in the target field. The processor can use literal values or extract values from existing fields in the log entry.
+
+This processor is useful for scaling values, performing unit conversions, calculating derived metrics, and implementing various mathematical transformations.
+
+
+:::note
+Numeric values are automatically converted to appropriate types for multiplication. The processor accepts both literal values and field references for operands.
+:::
+
+:::warning
+Be aware of potential numerical precision issues when multiplying very large numbers or numbers with many decimal places. The processor uses floating-point arithmetic which has inherent precision limitations.
+:::
 
 ## Examples
 
@@ -256,11 +269,3 @@ This processor is useful for scaling values, performing unit conversions, calcul
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Numeric values are automatically converted to appropriate types for multiplication. The processor accepts both literal values and field references for operands.
-:::
-
-:::warning
-Be aware of potential numerical precision issues when multiplying very large numbers or numbers with many decimal places. The processor uses floating-point arithmetic which has inherent precision limitations.
-:::

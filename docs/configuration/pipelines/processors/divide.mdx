@@ -1,10 +1,14 @@
 ---
-description: Performs division operations on numeric values
+description: Divides numeric values
 ---
 
 # Divide
 
 ## Synopsis
+
+Performs division operations on numeric values.
+
+## Schema
 
 ```yaml {2-4}
 divide:
@@ -20,13 +24,7 @@ divide:
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Performs a division operation between two numeric values and stores the result in a target field. The processor can use literal values or extract values from existing fields in the log entry.
-
-The processor automatically handles type conversion for numeric values and provides proper error handling for division by zero and missing fields.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -41,13 +39,27 @@ The processor automatically handles type conversion for numeric values and provi
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
 
+## Details
+
+Performs a division operation between two numeric values and stores the result in a target field. The processor can use literal values or extract values from existing fields in the log entry.
+
+The processor automatically handles type conversion for numeric values and provides proper error handling for division by zero and missing fields.
+
+:::note
+Numeric values are automatically converted to appropriate types for calculation. The processor accepts both literal values and field references for operands.
+:::
+
+:::warning
+Division by zero will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate input data or provide proper error handling for cases where the right operand might be zero.
+:::
+
 ## Examples
 
-### Basic Division
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Divide two literal values...
+    Dividing two literal values...
   </CommentCol>
   <CodeCol>
     ```json
@@ -76,11 +88,11 @@ The processor automatically handles type conversion for numeric values and provi
   </CodeCol>
 </ExampleGrid>
 
-### Field-Based Division
+### Field-Based
 
 <ExampleGrid>
   <CommentCol>
-    Divide values from existing fields...
+    Dividing values from existing fields...
   </CommentCol>
   <CodeCol>
     ```json
@@ -154,7 +166,7 @@ The processor automatically handles type conversion for numeric values and provi
 
 <ExampleGrid>
   <CommentCol>
-    Handle potential errors gracefully...
+    Handling potential errors gracefully...
   </CommentCol>
   <CodeCol>
     ```json
@@ -178,7 +190,7 @@ The processor automatically handles type conversion for numeric values and provi
     ```
   </CodeCol>
   <CommentCol>
-    with comprehensive error handling:
+    avoids raising exceptions:
   </CommentCol>
   <CodeCol>
     ```json
@@ -192,11 +204,3 @@ The processor automatically handles type conversion for numeric values and provi
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Numeric values are automatically converted to appropriate types for calculation. The processor accepts both literal values and field references for operands.
-:::
-
-:::warning
-Division by zero will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate input data or provide proper error handling for cases where the right operand might be zero.
-:::

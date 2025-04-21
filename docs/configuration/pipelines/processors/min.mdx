@@ -6,6 +6,10 @@ description: Calculates the minimum value between two numeric operands
 
 ## Synopsis
 
+Calculates the minimum value between two numeric operands.
+
+## Schema
+
 ```yaml {2-4}
 - min:
   field: <ident>
@@ -20,13 +24,7 @@ description: Calculates the minimum value between two numeric operands
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Compares two numeric values and stores the smaller value in the target field. The processor can use literal values or extract values from existing fields in the log entry.
-
-This processor is useful for finding minimum values, implementing floor functions, and ensuring values don't exceed maximum thresholds.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -40,6 +38,22 @@ This processor is useful for finding minimum values, implementing floor function
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+
+## Details
+
+Compares two numeric values and stores the smaller value in the target field. The processor can use literal values or extract values from existing fields in the log entry.
+
+This processor is useful for finding minimum values, implementing floor functions, and ensuring values don't exceed maximum thresholds.
+
+
+:::note
+Numeric values are automatically converted to appropriate types for comparison. The processor accepts both literal values and field references for operands.
+:::
+
+:::warning
+If either operand cannot be converted to a number, the processor will fail unless `ignore_failure` is set to `true`. Always ensure inputs are valid numbers or provide proper error handling.
+:::
 
 ## Examples
 
@@ -213,11 +227,3 @@ This processor is useful for finding minimum values, implementing floor function
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Numeric values are automatically converted to appropriate types for comparison. The processor accepts both literal values and field references for operands.
-:::
-
-:::warning
-If either operand cannot be converted to a number, the processor will fail unless `ignore_failure` is set to `true`. Always ensure inputs are valid numbers or provide proper error handling.
-:::

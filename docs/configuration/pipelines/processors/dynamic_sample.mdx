@@ -1,10 +1,14 @@
 ---
-description: Dynamically adjusts sampling rates based on event volume
+description: Adjusts sampling rates
 ---
 
 # Dynamic Sample
 
 ## Synopsis
+
+Dynamically adjusts sampling rates based on event volume.
+
+## Schema
 
 ```yaml {2-8}
 - dynamic_sample:
@@ -23,13 +27,7 @@ description: Dynamically adjusts sampling rates based on event volume
   on_success: <processor[]>
 ```
 
-## Description
-
-**Functionality**: Provides intelligent event sampling that automatically adjusts sampling rates based on event volume. The processor monitors event frequency within defined groups and time periods, then dynamically calculates appropriate sampling rates to maintain data representativeness while reducing volume.
-
-This adaptive approach ensures that during high-volume periods, sampling becomes more aggressive to prevent overwhelming downstream systems, while during low-volume periods, more or all events are preserved. The processor supports different sampling algorithms and can exclude specific events from sampling.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -59,13 +57,31 @@ The processor supports two primary algorithms for calculating sampling rates:
    - More gradual reduction than logarithmic.
    - Formula: `sampling_rate = ceiling(sqrt(event_count))`
 
+## Details
+
+Provides intelligent event sampling that automatically adjusts sampling rates based on event volume. The processor monitors event frequency within defined groups and time periods, then dynamically calculates appropriate sampling rates to maintain data representativeness while reducing volume.
+
+This adaptive approach ensures that during high-volume periods, sampling becomes more aggressive to prevent overwhelming downstream systems, while during low-volume periods, more or all events are preserved. The processor supports different sampling algorithms and can exclude specific events from sampling.
+
+:::note
+The dynamic sampler adds two metadata fields to sampled events:
+- `_vmetric.sampled`: Shows the current sampling rate (e.g., "10:1")
+- `_vmetric.sample_group`: Contains the evaluated sample group key
+
+These fields can be used for analysis or referenced in downstream processors.
+:::
+
+:::warning
+Sampling inherently discards data, so use with caution for critical events. Always use `exclude_filters` to preserve important events like errors, alerts, or security incidents that require 100% preservation regardless of volume.
+:::
+
 ## Examples
 
-### Basic Dynamic Sampling
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Apply simple host-based sampling...
+    Applying simple host-based sampling...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -80,7 +96,7 @@ The processor supports two primary algorithms for calculating sampling rates:
   </CommentCol>
 </ExampleGrid>
 
-### Service-Based Sampling with Exclusions
+### Service-Based with Exclusions
 
 <ExampleGrid>
   <CommentCol>
@@ -104,7 +120,7 @@ The processor supports two primary algorithms for calculating sampling rates:
   </CommentCol>
 </ExampleGrid>
 
-### Multi-Dimension Sampling
+### Multi-Dimensional
 
 <ExampleGrid>
   <CommentCol>
@@ -128,7 +144,7 @@ The processor supports two primary algorithms for calculating sampling rates:
   </CommentCol>
 </ExampleGrid>
 
-### Sampling with Metadata Enrichment
+### Using Metadata Enrichment
 
 <ExampleGrid>
   <CommentCol>
@@ -157,15 +173,3 @@ The processor supports two primary algorithms for calculating sampling rates:
     records sampling metadata for proper event interpretation
   </CommentCol>
 </ExampleGrid>
-
-:::note
-The dynamic sampler adds two metadata fields to sampled events:
-- `_vmetric.sampled`: Shows the current sampling rate (e.g., "10:1")
-- `_vmetric.sample_group`: Contains the evaluated sample group key
-
-These fields can be used for analysis or referenced in downstream processors.
-:::
-
-:::warning
-Sampling inherently discards data, so use with caution for critical events. Always use `exclude_filters` to preserve important events like errors, alerts, or security incidents that require 100% preservation regardless of volume.
-:::

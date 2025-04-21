@@ -1,10 +1,14 @@
 ---
-description: Converts time duration strings to seconds
+description: Converts durations to seconds
 ---
 
 # Duration
 
 ## Synopsis
+
+Converts time duration strings to seconds.
+
+## Schema
 
 ```yaml {2-3}
 - duration:
@@ -19,13 +23,7 @@ description: Converts time duration strings to seconds
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Converts a string representing a time duration into a numeric value in seconds. The processor supports multiple duration formats including Go's duration syntax (e.g., "5m", "2h30m") and time notation formats (e.g., "HH:MM:SS", "MM:SS").
-
-This processor is useful for normalizing various time duration notations into a consistent numeric format that can be used for calculations, filtering, or visualization.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -52,6 +50,20 @@ The processor can handle the following duration formats:
 2. **Time Format**:
    - "HH:MM:SS" (hours:minutes:seconds)
    - "MM:SS" (minutes:seconds)
+
+## Description
+
+Converts a string representing a time duration into a numeric value in seconds. The processor supports multiple duration formats including Go's duration syntax (e.g., "5m", "2h30m") and time notation formats (e.g., "HH:MM:SS", "MM:SS").
+
+This processor is useful for normalizing various time duration notations into a consistent numeric format that can be used for calculations, filtering, or visualization.
+
+:::note
+When using the time format (HH:MM:SS), the processor assumes that the values represent hours, minutes, and seconds respectively. For MM:SS format, the processor assumes minutes and seconds.
+:::
+
+:::warning
+Invalid duration formats will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate input data or provide proper error handling when processing user-generated duration strings.
+:::
 
 ## Examples
 
@@ -197,11 +209,3 @@ The processor can handle the following duration formats:
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-When using the time format (HH:MM:SS), the processor assumes that the values represent hours, minutes, and seconds respectively. For MM:SS format, the processor assumes minutes and seconds.
-:::
-
-:::warning
-Invalid duration formats will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate input data or provide proper error handling when processing user-generated duration strings.
-:::

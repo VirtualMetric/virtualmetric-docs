@@ -6,6 +6,10 @@ description: Rounds numeric values to a specified precision
 
 ## Synopsis
 
+Rounds numeric values to a specified precision.
+
+## Schema
+
 ```yaml {2-4}
 - round:
   field: <ident>
@@ -20,13 +24,7 @@ description: Rounds numeric values to a specified precision
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Rounds a numeric value to a specified number of decimal places and stores the result in the target field. The processor can extract values from existing fields or use literal numeric values.
-
-This processor is useful for normalizing numeric data, improving readability, ensuring consistent precision across values, and preparing data for display or further calculations.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -40,6 +38,21 @@ This processor is useful for normalizing numeric data, improving readability, en
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Rounds a numeric value to a specified number of decimal places and stores the result in the target field. The processor can extract values from existing fields or use literal numeric values.
+
+This processor is useful for normalizing numeric data, improving readability, ensuring consistent precision across values, and preparing data for display or further calculations.
+
+
+:::note
+Rounding uses half to even (banker's rounding) when the fractional part is exactly 0.5. This method is statistically unbiased and is the default for IEEE 754 floating-point operations.
+:::
+
+:::warning
+Very large numbers might lose precision during floating-point operations. Consider using a different approach for values that require exact decimal representation, such as currency amounts in financial applications.
+:::
 
 ## Examples
 
@@ -242,11 +255,3 @@ This processor is useful for normalizing numeric data, improving readability, en
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-Rounding uses half to even (banker's rounding) when the fractional part is exactly 0.5. This method is statistically unbiased and is the default for IEEE 754 floating-point operations.
-:::
-
-:::warning
-Very large numbers might lose precision during floating-point operations. Consider using a different approach for values that require exact decimal representation, such as currency amounts in financial applications.
-:::

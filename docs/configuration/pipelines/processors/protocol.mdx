@@ -6,6 +6,10 @@ description: Converts IANA protocol numbers to their corresponding protocol name
 
 ## Synopsis
 
+Converts IANA protocol numbers to their corresponding protocol names.
+
+## Schema
+
 ```yaml {2-3}
 - protocol:
   field: <ident>
@@ -19,13 +23,7 @@ description: Converts IANA protocol numbers to their corresponding protocol name
   tag: <string>
 ```
 
-## Description
-
-**Functionality**: Maps numeric protocol identifiers to their corresponding protocol names according to the IANA Protocol Numbers registry. The processor converts numeric protocol values (such as those found in IP packet headers) to human-readable protocol names, making log data more interpretable.
-
-The processor supports various input formats (integer, float, string) and provides detailed protocol names for 140+ standardized protocols, including common ones like TCP, UDP, ICMP, and many others.
-
-## Parameters
+## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -38,6 +36,21 @@ The processor supports various input formats (integer, float, string) and provid
 |`on_failure`|N|-|Error handling processors|
 |`on_success`|N|-|Success handling processors|
 |`tag`|N|-|Identifier|
+
+## Details
+
+Maps numeric protocol identifiers to their corresponding protocol names according to the IANA Protocol Numbers registry. The processor converts numeric protocol values (such as those found in IP packet headers) to human-readable protocol names, making log data more interpretable.
+
+The processor supports various input formats (integer, float, string) and provides detailed protocol names for 140+ standardized protocols, including common ones like TCP, UDP, ICMP, and many others.
+
+
+:::note
+The processor maps protocol numbers according to the IANA Protocol Numbers registry, which is the official reference for IP protocol numbers. For unregistered or unknown protocol numbers, the processor returns "UNKNOWN(n)" where n is the protocol number.
+:::
+
+:::warning
+The protocol processor expects numeric values or strings that can be converted to integers. Invalid input formats will cause the processor to fail unless `ignore_failure` is set to `true`.
+:::
 
 ## Examples
 
@@ -243,11 +256,3 @@ The processor supports various input formats (integer, float, string) and provid
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::note
-The processor maps protocol numbers according to the IANA Protocol Numbers registry, which is the official reference for IP protocol numbers. For unregistered or unknown protocol numbers, the processor returns "UNKNOWN(n)" where n is the protocol number.
-:::
-
-:::warning
-The protocol processor expects numeric values or strings that can be converted to integers. Invalid input formats will cause the processor to fail unless `ignore_failure` is set to `true`.
-:::
