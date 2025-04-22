@@ -11,7 +11,17 @@ const sidebars: SidebarsConfig = {
         'about/components',
         'about/features',
         'about/benchmarks',
-        'about/comparisons',
+        {
+          type: "category",
+          label: "Comparisons",
+          link: {type: "doc", id: "about/comparisons/index"},
+          items: [
+            'about/comparisons/cribl',
+            'about/comparisons/tenzir',
+            'about/comparisons/logstash',
+            'about/comparisons/vector',
+          ]
+        },
         'about/licensing',
       ],
     },
