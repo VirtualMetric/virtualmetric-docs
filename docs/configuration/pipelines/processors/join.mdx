@@ -1,0 +1,191 @@
+---
+description: Combines array elements
+sidebar_custom_props: 
+  customIcon: 🔗
+  customCategory: Transform
+---
+
+# Join
+
+<span className="theme-doc-version-badge badge badge--primary">Transform</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Combines elements from an array into a single string using a specified separator.
+
+## Schema
+
+```yaml {2,3}
+join:
+  field: <ident>
+  separator: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+  target_field: <ident>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing array of strings|
+|`separator`|Y|-|String to insert between elements|
+|`description`|N|-|Documentation note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Skip processing errors|
+|`ignore_missing`|N|`false`|Skip if input field missing|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier for logging|
+|`target_field`|N|`field`|Output field for joined string|
+
+## Details
+
+The processor expects an array of strings as input and produces a concatenated string with the specified separator between elements.
+
+:::warning
+Empty arrays return an empty string. 
+:::
+
+Common uses are converting arrays into human-readable lists, combining path or URL segments with appropriate separators, concatenating multiple tags, creating comma-separated values from arrays.
+
+Missing fields can be handled with the `ignore_missing` flag.
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Joining array elements with a comma...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "fruits": ["apple", "banana", "cherry"]
+    }
+    ```
+    ```yaml
+    join:
+      field: fruits
+      separator: ", "
+      target_field: result
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a comma-separated string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "fruits": ["apple", "banana", "cherry"],
+      "result": "apple, banana, cherry"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Empty Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Joining an empty array...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": []
+    }
+    ```
+    ```yaml
+    join:
+      field: tags
+      separator: ";"
+      target_field: tag_string
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates an empty string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": [],
+      "tag_string": ""
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Separator
+
+<ExampleGrid>
+  <CommentCol>
+    Joining with a slash...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "paths": ["/home", "user", "documents"]
+    }
+    ```
+    ```yaml
+    join:
+      field: paths
+      separator: "/"
+      target_field: full_path
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a path string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "paths": ["/home", "user", "documents"],
+      "full_path": "/home/user/documents"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling missing source field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "other_field": "value"
+    }
+    ```
+    ```yaml
+    join:
+      field: missing_field
+      separator: ", "
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: status
+            value: "field_missing"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "other_field": "value",
+      "status": "field_missing"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

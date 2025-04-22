@@ -1,0 +1,198 @@
+# Example: Ingesting Data
+
+This chapter will help you get started with devices to ingest data with specific protocols, walking you through common scenarios.
+
+## Basic UDP Setup
+
+### Step 1. Create Configuration
+
+Create a text file with a `.yml` extension in your preferred location, and then open it with a text editor to enter the following:
+
+```yaml
+- id: 1
+  name: syslog_udp
+  type: syslog
+  properties:
+    protocol: udp
+    address: 0.0.0.0
+    port: 514
+```
+
+This YAML code specifies that this is a _Syslog_ device, and that you will use **UDP** as its listening protocol on port `514`. You can enter any integer as the `id` value.
+
+### Step 2. Test Configuration
+
+You can now test this configuration using either **Director**'s cross-platform companion **Generator** or the traditional tools available:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    Using **Generator**
+
+    ```powershell
+    vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
+    ```
+  </TabItem>
+
+  <TabItem value="linux" label="Linux">
+    Using **Generator**
+
+    ```bash
+    vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
+    ```
+
+    Using **System Logger**
+
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Test message"
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS">
+    Using **System Logger**
+
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Test message"
+    ```
+  </TabItem>
+</Tabs>
+
+You can observe the results on the command line as the device reads _syslog_ data.
+
+## Secure TCP Setup
+
+We will now create a secure device that uses TLS.
+
+:::warning
+Always use TLS encryption in production environments, especially over untrusted networks. Ensure proper file permissions are set on these files:
+
+- the private key file (`key.pem`) should be readable only by the **Director** process
+- the certificate file (`cert.pem`) can be world-readable
+:::
+
+### Step 1. Prepare Certificates
+
+First, we have to prepare the TLS certificates. This can be done using either **Director** or **OpenSSL**.
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    Using **Director**
+
+    ```powershell
+    vmetric-director -pfx2pem=./cert-file.pfx
+    ```
+  </TabItem>
+
+  <TabItem value="linux" label="Linux">
+    Using **Director**
+
+    ```bash
+    vmetric-director -pfx2pem=./cert-file.pfx
+    ```
+
+    Using **OpenSSL**
+
+    ```bash
+    openssl genrsa -out server.key 2048
+    openssl req -new -x509 -key server.key -out server.crt -days 365
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS">
+    Using **Director**
+
+    ```bash
+    vmetric-director -pfx2pem=./cert-file.pfx
+    ```
+    
+    Using **OpenSSL**
+
+    ```bash
+    openssl genrsa -out server.key 2048
+    openssl req -new -x509 -key server.key -out server.crt -days 365
+    ```
+  </TabItem>
+</Tabs>
+
+The above commands will generate the required `key.pem` and `cert.pem` files.
+
+### Step 2. Place Certificates
+
+Now that we have created these files, we must copy them to our installation root directory:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    Copy-Item cert.pem key.pem <vm_root>/
+    ```
+  </TabItem>
+  
+  <TabItem value="linux" label="Linux" default>
+    ```bash
+    cp cert.pem key.pem <vm_root>/
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS" default>
+    ```bash
+    cp cert.pem key.pem <vm_root>/
+    ```
+  </TabItem>
+</Tabs>
+
+### Step 3. Create Secure Configuration
+
+We will now prepare a secure configuration by creating another `.yml` file named `secure-syslog.yml`:
+
+```yaml
+- id: 2
+  name: syslog_secure
+  type: syslog
+  properties:
+    protocol: tcp
+    address: 0.0.0.0
+    port: 6514
+    tls:
+      status: true
+      cert_name: cert.pem
+      key_name: key.pem
+    framing: octet
+    max_connections: 1000
+    timeout: 300
+    batch_size: 5000
+    queue:
+      interval: 2
+```
+
+Note that we have specified the certificate files we have created in the previous step.
+
+### Step 4. Test Configuration
+
+Now we can test the connection:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    Write-Output "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+    ```
+  </TabItem>
+  
+  <TabItem value="linux" label="Linux" default>
+    ```bash
+    echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS" default>
+    ```bash
+    echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+    ```
+  </TabItem>
+</Tabs>
+
+## Monitoring
+
+Check **Director**'s logs for success messages on launching and initialization, connection acceptance, and configuration validation.
+
+:::tip
+Worker counts, buffer sizes, and batch settings can be adjusted based on your volumes.
+:::

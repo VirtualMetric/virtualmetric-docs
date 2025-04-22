@@ -1,0 +1,170 @@
+# Elasticsearch
+
+<span className="theme-doc-version-badge badge badge--primary">Experimental</span><span className="theme-doc-version-badge badge badge--secondary">Observability</span>
+
+## Synopsis
+
+Creates an **Elasticsearch** target that sends data using the **Bulk API**.
+
+## Schema
+
+```yaml
+name: <string>
+description: <string>
+type: elastic
+status: <boolean>
+properties:
+  index: <string>
+  max_payload_size_kb: <numeric>
+  batch_size: <numeric>
+  timeout: <numeric>
+  insecure_skip_verify: <boolean>
+  use_compression: <boolean>
+  version: <string>
+  write_action: <string>
+  filter_path: <string>
+  pipeline: <string>
+  endpoints:
+    - endpoint: <string>
+      username: <string>
+      password: <string>
+```
+
+## Configuration
+
+The following are the minimum requirements to define the target.
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y|-|Target name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `elastic`|
+|`status`|N|`true`|Enable/disable the target|
+
+### Elasticsearch
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`index`|Y|-|Default Elasticsearch index name|
+|`max_payload_size_kb`|N|`4096`|Maximum bulk request size in KB|
+|`batch_size`|N|`10000`|Maximum number of events per batch|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`insecure_skip_verify`|N|`false`|Skip TLS certificate verification|
+|`use_compression`|N|`true`|Enable GZIP compression|
+|`version`|N|`auto`|Elasticsearch version|
+|`write_action`|N|`create`|Bulk API action (`index`, `create`, `update`, `delete`)|
+|`filter_path`|N|`errors,items.*.error,items.*._index,items.*.status`|Response filter path|
+|`pipeline`|N|-|Ingest pipeline name|
+
+### Endpoint
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`endpoint`|Y|-|Elasticsearch URL|
+|`username`|N|-|Basic auth username|
+|`password`|N|-|Basic auth password|
+
+## Details
+
+The target supports multiple endpoints, authentication, compression, and ingest pipelines. Data is batched for efficient delivery and can be automatically routed to different indices.
+
+URLs are automatically appended with `/_bulk` if the suffix is not present. Events are batched until either the batch size or payload size limit is reached. 
+
+For load balancing, events are automatically spread across multiple endpoints.
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Simple Elasticsearch output with a single endpoint...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    name: elastic_output
+    type: elastic
+    properties:
+      index: "logs-%Y.%m.%d"
+      endpoints:
+        - endpoint: "http://elasticsearch:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure
+
+<ExampleGrid>
+  <CommentCol>
+    Secure configuration with authentication and TLS...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    name: secure_elastic
+    type: elastic
+    properties:
+      index: "secure-logs"
+      use_compression: true
+      endpoints:
+        - endpoint: "https://elasticsearch:9200"
+          username: "elastic"
+          password: "password"
+      insecure_skip_verify: false
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+In production environments, setting `insecure_skip_verify` to `true` is not recommended.
+:::
+
+### Ingest Pipeline
+
+<ExampleGrid>
+  <CommentCol>
+    Send data through an ingest pipeline...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+      name: pipeline_elastic
+      type: elastic
+      properties:
+        index: "processed-logs"
+        pipeline: "log-processor"
+        write_action: "create"
+        endpoints:
+          - endpoint: "http://elasticsearch:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high-volume data ingestion...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    name: highvol_elastic
+    type: elastic
+    properties:
+      index: "metrics"
+      batch_size: 20000
+      max_payload_size_kb: 8192
+      use_compression: true
+      timeout: 60
+      endpoints:
+        - endpoint: "http://es1:9200"
+        - endpoint: "http://es2:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+Long `timeout` values may lead to connection pooling issues.
+:::
+
+:::warning
+Setting `max_payload_size_kb` too high might cause memory pressure.
+:::

@@ -1,0 +1,185 @@
+---
+sidebar_label: Configuration Basics
+---
+
+# Getting Started: Configuration Basics
+
+**VirtualMetric Director** telemetry processes are configured with files in YAML format. In this chapter, we will give you a brief summary of how these files are used and the minimum configurations required.
+
+## The Files
+
+Configurations may be placed in separate files or they may be grouped together logically, i.e. based on how they are intended to be used, or the type of data streams they process.
+
+By default, the files reside in the directories under the `config` folder and have a `.yml` extension:
+
+```mermaid
+graph LR
+    config --> devices
+    config --> routes
+    config --> targets
+    devices --> syslog["syslog.yml"]
+    routes --> default["default.yml"]
+    targets --> console["console.yml"]
+    targets --> file["file.yml"]
+```
+
+:::tip
+You can place your files anywhere you wish under `config` since **Director** discovers them by traversing the subdirectories recursively.
+:::
+
+To illustrate, a target file can be named as, e.g.
+
+* `config/target.yml`
+* `config/targets/outputs.yml`
+* `config/targets/outputs/sentinel.yml`
+
+As the nesting level increases, file names become more specific, offering additional context for classification. Select the organizational method that best meets your requirements.
+
+However, wherever you place your files, you have to keep one detail in mind while creating or editing the configuration:
+
+:::warning[attention]
+In the YAML file, the type of the component (_device_, _target_, _pipeline_, or _route_) has to be specified at the top level prefixed with a dash and followed by a colon, e.g. `- devices:`. Then, you can enlist the relevant details of the component, i.e. data fields, formats or patterns to used, etc.
+:::
+
+## Devices
+
+Devices are data sources that collect or receive telemetry data. The required fields are:
+
+- `id`: Unique numeric identifier
+- `name`: Descriptive name
+- `type`: Device type (e.g. `http`, `tcp`, `udp`, `syslog`, `estreamer`, `azmon`, `windows`)
+- `properties`: Type-specific configuration settings
+
+:::tip
+Each device type provides specific options detailed in its respective [chapter](/docs/configuration/devices/index.mdx).
+:::
+
+Use the `id` of the device to refer to it in your configurations.
+
+**Example**:
+
+```yaml
+- devices:
+    id: 1
+    type: http
+    properties:
+      port: 8080
+      content_type: "application/json"
+```
+
+This is an HTTP device listening on port `8080`, and it expects to be streamed data in JSON format.
+
+:::note
+For a general discussion of devices, see the [overview](/docs/configuration/devices/index.mdx).
+:::
+
+## Targets
+
+Targets define destinations where processed data is sent. The required fields are:
+
+- `name`: Unique identifier
+- `type`: Target type (destination system)
+- `properties`: Type-specific configuration (connection details, authentication, etc.)
+
+:::tip
+Each target type provides specific options detailed in its respective [chapter](/docs/configuration/targets/index.mdx).
+:::
+
+Use the `name` of the target to refer to it in your configurations.
+
+**Example**:
+
+```yaml
+- targets:
+    name: elasticsearch
+    type: elasticsearch
+    properties:
+      hosts: ["http://elasticsearch:9200"]
+      index: "logs-%{+yyyy.MM.dd}"
+      username: "elastic"
+      password: "${ES_PASSWORD}"
+```
+
+The target listed here is of type `elasticsearch`. It specifies the host that it will forward the data to and the index on the host which the data will be apppended to. To access the host, it specifies a username and a password.
+
+:::tip
+You can use environment variables to specify you acccess credentials.
+:::
+
+Multiple targets can be used for redundancy, [normalization](/docs/configuration/pipelines/normalization.mdx) rules can be implemented, and alerts can be put in place for notifications and error handling.
+
+:::note
+For a general discussion of targets, see the [overview](/docs/configuration/targets/index.mdx).
+:::
+
+## Pipelines
+
+Pipelines define data processing workflows with processors that transform and enrich data. The required fields are:
+
+- `name`: Unique identifier
+- `processors`: List of processors with their configurations
+
+Use the `name` of the pipeline to refer to it in your configurations.
+
+**Example**:
+
+```yaml
+- pipelines:
+    name: checkpoint
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{COMMONAPACHELOG}"
+      - set:
+          field: event.provider
+          value: "checkpoint"
+```
+
+This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
+
+Pipelines can also access metadata available in processors. These are:
+
+* `ctx`: Processing context
+* `logEntry`: Log entry being processed
+* `tag`: Identifier used for logging/tracking processor execution
+* `params`: Map of parameters available to scripts
+
+{/* TODO: Enlist */}
+
+:::note
+For a general discussion of pipelines, see the [overview](/docs/configuration/pipelines/index.mdx).
+:::
+
+## Routes
+
+Routes define the flow of data from devices through pipelines to targets. The required fields are:
+
+- `name`: Unique identifier
+- `devices`: List of device IDs or patterns that match source devices
+- `targets`: List of target IDs where data should be sent
+- `pipelines`: (Optional) List of pipeline IDs for data processing
+
+Use the `name` of the route to refer to it in your configurations.
+
+The enlisted devices, targets, and pipelines must be pre-configured to be usable by routes. Use their ids or names to refer to them.
+
+**Example**:
+
+```yaml
+- routes:
+    name: syslog_to_backup
+    devices: 
+      - syslog_*
+    pipelines: 
+      - normalize
+      - enrich
+    targets: 
+      - backup
+```
+
+This route receives its data from all the devices with the suffix `syslog` in their names, uses the `normalize` and `enrich` pipelines to extract and transform data points, and the forwards them to the target named `backup`.
+
+:::note
+For a general discussion of routes, see the [overview](/docs/configuration/routes/index.mdx).
+:::
