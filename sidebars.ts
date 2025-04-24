@@ -11,7 +11,17 @@ const sidebars: SidebarsConfig = {
         'about/components',
         'about/features',
         'about/benchmarks',
-        'about/comparisons',
+        {
+          type: "category",
+          label: "Comparisons",
+          link: {type: "doc", id: "about/comparisons/index"},
+          items: [
+            'about/comparisons/cribl',
+            'about/comparisons/tenzir',
+            'about/comparisons/logstash',
+            'about/comparisons/vector',
+          ]
+        },
         'about/licensing',
       ],
     },
@@ -139,7 +149,6 @@ const sidebars: SidebarsConfig = {
                 "configuration/pipelines/processors/level",
                 "configuration/pipelines/processors/lookup",
                 "configuration/pipelines/processors/lowercase",
-                "configuration/pipelines/processors/mask",
                 "configuration/pipelines/processors/mask",
                 "configuration/pipelines/processors/max",
                 "configuration/pipelines/processors/min",

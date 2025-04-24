@@ -6,22 +6,20 @@ sidebar_label: Configuration Basics
 
 **VirtualMetric Director** telemetry processes are configured with files in YAML format. In this chapter, we will give you a brief summary of how these files are used and the minimum configurations required.
 
-## Configuration Files
+## The Files
 
-The configurations may be placed in separate files or they may be grouped together based on your requirements.
+Configurations may be placed in separate files or they may be grouped together logically, i.e. based on how they are intended to be used, or the type of data streams they process.
 
-By default, the files reside in the directories under the `config` folder and have a `.yml` extension:
+By default, the files reside in the directories under the `config` folder and have a `.yml` extension. They are organized as, e.g.:
 
-```mermaid
-graph LR
-    config --> devices
-    config --> routes
-    config --> targets
-    devices --> syslog["syslog.yml"]
-    routes --> default["default.yml"]
-    targets --> console["console.yml"]
-    targets --> file["file.yml"]
-```
+> - `config/`
+>   - `devices/`
+>     - `syslog.yml`
+>   - `routes/`
+>     - `default.yml`
+>   - `targets/`
+>     - `console.yml`
+>     - `file.yml`
 
 :::tip
 You can place your files anywhere you wish under `config` since **Director** discovers them by traversing the subdirectories recursively.
@@ -29,25 +27,25 @@ You can place your files anywhere you wish under `config` since **Director** dis
 
 To illustrate, a target file can be named as, e.g.
 
-* `config/target.yml`
-* `config/targets/outputs.yml`
-* `config/targets/outputs/sentinel.yml`
+> `config/target.yml`
+
+-or-
+
+> `config/targets/outputs.yml`
+
+-or-
+
+> `config/targets/outputs/sentinel.yml`
 
 As the nesting level increases, file names become more specific, offering additional context for classification. Select the organizational method that best meets your requirements.
 
-However, wherever you place your files, you have to keep one detail in mind while creating or editing the configuration:
+However, wherever you place your files, you have to keep one detail in mind while creating and editing configurations:
 
 :::warning[attention]
-In the YAML file, the type of the component (device, target, pipeline, or route) has to be specified at the top level prefixed with a dash and followed by a colon, e.g.
-
-`- devices:` 
-
--or- 
-
-`- pipelines:`
-
-Then, you can enlist the relevant details of the component, i.e. fields, formats, patterns, etc.
+In the YAML file, the type of the component (_device_, _target_, _pipeline_, or _route_) has to be specified at the first entry level of the YAML structure, and must be prefixed with a dash and followed by a colon, e.g. `- devices:` -or- `- pipelines:`.
 :::
+
+Then, you can enlist the relevant details of the component, i.e. data fields, formats or patterns to be used, etc.
 
 ## Devices
 
@@ -125,7 +123,7 @@ For a general discussion of targets, see the [overview](/docs/configuration/targ
 Pipelines define data processing workflows with processors that transform and enrich data. The required fields are:
 
 - `name`: Unique identifier
-- `processors`: List of processors with their configurations
+- `processors`: List of processors with their structures
 
 Use the `name` of the pipeline to refer to it in your configurations.
 
