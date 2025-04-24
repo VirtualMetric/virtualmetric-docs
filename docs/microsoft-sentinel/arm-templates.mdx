@@ -1,0 +1,313 @@
+# ARM Templates
+
+## Overview
+
+Microsoft Sentinel Data Collection Rules (DCR) Templates in VirtualMetric Director provide standardized configurations for collecting and processing monitoring data. These templates are designed to streamline the data ingestion process into Microsoft Sentinel while maintaining consistent data structures and optimal performance.
+
+## What is ARM?
+
+### Overview
+
+Azure Resource Manager (ARM) is the deployment and management service for Azure. It provides a consistent management layer that enables you to create, update, and delete resources in your Azure subscription. ARM templates are JSON files that define the infrastructure and configuration of your Azure solution, allowing you to manage your resources through declarative templates rather than scripts.
+
+Key features of ARM include:
+- Declarative syntax using JSON format
+- Repeatable and consistent deployments
+- Dependencies between resources can be defined explicitly
+- Access control integration with Azure Active Directory
+- Tagging capabilities for resource organization
+- Template validation before deployment
+
+Here's a simple example of an ARM template:
+
+```json
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the storage account"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-09-01",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2"
+        }
+    ]
+}
+```
+
+## DCR Templates
+
+ARM templates enable Infrastructure as Code (IaC) for Azure resources, allowing you to version, maintain, and automate your Azure infrastructure deployments. While more verbose than Bicep, ARM templates remain the underlying format that Azure uses for resource deployments, and Bicep templates are ultimately converted to ARM templates during deployment.
+VirtualMetric Director offers two distinct template types to accommodate different logging requirements and data models.
+
+### Standard
+
+These templates follow Microsoft Sentinel's native table schema, enabling direct integration with built-in analytics, workbooks, and hunting queries. They maintain the original data structure while ensuring compatibility with Sentinel's standard monitoring capabilities.
+
+```json
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dataCollectionRuleName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the Data Collection Rule to create."
+            }
+        },
+        "location": {
+            "defaultValue": "[resourceGroup().location]",
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the location in which to create the Data Collection Rule."
+            }
+        },
+        "workspaceResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the Azure resource ID of the Log Analytics workspace to use."
+            }
+        },
+        "endpointResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the Azure resource ID of the Data Collection Endpoint to use."
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2023-03-11",
+            "name": "[parameters('dataCollectionRuleName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "description": "10.0.0",
+                "dataCollectionEndpointId": "[parameters('endpointResourceId')]",
+                "streamDeclarations": {
+                    // Contact with VirtualMetric Support to get the stream names
+                },
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[parameters('workspaceResourceId')]",
+                            "name": "vmetric-datastream"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-CommonSecurityLog"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-CommonSecurityLog"
+                    },
+                    {
+                        "streams": [
+                            "Custom-SecurityEvent"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-SecurityEvent"
+                    },
+                    {
+                        "streams": [
+                            "Custom-Syslog"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-Syslog"
+                    },
+                    {
+                        "streams": [
+                            "Custom-WindowsEvent"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-WindowsEvent"
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+
+### ASim
+
+Advanced Security Information Model (ASIM) Templates: These templates align with Microsoft's ASIM framework, providing normalized and enriched data schemas that facilitate cross-source correlation and advanced security analytics. ASIM templates standardize security events across different data sources, making it easier to develop and maintain detection rules and investigation workflows.
+
+```json
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dataCollectionRuleName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the Data Collection Rule to create."
+            }
+        },
+        "location": {
+            "defaultValue": "[resourceGroup().location]",
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the location in which to create the Data Collection Rule."
+            }
+        },
+        "workspaceResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the Azure resource ID of the Log Analytics workspace to use."
+            }
+        },
+        "endpointResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the Azure resource ID of the Data Collection Endpoint to use."
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2023-03-11",
+            "name": "[parameters('dataCollectionRuleName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "description": "10.0.0",
+                "dataCollectionEndpointId": "[parameters('endpointResourceId')]",
+                "streamDeclarations": {
+                    // Contact with VirtualMetric Support to get the stream names
+                },
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[parameters('workspaceResourceId')]",
+                            "name": "vmetric-datastream"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-ASimAuditEventLogs"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-ASimAuditEventLogs"
+                    },
+                    {
+                        "streams": [
+                            "Custom-ASimAuthenticationEventLogs"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-ASimAuthenticationEventLogs"
+                    },
+                    {
+                        "streams": [
+                            "Custom-ASimDhcpEventLogs"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-ASimDhcpEventLogs"
+                    },
+                    {
+                        "streams": [
+                            "Custom-ASimDnsActivityLogs"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-ASimDnsActivityLogs"
+                    },
+                    {
+                        "streams": [
+                            "Custom-ASimNetworkSessionLogs"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-ASimNetworkSessionLogs"
+                    },
+                    {
+                        "streams": [
+                            "Custom-ASimFileEventLogs"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-ASimFileEventLogs"
+                    },
+                    {
+                        "streams": [
+                            "Custom-ASimProcessEventLogs"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-ASimProcessEventLogs"
+                    },
+                    {
+                        "streams": [
+                            "Custom-ASimRegistryEventLogs"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-ASimRegistryEventLogs"
+                    },
+                    {
+                        "streams": [
+                            "Custom-ASimUserManagementActivityLogs"
+                        ],
+                        "destinations": [
+                            "vmetric-datastream"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Microsoft-ASimUserManagementActivityLogs"
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+
+Both template types are preconfigured to handle VirtualMetric's monitoring data while adhering to Microsoft Sentinel's best practices for data collection and processing.
