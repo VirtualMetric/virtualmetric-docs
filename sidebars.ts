@@ -150,7 +150,6 @@ const sidebars: SidebarsConfig = {
                 "configuration/pipelines/processors/lookup",
                 "configuration/pipelines/processors/lowercase",
                 "configuration/pipelines/processors/mask",
-                "configuration/pipelines/processors/mask",
                 "configuration/pipelines/processors/max",
                 "configuration/pipelines/processors/min",
                 "configuration/pipelines/processors/modulo",
