@@ -1,5 +1,5 @@
 ---
-description: Calculates the square root of a numeric value
+description: Calculates the square root
 ---
 
 # Sqrt
@@ -41,12 +41,11 @@ Calculates the square root of a numeric value.
 
 Calculates the square root of a numeric value and stores the result in the target field. The processor can extract values from existing fields or use literal numeric values.
 
-This processor is useful for mathematical transformations, statistical calculations, and implementing various formulas that require square root operations.
-
-
 :::note
 The square root calculation uses the `math.Sqrt` function from Go's standard library, which provides accurate results for all non-negative numbers.
 :::
+
+The processor is useful for mathematical transformations, statistical calculations, and implementing various formulas that require square root operations.
 
 :::warning
 Attempting to calculate the square root of a negative number will result in an error unless `ignore_failure` is set to `true`. Real-valued square roots are only defined for non-negative numbers.
@@ -54,11 +53,11 @@ Attempting to calculate the square root of a negative number will result in an e
 
 ## Examples
 
-### Basic Square Root Calculation
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Calculate the square root of a literal value...
+    Calculating the square root of a literal value...
   </CommentCol>
   <CodeCol>
     ```json
@@ -86,11 +85,11 @@ Attempting to calculate the square root of a negative number will result in an e
   </CodeCol>
 </ExampleGrid>
 
-### Field-Based Calculation
+### Field-Based
 
 <ExampleGrid>
   <CommentCol>
-    Calculate square root of a field value...
+    Calculating square root of a field value...
   </CommentCol>
   <CodeCol>
     ```json
@@ -121,11 +120,11 @@ Attempting to calculate the square root of a negative number will result in an e
   </CodeCol>
 </ExampleGrid>
 
-### Statistical Calculation
+### Statistical
 
 <ExampleGrid>
   <CommentCol>
-    Calculate standard deviation from variance...
+    Calculating standard deviation from variance...
   </CommentCol>
   <CodeCol>
     ```json
@@ -156,54 +155,11 @@ Attempting to calculate the square root of a negative number will result in an e
   </CodeCol>
 </ExampleGrid>
 
-### Error Handling
+### Distances
 
 <ExampleGrid>
   <CommentCol>
-    Handle potential negative values...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "value": -9,
-      "calculation": {}
-    }
-    ```
-    ```yaml
-    - sqrt:
-        field: calculation.result
-        value: "value"
-        ignore_failure: true
-        on_failure:
-          - set:
-              field: calculation.error
-              value: "Cannot calculate square root of negative number"
-          - set:
-              field: calculation.result
-              value: "NaN"
-    ```
-  </CodeCol>
-  <CommentCol>
-    provides graceful error handling:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "value": -9,
-      "calculation": {
-        "error": "Cannot calculate square root of negative number",
-        "result": "NaN"
-      }
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Distance Calculation
-
-<ExampleGrid>
-  <CommentCol>
-    Calculate Euclidean distance...
+    Calculating Euclidean distance...
   </CommentCol>
   <CodeCol>
     ```json
@@ -252,6 +208,49 @@ Attempting to calculate the square root of a negative number will result in an e
         "y_diff": 4,
         "sum_of_squares": 25,
         "euclidean": 5
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling potential negative values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": -9,
+      "calculation": {}
+    }
+    ```
+    ```yaml
+    - sqrt:
+        field: calculation.result
+        value: "value"
+        ignore_failure: true
+        on_failure:
+          - set:
+              field: calculation.error
+              value: "Cannot calculate square root of negative number"
+          - set:
+              field: calculation.result
+              value: "NaN"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": -9,
+      "calculation": {
+        "error": "Cannot calculate square root of negative number",
+        "result": "NaN"
       }
     }
     ```

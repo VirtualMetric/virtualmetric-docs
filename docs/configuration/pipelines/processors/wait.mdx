@@ -1,5 +1,5 @@
 ---
-description: Introduces a time delay in the processing pipeline
+description: Introduces a time delay
 ---
 
 # Wait
@@ -37,12 +37,11 @@ Introduces a time delay in the processing pipeline.
 
 Introduces a deliberate time delay (pause) in the processing pipeline. The processor waits for the specified number of seconds before allowing the pipeline to continue processing.
 
-This processor is useful for rate limiting, implementing backoff strategies, synchronizing with external systems, or creating deliberate delays for testing and debugging purposes.
-
-
 :::note
 The wait processor blocks the current pipeline thread for the specified duration. During this time, other log entries can continue processing in parallel through their own pipeline instances, so overall system throughput is maintained.
 :::
+
+The processor is useful for rate limiting, implementing backoff strategies, synchronizing with external systems, or creating deliberate delays for testing and debugging purposes.
 
 :::warning
 Using long timeouts can impact performance by keeping threads and resources allocated longer than necessary. For very long delays (minutes or hours), consider using a different approach such as a message queue with delayed delivery instead of the wait processor.
@@ -50,11 +49,11 @@ Using long timeouts can impact performance by keeping threads and resources allo
 
 ## Examples
 
-### Basic Delay
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Introduce a simple delay...
+    Introducing a simple delay...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -67,11 +66,11 @@ Using long timeouts can impact performance by keeping threads and resources allo
   </CommentCol>
 </ExampleGrid>
 
-### Conditional Delay
+### Conditional
 
 <ExampleGrid>
   <CommentCol>
-    Wait only under specific conditions...
+    Waiting only under specific conditions...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -85,11 +84,11 @@ Using long timeouts can impact performance by keeping threads and resources allo
   </CommentCol>
 </ExampleGrid>
 
-### Rate Limiting
+### Rates
 
 <ExampleGrid>
   <CommentCol>
-    Control API request frequency...
+    Controling API request frequency...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -114,11 +113,11 @@ Using long timeouts can impact performance by keeping threads and resources allo
   </CommentCol>
 </ExampleGrid>
 
-### Simulating Network Latency
+### Simulating Latency
 
 <ExampleGrid>
   <CommentCol>
-    Add deliberate latency for testing...
+    Adding deliberate latency for testing...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -133,11 +132,11 @@ Using long timeouts can impact performance by keeping threads and resources allo
   </CommentCol>
 </ExampleGrid>
 
-### Backoff Strategy Implementation
+### Backoff Strategy
 
 <ExampleGrid>
   <CommentCol>
-    Implement an exponential backoff...
+    Implementing a backoff increases the wait time exponentially between retry attempts
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -166,7 +165,4 @@ Using long timeouts can impact performance by keeping threads and resources allo
               if: "retry.count > 5"
     ```
   </CodeCol>
-  <CommentCol>
-    increases the wait time exponentially between retry attempts
-  </CommentCol>
 </ExampleGrid>

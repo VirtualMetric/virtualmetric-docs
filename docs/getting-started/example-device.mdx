@@ -62,13 +62,6 @@ You can observe the results on the command line as the device reads _syslog_ dat
 
 We will now create a secure device that uses TLS.
 
-:::warning
-Always use TLS encryption in production environments, especially over untrusted networks. Ensure proper file permissions are set on these files:
-
-- the private key file (`key.pem`) should be readable only by the **Director** process
-- the certificate file (`cert.pem`) can be world-readable
-:::
-
 ### Step 1. Prepare Certificates
 
 First, we have to prepare the TLS certificates. This can be done using either **Director** or **OpenSSL**.
@@ -139,6 +132,11 @@ Now that we have created these files, we must copy them to our installation root
   </TabItem>
 </Tabs>
 
+:::warning[attention]
+- The private key file (`key.pem`) should be readable only by the **Director** process
+- The certificate file (`cert.pem`) can be world-readable
+:::
+
 ### Step 3. Create Secure Configuration
 
 We will now prepare a secure configuration by creating another `.yml` file named `secure-syslog.yml`:
@@ -163,7 +161,53 @@ We will now prepare a secure configuration by creating another `.yml` file named
       interval: 2
 ```
 
-Note that we have specified the certificate files we have created in the previous step.
+Note that we specified the certificate files we have created in the previous step.
+
+### Step 3. Run the UDP Device
+
+Now that we have created our configuration, we can run it like so:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    vmetric-director -path=secure-syslog.yml
+    ```
+  </TabItem>
+  
+  <TabItem value="linux" label="Linux" default>
+    ```bash
+    vmetric-director -path=secure-syslog.yml
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS" default>
+    ```bash
+    vmetric-director -path=secure-syslog.yml
+    ```
+  </TabItem>
+</Tabs>
+
+We can also run it in the background:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    vmetric-director -path=secure-syslog.yml -background
+    ```
+  </TabItem>
+  
+  <TabItem value="linux" label="Linux" default>
+    ```bash
+    vmetric-director -path=secure-syslog.yml -background
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS" default>
+    ```bash
+    vmetric-director -path=secure-syslog.yml -background
+    ```
+  </TabItem>
+</Tabs>
 
 ### Step 4. Test Configuration
 
@@ -193,6 +237,24 @@ Now we can test the connection:
 
 Check **Director**'s logs for success messages on launching and initialization, connection acceptance, and configuration validation.
 
-:::tip
-Worker counts, buffer sizes, and batch settings can be adjusted based on your volumes.
-:::
+To monitor the logs in real time and filter for a specific debug level:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    vmetric-director -mode=console -path=secure-syslog.yml -debugLevel=3
+    ```
+  </TabItem>
+  
+  <TabItem value="linux" label="Linux" default>
+    ```bash
+    vmetric-director  -mode=console -path=secure-syslog.yml -debugLevel=3
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS" default>
+    ```bash
+    vmetric-director  -mode=console -path=secure-syslog.yml -debugLevel=3
+    ```
+  </TabItem>
+</Tabs>
