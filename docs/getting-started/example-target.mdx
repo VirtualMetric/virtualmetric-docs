@@ -7,10 +7,10 @@ This chapter will help you get started with targets to write processed data to s
 The most basic target we can direct our output to is a _console_. For this purpose, we have to create a simple `stdout` configuration:
 
 ```yaml
-- targets:
-    name: log_output
+targets:
+  - name: log_output
     type: console
-    properties:             
+    properties:
       format: "ecs"
 ```
 
@@ -25,8 +25,8 @@ The next type of output we can use is a local file. (You can put any of the foll
 * The widely used **JSON** format:
 
   ```yaml
-  - targets:
-      name: local_json_logs
+  targets:
+    - name: local_json_logs
       type: file
       properties:
         location: "/path/to/directory"
@@ -41,8 +41,8 @@ The `path` we have specified is where the data storage file will be created.
 * The **Parquet** format:
 
   ```yaml
-  - targets:
-      name: local_parquet_logs
+  targets:
+    - name: local_parquet_logs
       type: file
       properties:
         location: "/path/to/directory"
@@ -75,8 +75,8 @@ If you choose to store the output in the cloud, there are again various formats 
 * **Azure Blob**:
 
   ```yaml
-  - targets:
-      name: azure_logs
+  targets:
+    - name: azure_logs
       type: azblob
       properties:
         account: "<storage-account>"
@@ -102,8 +102,8 @@ The size we want for storage here is roughly **512MB**.
 * **Microsoft Sentinel** with ASIM normalization:
 
   ```yaml
-  - targets:
-      name: sentinel_logs
+  targets:
+    - name: sentinel_logs
       type: sentinel
       properties:
         tenant_id: "${AZURE_TENANT_ID}"
@@ -129,7 +129,7 @@ To monitor the stream, check **Director**'s logs for initialization messages, up
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows">
     ```PowerShell
-    .\vmetric-director.exe -concole
+    .\vmetric-director.exe -console
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">

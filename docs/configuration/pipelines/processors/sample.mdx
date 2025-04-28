@@ -1,5 +1,5 @@
 ---
-description: Reduces data volume by sampling log entries based on configurable rules
+description: Reduces data volume by sampling
 ---
 
 # Sample
@@ -50,11 +50,11 @@ Each rule in the `rules` array is an object with the following properties:
 
 Reduces data volume by implementing systematic sampling of log entries based on configurable rules. The processor keeps one event for every N matching events, where N is the specified sampling rate, allowing for efficient data reduction while maintaining statistical representation.
 
-Rule-based sampling provides fine-grained control over which types of events are sampled and at what rates. This helps balance data volume with analytical needs by keeping all critical events while sampling high-volume, routine events.
-
 :::note
 The processor adds a metadata field `_vmetric.sampled` to sampled events, showing the current sampling rate (e.g., "10:1"). This information is useful for adjusting statistics during analysis to account for sampling.
 :::
+
+Rule-based sampling provides fine-grained control over which types of events are sampled and at what rates. This helps balance data volume with analytical needs by keeping all critical events while sampling high-volume, routine events.
 
 :::warning
 Sampling inherently discards data, so use with caution for critical events. Always use `exclude_filters` to preserve important events like errors, alerts, or security incidents that require 100% preservation regardless of volume.
@@ -62,11 +62,11 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
 
 ## Examples
 
-### Basic Sampling
+### Basic
 
 <ExampleGrid>
   <CommentCol>
-    Apply simple 1:10 sampling...
+    Applying simple 1:10 sampling...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -81,11 +81,11 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
 </ExampleGrid>
 
-### Conditional Sampling
+### Conditional
 
 <ExampleGrid>
   <CommentCol>
-    Apply different sampling rates based on log level...
+    Applying different sampling rates based on log level...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -107,11 +107,11 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
 </ExampleGrid>
 
-### Dynamic Sampling Rates
+### Dynamic
 
 <ExampleGrid>
   <CommentCol>
-    Use field values to determine sampling rate...
+    Using field values to determine sampling rate...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -128,11 +128,11 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
 </ExampleGrid>
 
-### Service-Based Sampling
+### Service-Based
 
 <ExampleGrid>
   <CommentCol>
-    Sample differently based on service...
+    Sampling differently based on service...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -154,11 +154,11 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
 </ExampleGrid>
 
-### Complex Scenario
+### Complex
 
 <ExampleGrid>
   <CommentCol>
-    Comprehensive sampling strategy...
+    Comprehensive sampling keeps relevant data while significantly reducing traffic
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -179,7 +179,4 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
           - "logEntry.user.id == 'admin'"
     ```
   </CodeCol>
-  <CommentCol>
-    implements a nuanced sampling approach that keeps important data while significantly reducing routine traffic
-  </CommentCol>
 </ExampleGrid>

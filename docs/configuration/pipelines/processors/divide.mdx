@@ -1,5 +1,5 @@
 ---
-description: Divides numeric values
+description: Divides values
 ---
 
 # Divide
@@ -43,11 +43,11 @@ divide:
 
 Performs a division operation between two numeric values and stores the result in a target field. The processor can use literal values or extract values from existing fields in the log entry.
 
-The processor automatically handles type conversion for numeric values and provides proper error handling for division by zero and missing fields.
-
 :::note
 Numeric values are automatically converted to appropriate types for calculation. The processor accepts both literal values and field references for operands.
 :::
+
+The processor automatically handles type conversion for numeric values and provides proper error handling for division by zero and missing fields.
 
 :::warning
 Division by zero will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate input data or provide proper error handling for cases where the right operand might be zero.
@@ -68,7 +68,7 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    divide:
+    - divide:
       field: metrics.ratio
       left_operand: "100"
       right_operand: "25"
@@ -104,7 +104,7 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    divide:
+    - divide:
       field: network.bytes_per_packet
       left_operand: "network.bytes_sent"
       right_operand: "network.packets_sent"
@@ -130,7 +130,7 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
 
 <ExampleGrid>
   <CommentCol>
-    Combine field value and literal...
+    Combining field value and literal...
   </CommentCol>
   <CodeCol>
     ```json
@@ -141,7 +141,7 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    divide:
+    - divide:
       field: disk.used_gb
       left_operand: "disk.used_bytes"
       right_operand: "1073741824"
