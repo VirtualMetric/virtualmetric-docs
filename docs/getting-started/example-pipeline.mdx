@@ -40,16 +40,17 @@ When configuring the pipeline, devices are referred to with the numbers in their
 First, we have to define a device that will receive the log data. We will use the configuration we have created in our [device example](/docs/getting-started/example-device.mdx) as our starting point, modifying it as fits our needs:
 
 ```yml
-- id: 1
-  name: syslog_tcp
-  type: syslog
-  properties:
-    protocol: tcp
-    port: 1514
-    framing: delimiter
-    line_delimiter: "\n"
-    buffer_size: 16384
-    batch_size: 1000
+devices:
+  - id: 1
+    name: syslog_tcp
+    type: syslog
+    properties:
+      protocol: tcp
+      port: 1514
+      framing: delimiter
+      line_delimiter: "\n"
+      buffer_size: 16384
+      batch_size: 1000
 ```
 
 Put this device configuration in your file.
@@ -61,18 +62,18 @@ This configuration will create a _TCP Syslog_ server listening on port `1514`. W
 Next, we will define a target for **Microsoft Sentinel** in our file, again using the configuration we have created in our [target example](/docs/getting-started/example-target.mdx) as the basis:
 
 ```yml
-- id: 1
-  name: sentinel_asim
-  description: "Microsoft Sentinel ASIM target"
-  type: sentinel
-  properties:
-    tenant_id: "${AZURE_TENANT_ID}"
-    client_id: "${AZURE_CLIENT_ID}"
-    client_secret: "${AZURE_CLIENT_SECRET}"
-    workspace_id: "${SENTINEL_WORKSPACE_ID}"
-    format: asim
-    batch_size: 100
-    flush_interval: 60
+targets:
+  - name: sentinel_asim
+    description: "Microsoft Sentinel ASIM target"
+    type: sentinel
+    properties:
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${AZURE_CLIENT_ID}"
+      client_secret: "${AZURE_CLIENT_SECRET}"
+      workspace_id: "${SENTINEL_WORKSPACE_ID}"
+      format: asim
+      batch_size: 100
+      flush_interval: 60
 ```
 
 With this configuration, we are setting up the authentication with **Azure** using environment variables. We have specified the target format as ASIM, and configured batching and flush intervals for optimal performance.
@@ -82,63 +83,63 @@ With this configuration, we are setting up the authentication with **Azure** usi
 We are now ready to configure our pipeline. Put the following in our configuration file:
 
 ```yml
-- id: 1
-  name: syslog_to_sentinel
-  description: "Process Syslog data for Microsoft Sentinel ASIM"
-  processors:
-    # Parse Syslog header information
-    - grok:
-        field: message
-        patterns:
-          - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
-    
-    # Extract authentication events
-    - grok:
-        field: syslog.message
-        patterns:
-          - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
-        gnore_failure: true
-    
-    # Set event metadata
-    - set:
-        field: event.kind
-        value: event
-    
-    # Set event category based on mail
-    - script:
-        lang: golang
-        source: |
-          package main
-          
-          func main() {
-            if program, ok := logEntry["program"].(string); ok {
-              switch program {
-              case "sshd":
-                setField(logEntry, "event.category", []string{"authentication"})
-              case "firewall":
-                setField(logEntry, "event.category", []string{"network"})
-              default:
-                setField(logEntry, "event.category", []string{"process"})
+pipelines:
+  - name: syslog_to_sentinel
+    description: "Process Syslog data for Microsoft Sentinel ASIM"
+    processors:
+      # Parse Syslog header information
+      - grok:
+          field: message
+          patterns:
+            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
+      
+      # Extract authentication events
+      - grok:
+          field: syslog.message
+          patterns:
+            - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
+          gnore_failure: true
+      
+      # Set event metadata
+      - set:
+          field: event.kind
+          value: event
+      
+      # Set event category based on mail
+      - script:
+          lang: golang
+          source: |
+            package main
+            
+            func main() {
+              if program, ok := logEntry["program"].(string); ok {
+                switch program {
+                case "sshd":
+                  setField(logEntry, "event.category", []string{"authentication"})
+                case "firewall":
+                  setField(logEntry, "event.category", []string{"network"})
+                default:
+                  setField(logEntry, "event.category", []string{"process"})
+                }
               }
             }
-          }
-    
-    # Map fields to ASIM schema
-    - rename:
-        fields:
-          - from: timestamp
-            to: event.created
-          - from: source.ip
-            to: src.ip
-          - from: user.name
-            to: user.name_orig
-    
-    # Clean up temporary fields
-    - remove:
-        field:
-          - syslog.message
-          - message
-        ignore_missing: true
+      
+      # Map fields to ASIM schema
+      - rename:
+          fields:
+            - from: timestamp
+              to: event.created
+            - from: source.ip
+              to: src.ip
+            - from: user.name
+              to: user.name_orig
+      
+      # Clean up temporary fields
+      - remove:
+          field:
+            - syslog.message
+            - message
+          ignore_missing: true
 ```
 
 This configuration will
@@ -147,7 +148,7 @@ This configuration will
 
 * set the common event metadata `event.kind`
 
-* using a script, categorize the events based on the type of `program` generating the log&mdash; as `authentication`, `network`, or `process`&mdash;and map the fields to the ASIM schema structure
+* using a script, categorize the events based on the type of `program` generating the log&mdash; as `authentication`, `network`, or `process`&mdash;and map the fields to the ASIM schema
 
 * clean up the temporary fields.
 
@@ -160,45 +161,49 @@ To avoid raising an exception, we chose to ignore the missing fields.
 Finally, we have to create a route to connect our device to the pipeline and then to our target. Put the following definition in our configuration file:
 
 ```yml
-- name: syslog_to_sentinel_route
+routes:
+  name: syslog_to_sentinel_route
   description: "Route Syslog data to Microsoft Sentinel ASIM"
   sources:
     - name: syslog_server
-  pipeline: syslog_to_sentinel
+  pipelines: syslog_to_sentinel
   destinations:
     - name: sentinel_asim
 ```
 
-This configuration will connect to the _Syslog_ server as the source, apply the `syslog_to_sentinel` pipeline for processing the ingested data, and then send that data to the **Microsoft Sentinel** ASIM target we have specified.
+This configuration will connect to the _Syslog_ server, apply the `syslog_to_sentinel` pipeline to process the ingested data, and then send it to the **Microsoft Sentinel** ASIM target specified.
 
 ## Monitoring
 
 Let's put it all together: we have defined a device and a target, configured a pipeline to specify how the data will be processed, and specified a route that will use this pipeline. At this point we have everything ready.
 
-We will now run our pipeline and see the results:
+:::note
+We will use the `mode` parameter to tell **Director** that we will run a "pipeline", and then use the pipeline's `name` parameter to specify it on the CLI.
+:::
+
+We will first validate the pipeline:
 
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows">
     ```PowerShell
-    .\vmetric-director -mode=pipeline -name=syslog_to_sentinel
+    .\vmetric-director -mode=pipeline -name=syslog_to_sentinel -validate
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    ./vmetric-director -mode=pipeline -name=syslog_to_sentinel
+    ./vmetric-director -mode=pipeline -name=syslog_to_sentinel -validate
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    ./vmetric-director -mode=pipeline -name=syslog_to_sentinel
+    ./vmetric-director -mode=pipeline -name=syslog_to_sentinel -validate
     ```
   </TabItem>
 </Tabs>
 
-:::note
-To run our pipeline, we can use the name we have specified for it. All we have to do is use the `mode` parameter to tell **Director** that we will run a "pipeline", and then `name` it on the CLI.
-:::
 
 When **Director** is invoked with the specified configuration file, it starts sending _Syslog_ messages to port **1514**.
 
 Check the logs for any errors, and verify in **Microsoft Sentinel** that data is being received in the ASIM format.
+
+{/* TODO: How? */}

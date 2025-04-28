@@ -9,13 +9,14 @@ This chapter will help you get started with devices to ingest data with specific
 Create a text file with a `.yml` extension in your preferred location, and then open it with a text editor to enter the following:
 
 ```yaml
-- id: 1
-  name: syslog_udp
-  type: syslog
-  properties:
-    protocol: udp
-    address: 0.0.0.0
-    port: 514
+devices:
+  - id: 1
+    name: syslog_udp
+    type: syslog
+    properties:
+      protocol: udp
+      address: 0.0.0.0
+      port: 514
 ```
 
 This YAML code specifies that this is a _Syslog_ device, and that you will use **UDP** as its listening protocol on port `514`. You can enter any integer as the `id` value.
@@ -142,23 +143,24 @@ Now that we have created these files, we must copy them to our installation root
 We will now prepare a secure configuration by creating another `.yml` file named `secure-syslog.yml`:
 
 ```yaml
-- id: 2
-  name: syslog_secure
-  type: syslog
-  properties:
-    protocol: tcp
-    address: 0.0.0.0
-    port: 6514
-    tls:
-      status: true
-      cert_name: cert.pem
-      key_name: key.pem
-    framing: octet
-    max_connections: 1000
-    timeout: 300
-    batch_size: 5000
-    queue:
-      interval: 2
+devices:
+  - id: 2
+    name: syslog_secure
+    type: syslog
+    properties:
+      protocol: tcp
+      address: 0.0.0.0
+      port: 6514
+      tls:
+        status: true
+        cert_name: cert.pem
+        key_name: key.pem
+      framing: octet
+      max_connections: 1000
+      timeout: 300
+      batch_size: 5000
+      queue:
+        interval: 2
 ```
 
 Note that we specified the certificate files we have created in the previous step.
