@@ -5,9 +5,9 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "About",
+      link: {type: "doc", id: "about/index"},
       collapsed: false,
       items: [
-        'about/introduction',
         'about/components',
         'about/features',
         'about/benchmarks',
