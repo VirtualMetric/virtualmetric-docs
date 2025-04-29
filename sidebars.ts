@@ -58,6 +58,7 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Configuration",
       link: {type: "doc", id: "configuration/index"},
+      collapsed: false,
       items: [
         {
           type: "category",
