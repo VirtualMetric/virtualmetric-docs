@@ -58,6 +58,7 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Configuration",
       link: {type: "doc", id: "configuration/index"},
+      collapsed: false,
       items: [
         {
           type: "category",
@@ -278,11 +279,11 @@ const sidebars: SidebarsConfig = {
     "appendix",
     "glossary"
   ],
-  tutorDocs: [
-    "tutorials/overview",
-    "tutorials/syslog-to-console",
-    "tutorials/syslog-to-parquet-file",
-  ],
+  // tutorDocs: [
+  //   "tutorials/overview",
+  //   "tutorials/syslog-to-console",
+  //   "tutorials/syslog-to-parquet-file",
+  // ],
 };
 
 export default sidebars;
