@@ -279,11 +279,11 @@ const sidebars: SidebarsConfig = {
     "appendix",
     "glossary"
   ],
-  tutorDocs: [
-    "tutorials/overview",
-    "tutorials/syslog-to-console",
-    "tutorials/syslog-to-parquet-file",
-  ],
+  // tutorDocs: [
+  //   "tutorials/overview",
+  //   "tutorials/syslog-to-console",
+  //   "tutorials/syslog-to-parquet-file",
+  // ],
 };
 
 export default sidebars;
