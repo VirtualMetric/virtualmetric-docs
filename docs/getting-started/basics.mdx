@@ -42,12 +42,88 @@ As the nesting level increases, file names become more specific, offering additi
 However, wherever you place your files, you have to keep one detail in mind while creating and editing configurations:
 
 :::warning[attention]
-In the YAML file, the type of the components you will declare (_devices_, _targets_, _pipelines_, or _routes_) has to be specified at the first level, and must be prefixed with a dash and followed by a colon, e.g. `- devices:` -or- `- pipelines:`.
+In the YAML file where you will specify the components you intend to use, 
+
+- the kind of component you will declare (_devices_, _targets_, _pipelines_, or _routes_) has to be specified at the first level and followed by a colon, e.g. `devices:` -or- `pipelines:`
+
+- the identifier of the component must be specified prefixed with a dash followed by a colon, e.g. `- id:` -or- `- name:`
 :::
 
 Then, you can enlist the relevant details of the component, i.e. data fields, formats or patterns to be used, etc.
 
-## Devices
+## The CLI
+
+You can invoke the processes you want to run using **VirtualMetric Director** using a terminal. Here are a few typical use cases:
+
+* For _Syslog_ collection:
+
+  <Tabs groupId="os-options">
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric-director -mode=generator -protocol=syslog -address=127.0.0.1:514
+      ```
+    </TabItem>
+    
+    <TabItem value="linux" label="Linux" default>
+      ```bash
+        vmetric-director -mode=generator -protocol=syslog -address=127.0.0.1:514
+      ```
+    </TabItem>
+
+    <TabItem value="macos" label="macOS" default>
+      ```bash
+        vmetric-director -mode=generator -protocol=syslog -address=127.0.0.1:514
+      ```
+    </TabItem>
+  </Tabs>
+
+* For running a specific pipeline with validation:
+
+  <Tabs groupId="os-options">
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric-director -mode=pipeline -name=pipeline_name -input=input_file.json -output=output_file.json -validate
+      ```
+    </TabItem>
+    
+    <TabItem value="linux" label="Linux" default>
+      ```bash
+        vmetric-director -mode=pipeline -name=pipeline_name -input=input_file.json -output=output_file.json -validate
+      ```
+    </TabItem>
+
+    <TabItem value="macos" label="macOS" default>
+      ```bash
+        vmetric-director -mode=pipeline -name=pipeline_name -input=input_file.json -output=output_file.json -validate
+      ```
+    </TabItem>
+  </Tabs>
+
+* For viewing logs with a specific debug level:
+
+  <Tabs groupId="os-options">
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric-director -mode=console -debugLevel=3
+      ```
+    </TabItem>
+    
+    <TabItem value="linux" label="Linux" default>
+      ```bash
+        vmetric-director -mode=console -debugLevel=3
+      ```
+    </TabItem>
+
+    <TabItem value="macos" label="macOS" default>
+      ```bash
+        vmetric-director -mode=console -debugLevel=3
+      ```
+    </TabItem>
+  </Tabs>
+
+## Configuration Items
+
+### Devices
 
 Devices are data sources that collect or receive telemetry data. The required fields are:
 
@@ -79,7 +155,7 @@ This is an HTTP device listening on port `8080`, and it expects the streamed dat
 For a general discussion of devices, see the [overview](/docs/configuration/devices/index.mdx).
 :::
 
-## Targets
+### Targets
 
 Targets define destinations where processed data is sent. The required fields are:
 
@@ -118,7 +194,7 @@ Multiple targets can be used for redundancy, [normalization](/docs/configuration
 For a general discussion of targets, see the [overview](/docs/configuration/targets/index.mdx).
 :::
 
-## Pipelines
+### Pipelines
 
 Pipelines define data processing workflows with processors that transform and enrich data. The required fields are:
 
@@ -144,7 +220,7 @@ Use the `name` of the pipeline to refer to it in your configurations.
 
 This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
 
-Pipelines can also access metadata available in processors. These are:
+Pipelines can also access the _metadata_ of processors. These are:
 
 * `ctx`: Processing context
 * `logEntry`: Log entry being processed
@@ -157,7 +233,7 @@ Pipelines can also access metadata available in processors. These are:
 For a general discussion of pipelines, see the [overview](/docs/configuration/pipelines/index.mdx).
 :::
 
-## Routes
+### Routes
 
 Routes define the flow of data from devices through pipelines to targets. The required fields are:
 
@@ -184,7 +260,7 @@ The enlisted devices, targets, and pipelines must be pre-configured to be usable
       - backup
 ```
 
-This route receives its data from all the devices with the suffix `syslog` in their names, uses the `normalize` and `enrich` pipelines to extract and transform data points, and the forwards them to the target named `backup`.
+This route receives its data from all devices with the prefix `syslog_` in their names, uses the `normalize` and `enrich` pipelines to extract and transform the received data points, and then forwards them to the target named `backup`.
 
 :::note
 For a general discussion of routes, see the [overview](/docs/configuration/routes/index.mdx).
