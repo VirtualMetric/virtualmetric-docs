@@ -8,7 +8,7 @@ const sidebars: SidebarsConfig = {
       link: {type: "doc", id: "about/index"},
       collapsed: false,
       items: [
-        'about/components',
+        'about/applications',
         'about/features',
         'about/benchmarks',
         {
