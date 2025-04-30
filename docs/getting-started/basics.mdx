@@ -79,22 +79,24 @@ In other words, the YAML tree starts with the _kind_ of component you will enlis
 
 ```yaml
 component-kind1:
-  - item1-identifier: identifier1
-    item1-field1: value
-    item1-field2:
+  - entry1-identifier: identifier1
+    entry1-field1: value
+    entry1-field2:
       - value1
       - value2
     ...
-  - item2-identifier: identifier2
-    item2-field1: value
+  - entry2-identifier: identifier2
+    entry2-field1: value
     ...
 component-kind2:
-  - item1-identifier: identifier1
-  - item1-field1: value
+  - entry1-identifier: identifier1
+    entry1-field1: value
     ...
 ```  
 
-The **Schema** sections of the chapters for various kinds of components provide the fields used by that kind of component.
+:::note
+The **Schema** sections of the chapters for various kinds of components provide the fields used by them.
+:::
 
 ## The CLI
 
@@ -172,7 +174,7 @@ In the following sections, we will provide the relevant commands to execute the 
 
 ## The Components
 
-To stream and collect data points, to process them, and to forward them to destinations, **Director** uses the following types of configurable items.
+To stream and collect data points, to process them, and to forward them to destinations, **Director** uses the following types of configurable components.
 
 ### Devices
 
@@ -293,13 +295,13 @@ Routes define the flow of data from devices through pipelines to targets. The re
 - `targets`: List of target IDs where data should be sent
 - `pipelines`: (Optional) List of pipeline IDs for data processing
 
-Use the `name` of the route to refer to it in your configurations.
-
-The enlisted devices, targets, and pipelines must be pre-configured to be usable by routes. Use their ids or names to refer to them.
-
 :::warning
 Do _not_ confuse these fields with the component entries at the first level. As routes are at the highest level of a telemetry operation, they orchestrate it by specifying the components used to create the traffic.
 :::
+
+Use the `name` of the route to refer to it in your configurations.
+
+The enlisted devices, targets, and pipelines must be pre-configured to be usable by routes. Use their ids or names to refer to them.
 
 **Example**:
 
@@ -315,7 +317,7 @@ routes:
       - backup
 ```
 
-This route receives its data from devices with the prefix `syslog_` in their names, uses the `normalize` and `enrich` pipelines to extract and transform the received data points, and then forwards them to the target named `backup`.
+This route receives its data from devices with the prefix `syslog_` in their names, uses the `normalize` and `enrich` pipelines to transform the received data points, and then forwards them to the target named `backup`.
 
 :::note
 For a general discussion of routes, see the [overview](/docs/configuration/routes/index.mdx).

@@ -3,3 +3,315 @@ sidebar_label: From Logstash
 ---
 
 # Migration: From Logstash
+
+## Overview
+
+This guide provides instructions for migrating from Logstash to DataStream, covering equivalent components, configuration patterns, and best practices to ensure a smooth transition.
+
+## Architecture Comparison
+
+| Logstash Concept | DataStream Equivalent | Notes |
+|------------------|----------------------|-------|
+| Input Plugins | Device Types | DataStream uses a configuration-based approach with typed devices instead of plugins |
+| Filter Plugins | Processors | Similar concept, different implementation and configuration syntax |
+| Output Plugins | Device Types | DataStream unifies both input and output under typed devices |
+| Pipeline | Pipeline | Similar concept with more efficient processing |
+| Codec | Framing | Built-in framing options for various protocols |
+
+## Device Type Mapping
+
+The following table maps common Logstash input plugins to DataStream device types:
+
+| Logstash Input | DataStream Device | Configuration Example |
+|----------------|-------------------|------------------------|
+| `http` | `http` | [HTTP Device](http.mdx) |
+| `tcp` | `tcp` | [TCP Device](tcp.mdx) |
+| `udp` | `udp` | [UDP Device](udp.mdx) |
+| `syslog` | `syslog` | [Syslog Device](syslog.mdx) |
+| `beats` | `http` | Configure as HTTP endpoint |
+| `azure_event_hubs` | `azmon` | [Azure Monitor](azure-monitor.mdx) |
+| `windows_event_log` | `windows` | [Windows Device](windows.mdx) |
+
+## Processor Mapping
+
+The following table maps common Logstash filters to DataStream processors:
+
+| Logstash Filter | DataStream Processor | Notes |
+|-----------------|---------------------|-------|
+| `grok` | `grok` | Similar pattern syntax, more efficient implementation |
+| `csv` | `csv` | Processes CSV data with field mapping |
+| `kv` | `kv` | Key-value extraction with additional options |
+| `mutate` (rename) | `rename` | Field renaming with similar capabilities |
+| `mutate` (remove) | `remove` | Field removal functionality |
+| `ruby` | `script` (golang) | GoLang-based scripting instead of Ruby |
+| `mutate` (add_field) | `set` | Adding fields with static or dynamic values |
+| `json` | Built-in | Automatic JSON parsing in most devices |
+| `date` | `date` | Date parsing and formatting |
+| `mutate` (gsub) | `gsub` | Pattern replacement in string fields |
+
+## Configuration Examples
+
+### HTTP Input Migration
+
+#### Logstash Configuration:
+
+```ruby
+input {
+  http {
+    port => 8080
+    response_code => 200
+    response_headers => {
+      "Content-Type" => "application/json"
+    }
+    codec => "json"
+    ssl_enabled => true
+    ssl_certificate => "/path/to/cert.pem"
+    ssl_key => "/path/to/key.pem"
+  }
+}
+```
+
+#### DataStream Configuration:
+
+```yaml
+- id: 1
+  name: http_receiver
+  type: http
+  properties:
+    port: 8080
+    url: "/"
+    content_type: "application/json"
+    response:
+      code: 200
+      body: '{"status":"ok"}'
+      content_type: "application/json"
+    tls:
+      status: true
+      cert_name: "cert.pem"
+      key_name: "key.pem"
+```
+
+### Syslog Input Migration
+
+#### Logstash Configuration:
+
+```ruby
+input {
+  syslog {
+    port => 514
+    type => "syslog"
+    use_labels => false
+  }
+}
+```
+
+#### DataStream Configuration:
+
+```yaml
+- id: 1
+  name: syslog_receiver
+  type: syslog
+  properties:
+    protocol: "udp"
+    port: 514
+```
+
+### Processing Pipeline Migration
+
+#### Logstash Configuration:
+
+```ruby
+filter {
+  grok {
+    match => { "message" => "%{COMMONAPACHELOG}" }
+  }
+  
+  date {
+    match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+    target => "@timestamp"
+  }
+  
+  mutate {
+    rename => { "clientip" => "source.ip" }
+    remove_field => [ "message" ]
+  }
+  
+  if [bytes] {
+    mutate {
+      convert => { "bytes" => "integer" }
+    }
+  }
+}
+```
+
+#### DataStream Pipeline:
+
+```yaml
+processors:
+  - grok:
+      - field: message
+      - patterns:
+          - "%{COMMONAPACHELOG}"
+  
+  - date:
+      - field: timestamp
+      - formats:
+          - "dd/MMM/yyyy:HH:mm:ss Z"
+      - target_field: "@timestamp"
+  
+  - rename:
+      - field: clientip
+      - target_field: source.ip
+  
+  - remove:
+      - field: message
+  
+  - script:
+      - lang: golang
+      - source: |
+          package main
+          
+          func main() {
+            if _, ok := logEntry["bytes"]; ok {
+              if bytesStr, ok := logEntry["bytes"].(string); ok {
+                bytesInt, err := strconv.Atoi(bytesStr)
+                if err == nil {
+                  logEntry["bytes"] = bytesInt
+                }
+              }
+            }
+          }
+```
+
+## Performance Optimizations
+
+DataStream offers several performance advantages over Logstash:
+
+1. **Multi-Worker Processing**: Configure multiple workers for high-volume data processing
+   ```yaml
+   properties:
+     workers: 4
+   ```
+
+2. **Batch Processing**: Optimize for throughput with batch processing
+   ```yaml
+   properties:
+     batch_size: 5000
+     flush_interval: 5
+   ```
+
+3. **Buffer Size Tuning**: Increase buffer sizes for high-volume environments
+   ```yaml
+   properties:
+     buffer_size: 32768
+   ```
+
+## Best Practices
+
+### 1. Device Organization
+
+Group similar devices together in your configuration based on their function:
+
+```yaml
+# Network devices
+- id: 1
+  name: syslog_firewall
+  type: syslog
+  # properties...
+
+- id: 2
+  name: syslog_router
+  type: syslog
+  # properties...
+
+# Application devices
+- id: 3
+  name: http_app1
+  type: http
+  # properties...
+```
+
+### 2. Pipeline Reuse
+
+Create reusable pipelines that can be attached to multiple devices:
+
+```yaml
+# Device configuration
+- id: 1
+  name: syslog_collector
+  type: syslog
+  pipelines:
+    - syslog_parsing
+  # properties...
+
+# Pipeline definition
+pipelines:
+  - id: syslog_parsing
+    processors:
+      - grok:
+          # configuration...
+      - date:
+          # configuration...
+```
+
+### 3. Error Handling
+
+Implement proper error handling in processors:
+
+```yaml
+processors:
+  - grok:
+      - field: message
+      - patterns:
+          - "%{PATTERN}"
+      - ignore_failure: true
+      - on_failure:
+          - append:
+              field: tags
+              value: grok_failure
+```
+
+### 4. TLS Security
+
+Always use TLS for secure data transmission:
+
+```yaml
+properties:
+  tls:
+    status: true
+    cert_name: "cert.pem"
+    key_name: "key.pem"
+```
+
+## Common Challenges and Solutions
+
+| Challenge | Solution |
+|-----------|----------|
+| Complex Grok Patterns | Break down complex patterns into multiple grok processors |
+| Ruby Code Migration | Rewrite using GoLang in `script` processor |
+| Pipeline Performance | Increase batch size and worker count |
+| Memory Usage | Monitor and adjust buffer sizes |
+| Conditional Logic | Use the `if` parameter in processors |
+
+## Migration Checklist
+
+- [ ] Inventory all Logstash inputs, filters, and outputs
+- [ ] Map each component to DataStream equivalents
+- [ ] Convert configuration syntax 
+- [ ] Test with sample data
+- [ ] Validate processor results
+- [ ] Optimize performance parameters
+- [ ] Deploy new configuration
+- [ ] Monitor for errors and performance
+
+## Conclusion
+
+Migrating from Logstash to DataStream offers improved performance, simplified configuration, and enhanced reliability. By following this guide and properly mapping components, you can achieve a successful migration with minimal disruption.
+
+:::note
+For specific processors or device types not covered in this guide, refer to the relevant documentation page.
+:::
+
+:::warning
+When migrating complex Logstash deployments, consider a phased approach by moving one input type at a time to minimize risk.
+:::
