@@ -37,9 +37,35 @@ To illustrate, a target file can be named as, e.g.
 
 > `config/targets/outputs/sentinel.yml`
 
-As the nesting level increases, file names become more specific, offering additional context for classification. Select the organizational method that best meets your requirements.
+As the nesting level increases, file names become more specific, offering additional context for classification.
 
-However, wherever you place your files, you have to keep one detail in mind while creating and editing configurations:
+It is also possible to use _standalone_ files placed in any arbitrary directory you wish. In that case, the full path of the file must supplied to **Director**, e.g.
+
+  <Tabs groupId="os-options">
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric-director -path="C:\Users\<user-name>\Documents\log-data.yml"
+      ```
+    </TabItem>
+    
+    <TabItem value="linux" label="Linux" default>
+      ```bash
+      vmetric-director -path="/usr/local/etc/log-data.yml"
+      ```
+    </TabItem>
+
+    <TabItem value="macos" label="macOS" default>
+      ```bash
+      vmetric-director -path="/usr/local/etc/log-data.yml"
+      ```
+    </TabItem>
+  </Tabs>
+
+Select the organizational style that best suits your needs.
+
+## The Syntax
+
+Wherever you place your files, though, you have to keep in mind a few details while creating and editing configurations:
 
 :::warning[attention]
 In the YAML file where you will specify the components you intend to use, 
@@ -144,7 +170,7 @@ Here are a few typical use cases:
 
 In the following sections, we will provide the relevant commands to execute the configured examples.
 
-## Configuration Items
+## The Components
 
 To stream and collect data points, to process them, and to forward them to destinations, **Director** uses the following types of configurable items.
 
@@ -270,6 +296,10 @@ Routes define the flow of data from devices through pipelines to targets. The re
 Use the `name` of the route to refer to it in your configurations.
 
 The enlisted devices, targets, and pipelines must be pre-configured to be usable by routes. Use their ids or names to refer to them.
+
+:::warning
+Do _not_ confuse these fields with the component entries at the first level. As routes are at the highest level of a telemetry operation, they orchestrate it by specifying the components used to create the traffic.
+:::
 
 **Example**:
 
