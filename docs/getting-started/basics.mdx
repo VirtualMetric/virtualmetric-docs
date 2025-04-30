@@ -178,7 +178,7 @@ To stream and collect data points, to process them, and to forward them to desti
 
 ### Devices
 
-Devices are data sources that collect or receive data. The required fields are:
+Devices are data sources that collect or receive data. The fields required to define them are:
 
 - `id`: Unique numeric identifier
 - `name`: Descriptive name
@@ -210,7 +210,7 @@ For a general discussion of devices, see the [overview](/docs/configuration/devi
 
 ### Targets
 
-Targets define the destinations where processed data is sent. The required fields are:
+Targets define the destinations where processed data is sent. The fields required to define them are:
 
 - `name`: Unique identifier
 - `type`: Target type (destination system)
@@ -249,7 +249,7 @@ For a general discussion of targets, see the [overview](/docs/configuration/targ
 
 ### Pipelines
 
-Pipelines describe data workflows that use processors which transform and enrich the data. The required fields are:
+Pipelines describe data workflows that use processors which transform and enrich the data. The fields required to define them are:
 
 - `name`: Unique identifier
 - `processors`: List of processors with their structures
@@ -275,12 +275,11 @@ This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log 
 
 Pipelines can also access the _metadata_ of processors. These are:
 
-* `ctx`: Processing context
-* `logEntry`: Log entry being processed
 * `tag`: Identifier used for logging/tracking processor execution
+* `logEntry`: Log entry being processed
 * `params`: Map of parameters available to scripts
 
-What types of data these metatags provide depends on the context and the log formats.
+The data these metatags provide depends on the context and the log format.
 
 :::note
 For a general discussion of pipelines, see the [overview](/docs/configuration/pipelines/index.mdx).
@@ -288,7 +287,7 @@ For a general discussion of pipelines, see the [overview](/docs/configuration/pi
 
 ### Routes
 
-Routes define the flow of data from devices through pipelines to targets. The required fields are:
+Routes define the flow of data from devices through pipelines to targets. The fields required to define them are:
 
 - `name`: Unique identifier
 - `devices`: List of device IDs or patterns that match source devices
@@ -296,7 +295,7 @@ Routes define the flow of data from devices through pipelines to targets. The re
 - `pipelines`: (Optional) List of pipeline IDs for data processing
 
 :::warning
-Do _not_ confuse these fields with the component entries at the first level. As routes are at the highest level of a telemetry operation, they orchestrate it by specifying the components used to create the traffic.
+Do _not_ confuse these fields with the component entries at the first level. As routes are at the highest level of a telemetry configuration, they orchestrate the stream by specifying the components that create the traffic.
 :::
 
 Use the `name` of the route to refer to it in your configurations.
