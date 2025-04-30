@@ -8,7 +8,7 @@ sidebar_label: Configuration Basics
 
 ## The Files
 
-The configurations may be placed in separate files or they may be grouped together logically, i.e. based on how they are intended to be used, or the type of data streams they process.
+The configurations may be placed in separate files or they may be grouped together logically, i.e. based on how they are intended to be used or the type of data streams they process.
 
 By default, the files reside in the directories under the `config` folder, and have a `.yml` extension. They are organized as, e.g.:
 
@@ -50,6 +50,22 @@ In the YAML file where you will specify the components you intend to use,
 :::
 
 Then, you can enlist the relevant details of the component, i.e. data fields, formats or patterns to be used, etc.
+
+In other words, the first level entry indicates the _kind_ of the items you will enlist, the next level dashes indicate that it is an item of that kind, while the dashes on the third level indicate the enlisted values of a field that accepts arrays and maps:
+
+```yaml
+kind1:
+  - item1-field1: value
+    item1-field2:
+      - value1
+      - value2
+    ...
+  - item2-field1: value
+    ...
+kind2:
+  - item1-field1:
+    ...
+```  
 
 ## The CLI
 
@@ -123,7 +139,7 @@ Here are a few typical use cases:
     </TabItem>
   </Tabs>
 
-In the next sections, we will provide the relevant command lines to execute the examples.
+In the following sections, we will provide the relevant commands to execute the configured examples.
 
 ## Configuration Items
 
@@ -147,8 +163,8 @@ Use the `id` of the device to refer to it in your configurations.
 **Example**:
 
 ```yaml
-- devices:
-    id: 1
+devices:
+  - id: 1
     type: http
     properties:
       port: 8080
@@ -178,8 +194,8 @@ Use the `name` of the target to refer to it in your configurations.
 **Example**:
 
 ```yaml
-- targets:
-    name: elasticsearch
+targets:
+  - name: elasticsearch
     type: elasticsearch
     properties:
       hosts: ["http://elasticsearch:9200"]
@@ -212,8 +228,8 @@ Use the `name` of the pipeline to refer to it in your configurations.
 **Example**:
 
 ```yaml
-- pipelines:
-    name: checkpoint
+pipelines:
+  - name: checkpoint
     processors:
       - grok:
           field: message
@@ -255,8 +271,8 @@ The enlisted devices, targets, and pipelines must be pre-configured to be usable
 **Example**:
 
 ```yaml
-- routes:
-    name: syslog_to_backup
+routes:
+  - name: syslog_to_backup
     devices: 
       - syslog_*
     pipelines: 
