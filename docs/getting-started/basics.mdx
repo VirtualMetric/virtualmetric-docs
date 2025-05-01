@@ -12,14 +12,20 @@ The configurations may be placed in separate files or they may be grouped togeth
 
 By default, the files reside in the directories under the `config` folder, and have a `.yml` extension. They are organized as, e.g.:
 
-> - `config/`
->   - `devices/`
->     - `syslog.yml`
->   - `routes/`
->     - `default.yml`
->   - `targets/`
->     - `console.yml`
->     - `file.yml`
+<dl>
+<dt>`<vm_root>/config/`</dt>
+  <dd>
+    <dt>`devices/`</dt>
+      <dd>`syslog.yml`</dd>
+    <dt>`routes/`</dt>
+      <dd>`default.yml`</dd>
+    <dt>`targets/`</dt>
+      <dd>`console.yml`</dd>
+      <dd>`file.yml`</dd>
+  </dd>
+</dl>
+
+where `<vm_root>` indicates the path of the directory you have placed **VirtualMetric Director** folder tree.
 
 :::tip
 You can place your files anywhere you wish under the `config` directory. **Director** discovers all of them by traversing the folders recursively.
@@ -44,19 +50,19 @@ It is also possible to use _standalone_ files placed in any arbitrary directory 
   <Tabs groupId="os-options">
     <TabItem value="windows" label="Windows" default>
       ```powershell
-      vmetric-director -path="C:\Users\<user-name>\Documents\log-data.yml"
+      vmetric-director -path="C:\Users\<user-name>\Documents\sentinel-logs.yml"
       ```
     </TabItem>
     
     <TabItem value="linux" label="Linux" default>
       ```bash
-      vmetric-director -path="/usr/local/etc/log-data.yml"
+      vmetric-director -path="./sentinel-logs.yml"
       ```
     </TabItem>
 
     <TabItem value="macos" label="macOS" default>
       ```bash
-      vmetric-director -path="/usr/local/etc/log-data.yml"
+      vmetric-director -path="./sentinel-logs.yml"
       ```
     </TabItem>
   </Tabs>
@@ -232,13 +238,13 @@ targets:
       hosts: ["http://elasticsearch:9200"]
       index: "logs-%{+yyyy.MM.dd}"
       username: "elastic"
-      password: "${ES_PASSWORD}"
+      password: "${PASSWORD}"
 ```
 
 The target listed here is of type `elasticsearch`. It specifies the host that it will forward the data to and the index on the host which the data will be apppended to. To access the host, it specifies a username and a password.
 
 :::tip
-You can use environment variables to specify your credentials.
+You can use environment variables like `${PASSWORD}` for your credentials. This will improve security by removing the credentials from your configuration file.
 :::
 
 Multiple targets can be used for redundancy, [normalization](/docs/configuration/pipelines/normalization.mdx) rules can be implemented, and alerts can be put in place for notification and error handling.
