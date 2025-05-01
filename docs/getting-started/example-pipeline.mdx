@@ -87,25 +87,18 @@ pipelines:
   - name: syslog_to_sentinel
     description: "Process Syslog data for Microsoft Sentinel ASIM"
     processors:
-      # Parse Syslog header information
       - grok:
           field: message
           patterns:
-            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
-      
-      # Extract authentication events
+            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"      
       - grok:
           field: syslog.message
           patterns:
             - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
           ignore_failure: true
-      
-      # Set event metadata
       - set:
           field: event.kind
           value: event
-      
-      # Set event category based on mail
       - script:
           lang: golang
           source: |
@@ -123,8 +116,6 @@ pipelines:
                 }
               }
             }
-      
-      # Map fields to ASIM schema
       - rename:
           fields:
             - from: timestamp
@@ -132,9 +123,7 @@ pipelines:
             - from: source.ip
               to: src.ip
             - from: user.name
-              to: user.name_orig
-      
-      # Clean up temporary fields
+              to: user.name_orig      
       - remove:
           field:
             - syslog.message
@@ -153,7 +142,7 @@ This configuration will
 * clean up the temporary fields.
 
 :::note
-To avoid raising an exception, we chose to ignore the missing fields.
+To avoid raising exceptions, we chose to ignore failures and ignore the missing fields.
 :::
 
 ## Step 4: Configure the Route

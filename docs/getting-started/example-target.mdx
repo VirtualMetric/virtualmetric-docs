@@ -8,7 +8,7 @@ The most basic target we can direct our output to is a _console_. For this purpo
 
 ```yaml
 targets:
-  - name: log_output
+  - name: log_to_console
     type: console
     properties:
       format: "ecs"
@@ -16,7 +16,7 @@ targets:
 
 Here, we have named our target as `log_output`. Its type is `console`, and we intend to normalize the data to the [ECS](/docs/appendix.mdx#ecs) format, although this is optional.
 
-Put this configuration in a file named `console.yml`, and for convenience place it directly under `config`.
+Put this configuration in a file named `log-to-console.yml`, and for convenience place it directly under `config`.
 
 ## Storage File
 
@@ -42,10 +42,10 @@ The `path` we have specified is where the data storage file will be created.
 
   ```yaml
   targets:
-    - name: local_parquet_logs
+    - name: log_to_parquet
       type: file
       properties:
-        location: "/path/to/directory"
+        location: "path/to/parquet-file"
         format: "parquet"
         compression: "zstd"
         schema: |
@@ -62,7 +62,7 @@ The `path` we have specified is where the data storage file will be created.
           }
   ```
 
-This describes the `schema` of the parquet file we will create, i.e. the layout of the data to be stored. Also, we are using _ZSTD_ compression.
+This describes the `schema` of the parquet file we will create, i.e. the layout of the data to be stored. Also, we are using _ZSTD_ compression. Finally, the output file will be placed in a directory of our choice, here specified as `path/to/parquet-file`.
 
 :::tip
 File targets with no messages are automatically cleaned up when disposed.
@@ -89,13 +89,9 @@ If you choose to store the output in the cloud, there are again various formats 
         max_size: 536870912
   ```
 
-Put this in a file named `azblob.yml` and place it under `config`.
+Put this in a file named `azure-blob.yml` and place it under `config`.
 
 For this type of configuration, we have to specify an **Azure** account, which requires a _client id_ and a _client secret_ for security.
-
-:::tip
-You can use environment variables for your credentials.
-:::
 
 The size we want for storage here is roughly **512MB**.
 
@@ -116,15 +112,13 @@ The size we want for storage here is roughly **512MB**.
           - "Custom-ASimNetworkSessionLogs"
   ```
 
-Put this in a file named `sentinel.yml` placed under `config`.
+Put this in a file named `sentinel-logs.yml` placed under `config`.
 
 This configuration uses the `sentinel` target type. Once again, we have to specify our **Azure** account information. For this target, we also need to specify the type of stream we are using. Since that is ASIM, we have entered two names for our custom ASIM-based storage tables.
 
 ## Monitoring
 
-To monitor the stream, check **Director**'s logs for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
-
-{/* You can invoke your configurations from the command line like so:
+You can invoke your configurations from the command line like so:
 
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows">
@@ -142,4 +136,6 @@ To monitor the stream, check **Director**'s logs for initialization messages, up
     ./vmetric-director -console
     ```
   </TabItem>
-</Tabs> */}
+</Tabs>
+
+To monitor the stream, check **Director**'s logs for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
