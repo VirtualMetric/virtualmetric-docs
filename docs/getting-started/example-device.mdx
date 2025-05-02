@@ -1,12 +1,31 @@
 # Example: Ingesting Data
 
-This chapter will help you get started with devices to ingest data with specific protocols, walking you through common scenarios.
+This chapter will help you get started with devices to ingest data with specific protocols, walking you through a common use case.
+
+## Scenario
+
+We will create a device that will listen on and receive data from _Syslog_.
+
+## Prerequisites
+
+Before proceeding with the example, a simple configuration for logging is in order to check our results. Open the `vmetric.yml` file under `config` and add the following lines to it:
+
+```yaml
+debug:
+  log:
+    status: true
+  level: 4
+  console:
+    status: true
+```
+
+This will generate the logs of the operation, and place them under the folder `<vm_root>/storage/logs`.
 
 ## Basic UDP Setup
 
 ### Step 1. Create Configuration
 
-Create a text file named `udp-syslog.yml` in your preferred location, and then open it with a text editor to enter the following:
+Create a text file named `udp-syslog.yml` in under `config`, and then open it with a text editor to enter the following:
 
 ```yaml
 devices:
@@ -64,19 +83,19 @@ Now that we have created our configuration, we can run it like so:
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows" default>
     ```powershell
-    vmetric-director -path=udp-syslog.yml
+    vmetric-director
     ```
   </TabItem>
   
   <TabItem value="linux" label="Linux" default>
     ```bash
-    vmetric-director -path=udp-syslog.yml
+    vmetric-director
     ```
   </TabItem>
 
   <TabItem value="macos" label="macOS" default>
     ```bash
-    vmetric-director -path=udp-syslog.yml
+    vmetric-director
     ```
   </TabItem>
 </Tabs>
@@ -179,12 +198,6 @@ devices:
         status: true
         cert_name: cert.pem
         key_name: key.pem
-      framing: octet
-      max_connections: 1000
-      timeout: 300
-      batch_size: 5000
-      queue:
-        interval: 2
 ```
 
 Note that we specified the certificate files we have created in the previous step. That is because we have set the `status` of the `tls` field to `true`.
@@ -194,19 +207,19 @@ We can run it in the background:
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows" default>
     ```powershell
-    vmetric-director -path=secure-syslog.yml -background
+    vmetric-director -background
     ```
   </TabItem>
   
   <TabItem value="linux" label="Linux" default>
     ```bash
-    vmetric-director -path=secure-syslog.yml -background
+    vmetric-director -background
     ```
   </TabItem>
 
   <TabItem value="macos" label="macOS" default>
     ```bash
-    vmetric-director -path=secure-syslog.yml -background
+    vmetric-director -background
     ```
   </TabItem>
 </Tabs>
@@ -244,19 +257,19 @@ To monitor the logs in real time and filter for a specific debug level:
 <Tabs groupId="os-options">
   <TabItem value="windows" label="Windows" default>
     ```powershell
-    vmetric-director -mode=console -path=secure-syslog.yml -debugLevel=3
+    vmetric-director -mode=console -debug-level=3
     ```
   </TabItem>
   
   <TabItem value="linux" label="Linux" default>
     ```bash
-    vmetric-director  -mode=console -path=secure-syslog.yml -debugLevel=3
+    vmetric-director -mode=console -debug-level=3
     ```
   </TabItem>
 
   <TabItem value="macos" label="macOS" default>
     ```bash
-    vmetric-director  -mode=console -path=secure-syslog.yml -debugLevel=3
+    vmetric-director -mode=console -debug-level=3
     ```
   </TabItem>
 </Tabs>

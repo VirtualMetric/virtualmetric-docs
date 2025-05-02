@@ -88,6 +88,22 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: "category",
+          label: "Targets",
+          link: {type: "doc", id: "configuration/targets/index"},
+          items: [
+            "configuration/targets/ms-sentinel",
+            "configuration/targets/azure-data-explorer",
+            "configuration/targets/azure-blob-storage",
+            "configuration/targets/splunk-hec",
+            "configuration/targets/elasticsearch",
+            "configuration/targets/file",
+            "configuration/targets/syslog",
+            "configuration/targets/console",
+            "configuration/targets/discard",
+          ],
+        },
+        {
+          type: "category",
           label: "Pipelines",
           link: {type: "doc", id: "configuration/pipelines/index"},
           items: [
@@ -203,22 +219,6 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "configuration/routes/index"},
           items: [
             'configuration/routes/management',
-          ],
-        },
-        {
-          type: "category",
-          label: "Targets",
-          link: {type: "doc", id: "configuration/targets/index"},
-          items: [
-            "configuration/targets/ms-sentinel",
-            "configuration/targets/azure-data-explorer",
-            "configuration/targets/azure-blob-storage",
-            "configuration/targets/splunk-hec",
-            "configuration/targets/elasticsearch",
-            "configuration/targets/file",
-            "configuration/targets/syslog",
-            "configuration/targets/console",
-            "configuration/targets/discard",
           ],
         },
       ],

@@ -294,3 +294,32 @@ The protocol is used for:
 - Security event logging
 - Compliance tracking
 - Performance monitoring
+
+## Configuration BNF
+
+```bnf
+      component-declaration ::= <component-type> ":" "\n\t" <component-definition>
+             component-type ::= ("devices" | "targets" | "pipelines" | "routes")
+       component-definition ::= <identifier-field-definition> <field-definitions>
+
+identifier-field-definition ::= "-" <identifier-field-name> ":" <identifier>
+      identifier-field-name ::= ("id" | "name")
+                 identifier ::= <text-value>
+
+          field-definitions ::= <field-definition> ["\n" <field-definitions>]*
+           field-definition ::= <field-name> ":" <field-values>
+           
+                 field-name ::= <text-value>
+               field-values ::= (
+                     <field-value>
+                     | "[" <field-value> ["," <field-values>]* "]"
+                     |  ["\n\t -" <field-value>]+
+                  )
+                field-value ::= (text-value | numeric-value)
+
+                 text-value ::= <text-character>+ <alphanumeric-character>*
+              numeric-value ::= ('-' | '+')? <numeric-character>+
+     alphanumeric-character ::= (<text-character> | <numeric-character>)*
+             text-character ::= ('a' .. 'z' | 'A' .. 'Z' | '_')
+          numeric-character ::= '0' .. '9'
+```

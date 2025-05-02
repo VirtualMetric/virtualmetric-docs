@@ -6,7 +6,7 @@ pagination_next: null
 
 # Configuration: Overview
 
-**VirtualMetric DataStream&trade;** is a tool used primarily for telemetry purposes, and its administration involves the following key components:
+**DataStream**'s configuration involves the following key components:
 
 <TermTable>
    <TermCol>[**Devices**](/configuration/devices/index.mdx) </TermCol>
@@ -25,7 +25,7 @@ pagination_next: null
    <DefCol>Destinations for processed data, e.g. Sentinel or a storage system</DefCol>
 </TermTable>
 
-The following graphic illustrates the various stages where these components are used and how they connect to each other:
+The graphic below illustrates the various stages where these components are used and how they connect to each other:
 
 ```mermaid
 graph LR
@@ -61,9 +61,9 @@ To ingest data from the SOURCES and to communicate with them, **Director** uses 
 
 To forward processed data to TARGETS and to communicate with them, **Director** uses **Targets**.
 
-### Directories
+## Directories
 
-To help design the logic of the components that will define, combine, and run the above stages, **Director** uses the configuration files that can be found in the folders under `vm_root`:
+To help design the logic of the components that will define and run the processes of the above-mentioned stages, **DataStream** utilizes configuration files that can be found in the folders under `vm_root`:
 
 ```mermaid
 flowchart LR
@@ -126,11 +126,11 @@ flowchart LR
 
 All administration tasks are carried out with these files.
 
-The YML configuration files for each type of component have their own directory. These files contain predefined fields that these components recognize, and **Director** uses the settings defined in them to spawn and run its processes.
+## Files
 
-### Definition Files
+By default, the configuration files for each type of component have their own directory. These files contain predefined fields that these components recognize, and **Director** uses the settings defined in them to spawn and run its processes.
 
-Two directories are of key significance: `package` and `user`.
+Two directories are of significance: `package` and `user`.
 
 The `package` directory contains templates and ready-to-use definitions. These definitions are updated with newer versions of **Director**.
 
@@ -142,7 +142,37 @@ The `user` directory contains custom configurations. These definitions take prec
 
 The definitions under `user` override the definitions under `package`, and they are preserved between updates.
 
-## Basic Tasks
+The configurations may be placed in separate files or they may be grouped together logically, i.e. based on their intended purpose of use or the type of data streams they process. By default, these files reside in the directories under the `config` folder, and have a `.yml` extension.
+
+:::tip
+You can place your files anywhere you wish under the `config` directory. **Director** discovers all of them by traversing the folders recursively.
+:::
+
+To illustrate, a target file can be named as, e.g.
+
+> `config/target.yml`
+
+-or-
+
+> `config/targets/outputs.yml`
+
+-or-
+
+> `config/targets/outputs/sentinel.yml`
+
+As the nesting level increases, file names become more specific, offering additional context for classification.
+
+It is also possible to use _standalone_ files placed in any arbitrary directory you wish. In that case, however, the full path of the file must be supplied to **Director**.
+
+Select the organizational style that best suits your needs.
+
+:::note
+All configuration files must conform to [these rules](/docs/appendix.mdx#configuration-bnf).
+
+The **Schema** sections in the relevant chapters provide the fields used by the component.
+:::
+
+## Administration
 
 The system administrator's responsibilities cover the following.
 
@@ -150,25 +180,25 @@ The system administrator's responsibilities cover the following.
 
 This entails maintaining an up-and-running system by attending to the following:
 
-* **Settings** - Creating and modifying the setting files, validating and applying them, and keeping backups of them.
+* Creating and modifying the setting files, validating and applying them, and keeping backups of them.
 
-* **Devices** - Creating devices to listen new data sources, configuring their input parameters, monitoring their health, and troubleshooting connectivity issues.
+* Creating devices to listen new data sources, configuring their input parameters, monitoring their health, and troubleshooting connectivity issues.
 
-* **Pipelines** - Designing workflows, configuring processors, test the transformations, and optimizing performance
+* Designing workflows, configuring processors, test the transformations, and optimizing performance
 
-* **Routes** - Defining traffic patterns, setting up filtering rules, configuring destinations, and monitoring data flows
+* Defining traffic patterns, setting up filtering rules, configuring destinations, and monitoring data flows
 
-* **System monitoring** - Tracking performance metrics, monitoring resource usage, reviewing error logs, and generating reports
+* Monitoring and tracking performance metrics, monitoring resource usage, reviewing error logs, and generating reports
 
 ### Security
 
 A crucial aspect of system administration is security. This requires attending to the following:
 
-* **Authentication** - Configuring access controls, managing credentials, setting up encryption, and monitoring access logs
+* Configuring access controls, managing credentials, setting up encryption, and monitoring access logs
 
-* **Networks** - Configuring TLS/SSL, setting up firewalls, managing certificates, and controlling port access
+* Configuring TLS/SSL, setting up firewalls, managing certificates, and controlling port access
 
-* **Data protection** - Securing sensitive data, configuring encryption, managing data retention, and supervising compliance
+* Securing sensitive data, configuring encryption, managing data retention, and supervising compliance
 
 ### Troubleshooting
 
@@ -178,7 +208,7 @@ The most common issues are related to misconfiguration, connectivity, unhandled 
 
 The resolution generally involves checking the configurations and reviewing the logs, verifying connectivity and resource availability, and testing the solution in its final state.
 
-## Best Practices
+### Best Practices
 
 In order to maintain the integrity, robustness, and health of a system, some guidelines should be observed:
 
