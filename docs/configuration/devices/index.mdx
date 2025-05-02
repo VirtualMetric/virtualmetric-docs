@@ -33,25 +33,6 @@ They also provide _access control_, and _audit logging_.
 
 **Performance**: Improves telemetry performance through the multi-worker architecture, dynamic scaling ability, socket reuse optimization, buffer management, and resource monitoring capability.
 
-### Listening
-
-Data is received from listeners using various network protocols with two types of collection:
-
-**Push-based**: Devices like _Syslog_ (via _UDP_/_TCP_), _SNMP Traps_, _HTTP/HTTPS_, _TCP_/_UDP_, and _eStreamer_ send event data.
-
-**Pull-based**: Data is fetched from _Kafka_ topics, _Microsoft Sentinel_, _REST_ APIs, database queries, and other custom integration types.
-
-### Monitoring
-
-For monitoring operating systems, **Director** uses a unified agent-based approach with two types of deployment:
-
-**Managed** (Traditional): The agent is installed and managed by system administrators. This provides persistent installation on the target system. Local data is buffered in the emergence of network issues. **Director** supports _Windows_, _Linux_, _macOS_, _Solaris_, and _AIX_.
-
-**Auto-managed** (Agentless): 
-The agent is automatically deployed and managed, no manual installation is required. Auto-managed agents provide local data buffering, network resilience, and performance optimization. This deployment type is self-healing, since the agent is automatically redeployed if the process terminates. Also, it supports _remote credential management_. Deployment is done using **WinRM** for _Windows_, and **SSH** for _Linux_, _macOS_, _Solaris_, and _AIX_.
-
-Both approaches provide local data processing, store-and-forward capability against connectivity issues, real-time metrics and events, and native OS monitoring. The key difference is deployment and lifecycle management, not functionality.
-
 ## Deployment
 
 Devices enable handling and processing of data through the following means:
@@ -75,7 +56,7 @@ graph LR
 
 ### High Availability
 
-Here, sources are first connected to a load balancer&mdash;which distributes the work to multiple processes&mdash;after which they are streamed to either a **Director** cluster:
+With this approach, sources are first connected to a load balancer&mdash;which distributes the work to multiple processes&mdash;after which they are streamed to either a **Director** cluster:
 
 ```mermaid
 graph LR
@@ -94,6 +75,25 @@ graph LR
   A --> B
 ```
 
+## Listening
+
+Data is received from listeners using various network protocols with two types of collection:
+
+**Push-based**: Devices like _Syslog_ (via _UDP_/_TCP_), _SNMP Traps_, _HTTP/HTTPS_, _TCP_/_UDP_, and _eStreamer_ send event data.
+
+**Pull-based**: Data is fetched from _Kafka_ topics, _Microsoft Sentinel_, _REST_ APIs, database queries, and other custom integration types.
+
+## Monitoring
+
+For monitoring operating systems, **Director** uses a unified agent-based approach with two types of deployment:
+
+**Managed** (Traditional): The agent is installed and managed by system administrators. This provides persistent installation on the target system. Local data is buffered in the emergence of network issues. **Director** supports _Windows_, _Linux_, _macOS_, _Solaris_, and _AIX_.
+
+**Auto-managed** (Agentless): 
+The agent is automatically deployed and managed, no manual installation is required. Auto-managed agents provide local data buffering, network resilience, and performance optimization. This deployment type is self-healing, since the agent is automatically redeployed if the process terminates. Also, it supports _remote credential management_. Deployment is done using **WinRM** for _Windows_, and **SSH** for _Linux_, _macOS_, _Solaris_, and _AIX_.
+
+Both approaches provide local data processing, store-and-forward capability against connectivity issues, real-time metrics and events, and native OS monitoring. The key difference is deployment and lifecycle management, not functionality.
+
 ---
 
 ## Configuration
@@ -106,7 +106,7 @@ The fields required to define a device are:
 - `properties`: Type-specific configuration settings
 
 :::tip
-Each device type provides specific options detailed in its respective [chapter](/docs/configuration/devices/index.mdx).
+Each device type provides specific options detailed in its respective chapter.
 :::
 
 Use the `id` of the device to refer to it in your configurations.

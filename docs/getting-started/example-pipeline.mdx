@@ -4,13 +4,11 @@ pagination_next: null
 
 # Example: A Syslog-To-Sentinel Pipeline
 
-This chapter will help you get started with configuring and running a pipeline, walking you through a common scenario.
+This chapter will help you get started with configuring and running a pipeline, walking you through a common use case.
 
-## Overview
+## Scenario
 
-Pipelines collect data points from producers, reshape them with [processors](/docs/configuration/pipelines/processors/index.mdx), and then send them to consumers.
-
-Here, we will create a pipeline that ingests logs from a _Syslog_ source, selects certain items and categorizes them, and forwards them to **Microsoft Sentinel** in _Advanced Security Information Model_ (ASIM) format.
+We will create a pipeline that ingests logs from a _Syslog_ source, selects certain items and categorizes them, and forwards them to **Microsoft Sentinel** in _Advanced Security Information Model_ (ASIM) format.
 
 We will implement the following scenario:
 
@@ -25,7 +23,20 @@ We will implement the following scenario:
 
 We must work in an environment that has access to _Syslog_ messages. We also need a **Microsoft Sentinel** workspace with proper permissions.
 
-Also, a basic understanding of the YAML format will be helpful for configuring the files.
+:::note
+Before proceeding with the example, a simple configuration for logging is in order to check our results. Open the `vmetric.yml` file under `config` and add the following lines to it:
+
+```yaml
+debug:
+  log:
+    status: true
+  level: 4
+  console:
+    status: true
+```
+
+This will generate the logs of the operation, and place them under the folder `<vm_root>/storage/logs`.
+:::
 
 ## Configuration Files
 
