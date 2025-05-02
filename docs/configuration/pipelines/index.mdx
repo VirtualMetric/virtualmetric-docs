@@ -8,7 +8,7 @@ pagination_prev: null
 
 In short, they are aimed at helping you design and implement your telemetry workflow.
 
-## Definitions
+## Overview
 
 A pipeline, in its simplest form, is a chain of processors that run sequentially, operating on the incoming data streamed from providers, and directing them to destinations for consumption.
 
@@ -38,7 +38,7 @@ flowchart LR
 
 In real life scenarious, the level of complexity of the configurations will vary based on the requirements of the consumers and the intended destinations.
 
-## Configurations
+## Discussion
 
 A pipeline can consume data from multiple providers, and once it is finished processing them, can direct some or all of the processed data to a specific consumer in a _one-to-one_ scheme:
 
@@ -253,3 +253,39 @@ flowchart LR
 ```
 
 It is through this type of seamless three-stage design that a pipeline truly shines and proves itself indispensible for telemetry.
+
+---
+
+## Configuration
+
+The fields required to define them are:
+
+- `name`: Unique identifier
+- `processors`: List of processors with their structures
+
+Use the `name` of the pipeline to refer to it in your configurations.
+
+**Example**:
+
+```yaml
+pipelines:
+  - name: checkpoint
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{COMMONAPACHELOG}"
+      - set:
+          field: event.provider
+          value: "checkpoint"
+```
+
+This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
+
+Pipelines can also access the _metadata_ of processors. These are:
+
+* `tag`: Identifier used for logging/tracking processor execution
+* `logEntry`: Log entry being processed
+* `params`: Map of parameters available to scripts
+
+The data these metatags provide depends on the context and the log format.

@@ -93,3 +93,33 @@ graph LR
   B[(Director Cluster with VIP)]
   A --> B
 ```
+
+---
+
+## Configuration
+
+The fields required to define a device are:
+
+- `id`: Unique numeric identifier
+- `name`: Descriptive name
+- `type`: Device type (e.g. `http`, `tcp`, `udp`, `syslog`, `estreamer`, `azmon`, `windows`)
+- `properties`: Type-specific configuration settings
+
+:::tip
+Each device type provides specific options detailed in its respective [chapter](/docs/configuration/devices/index.mdx).
+:::
+
+Use the `id` of the device to refer to it in your configurations.
+
+**Example**:
+
+```yaml
+devices:
+  - id: 1
+    type: http
+    properties:
+      port: 8080
+      content_type: "application/json"
+```
+
+This is an HTTP device listening on port `8080`, and it expects data in JSON format.
