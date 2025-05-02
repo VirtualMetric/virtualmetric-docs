@@ -39,6 +39,7 @@ const sidebars: SidebarsConfig = {
         'getting-started/example-device',
         'getting-started/example-target',
         'getting-started/example-route',
+        'getting-started/example-process',
         // 'getting-started/example-multi-event-routing',
         'getting-started/example-pipeline',
       ],
