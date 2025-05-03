@@ -136,3 +136,212 @@ You can use environment variables like `${PASSWORD}` for your credentials. This 
 :::
 
 Multiple targets can be used for redundancy, [normalization](/docs/configuration/pipelines/normalization.mdx) rules can be implemented, and alerts can be put in place for notification and error handling.
+
+---
+
+N E W
+
+## Overview
+
+Targets represent destinations where processed log data is sent for storage, analysis, or further processing. They define how and where data is delivered from your processing pipeline.
+
+## Target Types
+
+The system supports the following target types:
+
+| Type | Description |
+|------|-------------|
+| [Elasticsearch](#elasticsearch) | Sends data to Elasticsearch clusters for search and analytics |
+| [Kafka](#kafka) | Publishes data to Kafka topics for distributed processing |
+| [S3](#s3) | Stores data in Amazon S3 buckets for long-term retention |
+| [Splunk](#splunk) | Forwards data to Splunk instances for security monitoring |
+| [Webhook](#webhook) | Delivers data to HTTP endpoints for custom integrations |
+
+## Properties
+
+All targets share these common properties:
+
+| Field | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `id` | Y | | Unique identifier for the target |
+| `name` | Y | | Descriptive name |
+| `description` | N | | Optional explanation |
+| `status` | N | `true` | Enable/disable the target |
+| `batch` | N | `false` | Enable batch mode delivery |
+| `batch_size` | N | `1000` | Records per batch when batching is enabled |
+| `batch_timeout` | N | `60` | Maximum seconds to wait before sending a batch |
+
+## Target Details
+
+### Elasticsearch
+
+Sends data to Elasticsearch clusters for indexing, search, and analytics.
+
+#### Basic Configuration
+
+```yaml
+targets:
+  - id: 1
+    name: production_elasticsearch
+    description: "Production Elasticsearch cluster"
+    type: elasticsearch
+    properties:
+      addresses:
+        - https://es01.example.com:9200
+        - https://es02.example.com:9200
+      index: logs-%{+yyyy.MM.dd}
+      username: elastic
+      password: ${ES_PASSWORD}
+```
+
+#### Advanced Features
+
+- **Index Templates**: Uses dynamic index names with date formatting
+- **Authentication**: Supports basic auth, API keys, and cloud ID
+- **Routing Control**: Custom document routing with routing fields
+- **Bulk Processing**: Optimized bulk indexing with configurable batch sizes
+
+### Kafka
+
+Publishes data to Kafka topics for distributed stream processing.
+
+#### Basic Configuration
+
+```yaml
+targets:
+  - id: 2
+    name: kafka_logs
+    description: "Kafka streaming target"
+    type: kafka
+    properties:
+      brokers:
+        - kafka1.example.com:9092
+        - kafka2.example.com:9092
+      topic: logs
+      compression: snappy
+```
+
+#### Advanced Features
+
+- **Compression**: Supports gzip, snappy, lz4, and zstd compression
+- **Authentication**: TLS, SASL, and Kerberos authentication methods
+- **Partitioning**: Custom partitioning strategies
+- **Reliability**: Configurable acks and retry mechanisms
+
+### S3
+
+Stores data in Amazon S3 buckets for long-term retention and analysis.
+
+#### Basic Configuration
+
+```yaml
+targets:
+  - id: 3
+    name: s3_archive
+    description: "S3 archival storage"
+    type: s3
+    properties:
+      bucket: logs-archive
+      region: us-west-2
+      prefix: logs/%{+yyyy}/%{+MM}/%{+dd}/
+      compression: gzip
+      access_key: ${AWS_ACCESS_KEY}
+      secret_key: ${AWS_SECRET_KEY}
+```
+
+#### Advanced Features
+
+- **Path Templates**: Dynamic path generation with date formatting
+- **Compression**: gzip, zstd, and snappy compression options
+- **Authentication**: IAM role and access key authentication
+- **Rotation**: Time and size-based file rotation
+
+### Splunk
+
+Forwards data to Splunk instances for security monitoring and operational intelligence.
+
+#### Basic Configuration
+
+```yaml
+targets:
+  - id: 4
+    name: splunk_security
+    description: "Splunk security monitoring"
+    type: splunk
+    properties:
+      url: https://splunk.example.com:8088
+      token: ${SPLUNK_HEC_TOKEN}
+      index: security
+      source_type: json
+```
+
+#### Advanced Features
+
+- **HEC Integration**: Native HTTP Event Collector support
+- **Indexing Control**: Custom index and source type mapping
+- **Batching**: Optimized event batching
+- **Reliability**: Automatic retry with backoff
+
+### Webhook
+
+Delivers data to HTTP endpoints for custom integrations and workflows.
+
+#### Basic Configuration
+
+```yaml
+targets:
+  - id: 5
+    name: webhook_alerts
+    description: "Webhook for critical alerts"
+    type: webhook
+    properties:
+      url: https://alerts.example.com/endpoint
+      headers:
+        Content-Type: application/json
+        X-API-Key: ${API_KEY}
+      method: POST
+```
+
+#### Advanced Features
+
+- **Authentication**: Basic auth, custom headers, and JWT support
+- **Format Control**: JSON, form, and custom serialization formats
+- **Transport**: TLS configuration and proxy support
+- **Reliability**: Configurable retry policies and timeout handling
+
+## Best Practices
+
+1. **Use Environment Variables**: Store sensitive information in environment variables
+2. **Configure Batching**: Enable batching for high-volume targets
+3. **Implement Redundancy**: Configure multiple targets for critical data paths
+4. **Monitor Performance**: Track delivery metrics to optimize throughput
+
+## Example: Multi-Target Configuration
+
+```yaml
+targets:
+  - id: 1
+    name: realtime_es
+    type: elasticsearch
+    properties:
+      addresses: 
+        - https://es.example.com:9200
+      index: logs-%{+yyyy.MM.dd}
+  
+  - id: 2
+    name: archive_s3
+    type: s3
+    batch: true
+    batch_size: 5000
+    properties:
+      bucket: logs-archive
+      region: us-west-2
+      prefix: logs/%{+yyyy}/%{+MM}/%{+dd}/
+      
+  - id: 3
+    name: alerts_webhook
+    type: webhook
+    properties:
+      url: https://alerts.example.com/endpoint
+      method: POST
+```

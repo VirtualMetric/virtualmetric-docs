@@ -122,3 +122,176 @@ devices:
 ```
 
 This is an HTTP device listening on port `8080`, and it expects data in JSON format.
+
+---
+
+N E W
+
+## Definitions
+
+Devices are configurable components that serve as data collection points in your environment. They represent various input mechanisms for receiving, processing, and forwarding log data and security events. Each device is defined using a standardized YAML configuration format that specifies its behavior, connection parameters, and processing options.
+
+## Core Concepts
+
+Devices operate on the following principles:
+
+1. **Unified Configuration Structure**: All devices share a common configuration framework with device-specific properties.
+2. **Data Collection**: Devices receive data through network connections, APIs, or direct system access.
+3. **Pipeline Integration**: Devices can link to preprocessing pipelines for data transformation.
+4. **Stateful Operation**: Devices maintain their operational state and can be enabled or disabled.
+
+## Properties
+
+All devices share these base configuration fields:
+
+| Field | Required | Description |
+|---|---|---|
+| `id` | Y | Unique numeric identifier |
+| `name` | Y | Human-readable device name |
+| `description` | - | Optional description of the device's purpose |
+| `type` | Y | Device type identifier (e.g., `http`, `syslog`, `tcp`) |
+| `tags` | - | Array of labels for categorization |
+| `pipelines` | - | Array of preprocessing pipeline references |
+| `status` | - | Boolean flag to enable/disable the device (default: `true`) |
+
+## Available Device Types
+
+The system supports the following device types:
+
+### Network-Based Devices
+
+These devices listen for incoming network connections:
+
+* **HTTP**: Accepts JSON data via HTTP/HTTPS POST requests with authentication options
+* **TCP**: Receives messages over TCP connections with framing and TLS support
+* **UDP**: Collects datagram-based messages with high throughput capabilities
+* **Syslog**: Specialized for syslog format messages with forwarding capabilities
+
+### Cloud Integration Devices
+
+These devices connect to cloud services:
+
+* **Azure Monitor**: Collects logs from Azure Log Analytics workspaces
+
+### Security-Specific Devices
+
+These devices integrate with security products:
+
+* **eStreamer**: Connects to eStreamer servers for security event collection
+
+### System Integration Devices
+
+These devices interact with operating systems:
+
+* **Windows**: Collects Windows events, performance data, and metrics
+
+## Device Usage Patterns
+
+Devices can be implemented in various ways depending on your requirements:
+
+### Data Collection
+
+* **Passive Listeners**: Configure devices to wait for incoming connections (HTTP, TCP, UDP, Syslog)
+* **Active Collectors**: Set up devices to initiate connections to external systems (Azure Monitor, eStreamer, Windows)
+
+### Authentication and Security
+
+* **Basic Authentication**: Username/password for HTTP and Windows devices
+* **API Keys**: Header-based authentication for HTTP devices
+* **HMAC Signatures**: Cryptographic verification for HTTP devices
+* **TLS Encryption**: Secure communication for HTTP, TCP, Syslog, and eStreamer devices
+* **Certificate-Based**: Client certificate authentication for eStreamer
+
+### Performance Optimization
+
+* **Worker Configuration**: Multiple worker processes for parallel processing
+* **Batching**: Grouped event processing for efficiency
+* **Buffer Management**: Tuned network buffers for throughput
+* **Connection Pooling**: Reusable connections for performance
+
+### Message Framing and Processing
+
+* **Delimiter-Based**: Line or character-based message separation
+* **Length-Prefixed**: Octet counting for binary protocols
+* **Custom Formats**: Protocol-specific message handling
+
+## Device Configuration Examples
+
+### Basic Data Collection
+
+Simple UDP listener for network data:
+
+```yaml
+- id: 1
+  name: basic_udp_collector
+  type: udp
+  properties:
+    port: 514
+```
+
+### Secure API Endpoint
+
+HTTPS server with authentication:
+
+```yaml
+- id: 2
+  name: secure_api
+  type: http
+  properties:
+    port: 8443
+    url: "/api/events"
+    tls:
+      status: true
+      cert_name: "server.crt"
+      key_name: "server.key"
+    authentication:
+      type: "basic"
+    username: "api_user"
+    password: "${API_PASSWORD}"
+```
+
+### Cloud Integration
+
+Azure Monitor collector:
+
+```yaml
+- id: 3
+  name: azure_security_logs
+  type: azmon
+  properties:
+    tenant_id: "00000000-0000-0000-0000-000000000000"
+    client_id: "11111111-1111-1111-1111-111111111111"
+    client_secret: "${AZURE_SECRET}"
+    workspace_id: "22222222-2222-2222-2222-222222222222"
+    stream:
+      - "SecurityEvent"
+      - "AzureActivity"
+```
+
+## Device Configuration Strategies
+
+### Layered Collectors
+
+Configure multiple devices to handle different aspects of data collection:
+
+* External-facing HTTP endpoints for application logs
+* Internal TCP/UDP listeners for network device logs
+* Specialized connectors for cloud and security products
+
+### Pipeline Integration
+
+Enhance device functionality by attaching preprocessing pipelines:
+
+* Filtering unwanted events
+* Normalizing data formats
+* Enriching events with additional context
+* Transforming raw data into structured formats
+
+### Scaling Considerations
+
+Adjust device configuration based on expected workload:
+
+* Increase worker count for high-volume inputs
+* Adjust batch sizes for optimal throughput
+* Configure buffer sizes based on message patterns
+* Use forwarding capabilities to distribute processing

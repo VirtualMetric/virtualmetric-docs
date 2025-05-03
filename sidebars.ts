@@ -214,14 +214,7 @@ const sidebars: SidebarsConfig = {
             "configuration/pipelines/handling-success",
           ],
         },
-        {
-          type: "category",
-          label: "Routes",
-          link: {type: "doc", id: "configuration/routes/index"},
-          items: [
-            'configuration/routes/management',
-          ],
-        },
+        'configuration/routes',
       ],
     },
     // {

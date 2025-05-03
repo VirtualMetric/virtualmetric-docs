@@ -289,3 +289,225 @@ Pipelines can also access the _metadata_ of processors. These are:
 * `params`: Map of parameters available to scripts
 
 The data these metatags provide depends on the context and the log format.
+
+---
+
+N E W
+
+## Overview
+
+Pipelines define a sequence of data processing operations that transform, enrich, and structure incoming log data. They serve as the central data transformation mechanism, applying processors in a specific order to normalize and enhance raw data.
+
+## Pipeline Structure
+
+A pipeline consists of a series of processors that are executed sequentially to transform data:
+
+```yaml
+pipelines:
+  - id: apache_logs
+    description: "Process Apache web server logs"
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{COMMONAPACHELOG}"
+      - date:
+          field: timestamp
+          formats:
+            - "dd/MMM/yyyy:HH:mm:ss Z"
+          target_field: "@timestamp"
+      - rename:
+          fields:
+            - from: clientip
+              to: source.ip
+      - geoip:
+          field: source.ip
+          target_field: source.geo
+```
+
+## Configuration Parameters
+
+Each pipeline definition includes the following parameters:
+
+| Field | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `id` | Y | | Unique identifier for the pipeline |
+| `description` | N | | Optional explanation of the pipeline's purpose |
+| `processors` | Y | | Ordered list of processors to execute |
+| `if` | N | | Conditional expression to determine if pipeline should be applied |
+| `on_failure` | N | | Processors to execute if the pipeline fails |
+| `ignore_failure` | N | `false` | Continue pipeline execution despite processor failures |
+
+## Processor Types
+
+Pipelines can include various processor types to handle different data transformation needs:
+
+| Processor | Purpose |
+|-----------|---------|
+| `append` | Adds values to array fields |
+| `convert` | Changes field data types |
+| `date` | Parses and normalizes date/time fields |
+| `dissect` | Simple pattern-based extraction |
+| `drop` | Removes documents based on conditions |
+| `geoip` | Enriches IP addresses with geographic data |
+| `grok` | Pattern matching and field extraction |
+| `json` | Parses JSON strings into structured data |
+| `kv` | Extracts key-value pairs from strings |
+| `lowercase` | Converts string fields to lowercase |
+| `remove` | Deletes specified fields |
+| `rename` | Changes field names |
+| `script` | Executes custom transformation logic |
+| `set` | Creates or updates field values |
+| `split` | Divides strings into arrays using delimiters |
+| `uppercase` | Converts string fields to uppercase |
+
+## Conditional Execution
+
+Pipelines and processors support conditional execution using the `if` parameter:
+
+```yaml
+pipelines:
+  - id: web_logs
+    processors:
+      - set:
+          field: event.category
+          value: web
+          if: "ctx.source == 'apache' || ctx.source == 'nginx'"
+      - geoip:
+          field: client.ip
+          target_field: client.geo
+          if: "ctx?.client?.ip != null"
+```
+
+## Error Handling
+
+Pipelines provide robust error handling with `on_failure` and `ignore_failure` options:
+
+```yaml
+pipelines:
+  - id: critical_processing
+    ignore_failure: false
+    on_failure:
+      - set:
+          field: error.message
+          value: "Pipeline processing failed: {{_ingest.on_failure_message}}"
+      - set:
+          field: event.outcome
+          value: "failure"
+```
+
+## Pipeline Chaining
+
+Pipelines can be chained together using routes or referenced in device configurations:
+
+```yaml
+# Reference in a device configuration
+devices:
+  - id: 1
+    name: web_server_logs
+    type: http
+    pipelines:
+      - common_enrichment
+      - web_logs
+    properties:
+      port: 8080
+```
+
+## Common Patterns
+
+### Log Parsing and Normalization
+
+```yaml
+pipelines:
+  - id: syslog_parser
+    description: "Parse and normalize syslog messages"
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{SYSLOGLINE}"
+      - date:
+          field: timestamp
+          target_field: "@timestamp"
+          formats:
+            - "MMM dd HH:mm:ss"
+            - "MMM  d HH:mm:ss"
+      - set:
+          field: event.kind
+          value: event
+      - rename:
+          fields:
+            - from: program
+              to: process.name
+            - from: logsource
+              to: host.hostname
+```
+
+### Field Enrichment
+
+```yaml
+pipelines:
+  - id: security_enrichment
+    description: "Enrich security events with additional context"
+    processors:
+      - geoip:
+          field: source.ip
+          target_field: source.geo
+      - set:
+          field: event.category
+          value: security
+      - script:
+          lang: painless
+          source: |
+            if (ctx.source.ip.startsWith('10.') || 
+                ctx.source.ip.startsWith('192.168.')) {
+              ctx.source.type = 'internal';
+            } else {
+              ctx.source.type = 'external';
+            }
+```
+
+### Data Transformation
+
+```yaml
+pipelines:
+  - id: data_normalizer
+    description: "Standardize field names and values"
+    processors:
+      - rename:
+          fields:
+            - from: src
+              to: source.ip
+            - from: dst
+              to: destination.ip
+      - convert:
+          field: bytes
+          type: long
+      - script:
+          lang: painless
+          source: "ctx.network.bytes = ctx.bytes_in + ctx.bytes_out"
+      - remove:
+          field:
+            - bytes_in
+            - bytes_out
+```
+
+## Best Practices
+
+1. **Start with Validation**: Begin pipelines with validation processors to ensure data quality
+2. **Order Matters**: Arrange processors logically - extract fields before using them
+3. **Use Conditionals**: Apply processors selectively to improve performance
+4. **Handle Errors**: Configure appropriate error handling for critical pipelines
+5. **Test Thoroughly**: Validate pipeline behavior with representative sample data
+6. **Document Purpose**: Include descriptive comments to explain complex transformations
+7. **Monitor Performance**: Watch for processor bottlenecks in high-volume environments
+
+## Common Pipeline Combinations
+
+| Use Case | Recommended Processors |
+|----------|------------------------|
+| Log Parsing | `grok` → `date` → `rename` → `remove` |
+| Security Events | `kv` → `geoip` → `set` → `script` |
+| API Data | `json` → `convert` → `rename` → `set` |
+| CSV Processing | `csv` → `convert` → `rename` |
+| Field Standardization | `rename` → `lowercase` → `set` |
