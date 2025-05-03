@@ -16,108 +16,148 @@ The sources can be devices, networks, or other pipelines, and the targets can be
 
 Each incoming stream can be queried with criteria specific to the information contained therein, and each outgoing stream can be enriched with inferences made from correlations for use on the destination side.
 
-Schematically:
+The following table summarizes the basic structure of a pipeline:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	provider[("`**Provider**
-   data
-  `")]
-  pipeline{"`**Pipeline**
-	  processor-1
-   processor-2
-   ...
-   processor-n
-  `"}
-	consumer[/"`**Consumer**
-   processed data
-  `"/]
-	provider --> pipeline --> consumer
-```
+<table>
+  <tr>
+    <td align="center"><strong>Provider</strong><br/>(data source)</td>
+    <td align="center">&rarr;</td>
+    <td align="center"><strong>Pipeline</strong><br/>(transformation)</td>
+    <td align="center">&rarr;</td>
+    <td align="center"><strong>Consumer</strong><br/>(destination)</td>
+  </tr>
+  <tr>
+    <td>
+      <em>Raw data</em>
+    </td>
+    <td></td>
+    <td>
+      processor-1<br/>
+      processor-2<br/>
+      ...<br/>
+      processor-n
+    </td>
+    <td></td>
+    <td>
+      <em>Processed data</em>
+    </td>
+  </tr>
+</table>
+
+In simpler form:
+
+**Provider** (data source) &rarr; **Pipeline** (processor-1, processor-2, ..., processor-n) &rarr; **Consumer** (destination)
 
 In real life scenarious, the level of complexity of the configurations will vary based on the requirements of the consumers and the intended destinations.
 
 ## Discussion
 
-A pipeline can consume data from multiple providers, and once it is finished processing them, can direct some or all of the processed data to a specific consumer in a _one-to-one_ scheme:
+A pipeline can consume data from multiple providers, and&mdash;once it is finished processing them&mdash;can direct some or all of the processed data to a specific consumer in a _one-to-one_ scheme:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	provider1[("`**Provider 1**
-   A
-   B
-  `")]
-	provider2[("`**Provider 2**
-   C
-  `")]
- 	pipeline{"`**Pipeline**`"}
-	consumer["`**Consumer**
-   B
-   C
-  `"]
-	provider1 --> pipeline;
-	provider2 --> pipeline;
-  pipeline --> consumer
-```
+<table>
+  <tr>
+    <td align="center" colspan="2"><strong>Providers</strong><br/>(data sources)</td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" rowspan="2"><strong>Pipeline</strong><br/>(transformation)</td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" rowspan="2"><strong>Consumer</strong><br/>(destination)</td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Provider 1</strong></td>
+    <td align="center"><strong>Provider 2</strong></td>
+  </tr>
+  <tr>
+    <td>
+      Data A<br/>
+      Data B
+    </td>
+    <td>
+      Data C
+    </td>
+    <td colspan="2"></td>
+    <td></td>
+    <td>
+      Data B<br/>
+      Data C
+    </td>
+  </tr>
+</table>
 
 It can also consume data from a single provider and deliver the processed results to multiple consumers:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	provider[("`**Provider**
-   A
-   B
-   C
-  `")]
- 	pipeline{"`**Pipeline**`"}
-	consumer1["`**Consumer 1**
-   A
-   C
-  `"]
-	consumer2["`**Consumer 2**
-   B
-  `"]
-	provider --> pipeline;
-  pipeline --> consumer1;
-  pipeline --> consumer2;
-
-```
+<table>
+  <tr>
+    <td align="center" rowspan="2"><strong>Provider</strong><br/>(data source)</td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" rowspan="2"><strong>Pipeline</strong><br/>(transformation)</td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" colspan="2"><strong>Consumers</strong><br/>(destinations)</td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Consumer 1</strong></td>
+    <td align="center"><strong>Consumer 2</strong></td>
+  </tr>
+  <tr>
+    <td>
+      Data A<br/>
+      Data B<br/>
+      Data C
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>
+      Data A<br/>
+      Data C
+    </td>
+    <td>
+      Data B
+    </td>
+  </tr>
+</table>
 
 Finally&mdash;and possibly in most real-life scenarios&mdash;there may be multiple providers and consumers connected to each other in much more complex arrangements:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	provider1[("`**Provider 1**
-   A
-   B
-  `")]
-	provider2[("`**Provider 2**
-   C
-  `")]
-	provider3[("`**Provider 3**
-   D
-  `")]
- 	pipeline{"`**Pipeline**`"}
-	consumer1["`**Consumer 1**
-   A
-   C
-  `"]
-	consumer2["`**Consumer 2**
-   A
-   B
-   D
-  `"]
-	provider1 --> pipeline;
-	provider2 --> pipeline;
-	provider3 --> pipeline;
-  pipeline --> consumer1;
-  pipeline --> consumer2;
-
-```
+<table>
+  <tr>
+    <td align="center" colspan="3"><strong>Providers</strong><br/>(data sources)</td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" rowspan="2"><strong>Pipeline</strong><br/>(transformation)</td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" colspan="2"><strong>Consumers</strong><br/>(destinations)</td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Provider 1</strong></td>
+    <td align="center"><strong>Provider 2</strong></td>
+    <td align="center"><strong>Provider 3</strong></td>
+    <td align="center"><strong>Consumer 1</strong></td>
+    <td align="center"><strong>Consumer 2</strong></td>
+  </tr>
+  <tr>
+    <td>
+      Data A<br/>
+      Data B
+    </td>
+    <td>
+      Data C
+    </td>
+    <td>
+      Data D
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>
+      Data A<br/>
+      Data C
+    </td>
+    <td>
+      Data A<br/>
+      Data B<br/>
+      Data D
+    </td>
+  </tr>
+</table>
 
 Effectively, each source may be the target of an upstream pipeline, and each target may serve as the source for a downstream one. The detail to keep in mind is that each provider side is delegating some processing to the next pipeline based on the established requirements of the consumer side. The pipeline is acting as the _middleman_ for the data interchange.
 
@@ -131,23 +171,26 @@ Notwithstanding the above, there is also a middle stage&mdash;where most softwar
 
 Pipelines are, once again, our primary tool for implementing these interim stages. Schematically:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	source1["`Source 1`"]
-	source2["`Source 2`"]
-	source3["`Source 3`"]
-  preprocess["`Preprocess`"]
-	route{"`Routes`"}
-  postprocess["`Postprocess`"]
-	target1["`Target 1`"]
-	target2["`Target 2`"]
-
-	source1 & source2 & source3 --> preprocess
-	preprocess --> route
-	route --> postprocess
-  postprocess --> target1 & target2
-```
+<table>
+  <tr>
+    <td align="center" colspan="3"><strong>Sources</strong></td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" rowspan="2"><strong>Preprocess</strong></td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" rowspan="2"><strong>Routes</strong></td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" rowspan="2"><strong>Postprocess</strong></td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" colspan="2"><strong>Targets</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Source 1</strong></td>
+    <td align="center"><strong>Source 2</strong></td>
+    <td align="center"><strong>Source 3</strong></td>
+    <td align="center"><strong>Target 1</strong></td>
+    <td align="center"><strong>Target 2</strong></td>
+  </tr>
+</table>
 
 As can be seen, routes are right in the middle of this setup.
 
@@ -230,27 +273,37 @@ Finally, the data may contain hints or fragments of information which, when corr
 
 The overall process can be represented schematically as:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	source1[("`**Source 1**
-		A
-		B
-	`")]
-	source2[("`**Source 2**
-		C
-	`")]
-  routing{"`**Routing**
-   D = curate(A, B, C)
-		E = enrich(transform(D))
-	`"}
-	target["`**Target**
-		E
-	`"]
-	source1 --> routing;
-	source2 --> routing;
-	routing --> target
-```
+<table>
+  <tr>
+    <td align="center" colspan="2"><strong>Sources</strong></td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" rowspan="2"><strong>Routing</strong><br/>(transformation)</td>
+    <td align="center" rowspan="2">&rarr;</td>
+    <td align="center" rowspan="2"><strong>Target</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Source 1</strong></td>
+    <td align="center"><strong>Source 2</strong></td>
+  </tr>
+  <tr>
+    <td>
+      Data A<br/>
+      Data B
+    </td>
+    <td>
+      Data C
+    </td>
+    <td></td>
+    <td>
+      D = curate(A, B, C)<br/>
+      E = enrich(transform(D))
+    </td>
+    <td></td>
+    <td>
+      Data E
+    </td>
+  </tr>
+</table>
 
 It is through this type of seamless three-stage design that a pipeline truly shines and proves itself indispensible for telemetry.
 
@@ -325,7 +378,7 @@ pipelines:
           target_field: source.geo
 ```
 
-## Configuration Parameters
+## Properties
 
 Each pipeline definition includes the following parameters:
 

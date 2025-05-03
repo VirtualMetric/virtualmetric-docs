@@ -43,37 +43,33 @@ Devices enable handling and processing of data through the following means:
 
 As stated above, devices offer various deployment options for different purposes.
 
-### Standalone
+* **Standalone** - With this approach, sources are connected directly to **Director**, bypassing any intermediate mechanism.
 
-With this approach, sources are connected directly to **Director**, bypassing any intermediate mechanism.
+  ```mermaid
+  graph LR
+    A[(Sources)]
+    B(Director)
+    A --> B
+  ```
 
-```mermaid
-graph LR
-  A[(Sources)]
-  B(Director)
-  A --> B
-```
+* **High Availability** - With this approach, sources are first connected to a load balancer&mdash;which distributes the work to multiple processes&mdash;after which they are streamed to either a **Director** cluster:
 
-### High Availability
+  ```mermaid
+  graph LR
+    A[(Sources)]
+    B[/Load Balancer/]
+    C[(Director Cluster)]
+    A --> B --> C
+  ```
 
-With this approach, sources are first connected to a load balancer&mdash;which distributes the work to multiple processes&mdash;after which they are streamed to either a **Director** cluster:
+  -or- sources are connected to a cluster with _Variable Information Period_ (VIP):
 
-```mermaid
-graph LR
-  A[(Sources)]
-  B[/Load Balancer/]
-  C[(Director Cluster)]
-  A --> B --> C
-```
-
--or- sources are connected to a cluster with _Variable Information Period_ (VIP):
-
-```mermaid
-graph LR
-  A[(Sources)]
-  B[(Director Cluster with VIP)]
-  A --> B
-```
+  ```mermaid
+  graph LR
+    A[(Sources)]
+    B[(Director Cluster with VIP)]
+    A --> B
+  ```
 
 ## Listening
 
