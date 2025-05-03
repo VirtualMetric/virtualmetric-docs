@@ -37,6 +37,24 @@ It should be obvious from their name that routes fundamentally select and forwar
   <DefCol>One or more destinations to forward the processed data</DefCol>
 </TermTable>
 
+### Deployment
+
+Forwarding data involves controlling the flow, and there are several design patterns:
+
+* Single source to single target
+
+> Route &rarr; [_Normalize_] &rarr; Storage
+
+* Single source to multiple targets
+
+> Route &rarr; [_Enrich_] &rarr; Monitoring + Storage + Backup
+
+* Multiple sources to single target
+
+> Syslog + Winlog + Apache &rarr; [_Normalize_] &rarr; Central Analytics
+
+Routes can include zero or more pipelines. Multiple pipelines will process data sequentially. A pipeline's processors can override routing by using the `reroute` processor. The `final` processor terminates the pipeline's execution.
+
 ### Filtering
 
 Selecting events typically involves evaluating boolean expressions such as
@@ -47,58 +65,6 @@ Selecting events typically involves evaluating boolean expressions such as
 > `!(source.ip == '10.0.0.1' || source.ip == '10.0.0.2')`
 
 etc. which are applied to previously normalized data.
-
-### Data Flow
-
-Forwarding data involves controlling the flow, and there are several design patterns:
-
-  ```mermaid
-  ---
-  title: Single Source to Single Target
-  ---
-  graph LR
-    A("Route")
-    B[/"Normalize"\]
-    C[("Storage")]
-    A --> B --> C
-  ```
----
-
-  ```mermaid
-  ---
-  title: Single Source to Multiple Targets (Mirroring)
-  ---
-  graph LR
-    A("Route")
-    B{"Enrich"}
-    C[("Monitoring")]
-    D[("Storage")]
-    E[("Backup")]
-    
-    A --> B
-    B --> C & D & E
-  ```
-
----
-
-  ```mermaid
-  ---
-  title: Multiple Sources to Single Target
-  ---
-  graph LR
-    A("Syslog")
-    B("Winlog")
-    C("Apache")
-    D[/"Normalize"\]
-    E[("Central Analytics")]
-    
-    A & B & C --> D --> E
-  ```
----
-
-### Pipelines
-
-Routes can include zero or more pipelines. Multiple pipelines will process data sequentially. A pipeline's processors can override routing by using the `reroute` processor. The `final` processor terminates the pipeline's execution.
 
 ### Evaluation
 
@@ -198,43 +164,6 @@ When assigning, use a single pipeline whenever possible. Document multi-pipeline
 Collate similar targets, documenting any mirroring requirements, and consider the target capacity and throughput.
 
 ---
-
-## Configuration
-
-The fields required to define routes are:
-
-- `name`: Unique identifier
-- `devices`: List of device IDs or patterns that match source devices
-- `targets`: List of target IDs where data should be sent
-- `pipelines`: (Optional) List of pipeline IDs for data processing
-
-:::warning
-Do _not_ confuse these fields with the component entries at the first level. As routes are at the highest level of a telemetry configuration, they orchestrate the stream by specifying the components that create the traffic.
-:::
-
-Use the `name` of the route to refer to it in your configurations.
-
-The enlisted devices, targets, and pipelines must be pre-configured to be usable by routes. Use their ids or names to refer to them.
-
-**Example**:
-
-```yaml
-routes:
-  - name: syslog_to_backup
-    devices: 
-      - syslog_*
-    pipelines: 
-      - normalize
-      - enrich
-    targets: 
-      - backup
-```
-
-This route receives its data from devices with the prefix `syslog_` in their names, uses the `normalize` and `enrich` pipelines to transform the received data points, and then forwards them to the target named `backup`.
-
-
---- 
-
 N E W
 
 ## Overview
@@ -275,6 +204,30 @@ Each route definition includes the following parameters:
 | `targets` | N | | List of targets to deliver processed events to |
 | `status` | N | `true` | Enable/disable the route |
 | `order` | N | `0` | Processing priority (lower numbers processed first) |
+
+:::warning
+Do _not_ confuse field names like `pipelines` or `targets` with the component entries at the first level. As the highest level of a telemetry configuration, routes orchestrate the stream by specifying the components that compose the traffic.
+:::
+
+Use the `name` of the route to refer to it in your configurations.
+
+The enlisted devices, targets, and pipelines must be pre-configured to be usable by routes. Use their ids or names to refer to them.
+
+**Example**:
+
+```yaml
+routes:
+  - name: syslog_to_backup
+    devices: 
+      - syslog_*
+    pipelines: 
+      - normalize
+      - enrich
+    targets: 
+      - backup
+```
+
+This route receives its data from devices with the prefix `syslog_` in their names, uses the `normalize` and `enrich` pipelines to transform the received data points, and then forwards them to the target named `backup`.
 
 ## Conditional Routing
 

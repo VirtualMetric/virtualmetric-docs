@@ -18,146 +18,27 @@ Each incoming stream can be queried with criteria specific to the information co
 
 The following table summarizes the basic structure of a pipeline:
 
-<table>
-  <tr>
-    <td align="center"><strong>Provider</strong><br/>(data source)</td>
-    <td align="center">&rarr;</td>
-    <td align="center"><strong>Pipeline</strong><br/>(transformation)</td>
-    <td align="center">&rarr;</td>
-    <td align="center"><strong>Consumer</strong><br/>(destination)</td>
-  </tr>
-  <tr>
-    <td>
-      <em>Raw data</em>
-    </td>
-    <td></td>
-    <td>
-      processor-1<br/>
-      processor-2<br/>
-      ...<br/>
-      processor-n
-    </td>
-    <td></td>
-    <td>
-      <em>Processed data</em>
-    </td>
-  </tr>
-</table>
+> **Provider** (_raw data_) &rarr; **Pipeline** (_transformation_) &rarr; **Consumer** (_processed data_)
 
-In simpler form:
+where **Pipeline** (_transformation_) is
 
-**Provider** (data source) &rarr; **Pipeline** (processor-1, processor-2, ..., processor-n) &rarr; **Consumer** (destination)
+> (processor<sub>1</sub> &compfn; processor<sub>2</sub> &compfn; &#8230; &compfn; processor<sub>n</sub>)(_data_)
 
 In real life scenarious, the level of complexity of the configurations will vary based on the requirements of the consumers and the intended destinations.
 
-## Discussion
+## Deployment
 
-A pipeline can consume data from multiple providers, and&mdash;once it is finished processing them&mdash;can direct some or all of the processed data to a specific consumer in a _one-to-one_ scheme:
+A pipeline can consume data from multiple providers, and&mdash;once it is finished processing them&mdash;can direct some or all of the processed data to a specific consumer in a one-to-one scheme:
 
-<table>
-  <tr>
-    <td align="center" colspan="2"><strong>Providers</strong><br/>(data sources)</td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" rowspan="2"><strong>Pipeline</strong><br/>(transformation)</td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" rowspan="2"><strong>Consumer</strong><br/>(destination)</td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Provider 1</strong></td>
-    <td align="center"><strong>Provider 2</strong></td>
-  </tr>
-  <tr>
-    <td>
-      Data A<br/>
-      Data B
-    </td>
-    <td>
-      Data C
-    </td>
-    <td colspan="2"></td>
-    <td></td>
-    <td>
-      Data B<br/>
-      Data C
-    </td>
-  </tr>
-</table>
+> **Provider**<sub>1</sub>[A] &rarr; **Pipeline** &rarr; **Consumer**<sub>1</sub>(A)
 
 It can also consume data from a single provider and deliver the processed results to multiple consumers:
 
-<table>
-  <tr>
-    <td align="center" rowspan="2"><strong>Provider</strong><br/>(data source)</td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" rowspan="2"><strong>Pipeline</strong><br/>(transformation)</td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" colspan="2"><strong>Consumers</strong><br/>(destinations)</td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Consumer 1</strong></td>
-    <td align="center"><strong>Consumer 2</strong></td>
-  </tr>
-  <tr>
-    <td>
-      Data A<br/>
-      Data B<br/>
-      Data C
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>
-      Data A<br/>
-      Data C
-    </td>
-    <td>
-      Data B
-    </td>
-  </tr>
-</table>
+> **Provider**<sub>1</sub>[A] + **Provider**<sub>2</sub>[B]  &rarr; **Pipeline** &rarr; **Consumer**<sub>1</sub>(A) + **Consumer**<sub>2</sub>(B)
 
 Finally&mdash;and possibly in most real-life scenarios&mdash;there may be multiple providers and consumers connected to each other in much more complex arrangements:
 
-<table>
-  <tr>
-    <td align="center" colspan="3"><strong>Providers</strong><br/>(data sources)</td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" rowspan="2"><strong>Pipeline</strong><br/>(transformation)</td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" colspan="2"><strong>Consumers</strong><br/>(destinations)</td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Provider 1</strong></td>
-    <td align="center"><strong>Provider 2</strong></td>
-    <td align="center"><strong>Provider 3</strong></td>
-    <td align="center"><strong>Consumer 1</strong></td>
-    <td align="center"><strong>Consumer 2</strong></td>
-  </tr>
-  <tr>
-    <td>
-      Data A<br/>
-      Data B
-    </td>
-    <td>
-      Data C
-    </td>
-    <td>
-      Data D
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>
-      Data A<br/>
-      Data C
-    </td>
-    <td>
-      Data A<br/>
-      Data B<br/>
-      Data D
-    </td>
-  </tr>
-</table>
+> **Provider**<sub>1</sub>[A, B] + **Provider**<sub>2</sub>[C] + **Provider**<sub>3</sub>[D] &rarr; **Pipeline** &rarr; **Consumer**<sub>1</sub>(A, C) + **Consumer**<sub>2</sub>(A, B, D)
 
 Effectively, each source may be the target of an upstream pipeline, and each target may serve as the source for a downstream one. The detail to keep in mind is that each provider side is delegating some processing to the next pipeline based on the established requirements of the consumer side. The pipeline is acting as the _middleman_ for the data interchange.
 
@@ -169,30 +50,11 @@ Notwithstanding the above, there is also a middle stage&mdash;where most softwar
 
 > As a side note, the implementation of these interim stages is based on a transformation known as [normalization](/configuration/pipelines/normalization.mdx), i.e. preparing the data for easier handling further down the chain.
 
-Pipelines are, once again, our primary tool for implementing these interim stages. Schematically:
+Pipelines are, once again, our primary tool for implementing these interim stages:
 
-<table>
-  <tr>
-    <td align="center" colspan="3"><strong>Sources</strong></td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" rowspan="2"><strong>Preprocess</strong></td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" rowspan="2"><strong>Routes</strong></td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" rowspan="2"><strong>Postprocess</strong></td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" colspan="2"><strong>Targets</strong></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Source 1</strong></td>
-    <td align="center"><strong>Source 2</strong></td>
-    <td align="center"><strong>Source 3</strong></td>
-    <td align="center"><strong>Target 1</strong></td>
-    <td align="center"><strong>Target 2</strong></td>
-  </tr>
-</table>
+> **Sources** &rarr; [_Preprocess_] &rarr; **Routes** &rarr; [_Postprocess_] &rarr; **Targets**
 
-As can be seen, routes are right in the middle of this setup.
+Routes are right in the middle of this arrangement.
 
 ---
 
@@ -271,87 +133,11 @@ After this, the remaining data may need to be converted into forms making them m
 
 Finally, the data may contain hints or fragments of information which, when correlated with other available information, may yield insights that may be prerequisite to analysis and use. Adding correlated information in order to render the data more relevant&mdash;or increase its relevance&mdash;is known as _enrichment_.
 
-The overall process can be represented schematically as:
-
-<table>
-  <tr>
-    <td align="center" colspan="2"><strong>Sources</strong></td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" rowspan="2"><strong>Routing</strong><br/>(transformation)</td>
-    <td align="center" rowspan="2">&rarr;</td>
-    <td align="center" rowspan="2"><strong>Target</strong></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Source 1</strong></td>
-    <td align="center"><strong>Source 2</strong></td>
-  </tr>
-  <tr>
-    <td>
-      Data A<br/>
-      Data B
-    </td>
-    <td>
-      Data C
-    </td>
-    <td></td>
-    <td>
-      D = curate(A, B, C)<br/>
-      E = enrich(transform(D))
-    </td>
-    <td></td>
-    <td>
-      Data E
-    </td>
-  </tr>
-</table>
-
 It is through this type of seamless three-stage design that a pipeline truly shines and proves itself indispensible for telemetry.
 
 ---
 
-## Configuration
-
-The fields required to define pipelines are:
-
-- `name`: Unique identifier
-- `processors`: List of processors with their structures
-
-Use the `name` of the pipeline to refer to it in your configurations.
-
-**Example**:
-
-```yaml
-pipelines:
-  - name: checkpoint
-    processors:
-      - grok:
-          field: message
-          patterns:
-            - "%{COMMONAPACHELOG}"
-      - set:
-          field: event.provider
-          value: "checkpoint"
-```
-
-This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
-
-Pipelines can also access the _metadata_ of processors. These are:
-
-* `tag`: Identifier used for logging/tracking processor execution
-* `logEntry`: Log entry being processed
-* `params`: Map of parameters available to scripts
-
-The data these metatags provide depends on the context and the log format.
-
----
-
-N E W
-
-## Overview
-
-Pipelines define a sequence of data processing operations that transform, enrich, and structure incoming log data. They serve as the central data transformation mechanism, applying processors in a specific order to normalize and enhance raw data.
-
-## Pipeline Structure
+## Structure
 
 A pipeline consists of a series of processors that are executed sequentially to transform data:
 
@@ -391,28 +177,24 @@ Each pipeline definition includes the following parameters:
 | `on_failure` | N | | Processors to execute if the pipeline fails |
 | `ignore_failure` | N | `false` | Continue pipeline execution despite processor failures |
 
-## Processor Types
+Use the `name` of the pipeline to refer to it in your configurations.
 
-Pipelines can include various processor types to handle different data transformation needs:
+**Example**:
 
-| Processor | Purpose |
-|-----------|---------|
-| `append` | Adds values to array fields |
-| `convert` | Changes field data types |
-| `date` | Parses and normalizes date/time fields |
-| `dissect` | Simple pattern-based extraction |
-| `drop` | Removes documents based on conditions |
-| `geoip` | Enriches IP addresses with geographic data |
-| `grok` | Pattern matching and field extraction |
-| `json` | Parses JSON strings into structured data |
-| `kv` | Extracts key-value pairs from strings |
-| `lowercase` | Converts string fields to lowercase |
-| `remove` | Deletes specified fields |
-| `rename` | Changes field names |
-| `script` | Executes custom transformation logic |
-| `set` | Creates or updates field values |
-| `split` | Divides strings into arrays using delimiters |
-| `uppercase` | Converts string fields to uppercase |
+```yaml
+pipelines:
+  - name: checkpoint
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{COMMONAPACHELOG}"
+      - set:
+          field: event.provider
+          value: "checkpoint"
+```
+
+This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
 
 ## Conditional Execution
 

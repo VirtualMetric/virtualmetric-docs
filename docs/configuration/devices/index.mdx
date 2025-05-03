@@ -5,7 +5,7 @@ pagination_next: null
 
 # Devices
 
-**VirtualMetric Director** uses devices as an abstraction layer to collect data from various sources and manage them for telemetry. As such, they decouple data sources from **Director**'s pipelines.
+**Director** uses devices as an abstraction layer to collect data from various sources and manage them for telemetry. As such, they decouple data sources from **Director**'s pipelines.
 
 :::note
 Each device type provides specific configuration options detailed in their respective chapters.
@@ -43,33 +43,17 @@ Devices enable handling and processing of data through the following means:
 
 As stated above, devices offer various deployment options for different purposes.
 
-* **Standalone** - With this approach, sources are connected directly to **Director**, bypassing any intermediate mechanism.
+* **Standalone** - Sources are connected directly to **Director**, bypassing any intermediate mechanism.
 
-  ```mermaid
-  graph LR
-    A[(Sources)]
-    B(Director)
-    A --> B
-  ```
+  > Sources &rarr; **Director**
 
-* **High Availability** - With this approach, sources are first connected to a load balancer&mdash;which distributes the work to multiple processes&mdash;after which they are streamed to either a **Director** cluster:
+* **High Availability** - Sources are first connected to a load balancer&mdash;which distributes the work to multiple processes&mdash;after which they are streamed to either a **Director** cluster:
 
-  ```mermaid
-  graph LR
-    A[(Sources)]
-    B[/Load Balancer/]
-    C[(Director Cluster)]
-    A --> B --> C
-  ```
+  > Sources &rarr; Load Balancer &rarr; **Director**
 
   -or- sources are connected to a cluster with _Variable Information Period_ (VIP):
 
-  ```mermaid
-  graph LR
-    A[(Sources)]
-    B[(Director Cluster with VIP)]
-    A --> B
-  ```
+  > Sources &rarr; **Director** Cluster
 
 ## Listening
 
@@ -91,37 +75,6 @@ The agent is automatically deployed and managed, no manual installation is requi
 Both approaches provide local data processing, store-and-forward capability against connectivity issues, real-time metrics and events, and native OS monitoring. The key difference is deployment and lifecycle management, not functionality.
 
 ---
-
-## Configuration
-
-The fields required to define a device are:
-
-- `id`: Unique numeric identifier for the device
-- `type`: Device type (e.g. `http`, `tcp`, `udp`, `syslog`, `estreamer`, `azmon`, `windows`)
-- `properties`: Type-specific configuration settings
-
-:::tip
-Each device type provides specific options detailed in its respective chapter.
-:::
-
-Use the `id` of the device to refer to it in your configurations.
-
-**Example**:
-
-```yaml
-devices:
-  - id: 1
-    type: http
-    properties:
-      port: 8080
-      content_type: "application/json"
-```
-
-This is an HTTP device listening on port `8080`, and it expects data in JSON format.
-
----
-
-N E W
 
 ## Definitions
 
@@ -150,7 +103,26 @@ All devices share these base configuration fields:
 | `pipelines` | - | Array of preprocessing pipeline references |
 | `status` | - | Boolean flag to enable/disable the device (default: `true`) |
 
-## Available Device Types
+:::tip
+Each device type provides specific options detailed in its respective chapter.
+:::
+
+Use the `id` of the device to refer to it in your configurations.
+
+**Example**:
+
+```yaml
+devices:
+  - id: 1
+    type: http
+    properties:
+      port: 8080
+      content_type: "application/json"
+```
+
+This is an HTTP device listening on port `8080`, and it expects the incoming data to be in JSON format.
+
+## Device Types
 
 The system supports the following device types:
 
