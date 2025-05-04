@@ -123,7 +123,7 @@ const config: Config = {
       copyright: `Copyright ©${new Date().getFullYear()} VirtualMetric B.V.`,
     },
     prism: {
-      theme: prismThemes.palenight
+      theme: prismThemes.vsDark
     },
   } satisfies Preset.ThemeConfig,
 };
