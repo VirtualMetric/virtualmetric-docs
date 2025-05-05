@@ -1,5 +1,5 @@
 # Deployment: Overview
-{/* 
+
 ## Introduction
 
 Deploying the system effectively requires careful planning and consideration of your environment, requirements, and operational constraints. This chapter provides guidance on deployment strategies, architecture considerations, and best practices to ensure a successful implementation.
@@ -139,79 +139,6 @@ spec:
           claimName: system-data
 ```
 
-## Deployment Architecture Examples
-
-### Small Deployment
-
-<div style="text-align:center">
-  <pre>
-  ┌─────────────────────────────────┐
-  │           Single Server          │
-  │                                  │
-  │  ┌──────────┐    ┌──────────┐   │
-  │  │ Collectors│◄───┤ Sources  │   │
-  │  └────┬─────┘    └──────────┘   │
-  │       │                         │
-  │  ┌────▼─────┐                   │
-  │  │Processors│                   │
-  │  └────┬─────┘                   │
-  │       │                         │
-  │  ┌────▼─────┐    ┌──────────┐   │
-  │  │  Routes  ├───►│ Targets  │   │
-  │  └──────────┘    └──────────┘   │
-  └─────────────────────────────────┘
-  </pre>
-</div>
-
-### Medium Distributed Deployment
-
-<div style="text-align:center">
-  <pre>
-  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐
-  │ Collector     │  │ Processor     │  │ Router        │
-  │ Server        │  │ Server        │  │ Server        │
-  │               │  │               │  │               │
-  │ ┌──────────┐  │  │ ┌──────────┐  │  │ ┌──────────┐  │
-  │ │Collectors│──┼──┼─►Processors│──┼──┼─►  Routes  │  │
-  │ └──────────┘  │  │ └──────────┘  │  │ └────┬─────┘  │
-  └───────────────┘  └───────────────┘  └──────┼────────┘
-          ▲                                    │
-          │                                    ▼
-  ┌───────┴───────┐                    ┌──────────────┐
-  │    Sources    │                    │   Targets    │
-  └───────────────┘                    └──────────────┘
-  </pre>
-</div>
-
-### High Availability Deployment
-
-<div style="text-align:center">
-  <pre>
-       ┌─────────────┐                          ┌─────────────┐
-       │  Sources    │                          │  Targets    │
-       └──────┬──────┘                          └──────┬──────┘
-              │                                        │
-  ┌───────────┼────────────────────────────────┬──────┼────────┐
-  │Load       │           Load                 │      │        │
-  │Balancer   ▼           Balancer            │      ▼        │
-  │     ┌──────────┐      ┌──────────┐        │ ┌──────────┐  │
-  │     │Collectors│      │Collectors│        │ │  Routes  │  │
-  │     └────┬─────┘      └────┬─────┘        │ └────┬─────┘  │
-  │          │                 │              │      │        │
-  │     ┌────▼─────┐      ┌────▼─────┐        │ ┌────▼─────┐  │
-  │     │Processors│      │Processors│        │ │  Routes  │  │
-  │     └────┬─────┘      └────┬─────┘        │ └──────────┘  │
-  │          │                 │              │               │
-  │ Server A └────────┬────────┘ Server B     │ Server C      │
-  └───────────────────┼────────────────────────┴───────────────┘
-                      │
-                ┌─────▼──────┐
-                │ Shared     │
-                │ Storage    │
-                └────────────┘
-  </pre>
-</div>
-
 ## Post-Deployment Verification
 
 After deployment, verify the installation using these checks:
@@ -235,19 +162,3 @@ After deployment, verify the installation using these checks:
    ```bash
    system-ctl test-pipeline --source=test
    ```
-
-## Next Steps
-
-After completing the initial deployment:
-
-1. **Configuration**: Fine-tune the system configuration based on your environment
-2. **Integration**: Connect with your data sources and targets
-3. **Pipeline Development**: Create processing pipelines for your data
-4. **Monitoring**: Set up monitoring for the deployment
-5. **Backup**: Implement regular backup procedures
-
-For environment-specific deployment details, see:
-- [Docker Deployment](./docker-deployment.mdx)
-- [Kubernetes Deployment](./kubernetes-deployment.mdx)
-- [On-Premises Deployment](./on-premises-deployment.mdx)
-- [Cloud Deployment](./cloud-deployment.mdx) */}
