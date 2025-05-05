@@ -7,10 +7,6 @@ pagination_next: null
 
 **Director** uses _targets_ as the output destinations to forward, store, and analyze collected telemetry data. Targets provide flexible options for data persistence and integration with various analysis platforms.
 
-:::note
-Each target type provides specific configuration options detailed in their respective chapters.
-:::
-
 ## Deployment
 
 The following deployment types can be used:
@@ -39,8 +35,7 @@ All targets share these common properties:
 
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `id` | Y | | Unique identifier for the target |
-| `name` | Y | | Descriptive name |
+| `name` | Y | | Unique identifier for the target |
 | `description` | N | | Optional explanation |
 | `status` | N | `true` | Enable/disable the target |
 | `batch` | N | `false` | Enable batch mode delivery |
@@ -48,7 +43,7 @@ All targets share these common properties:
 | `batch_timeout` | N | `60` | Maximum seconds to wait before sending a batch |
 
 :::tip
-Each target type provides specific options detailed in its respective chapter.
+Each target type provides specific configuration options detailed in their respective chapters.
 :::
 
 Use the `name` of the target to refer to it in your configurations.
@@ -116,8 +111,7 @@ Sends data to Elasticsearch clusters for indexing, search, and analytics.
 
 ```yaml
 targets:
-  - id: 1
-    name: production_elasticsearch
+  - name: production_elasticsearch
     description: "Production Elasticsearch cluster"
     type: elasticsearch
     properties:
@@ -144,8 +138,7 @@ Publishes data to Kafka topics for distributed stream processing.
 
 ```yaml
 targets:
-  - id: 2
-    name: kafka_logs
+  - name: kafka_logs
     description: "Kafka streaming target"
     type: kafka
     properties:
@@ -171,8 +164,7 @@ Stores data in Amazon S3 buckets for long-term retention and analysis.
 
 ```yaml
 targets:
-  - id: 3
-    name: s3_archive
+  - name: s3_archive
     description: "S3 archival storage"
     type: s3
     properties:
@@ -199,8 +191,7 @@ Forwards data to Splunk instances for security monitoring and operational intell
 
 ```yaml
 targets:
-  - id: 4
-    name: splunk_security
+  - name: splunk_security
     description: "Splunk security monitoring"
     type: splunk
     properties:
@@ -225,8 +216,7 @@ Delivers data to HTTP endpoints for custom integrations and workflows.
 
 ```yaml
 targets:
-  - id: 5
-    name: webhook_alerts
+  - name: webhook_alerts
     description: "Webhook for critical alerts"
     type: webhook
     properties:
@@ -266,16 +256,14 @@ The integration options for the cloud are below:
 
 ```yaml
 targets:
-  - id: 1
-    name: realtime_es
+  - name: realtime_es
     type: elasticsearch
     properties:
       addresses: 
         - https://es.example.com:9200
       index: logs-%{+yyyy.MM.dd}
   
-  - id: 2
-    name: archive_s3
+  - name: archive_s3
     type: s3
     batch: true
     batch_size: 5000
@@ -284,8 +272,7 @@ targets:
       region: us-west-2
       prefix: logs/%{+yyyy}/%{+MM}/%{+dd}/
       
-  - id: 3
-    name: alerts_webhook
+  - name: alerts_webhook
     type: webhook
     properties:
       url: https://alerts.example.com/endpoint
@@ -294,10 +281,12 @@ targets:
 
 ## Best Practices
 
-- **Use Environment Variables**: Store sensitive information in environment variables
+The following best practices are recommended for configuring targets:
 
-- **Configure Batching**: Enable batching for high-volume targets
-
-- **Implement Redundancy**: Configure multiple targets for critical data paths
-
-- **Monitor Performance**: Track delivery metrics to optimize throughput
+- Store sensitive information in environment variables
+- Enable batching for high-volume targets
+- Compress data to save bandwidth and storage
+- Use retry mechanisms and error handling
+- Set up alerts for delivery failures
+- Configure multiple targets for critical data paths
+- Track delivery metrics to optimize throughput

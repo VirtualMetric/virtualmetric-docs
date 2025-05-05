@@ -26,7 +26,7 @@ where **Pipeline** (_transformation_) is
 
 In real life scenarios, the level of complexity of the configurations will vary based on the requirements of the consumers and the intended destinations.
 
-## Deployment
+### Deployment
 
 A pipeline can consume data from multiple providers, and&mdash;once it is finished processing them&mdash;can direct some or all of the processed data to a specific consumer in a one-to-one scheme:
 
@@ -44,7 +44,7 @@ Effectively, each source may be the target of an upstream pipeline, and each tar
 
 Even if the pipeline routes some of the data without any processing, this will be due to the demands of the consumer side, so the pipeline is still performing a meaningful role by forwarding the data as per the consumer's policy.
 
-## Included Middle
+### Included Middle
 
 Notwithstanding the above, there is also a middle stage&mdash;where most software solutions do their real work: **Routing**. However, this is a stage that in turn depends on two other interim stages that also act as consumers and providers, and these are the **Pre-processing** and **Post-processing** stages, respectively.
 
@@ -60,7 +60,7 @@ Routes are right in the middle of this arrangement.
 
 The purpose of the graphics provided above is to emphasize one thing: the primary purpose of pipelines is using _division of labor_ to simplify telemetry.
 
-## Data Streams
+### Data Streams
 
 In any telemetry operation, the incoming raw data streams will naturally have their own structure. However, this structure may not&mdash;and frequently _does not_&mdash;lend itself to use for some specific purpose. Trying to do so would be time consuming, processor-intensive, and possibly error prone. Therefore, it is unwise to implement a curation strategy on the source side, where the data originates.
 
@@ -68,35 +68,35 @@ Similarly, if the curated data needs to be transformed or enriched as per the re
 
 And these are exactly the places where pipelines enter the picture.
 
-## Divide and Rule
+### Divide and Rule
 
 A pipeline is essentially based on the principle of _divide-and-rule_: divide the operations to be performed on the available data into the smallest meaningful and coherent actions, sequence them in a logical order based on the expected _inputs_ and _outputs_, and run them as a chain.
 
 The basic layout of the configuration for a typical pipeline looks like so:
 
 ```yaml
-pipeline:
-  description: "What the pipeline does"
-  processors:
-   - processor-1:
-      field: foo
-      value: "A"
-   - processor-2:
-      description: "What processor-2 does"
-      field: bar
-      value: true
-   - processor-3:
-      field: baz
-      value: 10
+pipelines:
+  - name: pipeline_name
+    description: "What the pipeline does"
+    processors:
+      - processor-1:
+          field: foo
+          value: "A"
+      - processor-2:
+          field: bar
+          value: true
+      - processor-3:
+          field: baz
+          value: 10
 ```
 
 This pipeline is created based on the assumption that the incoming data stream will have the following structure:
 
 ```yaml
 data:
-  - foo: ["A", "B", "C", ...]
-  - baz: [5, 10, 1, ...]
-  - bar: true
+  foo: ["A", "B", "C", ...]
+  bar: true
+  baz: [5, 10, 1, ...]
 ```
 
 Note that the pipeline definition contains a mixture of _required_ and _optional_ fields, and that&mdash;in this form&mdash;it disregards the order of fields in the source data. All that it cares about is that
@@ -104,15 +104,15 @@ Note that the pipeline definition contains a mixture of _required_ and _optional
 * the enumerated fields exist, and
 * they contain the expected types of data
 
-## Simplified Functionality
+### Simplified Functionality
 
 The above pipeline may appear incomplete: it does _not_ explicitly specify what will happen to the selected values when the processors are run. Assume that, after this pipeline has been run, the data appears like so:
 
 ```yaml
 data:
-  - foo: ["Z", "B", "C", ...]
-  - baz: [5, 100, 1, ...]
-  -bar: true
+  foo: ["Z", "B", "C", ...]
+  bar: true
+  baz: [5, 100, 1, ...]
 ```
 
 One can easily notice that the value `A` in `foo` has become `Z`, that the `10` in `baz` has become `100`, whereas `bar` is left untouched since it was already `true`.
@@ -123,7 +123,7 @@ Once the incoming data is normalized&mdash;i.e. converted into a structure that 
 
 This brings us to the concepts of _curation_, _transformation_, and _enrichment_.
 
-## Streamlined Streams
+### Streamlined Streams
 
 As we have said earlier, the incoming data streams will have their own structure. As such, they will at best be only partially suitable for analysis and, later, decision making. In its raw form, data is frequently not&mdash;at least may not be&mdash;what it seems to be. It has to be sorted and sifted through to pick the relevant information from it.
 
@@ -137,40 +137,13 @@ It is through this type of seamless three-stage design that a pipeline truly shi
 
 ---
 
-## Structure
-
-A pipeline consists of a series of processors that are executed sequentially to transform data:
-
-```yaml
-pipelines:
-  - id: apache_logs
-    description: "Process Apache web server logs"
-    processors:
-      - grok:
-          field: message
-          patterns:
-            - "%{COMMONAPACHELOG}"
-      - date:
-          field: timestamp
-          formats:
-            - "dd/MMM/yyyy:HH:mm:ss Z"
-          target_field: "@timestamp"
-      - rename:
-          fields:
-            - from: clientip
-              to: source.ip
-      - geoip:
-          field: source.ip
-          target_field: source.geo
-```
-
 ## Properties
 
 Each pipeline definition includes the following parameters:
 
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `id` | Y | | Unique identifier for the pipeline |
+| `name` | Y | | Unique identifier for the pipeline |
 | `description` | N | | Optional explanation of the pipeline's purpose |
 | `processors` | Y | | Ordered list of processors to execute |
 | `if` | N | | Conditional expression to determine if pipeline should be applied |
@@ -196,65 +169,25 @@ pipelines:
 
 This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
 
-## Conditional Execution
+## Use Cases
 
-Pipelines and processors support conditional execution using the `if` parameter:
+Pipelines can be put to good use to implement some common patterns for data processing. The following table summarizes a few typical layouts and their recommended processors:
 
-```yaml
-pipelines:
-  - id: web_logs
-    processors:
-      - set:
-          field: event.category
-          value: web
-          if: "ctx.source == 'apache' || ctx.source == 'nginx'"
-      - geoip:
-          field: client.ip
-          target_field: client.geo
-          if: "ctx?.client?.ip != null"
-```
+| Use Case | Recommended Processors |
+|----------|------------------------|
+| Log Parsing | `grok` → `date` → `rename` → `remove` |
+| Security Events | `kv` → `geoip` → `set` → `script` |
+| API Data | `json` → `convert` → `rename` → `set` |
+| CSV Processing | `csv` → `convert` → `rename` |
+| Field Standardization | `rename` → `lowercase` → `set` |
 
-## Error Handling
-
-Pipelines provide robust error handling with `on_failure` and `ignore_failure` options:
-
-```yaml
-pipelines:
-  - id: critical_processing
-    ignore_failure: false
-    on_failure:
-      - set:
-          field: error.message
-          value: "Pipeline processing failed: {{_ingest.on_failure_message}}"
-      - set:
-          field: event.outcome
-          value: "failure"
-```
-
-## Pipeline Chaining
-
-Pipelines can be chained together using routes or referenced in device configurations:
-
-```yaml
-# Reference in a device configuration
-devices:
-  - id: 1
-    name: web_server_logs
-    type: http
-    pipelines:
-      - common_enrichment
-      - web_logs
-    properties:
-      port: 8080
-```
-
-## Common Patterns
+And here are some examples:
 
 ### Log Parsing and Normalization
 
 ```yaml
 pipelines:
-  - id: syslog_parser
+  - name: syslog_parser
     description: "Parse and normalize syslog messages"
     processors:
       - grok:
@@ -282,7 +215,7 @@ pipelines:
 
 ```yaml
 pipelines:
-  - id: security_enrichment
+  - name: security_enrichment
     description: "Enrich security events with additional context"
     processors:
       - geoip:
@@ -306,7 +239,7 @@ pipelines:
 
 ```yaml
 pipelines:
-  - id: data_normalizer
+  - name: data_normalizer
     description: "Standardize field names and values"
     processors:
       - rename:
@@ -327,22 +260,62 @@ pipelines:
             - bytes_out
 ```
 
+### Conditionals
+
+Pipelines and processors support conditional execution using the `if` parameter:
+
+```yaml
+pipelines:
+  - name: web_logs
+    processors:
+      - set:
+          field: event.category
+          value: web
+          if: "ctx.source == 'apache' || ctx.source == 'nginx'"
+      - geoip:
+          field: client.ip
+          target_field: client.geo
+          if: "ctx?.client?.ip != null"
+```
+
+### Chaining
+
+Pipelines can be chained together using routes or referenced in device configurations:
+
+```yaml
+# Reference in a device configuration
+devices:
+  - name: web_server_logs
+    type: http
+    pipelines:
+      - common_enrichment
+      - web_logs
+    properties:
+      port: 8080
+```
+
+### Error Handling
+
+Pipelines provide robust error handling with `on_failure` and `ignore_failure` options:
+
+```yaml
+pipelines:
+  - name: critical_processing
+    ignore_failure: false
+    on_failure:
+      - set:
+          field: error.message
+          value: "Pipeline processing failed: {{_ingest.on_failure_message}}"
+      - set:
+          field: event.outcome
+          value: "failure"
+```
+
 ## Best Practices
+  
+When designing pipelines, consider the following best practices:
 
-1. **Start with Validation**: Begin pipelines with validation processors to ensure data quality
-2. **Order Matters**: Arrange processors logically - extract fields before using them
-3. **Use Conditionals**: Apply processors selectively to improve performance
-4. **Handle Errors**: Configure appropriate error handling for critical pipelines
-5. **Test Thoroughly**: Validate pipeline behavior with representative sample data
-6. **Document Purpose**: Include descriptive comments to explain complex transformations
-7. **Monitor Performance**: Watch for processor bottlenecks in high-volume environments
-
-## Common Pipeline Combinations
-
-| Use Case | Recommended Processors |
-|----------|------------------------|
-| Log Parsing | `grok` → `date` → `rename` → `remove` |
-| Security Events | `kv` → `geoip` → `set` → `script` |
-| API Data | `json` → `convert` → `rename` → `set` |
-| CSV Processing | `csv` → `convert` → `rename` |
-| Field Standardization | `rename` → `lowercase` → `set` |
+- Begin with validation processors to ensure data quality, and validate behavior with representative sample data
+- Arrange processors logically by extracting fields before using them, and apply processors selectively to improve performance
+- Configure appropriate error handling
+- Watch for processor bottlenecks in high-volume environments
