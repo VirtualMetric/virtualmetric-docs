@@ -10,7 +10,7 @@ pagination_next: null
 
 <TermTable>
    <TermCol>[**Devices**](/configuration/devices/index.mdx) </TermCol>
-   <DefCol>Sources of log data, e.g. syslog or estreamer</DefCol>
+   <DefCol>Sources of log data, e.g. _Syslog_ or _eStreamer_</DefCol>
 
    <TermCol>[**Pipelines**](/configuration/pipelines/index.mdx) </TermCol>
    <DefCol>Processing workflows for data transformation</DefCol>
@@ -25,7 +25,7 @@ pagination_next: null
    <DefCol>Traffic control for directing data flows</DefCol>
 </TermTable>
 
-The expression below describes the various stages where these components are used and how they connect to each other:
+The expressions below describe the various stages where these components are used and how they connect to each other:
 
 > **Ingest** [_Source_<sub>1</sub>, _Source_<sub>2</sub>, &#8230;, _Source_<sub>n</sub>]\
 > &map;\
@@ -134,7 +134,7 @@ All components have properties&mdash;i.e. yaml fields with parameters&mdash;that
     status: true  # Enables this component
   ```
 
-* **Environment Variables** - Sensitive information can be stored in these:
+* **Environment Variables** - Sensitive information can be stored in system variables:
 
   ```yaml
   properties:
@@ -147,6 +147,7 @@ All components have properties&mdash;i.e. yaml fields with parameters&mdash;that
   ```yaml
   - id: 1
     name: example_component
+    description: "Optional detailed explanation"
     tags:
       - production
       - security
@@ -154,14 +155,7 @@ All components have properties&mdash;i.e. yaml fields with parameters&mdash;that
 
 ### Data Flow
 
-The system implements a modular architecture where components work together to create complete data flows:
-
-1. **Collection**: Devices capture data from various sources
-2. **Processing**: Pipelines transform and enrich the raw data
-3. **Routing**: Routes determine which data goes where based on content
-4. **Delivery**: Targets send processed data to external systems
-
-The following example illustrates a complete security monitoring flow:
+The system implements a modular architecture of components working together to create complete data flows. The following example illustrates a security monitoring flow:
 
 ```yaml
 routes:
@@ -221,7 +215,7 @@ This configuration
 
 Before deploying your configuration, check it using the available tools. The validator checks for syntactic correctness, required field presence, reference integrity, and logical consistency.
 
-- Validate configuration file
+- Check configuration file
 
 ```bash
 vmetric validate -c config.yaml
@@ -233,69 +227,35 @@ vmetric validate -c config.yaml
 vmetric test -c config.yaml -i sample-data.json
 ```
 
-## Administration
+## Best Practices
 
-The system administrator's responsibilities cover the following tasks:
+To maintain system integrity, robustness, and health, follow these key guidelines:
 
-| Task | Configuration Approach |
-|------|------------------------|
+### Design
+
+The following factors should be considered when designing your configuration:
+
+|Category|Recommendations|
+|--:|:--|
+| **Modularization**  | - Use multiple smaller pipelines instead of monolithic ones<br/>- Create focused devices for specific data sources<br/>- Implement targeted routes for distinct data types |
+| **Maintainability** | - Add meaningful descriptions to all components<br/>- Use consistent naming conventions<br/>- Document complex logic with comments|
+| **Reliability**     | - Implement redundant targets for critical data,<br/>- Configure error handling in pipelines<br/>- Use disk buffering for unreliable network conditions |
+| **Security**        | - Store credentials in environment variables<br/>- Use appropriate authentication for all components<br/>- Implement TLS for network communications |
+| **Performance**     | - Configure appropriate batch sizes for high-volume flows<br/>- Use conditionals to process only necessary data<br/>- Monitor resource usage across components<br/>- Optimize processing times for better efficiency |
+
+### Administration
+
+Configuration administration involves creating, modifying, and managing configuration files. The following table summarizes common tasks and their suitable approaches:
+
+| Task | Approach |
+|--:|:--|
 | Add a new data source | Create a new device with appropriate type and properties |
 | Customize data processing | Develop or modify pipelines with relevant processors |
 | Change data destination | Update route targets or create new target definitions |
 | Filter specific events | Add or modify route conditions |
 | Secure sensitive data | Use environment variables for credentials and keys |
-| Structure complex configurations | Split into multiple files with imports |
+| Structure complex configurations | Split into multiple files with logical organization |
 
-### Maintenance
-
-This entails maintaining an up-and-running system by attending to the following:
-
-* Creating and modifying the setting files, validating and applying them, and keeping backups of them.
-
-* Creating devices to listen new data sources, configuring their input parameters, monitoring their health, and troubleshooting connectivity issues.
-
-* Designing workflows, configuring processors, test the transformations, and optimizing performance
-
-* Defining traffic patterns, setting up filtering rules, configuring destinations, and monitoring data flows
-
-* Monitoring and tracking performance metrics, monitoring resource usage, reviewing error logs, and generating reports
-
-### Security
-
-A crucial aspect of system administration is security. This requires attending to the following:
-
-* Configuring access controls, managing credentials, setting up encryption, and monitoring access logs
-
-* Configuring TLS/SSL, setting up firewalls, managing certificates, and controlling port access
-
-* Securing sensitive data, configuring encryption, managing data retention, and supervising compliance
-
-### Troubleshooting
-
-System administration frequently involves dealing with errors and failures.
-
-The most common issues are related to misconfiguration, connectivity, unhandled disruption of pipelines, and violated resource constraints.
-
-The resolution generally involves checking the configurations and reviewing the logs, verifying connectivity and resource availability, and testing the solution in its final state.
-
-## Best Practices
-
-In order to maintain the integrity, robustness, and health of a system, some guidelines should be observed:
-
-* For _managing configurations_, use version control, document the changes, and always keep backups. Also, never forget to test before deploying.
-
-* For _performance optimization_, first monitor the resource usage and balance the loads if necessary. Carefully assess the processor combinations and order. Error tracking and health checks must also be always kept in mind. And do not forget to schedule maintenance. 
-
-* Finally, to maintain a reliable level of _security_, updates are essential. Official security audits must be conducted regularly, particularly on access control and encryption.
-
-Also, when configuring your telemetry system, keep in mind the following principles:
-
-|Category|Details|
-|---|---|
-| **Modularization**  | - Use multiple smaller pipelines instead of one large pipeline<br/>- Create focused devices for specific data sources<br/>- Implement targeted routes for distinct data types |
-| **Maintainability** | - Add meaningful descriptions to all components<br/>- Use consistent naming conventions<br/>- Document complex logic with comments |
-| **Reliability**     | - Implement redundant targets for critical data<br/>- Configure error handling in pipelines<br/>- Use disk buffering for unreliable network conditions |
-| **Security**        | - Store credentials in environment variables<br/>- Use appropriate authentication for all components<br/>- Implement TLS for network communications |
-| **Performance**     | - Configure appropriate batch sizes for high-volume flows<br/>- Use conditionals to process only necessary data<br/>- Monitor resource usage across components |
-
-Refer to the specific component's documentation for detailed options.
+:::note
+Refer to specific component documentation for detailed configuration options and best practices.
+:::
