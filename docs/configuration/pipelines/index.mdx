@@ -18,7 +18,7 @@ Each incoming stream can be queried with criteria specific to the information co
 
 The following table summarizes the basic structure of a pipeline:
 
-> **Provider** (_raw data_) &rarr; **Pipeline** (_transformation_) &rarr; **Consumer** (_processed data_)
+> **Provider** (_raw data_) &map; **Pipeline** (_transformation_) &map; **Consumer** (_processed data_)
 
 where **Pipeline** (_transformation_) is
 
@@ -28,17 +28,19 @@ In real life scenarios, the level of complexity of the configurations will vary 
 
 ### Deployment
 
-A pipeline can consume data from multiple providers, and&mdash;once it is finished processing them&mdash;can direct some or all of the processed data to a specific consumer in a one-to-one scheme:
+There are multiple ways to deploy pipelines, and they can be used in various configurations:
 
-> **Provider**<sub>1</sub>[A] &rarr; **Pipeline** &rarr; **Consumer**<sub>1</sub>(A)
+* A pipeline can consume data from multiple providers, and&mdash;once it is finished processing them&mdash;can direct some or all of the processed data to a specific consumer in a one-to-one scheme:
 
-It can also consume data from a single provider and deliver the processed results to multiple consumers:
+  > **Provider**<sub>1</sub>[A] &map; **Pipeline** &map; **Consumer**<sub>1</sub>(A)
 
-> **Provider**<sub>1</sub>[A] + **Provider**<sub>2</sub>[B]  &rarr; **Pipeline** &rarr; **Consumer**<sub>1</sub>(A) + **Consumer**<sub>2</sub>(B)
+* It can also consume data from a single provider and deliver the processed results to multiple consumers:
 
-Finally&mdash;and possibly in most real-life scenarios&mdash;there may be multiple providers and consumers connected to each other in much more complex arrangements:
+  > **Provider**<sub>1</sub>[A] + **Provider**<sub>2</sub>[B]  &map; **Pipeline** &map; **Consumer**<sub>1</sub>(A) + **Consumer**<sub>2</sub>(B)
 
-> **Provider**<sub>1</sub>[A, B] + **Provider**<sub>2</sub>[C] + **Provider**<sub>3</sub>[D] &rarr; **Pipeline** &rarr; **Consumer**<sub>1</sub>(A, C) + **Consumer**<sub>2</sub>(A, B, D)
+* Finally&mdash;and possibly in most real-life scenarios&mdash;there may be multiple providers and consumers connected to each other in much more complex arrangements:
+
+  > **Provider**<sub>1</sub>[A, B] + **Provider**<sub>2</sub>[C] + **Provider**<sub>3</sub>[D] &map; **Pipeline** &map; **Consumer**<sub>1</sub>(A, C) + **Consumer**<sub>2</sub>(A, B, D)
 
 Effectively, each source may be the target of an upstream pipeline, and each target may serve as the source for a downstream one. The detail to keep in mind is that each provider side is delegating some processing to the next pipeline based on the established requirements of the consumer side. The pipeline is acting as the _middleman_ for the data interchange.
 
@@ -52,7 +54,7 @@ Notwithstanding the above, there is also a middle stage&mdash;where most softwar
 
 Pipelines are, once again, our primary tool for implementing these interim stages:
 
-> **Sources** &rarr; [_Preprocess_] &rarr; **Routes** &rarr; [_Postprocess_] &rarr; **Targets**
+> **Sources** &map; [_Preprocess_] &map; **Routes** &map; [_Postprocess_] &map; **Targets**
 
 Routes are right in the middle of this arrangement.
 
@@ -183,139 +185,133 @@ Pipelines can be put to good use to implement some common patterns for data proc
 
 And here are some examples:
 
-### Log Parsing and Normalization
+- **Log Parsing and Normalization**: A common use case is parsing and normalizing log messages from various sources. For example, a pipeline that processes syslog messages might look like this:
 
-```yaml
-pipelines:
-  - name: syslog_parser
-    description: "Parse and normalize syslog messages"
-    processors:
-      - grok:
-          field: message
-          patterns:
-            - "%{SYSLOGLINE}"
-      - date:
-          field: timestamp
-          target_field: "@timestamp"
-          formats:
-            - "MMM dd HH:mm:ss"
-            - "MMM  d HH:mm:ss"
-      - set:
-          field: event.kind
-          value: event
-      - rename:
-          fields:
-            - from: program
-              to: process.name
-            - from: logsource
-              to: host.hostname
-```
+  ```yaml
+  pipelines:
+    - name: syslog_parser
+      description: "Parse and normalize syslog messages"
+      processors:
+        - grok:
+            field: message
+            patterns:
+              - "%{SYSLOGLINE}"
+        - date:
+            field: timestamp
+            target_field: "@timestamp"
+            formats:
+              - "MMM dd HH:mm:ss"
+              - "MMM  d HH:mm:ss"
+        - set:
+            field: event.kind
+            value: event
+        - rename:
+            fields:
+              - from: program
+                to: process.name
+              - from: logsource
+                to: host.hostname
+  ```
 
-### Field Enrichment
+- **Field Enrichment**: A pipeline can be used to enrich security events with additional context, such as geolocation data or threat intelligence:
 
-```yaml
-pipelines:
-  - name: security_enrichment
-    description: "Enrich security events with additional context"
-    processors:
-      - geoip:
-          field: source.ip
-          target_field: source.geo
-      - set:
-          field: event.category
-          value: security
-      - script:
-          lang: painless
-          source: |
-            if (ctx.source.ip.startsWith('10.') || 
-                ctx.source.ip.startsWith('192.168.')) {
-              ctx.source.type = 'internal';
-            } else {
-              ctx.source.type = 'external';
-            }
-```
+  ```yaml
+  pipelines:
+    - name: security_enrichment
+      description: "Enrich security events with additional context"
+      processors:
+        - geoip:
+            field: source.ip
+            target_field: source.geo
+        - set:
+            field: event.category
+            value: security
+        - script:
+            lang: painless
+            source: |
+              if (ctx.source.ip.startsWith('10.') || 
+                  ctx.source.ip.startsWith('192.168.')) {
+                ctx.source.type = 'internal';
+              } else {
+                ctx.source.type = 'external';
+              }
+  ```
 
-### Data Transformation
+- **Data Transformation**: A sequence of processors can be used to transform data formats, such as converting IP addresses or normalizing field names:
 
-```yaml
-pipelines:
-  - name: data_normalizer
-    description: "Standardize field names and values"
-    processors:
-      - rename:
-          fields:
-            - from: src
-              to: source.ip
-            - from: dst
-              to: destination.ip
-      - convert:
-          field: bytes
-          type: long
-      - script:
-          lang: painless
-          source: "ctx.network.bytes = ctx.bytes_in + ctx.bytes_out"
-      - remove:
-          field:
-            - bytes_in
-            - bytes_out
-```
+  ```yaml
+  pipelines:
+    - name: data_normalizer
+      description: "Standardize field names and values"
+      processors:
+        - rename:
+            fields:
+              - from: src
+                to: source.ip
+              - from: dst
+                to: destination.ip
+        - convert:
+            field: bytes
+            type: long
+        - script:
+            lang: painless
+            source: "ctx.network.bytes = ctx.bytes_in + ctx.bytes_out"
+        - remove:
+            field:
+              - bytes_in
+              - bytes_out
+  ```
 
-### Conditionals
+- ***Conditionals***: Pipelines and processors support conditional execution using the `if` parameter:
 
-Pipelines and processors support conditional execution using the `if` parameter:
+  ```yaml
+  pipelines:
+    - name: web_logs
+      processors:
+        - set:
+            field: event.category
+            value: web
+            if: "ctx.source == 'apache' || ctx.source == 'nginx'"
+        - geoip:
+            field: client.ip
+            target_field: client.geo
+            if: "ctx?.client?.ip != null"
+  ```
 
-```yaml
-pipelines:
-  - name: web_logs
-    processors:
-      - set:
-          field: event.category
-          value: web
-          if: "ctx.source == 'apache' || ctx.source == 'nginx'"
-      - geoip:
-          field: client.ip
-          target_field: client.geo
-          if: "ctx?.client?.ip != null"
-```
+- **Chaining**: Pipelines can be chained together using routes or referenced in device configurations:
 
-### Chaining
+  ```yaml
+  # Reference in a device configuration
+  devices:
+    - name: web_server_logs
+      type: http
+      pipelines:
+        - common_enrichment
+        - web_logs
+      properties:
+        port: 8080
+  ```
 
-Pipelines can be chained together using routes or referenced in device configurations:
+- **Error Handling**: Pipelines provide robust error handling with `on_failure` and `ignore_failure` options:
 
-```yaml
-# Reference in a device configuration
-devices:
-  - name: web_server_logs
-    type: http
-    pipelines:
-      - common_enrichment
-      - web_logs
-    properties:
-      port: 8080
-```
-
-### Error Handling
-
-Pipelines provide robust error handling with `on_failure` and `ignore_failure` options:
-
-```yaml
-pipelines:
-  - name: critical_processing
-    ignore_failure: false
-    on_failure:
-      - set:
-          field: error.message
-          value: "Pipeline processing failed: {{_ingest.on_failure_message}}"
-      - set:
-          field: event.outcome
-          value: "failure"
-```
+  ```yaml
+  pipelines:
+    - name: critical_processing
+      ignore_failure: false
+      on_failure:
+        - set:
+            field: error.message
+            value: "Pipeline processing failed: {{_ingest.on_failure_message}}"
+        - set:
+            field: event.outcome
+            value: "failure"
+  ```
 
 ## Best Practices
   
-When designing pipelines, consider the following best practices:
+When designing pipelines, consider the following factors:
 
-- Begin with validation processors to ensure data quality, and validate behavior with representative sample data
-- Arrange processors logically by extracting fields before using them, and apply processors selectively to improve performance
-- Configure appropriate error handling
-- Watch for processor bottlenecks in high-volume environments
+- **Validation**: Begin with validation processors to ensure data quality, and validate behavior with representative sample data
+- **Arrangement**: Arrange processors logically by extracting fields before using them, and apply processors selectively to improve performance
+- **Error Handling**: Configure appropriate error handling
+- **High-volumes**: Watch for processor bottlenecks in high-volume environments

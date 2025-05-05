@@ -27,7 +27,7 @@ pagination_next: null
 
 The expression below describes the various stages where these components are used and how they connect to each other:
 
-> **Ingest** [_Source_<sub>1</sub>, _Source_<sub>2</sub>, ..., _Source_<sub>n</sub>]\
+> **Ingest** [_Source_<sub>1</sub>, _Source_<sub>2</sub>, &#8230;, _Source_<sub>n</sub>]\
 > &map;\
 > **Preprocess** (Normalize)\
 > +\
@@ -35,7 +35,7 @@ The expression below describes the various stages where these components are use
 > +\
 > **Postprocess** (Normalize)\
 > &map;\
-> **Forward** [_Target_<sub>1</sub>, _Target_<sub>2</sub>, ..., _Target_<sub>n</sub>]
+> **Forward** [_Target_<sub>1</sub>, _Target_<sub>2</sub>, &#8230;, _Target_<sub>n</sub>]
 * To ingest data from _Sources_ and to communicate with them, **Director** uses **Devices**.
 
 * For the **Preprocessing**, **Routes**, and **Postprocessing** stages, **Director** uses **Pipelines** which are sequential arrangements of **Processors**.
@@ -46,33 +46,27 @@ The expression below describes the various stages where these components are use
 
 To help design the logic of the components that will define and run the processes of the above-mentioned stages, **DataStream** utilizes YAML-based configuration files. These can be found in some of the folders under its root directory, here indicated with `<vm_root>`:
 
-```
-<vm_root>/
-    config/
-        devices/
-          - syslog.yml
-          - estreamer.yml
-          - tcp.yml
-        targets
-          - console.yml
-          - file.yml
-        routes/
-          - default.yml
-        - vmetric.yml
-    package/
-        definitions/
-            pipelines/
-              - checkpoint.yml
-              - cisco.yml
-              - normalize.yml
-    user/
-        definitions/
-            pipelines/
-              - checkpoint.yml
-              - normalize.yml
-```
+<blockquote>
++ `<vm_root>/config/devices/`
+  - `syslog.yml`
+  - `estreamer.yml`
+  - `tcp.yml`
++ `<vm_root>/config/targets/`
+  - `console.yml`
+  - `file.yml`
++ `<vm_root>/config/routes/`
+  - `default.yml`
++ `<vm_root>/config/vmetric.yml`
++ `<vm_root>/package/definitions/pipelines/`
+  - `checkpoint.yml`
+  - `cisco.yml`
+  - `normalize.yml`
++ `<vm_root>/user/definitions/pipelines/`
+  - `checkpoint.yml`
+  - `normalize.yml`
+</blockquote>
 
-All tasks are carried out with these configuration files.
+All tasks are carried out using these configuration files.
 
 By default, these files are located based on their component types. They contain predefined fields that the components recognize, and **Director** uses the settings in these fields to spawn and run its processes.
 
@@ -122,6 +116,8 @@ The **Schema** sections of relevant chapters provide the specific fields of the 
 
 ### Properties
 
+All components have properties&mdash;i.e. yaml fields with parameters&mdash;that define their specific behavior. Some of these are mandatory and must be present in every component.
+
 * **Identification** - Every component requires unique identification:
 
   ```yaml
@@ -138,7 +134,7 @@ The **Schema** sections of relevant chapters provide the specific fields of the 
     status: true  # Enables this component
   ```
 
-* **Environmental Variables** - Use environment variables for sensitive information:
+* **Environment Variables** - Sensitive information can be stored in these:
 
   ```yaml
   properties:
@@ -156,7 +152,7 @@ The **Schema** sections of relevant chapters provide the specific fields of the 
       - security
   ```
 
-### Data Flow Architecture
+### Data Flow
 
 The system implements a modular architecture where components work together to create complete data flows:
 
@@ -165,25 +161,29 @@ The system implements a modular architecture where components work together to c
 3. **Routing**: Routes determine which data goes where based on content
 4. **Delivery**: Targets send processed data to external systems
 
-#### Example Flow
-
 The following example illustrates a complete security monitoring flow:
 
-* Collect firewall logs via a syslog device
-* Transform raw logs into structured security events with pipelines
-* Route critical events to _Elasticsearch_ and a notification system
-* Process logs for security insights with a pipeline
-* Deliver the results to multiple destinations
-
 ```yaml
+routes:
+  - name: critical_security
+    devices:
+      - firewall_logs
+    condition: "event.severity == 'critical'"
+    pipelines:
+      - security_enrichment
+    targets:
+      - security_elasticsearch
+      - security_team_notification
+
 devices:
   - id: 1
     name: firewall_logs
     type: syslog
     properties:
       port: 514
+
 pipelines:
-  - id: security_enrichment
+  - name: security_enrichment
     processors:
       - grok:
           field: message
@@ -195,50 +195,43 @@ pipelines:
       - geoip:
           field: source.ip
           target_field: source.geo
-routes:
-  - id: critical_security
-    sources:
-      - firewall_logs
-    condition: "event.severity == 'critical'"
-    pipelines:
-      - security_enrichment
-    targets:
-      - security_elasticsearch
-      - security_team_notification
 targets:
-  - id: security_elasticsearch
+  - name: security_elasticsearch
     type: elasticsearch
     properties:
-      addresses:
+      url:
         - https://es.example.com:9200
       index: security-%{+yyyy.MM.dd}  
-  - id: security_team_notification
+  - name: security_team_notification
     type: webhook
     properties:
       url: https://alerts.example.com/security
       method: POST
 ```
 
+This configuration
+
+* collects firewall logs via a _Syslog_ device
+* transforms raw logs into structured security events with pipelines
+* routes critical events to _Elasticsearch_ and a notification system
+* processes logs for security insights with a pipeline
+* delivers the results to multiple destinations
+
 ### Validation
 
-Before deploying your configuration, check it using the built-in tools:
+Before deploying your configuration, check it using the available tools. The validator checks for syntactic correctness, required field presence, reference integrity, and logical consistency.
 
 - Validate configuration file
+
 ```bash
 vmetric validate -c config.yaml
 ```
 
 - Test configuration with sample data
+
 ```bash
 vmetric test -c config.yaml -i sample-data.json
 ```
-
-The validator checks for:
-
-- Syntactic correctness
-- Required field presence
-- Reference integrity
-- Logical consistency
 
 ## Administration
 
@@ -300,9 +293,9 @@ Also, when configuring your telemetry system, keep in mind the following princip
 |Category|Details|
 |---|---|
 | **Modularization**  | - Use multiple smaller pipelines instead of one large pipeline<br/>- Create focused devices for specific data sources<br/>- Implement targeted routes for distinct data types |
+| **Maintainability** | - Add meaningful descriptions to all components<br/>- Use consistent naming conventions<br/>- Document complex logic with comments |
+| **Reliability**     | - Implement redundant targets for critical data<br/>- Configure error handling in pipelines<br/>- Use disk buffering for unreliable network conditions |
 | **Security**        | - Store credentials in environment variables<br/>- Use appropriate authentication for all components<br/>- Implement TLS for network communications |
 | **Performance**     | - Configure appropriate batch sizes for high-volume flows<br/>- Use conditionals to process only necessary data<br/>- Monitor resource usage across components |
-| **Reliability**     | - Implement redundant targets for critical data<br/>- Configure error handling in pipelines<br/>- Use disk buffering for unreliable network conditions |
-| **Maintainability** | - Add meaningful descriptions to all components<br/>- Use consistent naming conventions<br/>- Document complex logic with comments |
 
-Refer to the specific component documentation for detailed configuration options.
+Refer to the specific component's documentation for detailed options.

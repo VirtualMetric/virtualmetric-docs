@@ -44,18 +44,18 @@ const sidebars: SidebarsConfig = {
         'getting-started/example-pipeline',
       ],
     },
-    // {
-    //   type: "category",
-    //   label: "Deployment",
-    //   link: {type: "doc", id: "deployment/index"},
-    //   items: [
-    //     'deployment/local',
-    //     'deployment/azure-vm',
-    //     'deployment/azure-app-service',
-    //     'deployment/azure-functions',
-    //     'deployment/azure-arc-extension',
-    //   ],
-    // },
+    {
+      type: "category",
+      label: "Deployment",
+      link: {type: "doc", id: "deployment/index"},
+      items: [
+        'deployment/local',
+        'deployment/azure-vm',
+        'deployment/azure-app-service',
+        'deployment/azure-functions',
+        'deployment/azure-arc-extension',
+      ],
+    },
     {
       type: "category",
       label: "Configuration",
