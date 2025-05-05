@@ -1,5 +1,57 @@
 # Appendix
 
+## Configuration BNF
+
+<TermTable>
+   <TermCol>`comp-decl`</TermCol>
+   <DefCol>`<comp-type> ":" "\n\t" <comp-def>`</DefCol>
+
+   <TermCol>`comp-type`</TermCol>
+   <DefCol>`("devices" | "targets" | "pipelines" | "routes")`</DefCol>
+
+   <TermCol>`comp-def`</TermCol>
+   <DefCol>`<id-fld-def> <fld-defs>`</DefCol>
+
+   <TermCol>`id-fld-def`</TermCol>
+   <DefCol>`"-" <id-fld-name> ":" <id>`</DefCol>
+
+   <TermCol>`id-fld-name`</TermCol>
+   <DefCol>`"-" <id>`</DefCol>
+
+   <TermCol>`id`</TermCol>
+   <DefCol>`<txt-val>`</DefCol>
+
+   <TermCol>`fld-defs`</TermCol>
+   <DefCol>`<fld-def> ["\n" <fld-defs>]*`</DefCol>
+
+   <TermCol>`fld-def`</TermCol>
+   <DefCol>`<fld-name> ":" <fld-vals>`</DefCol>
+
+   <TermCol>`fld-name`</TermCol>
+   <DefCol>`<txt-val>`</DefCol>
+
+   <TermCol>`fld-vals`</TermCol>
+   <DefCol>`(<fld-val> | "[" <fld-val> ["," <fld-vals>]* "]" | ["\n\t -" <fld-val>]+)`</DefCol>
+
+   <TermCol>`fld-val`</TermCol>
+   <DefCol>`(txt-val | num-val)`</DefCol>
+
+   <TermCol>`txt-val`</TermCol>
+   <DefCol>`<txt-char>+ <alnum-char>*`</DefCol>
+
+   <TermCol>`num-val`</TermCol>
+   <DefCol>`('-' | '+')? <num-char>+`</DefCol>
+
+   <TermCol>`alnum-char`</TermCol>
+   <DefCol>`(<txt-char> | <num-char>)*`</DefCol>
+
+   <TermCol>`txt-char`</TermCol>
+   <DefCol>`('a' .. 'z' | 'A' .. 'Z' | '_')`</DefCol>
+
+   <TermCol>`num-char`</TermCol>
+   <DefCol>`'0' .. '9'`</DefCol>
+</TermTable>
+
 ## Log Format Standards
 
 ### ASIM
@@ -290,36 +342,7 @@ Standard protocol for system logging with severity levels:
 
 The protocol is used for:
 
-- System monitoring
+- System health monitoring
+- Performance monitoring
 - Security event logging
 - Compliance tracking
-- Performance monitoring
-
-## Configuration BNF
-
-```bnf
-      component-declaration ::= <component-type> ":" "\n\t" <component-definition>
-             component-type ::= ("devices" | "targets" | "pipelines" | "routes")
-       component-definition ::= <identifier-field-definition> <field-definitions>
-
-identifier-field-definition ::= "-" <identifier-field-name> ":" <identifier>
-      identifier-field-name ::= ("id" | "name")
-                 identifier ::= <text-value>
-
-          field-definitions ::= <field-definition> ["\n" <field-definitions>]*
-           field-definition ::= <field-name> ":" <field-values>
-           
-                 field-name ::= <text-value>
-               field-values ::= (
-                     <field-value>
-                     | "[" <field-value> ["," <field-values>]* "]"
-                     |  ["\n\t -" <field-value>]+
-                  )
-                field-value ::= (text-value | numeric-value)
-
-                 text-value ::= <text-character>+ <alphanumeric-character>*
-              numeric-value ::= ('-' | '+')? <numeric-character>+
-     alphanumeric-character ::= (<text-character> | <numeric-character>)*
-             text-character ::= ('a' .. 'z' | 'A' .. 'Z' | '_')
-          numeric-character ::= '0' .. '9'
-```

@@ -7,76 +7,72 @@ pagination_next: null
 
 **Director** uses _targets_ as the output destinations to forward, store, and analyze collected telemetry data. Targets provide flexible options for data persistence and integration with various analysis platforms.
 
-## Storage Types
-
-### Local
-
-**Director** supports the following local data output methods:
-
-* **Console** - Direct _stdout_ writing with real-time message viewing. Also provides debugging and testing capability, format normalization, and synchronous writing with mutex locking
-
-* **Files** - Multiple file formats like JSON (line-delimited), Avro (binary serialization), OCF (container), Parquet (columnar) are available. In addition, compression options like ZSTD (default), GZIP, Snappy, Brotli, and LZ4 are also supported. Also, dynamic file naming, size-based rotation, buffer management, and schema validation are among the features.
-
-### Cloud
-
-The integration options for the cloud are below:
-
-* **Azure Blob** - Direct blob writing and multiple containers are supported. Available authentication methods are service principal and managed Identity. Other features include automatic retries, exponential backoff, size-based chunking, connection pooling, and buffer management.
-
-* **Microsoft Sentinel** - Direct DCR integration and ASIM normalization are supported. In addition to standard tables, _WindowsEvent_, _SecurityEvent_, _CommonSecurityLog_, and _Syslog_ can be used. Various ASIM tables are also available. (See the [ASIM section](/appendix.mdx#asim) for a complete list.)
+:::note
+Each target type provides specific configuration options detailed in their respective chapters.
+:::
 
 ## Deployment
 
 The following deployment types can be used:
 
-* **Single** (one-to-one) - data is routed to only one destination:
+* **One-to-many** - data from a single source is routed to one or more destinations:
 
-  ```mermaid
-  block-beta
-    columns 5
-    A("Director"):1
-    B(["Analysis Platform"]):2
-    A --> B
-  ```
+  > Syslog &rarr; Local Storage + Analysis Platform
 
-* **Multiple** (one-to-many) - data is routed to two or more destinations:
+* **Many-to-one** - data from multiple sources is routed to one destination:
 
-  ```mermaid
-  block-beta
-    columns 5
-    A("Director"):1
-    space
-    B[("Remote Site")]:2
-    space
-    space
-    C[("Client Site")]:2
-    space
-    space
-    D[("Local Storage")]:2
-    A --> B
-    A --> C
-    A --> D
-  ```
+  > Syslog + Windows → Local Storage
+
+* **Many-to-many** - data from multiple sources is routed to multiple destinations:
+
+  > Syslog + Windows &rarr; Local Storage
+  >
+  > Syslog + Elasticsearch &rarr; Cloud Upload + Analysis Platform
 
 * **Chained** - data is routed sequentially from one destination to the next:
 
-  ```mermaid
-  block-beta
-    columns 5
-    space
-    space
-    C[/"Cloud
-    Upload"\]:2
-    D(["Analysis
-    Platform"]):2
-    A("Director"):1
-    B[("Local
-    Storage")]:3
-    space
-    A --> B
-    B --> C
-    C --> D
-  ```
+  > Syslog &rarr; Local Storage &rarr; Analysis Platform
+
+## Properties
+
+All targets share these common properties:
+
+| Field | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `id` | Y | | Unique identifier for the target |
+| `name` | Y | | Descriptive name |
+| `description` | N | | Optional explanation |
+| `status` | N | `true` | Enable/disable the target |
+| `batch` | N | `false` | Enable batch mode delivery |
+| `batch_size` | N | `1000` | Records per batch when batching is enabled |
+| `batch_timeout` | N | `60` | Maximum seconds to wait before sending a batch |
+
+:::tip
+Each target type provides specific options detailed in its respective chapter.
+:::
+
+Use the `name` of the target to refer to it in your configurations.
+
+**Example**:
+
+```yaml
+targets:
+  - name: elasticsearch
+    type: elasticsearch
+    properties:
+      hosts: ["http://elasticsearch:9200"]
+      index: "logs-%{+yyyy.MM.dd}"
+      username: "elastic"
+      password: "${PASSWORD}"
+```
+
+The target listed here is of type `elasticsearch`. It specifies the host that it will forward the data to and the index on the host to which the data will be appended. To access the host, it specifies a username and a password.
+
+:::tip
+You can use environment variables like `${PASSWORD}` for your credentials. This will improve security by removing the credentials from your configuration file.
+:::
+
+Multiple targets can be used for redundancy, [normalization](/docs/configuration/pipelines/normalization.mdx) rules can be implemented, and alerts can be put in place for notification and error handling.
 
 ## Use Cases
 
@@ -100,39 +96,208 @@ To serve these ends, the following _processing options_ are available:
 
 * **Security** - Authentication using API keys, service principals, and client certificates. Encryption with TLS/SSL, HTTPS, or custom algorithms. Also, access control and audit logging.
 
----
+## Target Types
 
-## Configuration
+The system supports the following target types:
 
-The fields required to define a target are:
+| Type | Description |
+|------|-------------|
+| [Elasticsearch](#elasticsearch) | Sends data to Elasticsearch clusters for search and analytics |
+| [Kafka](#kafka) | Publishes data to Kafka topics for distributed processing |
+| [S3](#s3) | Stores data in Amazon S3 buckets for long-term retention |
+| [Splunk](#splunk) | Forwards data to Splunk instances for security monitoring |
+| [Webhook](#webhook) | Delivers data to HTTP endpoints for custom integrations |
 
-- `name`: Unique identifier
-- `type`: Target type (destination system)
-- `properties`: Type-specific configuration (connection details, authentication, etc.)
+### Elasticsearch
 
-:::tip
-Each target type provides specific options detailed in its respective chapter.
-:::
+Sends data to Elasticsearch clusters for indexing, search, and analytics.
 
-Use the `name` of the target to refer to it in your configurations.
-
-**Example**:
+#### Basic Configuration
 
 ```yaml
 targets:
-  - name: elasticsearch
+  - id: 1
+    name: production_elasticsearch
+    description: "Production Elasticsearch cluster"
     type: elasticsearch
     properties:
-      hosts: ["http://elasticsearch:9200"]
-      index: "logs-%{+yyyy.MM.dd}"
-      username: "elastic"
-      password: "${PASSWORD}"
+      addresses:
+        - https://es01.example.com:9200
+        - https://es02.example.com:9200
+      index: logs-%{+yyyy.MM.dd}
+      username: elastic
+      password: ${ES_PASSWORD}
 ```
 
-The target listed here is of type `elasticsearch`. It specifies the host that it will forward the data to and the index on the host which the data will be apppended to. To access the host, it specifies a username and a password.
+#### Advanced Features
 
-:::tip
-You can use environment variables like `${PASSWORD}` for your credentials. This will improve security by removing the credentials from your configuration file.
-:::
+- **Index Templates**: Uses dynamic index names with date formatting
+- **Authentication**: Supports basic auth, API keys, and cloud ID
+- **Routing Control**: Custom document routing with routing fields
+- **Bulk Processing**: Optimized bulk indexing with configurable batch sizes
 
-Multiple targets can be used for redundancy, [normalization](/docs/configuration/pipelines/normalization.mdx) rules can be implemented, and alerts can be put in place for notification and error handling.
+### Kafka
+
+Publishes data to Kafka topics for distributed stream processing.
+
+#### Basic Configuration
+
+```yaml
+targets:
+  - id: 2
+    name: kafka_logs
+    description: "Kafka streaming target"
+    type: kafka
+    properties:
+      brokers:
+        - kafka1.example.com:9092
+        - kafka2.example.com:9092
+      topic: logs
+      compression: snappy
+```
+
+#### Advanced Features
+
+- **Compression**: Supports gzip, snappy, lz4, and zstd compression
+- **Authentication**: TLS, SASL, and Kerberos authentication methods
+- **Partitioning**: Custom partitioning strategies
+- **Reliability**: Configurable acks and retry mechanisms
+
+### S3
+
+Stores data in Amazon S3 buckets for long-term retention and analysis.
+
+#### Basic Configuration
+
+```yaml
+targets:
+  - id: 3
+    name: s3_archive
+    description: "S3 archival storage"
+    type: s3
+    properties:
+      bucket: logs-archive
+      region: us-west-2
+      prefix: logs/%{+yyyy}/%{+MM}/%{+dd}/
+      compression: gzip
+      access_key: ${AWS_ACCESS_KEY}
+      secret_key: ${AWS_SECRET_KEY}
+```
+
+#### Advanced Features
+
+- **Path Templates**: Dynamic path generation with date formatting
+- **Compression**: gzip, zstd, and snappy compression options
+- **Authentication**: IAM role and access key authentication
+- **Rotation**: Time and size-based file rotation
+
+### Splunk
+
+Forwards data to Splunk instances for security monitoring and operational intelligence.
+
+#### Basic Configuration
+
+```yaml
+targets:
+  - id: 4
+    name: splunk_security
+    description: "Splunk security monitoring"
+    type: splunk
+    properties:
+      url: https://splunk.example.com:8088
+      token: ${SPLUNK_HEC_TOKEN}
+      index: security
+      source_type: json
+```
+
+#### Advanced Features
+
+- **HEC Integration**: Native HTTP Event Collector support
+- **Indexing Control**: Custom index and source type mapping
+- **Batching**: Optimized event batching
+- **Reliability**: Automatic retry with backoff
+
+### Webhook
+
+Delivers data to HTTP endpoints for custom integrations and workflows.
+
+#### Basic Configuration
+
+```yaml
+targets:
+  - id: 5
+    name: webhook_alerts
+    description: "Webhook for critical alerts"
+    type: webhook
+    properties:
+      url: https://alerts.example.com/endpoint
+      headers:
+        Content-Type: application/json
+        X-API-Key: ${API_KEY}
+      method: POST
+```
+
+#### Advanced Features
+
+- **Authentication**: Basic auth, custom headers, and JWT support
+- **Format Control**: JSON, form, and custom serialization formats
+- **Transport**: TLS configuration and proxy support
+- **Reliability**: Configurable retry policies and timeout handling
+
+## Storage Types
+
+### Local
+
+**Director** supports the following local data output methods:
+
+* **Console** - Direct _stdout_ writing with real-time message viewing. Also provides debugging and testing capability, format normalization, and synchronous writing with mutex locking
+
+* **Files** - Multiple file formats like JSON (line-delimited), Avro (binary serialization), OCF (container), Parquet (columnar) are available. In addition, compression options like ZSTD (default), GZIP, Snappy, Brotli, and LZ4 are also supported. Also, dynamic file naming, size-based rotation, buffer management, and schema validation are among the features.
+
+### Cloud
+
+The integration options for the cloud are below:
+
+* **Azure Blob** - Direct blob writing and multiple containers are supported. Available authentication methods are service principal and managed Identity. Other features include automatic retries, exponential backoff, size-based chunking, connection pooling, and buffer management.
+
+* **Microsoft Sentinel** - Direct DCR integration and ASIM normalization are supported. In addition to standard tables, _WindowsEvent_, _SecurityEvent_, _CommonSecurityLog_, and _Syslog_ can be used. Various ASIM tables are also available. (See the [ASIM section](/appendix.mdx#asim) for a complete list.)
+
+**Example**: Multi-Target Configuration
+
+```yaml
+targets:
+  - id: 1
+    name: realtime_es
+    type: elasticsearch
+    properties:
+      addresses: 
+        - https://es.example.com:9200
+      index: logs-%{+yyyy.MM.dd}
+  
+  - id: 2
+    name: archive_s3
+    type: s3
+    batch: true
+    batch_size: 5000
+    properties:
+      bucket: logs-archive
+      region: us-west-2
+      prefix: logs/%{+yyyy}/%{+MM}/%{+dd}/
+      
+  - id: 3
+    name: alerts_webhook
+    type: webhook
+    properties:
+      url: https://alerts.example.com/endpoint
+      method: POST
+```
+
+## Best Practices
+
+- **Use Environment Variables**: Store sensitive information in environment variables
+
+- **Configure Batching**: Enable batching for high-volume targets
+
+- **Implement Redundancy**: Configure multiple targets for critical data paths
+
+- **Monitor Performance**: Track delivery metrics to optimize throughput

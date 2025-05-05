@@ -38,6 +38,7 @@ const sidebars: SidebarsConfig = {
         'getting-started/basics',
         'getting-started/example-device',
         'getting-started/example-target',
+        'getting-started/example-process',
         'getting-started/example-route',
         // 'getting-started/example-multi-event-routing',
         'getting-started/example-pipeline',
@@ -213,14 +214,7 @@ const sidebars: SidebarsConfig = {
             "configuration/pipelines/handling-success",
           ],
         },
-        {
-          type: "category",
-          label: "Routes",
-          link: {type: "doc", id: "configuration/routes/index"},
-          items: [
-            'configuration/routes/management',
-          ],
-        },
+        'configuration/routes',
       ],
     },
     // {

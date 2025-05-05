@@ -16,108 +16,29 @@ The sources can be devices, networks, or other pipelines, and the targets can be
 
 Each incoming stream can be queried with criteria specific to the information contained therein, and each outgoing stream can be enriched with inferences made from correlations for use on the destination side.
 
-Schematically:
+The following table summarizes the basic structure of a pipeline:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	provider[("`**Provider**
-   data
-  `")]
-  pipeline{"`**Pipeline**
-	  processor-1
-   processor-2
-   ...
-   processor-n
-  `"}
-	consumer[/"`**Consumer**
-   processed data
-  `"/]
-	provider --> pipeline --> consumer
-```
+> **Provider** (_raw data_) &rarr; **Pipeline** (_transformation_) &rarr; **Consumer** (_processed data_)
 
-In real life scenarious, the level of complexity of the configurations will vary based on the requirements of the consumers and the intended destinations.
+where **Pipeline** (_transformation_) is
 
-## Discussion
+> (processor<sub>1</sub> &compfn; processor<sub>2</sub> &compfn; &#8230; &compfn; processor<sub>n</sub>)(_data_)
 
-A pipeline can consume data from multiple providers, and once it is finished processing them, can direct some or all of the processed data to a specific consumer in a _one-to-one_ scheme:
+In real life scenarios, the level of complexity of the configurations will vary based on the requirements of the consumers and the intended destinations.
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	provider1[("`**Provider 1**
-   A
-   B
-  `")]
-	provider2[("`**Provider 2**
-   C
-  `")]
- 	pipeline{"`**Pipeline**`"}
-	consumer["`**Consumer**
-   B
-   C
-  `"]
-	provider1 --> pipeline;
-	provider2 --> pipeline;
-  pipeline --> consumer
-```
+## Deployment
+
+A pipeline can consume data from multiple providers, and&mdash;once it is finished processing them&mdash;can direct some or all of the processed data to a specific consumer in a one-to-one scheme:
+
+> **Provider**<sub>1</sub>[A] &rarr; **Pipeline** &rarr; **Consumer**<sub>1</sub>(A)
 
 It can also consume data from a single provider and deliver the processed results to multiple consumers:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	provider[("`**Provider**
-   A
-   B
-   C
-  `")]
- 	pipeline{"`**Pipeline**`"}
-	consumer1["`**Consumer 1**
-   A
-   C
-  `"]
-	consumer2["`**Consumer 2**
-   B
-  `"]
-	provider --> pipeline;
-  pipeline --> consumer1;
-  pipeline --> consumer2;
-
-```
+> **Provider**<sub>1</sub>[A] + **Provider**<sub>2</sub>[B]  &rarr; **Pipeline** &rarr; **Consumer**<sub>1</sub>(A) + **Consumer**<sub>2</sub>(B)
 
 Finally&mdash;and possibly in most real-life scenarios&mdash;there may be multiple providers and consumers connected to each other in much more complex arrangements:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	provider1[("`**Provider 1**
-   A
-   B
-  `")]
-	provider2[("`**Provider 2**
-   C
-  `")]
-	provider3[("`**Provider 3**
-   D
-  `")]
- 	pipeline{"`**Pipeline**`"}
-	consumer1["`**Consumer 1**
-   A
-   C
-  `"]
-	consumer2["`**Consumer 2**
-   A
-   B
-   D
-  `"]
-	provider1 --> pipeline;
-	provider2 --> pipeline;
-	provider3 --> pipeline;
-  pipeline --> consumer1;
-  pipeline --> consumer2;
-
-```
+> **Provider**<sub>1</sub>[A, B] + **Provider**<sub>2</sub>[C] + **Provider**<sub>3</sub>[D] &rarr; **Pipeline** &rarr; **Consumer**<sub>1</sub>(A, C) + **Consumer**<sub>2</sub>(A, B, D)
 
 Effectively, each source may be the target of an upstream pipeline, and each target may serve as the source for a downstream one. The detail to keep in mind is that each provider side is delegating some processing to the next pipeline based on the established requirements of the consumer side. The pipeline is acting as the _middleman_ for the data interchange.
 
@@ -129,27 +50,11 @@ Notwithstanding the above, there is also a middle stage&mdash;where most softwar
 
 > As a side note, the implementation of these interim stages is based on a transformation known as [normalization](/configuration/pipelines/normalization.mdx), i.e. preparing the data for easier handling further down the chain.
 
-Pipelines are, once again, our primary tool for implementing these interim stages. Schematically:
+Pipelines are, once again, our primary tool for implementing these interim stages:
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	source1["`Source 1`"]
-	source2["`Source 2`"]
-	source3["`Source 3`"]
-  preprocess["`Preprocess`"]
-	route{"`Routes`"}
-  postprocess["`Postprocess`"]
-	target1["`Target 1`"]
-	target2["`Target 2`"]
+> **Sources** &rarr; [_Preprocess_] &rarr; **Routes** &rarr; [_Postprocess_] &rarr; **Targets**
 
-	source1 & source2 & source3 --> preprocess
-	preprocess --> route
-	route --> postprocess
-  postprocess --> target1 & target2
-```
-
-As can be seen, routes are right in the middle of this setup.
+Routes are right in the middle of this arrangement.
 
 ---
 
@@ -228,40 +133,49 @@ After this, the remaining data may need to be converted into forms making them m
 
 Finally, the data may contain hints or fragments of information which, when correlated with other available information, may yield insights that may be prerequisite to analysis and use. Adding correlated information in order to render the data more relevant&mdash;or increase its relevance&mdash;is known as _enrichment_.
 
-The overall process can be represented schematically as:
-
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}}}%%
-flowchart LR
-	source1[("`**Source 1**
-		A
-		B
-	`")]
-	source2[("`**Source 2**
-		C
-	`")]
-  routing{"`**Routing**
-   D = curate(A, B, C)
-		E = enrich(transform(D))
-	`"}
-	target["`**Target**
-		E
-	`"]
-	source1 --> routing;
-	source2 --> routing;
-	routing --> target
-```
-
 It is through this type of seamless three-stage design that a pipeline truly shines and proves itself indispensible for telemetry.
 
 ---
 
-## Configuration
+## Structure
 
-The fields required to define pipelines are:
+A pipeline consists of a series of processors that are executed sequentially to transform data:
 
-- `name`: Unique identifier
-- `processors`: List of processors with their structures
+```yaml
+pipelines:
+  - id: apache_logs
+    description: "Process Apache web server logs"
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{COMMONAPACHELOG}"
+      - date:
+          field: timestamp
+          formats:
+            - "dd/MMM/yyyy:HH:mm:ss Z"
+          target_field: "@timestamp"
+      - rename:
+          fields:
+            - from: clientip
+              to: source.ip
+      - geoip:
+          field: source.ip
+          target_field: source.geo
+```
+
+## Properties
+
+Each pipeline definition includes the following parameters:
+
+| Field | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `id` | Y | | Unique identifier for the pipeline |
+| `description` | N | | Optional explanation of the pipeline's purpose |
+| `processors` | Y | | Ordered list of processors to execute |
+| `if` | N | | Conditional expression to determine if pipeline should be applied |
+| `on_failure` | N | | Processors to execute if the pipeline fails |
+| `ignore_failure` | N | `false` | Continue pipeline execution despite processor failures |
 
 Use the `name` of the pipeline to refer to it in your configurations.
 
@@ -282,10 +196,153 @@ pipelines:
 
 This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
 
-Pipelines can also access the _metadata_ of processors. These are:
+## Conditional Execution
 
-* `tag`: Identifier used for logging/tracking processor execution
-* `logEntry`: Log entry being processed
-* `params`: Map of parameters available to scripts
+Pipelines and processors support conditional execution using the `if` parameter:
 
-The data these metatags provide depends on the context and the log format.
+```yaml
+pipelines:
+  - id: web_logs
+    processors:
+      - set:
+          field: event.category
+          value: web
+          if: "ctx.source == 'apache' || ctx.source == 'nginx'"
+      - geoip:
+          field: client.ip
+          target_field: client.geo
+          if: "ctx?.client?.ip != null"
+```
+
+## Error Handling
+
+Pipelines provide robust error handling with `on_failure` and `ignore_failure` options:
+
+```yaml
+pipelines:
+  - id: critical_processing
+    ignore_failure: false
+    on_failure:
+      - set:
+          field: error.message
+          value: "Pipeline processing failed: {{_ingest.on_failure_message}}"
+      - set:
+          field: event.outcome
+          value: "failure"
+```
+
+## Pipeline Chaining
+
+Pipelines can be chained together using routes or referenced in device configurations:
+
+```yaml
+# Reference in a device configuration
+devices:
+  - id: 1
+    name: web_server_logs
+    type: http
+    pipelines:
+      - common_enrichment
+      - web_logs
+    properties:
+      port: 8080
+```
+
+## Common Patterns
+
+### Log Parsing and Normalization
+
+```yaml
+pipelines:
+  - id: syslog_parser
+    description: "Parse and normalize syslog messages"
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{SYSLOGLINE}"
+      - date:
+          field: timestamp
+          target_field: "@timestamp"
+          formats:
+            - "MMM dd HH:mm:ss"
+            - "MMM  d HH:mm:ss"
+      - set:
+          field: event.kind
+          value: event
+      - rename:
+          fields:
+            - from: program
+              to: process.name
+            - from: logsource
+              to: host.hostname
+```
+
+### Field Enrichment
+
+```yaml
+pipelines:
+  - id: security_enrichment
+    description: "Enrich security events with additional context"
+    processors:
+      - geoip:
+          field: source.ip
+          target_field: source.geo
+      - set:
+          field: event.category
+          value: security
+      - script:
+          lang: painless
+          source: |
+            if (ctx.source.ip.startsWith('10.') || 
+                ctx.source.ip.startsWith('192.168.')) {
+              ctx.source.type = 'internal';
+            } else {
+              ctx.source.type = 'external';
+            }
+```
+
+### Data Transformation
+
+```yaml
+pipelines:
+  - id: data_normalizer
+    description: "Standardize field names and values"
+    processors:
+      - rename:
+          fields:
+            - from: src
+              to: source.ip
+            - from: dst
+              to: destination.ip
+      - convert:
+          field: bytes
+          type: long
+      - script:
+          lang: painless
+          source: "ctx.network.bytes = ctx.bytes_in + ctx.bytes_out"
+      - remove:
+          field:
+            - bytes_in
+            - bytes_out
+```
+
+## Best Practices
+
+1. **Start with Validation**: Begin pipelines with validation processors to ensure data quality
+2. **Order Matters**: Arrange processors logically - extract fields before using them
+3. **Use Conditionals**: Apply processors selectively to improve performance
+4. **Handle Errors**: Configure appropriate error handling for critical pipelines
+5. **Test Thoroughly**: Validate pipeline behavior with representative sample data
+6. **Document Purpose**: Include descriptive comments to explain complex transformations
+7. **Monitor Performance**: Watch for processor bottlenecks in high-volume environments
+
+## Common Pipeline Combinations
+
+| Use Case | Recommended Processors |
+|----------|------------------------|
+| Log Parsing | `grok` → `date` → `rename` → `remove` |
+| Security Events | `kv` → `geoip` → `set` → `script` |
+| API Data | `json` → `convert` → `rename` → `set` |
+| CSV Processing | `csv` → `convert` → `rename` |
+| Field Standardization | `rename` → `lowercase` → `set` |
