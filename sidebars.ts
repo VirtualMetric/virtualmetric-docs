@@ -217,59 +217,59 @@ const sidebars: SidebarsConfig = {
         'configuration/routes',
       ],
     },
-    {
-      type: "category",
-      label: "Migration",
-      link: {type: "doc", id: "migration/index"},
-      items: [
-        'migration/cribl',
-        'migration/tenzir',
-        'migration/vector',
-        'migration/logstash',
-      ],
-    },
     // {
     //   type: "category",
-    //   label: "Architecture",
-    //   link: {type: "doc", id: "architecture/index"},
+    //   label: "Migration",
+    //   link: {type: "doc", id: "migration/index"},
     //   items: [
-    //     'architecture/clustering',
-    //     'architecture/file-system',
-    //     'architecture/persistency',
-    //     'architecture/zero-trust',
-    //     {
-    //       type: "category",
-    //       label: "Microsoft Sentinel",
-    //       link: {type: "doc", id: "architecture/microsoft-sentinel/index"},
-    //       items: [
-    //         {
-    //           type: "category",
-    //           label: "Integration",
-    //           items: [
-    //             'architecture/microsoft-sentinel/integration/autodiscovery',
-    //             'architecture/microsoft-sentinel/integration/manual',
-    //           ],
-    //         },
-    //         {
-    //           type: "category",
-    //           label: "Automation",
-    //           items: [
-    //             'architecture/microsoft-sentinel/automation/arm-templates',
-    //             'architecture/microsoft-sentinel/automation/bicep-templates',
-    //           ],
-    //         },
-    //         {
-    //           type: "category",
-    //           label: "Content Hub",
-    //           items: [
-    //             'architecture/microsoft-sentinel/content-hub/checkpoint',
-    //             'architecture/microsoft-sentinel/content-hub/fortigate',
-    //           ],
-    //         },
-    //       ],
-    //     },
+    //     'migration/cribl',
+    //     'migration/tenzir',
+    //     'migration/vector',
+    //     'migration/logstash',
     //   ],
     // },
+    {
+      type: "category",
+      label: "Architecture",
+      link: {type: "doc", id: "architecture/index"},
+      items: [
+        'architecture/clustering',
+        'architecture/file-system',
+        'architecture/persistency',
+        'architecture/zero-trust',
+        {
+          type: "category",
+          label: "Microsoft Sentinel",
+          link: {type: "doc", id: "architecture/microsoft-sentinel/index"},
+          items: [
+            {
+              type: "category",
+              label: "Integration",
+              items: [
+                'architecture/microsoft-sentinel/integration/autodiscovery',
+                'architecture/microsoft-sentinel/integration/manual',
+              ],
+            },
+            {
+              type: "category",
+              label: "Automation",
+              items: [
+                'architecture/microsoft-sentinel/automation/arm-templates',
+                'architecture/microsoft-sentinel/automation/bicep-templates',
+              ],
+            },
+            {
+              type: "category",
+              label: "Content Hub",
+              items: [
+                'architecture/microsoft-sentinel/content-hub/checkpoint',
+                'architecture/microsoft-sentinel/content-hub/fortigate',
+              ],
+            },
+          ],
+        },
+      ],
+    },
     "appendix",
     "glossary"
   ],
