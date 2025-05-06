@@ -3,3 +3,228 @@ sidebar_label: On Azure VM
 ---
 
 # Deployment: On Azure VM
+
+This guide covers deploying DataStream on Azure Virtual Machines, offering a balance of performance, control, and cloud scalability. This deployment model is ideal for production environments that require customized configurations while leveraging Azure's infrastructure capabilities.
+
+## Azure VM Considerations
+
+Azure VMs provide several advantages for DataStream deployments:
+
+- **Customizable resources**: Scale CPU, memory, and storage based on workload
+- **Network performance**: Premium network options for high-throughput scenarios
+- **OS flexibility**: Support for various Linux and Windows operating systems
+- **Integration**: Native connectivity with other Azure services
+- **Managed infrastructure**: Azure handles the physical hardware maintenance
+
+## VM Size Recommendations
+
+Select an Azure VM size based on your expected workload:
+
+| Workload | VM Size | Specifications | Notes |
+|----------|---------|----------------|-------|
+| Small | Standard_D2s_v3 | 2 vCPU, 8GB RAM | Development or light production |
+| Medium | Standard_D4s_v3 | 4 vCPU, 16GB RAM | Standard production workloads |
+| Large | Standard_D8s_v3 | 8 vCPU, 32GB RAM | High-volume data collection |
+| High-Performance | Standard_E8s_v3 | 8 vCPU, 64GB RAM | Memory-intensive processing |
+
+For disk-intensive operations, consider Premium SSD storage options.
+
+## Deployment Steps
+
+### 1. Create the Azure VM
+
+1. **Navigate to the Azure Portal** and create a new Virtual Machine
+   - Select your preferred OS (Ubuntu 20.04 LTS recommended)
+   - Choose the appropriate VM size based on your workload
+   - Configure networking to allow required ports (e.g., 514 for syslog)
+   - Set authentication method (SSH key recommended for Linux)
+
+2. **Configure disk settings**:
+   - OS disk: Premium SSD recommended for production
+   - Data disk: Add a separate managed disk for DataStream data
+   - Consider enabling host caching for read-intensive workloads
+
+3. **Configure networking**:
+   - Create or select a Virtual Network
+   - Configure Network Security Group (NSG) rules:
+     - Allow SSH/RDP for administration
+     - Allow specific ports for your collectors (514/UDP, 1514/TCP, etc.)
+   - Consider using a private endpoint for secure connectivity
+
+### 2. Prepare the VM
+
+1. **Connect to the VM** using SSH (Linux) or RDP (Windows)
+
+2. **Update the OS**:
+   ```bash
+   # For Ubuntu
+   sudo apt update && sudo apt upgrade -y
+   ```
+
+3. **Format and mount the data disk**:
+   ```bash
+   # Identify the disk
+   sudo lsblk
+
+   # Format the disk
+   sudo mkfs.ext4 /dev/sdc
+
+   # Mount the disk
+   sudo mkdir -p /datadisk
+   sudo mount /dev/sdc /datadisk
+   
+   # Make the mount persistent
+   echo '/dev/sdc /datadisk ext4 defaults,nofail 0 0' | sudo tee -a /etc/fstab
+   ```
+
+4. **Install dependencies**:
+   ```bash
+   # Install .NET Runtime
+   sudo apt install -y apt-transport-https
+   wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+   sudo dpkg -i packages-microsoft-prod.deb
+   sudo apt update
+   sudo apt install -y dotnet-runtime-6.0
+   ```
+
+### 3. Install DataStream
+
+#### Option 1: Direct Installation
+
+1. **Download the DataStream installer**:
+   ```bash
+   wget https://download.datastream.example.com/latest/datastream-installer.sh
+   chmod +x datastream-installer.sh
+   ```
+
+2. **Run the installer**:
+   ```bash
+   sudo ./datastream-installer.sh --data-dir /datadisk/datastream
+   ```
+
+#### Option 2: Container Installation
+
+1. **Install Docker**:
+   ```bash
+   sudo apt install -y docker.io
+   sudo systemctl enable --now docker
+   ```
+
+2. **Pull and run the DataStream container**:
+   ```bash
+   # Create configuration directory
+   sudo mkdir -p /datadisk/datastream/config
+
+   # Run the container
+   sudo docker run -d \
+     --name datastream \
+     -v /datadisk/datastream/config:/etc/datastream \
+     -v /datadisk/datastream/data:/var/lib/datastream \
+     -p 514:514/udp \
+     -p 1514:1514/tcp \
+     --restart unless-stopped \
+     datastream/datastream:latest
+   ```
+
+### 4. Configure DataStream
+
+1. **Create basic configuration**:
+   ```bash
+   sudo nano /datadisk/datastream/config/config.yaml
+   ```
+
+2. **Add sample collector configuration**:
+   ```yaml
+   - id: 1
+     name: azure_syslog
+     type: syslog
+     properties:
+       port: 514
+   ```
+
+3. **Configure Azure-specific outputs**:
+   ```yaml
+   outputs:
+     - name: azure_storage
+       type: azure_blob
+       connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
+       container: "datastream-logs"
+       path_format: "{date}/{hour}/{source}"
+   ```
+
+4. **Set up environment variables** (if needed):
+   ```bash
+   echo 'AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=youraccount;AccountKey=yourkey;EndpointSuffix=core.windows.net"' | sudo tee -a /etc/environment
+   ```
+
+### 5. Start and Test DataStream
+
+1. **Start the service** (for direct installation):
+   ```bash
+   sudo systemctl enable datastream
+   sudo systemctl start datastream
+   ```
+
+2. **Check status**:
+   ```bash
+   sudo systemctl status datastream
+   # Or for container
+   sudo docker ps | grep datastream
+   ```
+
+3. **Test the deployment**:
+   ```bash
+   # Send test message
+   logger -n localhost -P 514 "Test message for Azure VM deployment"
+   
+   # Check logs
+   sudo journalctl -u datastream -f
+   # Or for container
+   sudo docker logs -f datastream
+   ```
+
+## Azure VM Scaling Options
+
+For scaling DataStream on Azure VMs, consider:
+
+1. **Vertical scaling**: Resize the VM to a larger size for increased capacity
+   - Can be done with minimal downtime but requires service restart
+
+2. **Horizontal scaling**: Deploy multiple DataStream instances with a load balancer
+   - Requires additional configuration for coordination
+   - Consider using Azure Load Balancer for distributing incoming traffic
+
+3. **Azure VM Scale Sets**: For automated scaling based on metrics
+   - Works best with the containerized deployment option
+   - Configure appropriate auto-scaling rules based on CPU/memory usage
+
+## Monitoring and Management
+
+Enhance your Azure VM deployment with:
+
+1. **Azure Monitor**: Enable VM insights for resource utilization metrics
+
+2. **Azure Log Analytics**: Forward DataStream logs for centralized analysis
+   ```yaml
+   outputs:
+     - name: log_analytics
+       type: azure_monitor
+       workspace_id: "${WORKSPACE_ID}"
+       workspace_key: "${WORKSPACE_KEY}"
+   ```
+
+3. **Azure Security Center**: Enable for security recommendations and monitoring
+
+4. **Backup**: Configure Azure Backup to protect configuration and data
+
+## Optimizing Costs
+
+For Azure VM deployments, control costs with:
+
+1. **Right-sizing**: Select the appropriate VM size for your workload
+2. **Reserved Instances**: Purchase reservations for long-term deployments
+3. **Auto-shutdown**: For non-production environments, schedule VM shutdowns
+4. **Disk optimization**: Use the appropriate storage tier for your performance needs
+5. **Spot instances**: For fault-tolerant workloads, consider spot VMs at lower cost
+
+For detailed cost estimates, use the [Azure Pricing Calculator](https://azure.microsoft.com/en-us/pricing/calculator/).

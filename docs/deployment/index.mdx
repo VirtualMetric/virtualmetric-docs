@@ -1,164 +1,63 @@
+---
+pagination_prev: null
+---
+
 # Deployment: Overview
 
-## Introduction
-
-Deploying the system effectively requires careful planning and consideration of your environment, requirements, and operational constraints. This chapter provides guidance on deployment strategies, architecture considerations, and best practices to ensure a successful implementation.
+DataStream offers flexible deployment options to match your specific infrastructure requirements. Whether you're running on local hardware, cloud virtual machines, or managed services, DataStream can be deployed in a way that optimizes performance and minimizes operational overhead.
 
 ## Deployment Models
 
-The system supports multiple deployment models to accommodate various operational requirements:
+DataStream supports the following deployment models:
 
-|Model|Description|Best For|
-|---|---|---|
-|**Standalone**|Single instance deployment with all components running on one server|Small environments, testing, and development|
-|**Distributed**|Components spread across multiple servers for scalability|Medium to large environments with high volumes|
-|**High Availability**|Redundant deployment with failover capabilities|Mission-critical environments requiring uptime guarantees|
-|**Cloud-Native**|Containerized deployment in cloud environments|Dynamic scaling and cloud integration scenarios|
-|**Hybrid**|Combination of on-premises and cloud components|Organizations with mixed infrastructure requirements|
+| Deployment Type | Description | Use Case |
+|-----------------|-------------|----------|
+| **Local** | Run DataStream on your own hardware | Development, testing, or small-scale deployments |
+| **Azure VM** | Deploy on Azure Virtual Machines | Production workloads with custom configurations |
+| **Azure App Service** | Run as a managed service | Simplified operations with automatic scaling |
+| **Azure Functions** | Event-driven serverless deployment | Cost-effective processing of intermittent workloads |
+| **Azure Arc Extension** | Deploy to hybrid or multi-cloud environments | Consistent management across diverse infrastructure |
 
-## System Requirements
+## Deployment Prerequisites
 
-### Hardware Requirements
+Before deploying DataStream, ensure your environment meets these requirements:
 
-Hardware requirements vary based on expected data volume and processing needs:
+- **Hardware Requirements**:
+  - CPU: 2+ cores (4+ recommended for production)
+  - RAM: 4GB minimum (8GB+ recommended for production)
+  - Storage: 20GB minimum for the application
 
-|Component|Minimum|Recommended|High Volume|
-|---|---|---|---|
-|**CPU**|2 cores|4-8 cores|16+ cores|
-|**Memory**|4 GB|16 GB|64+ GB|
-|**Disk**|50 GB|200 GB|1+ TB|
-|**Network**|1 Gbps|10 Gbps|10+ Gbps|
+- **Software Requirements**:
+  - Operating System: Linux (Ubuntu 20.04+, RHEL 8+), Windows Server 2019+
+  - Container Support: Docker 20.10+ or containerd 1.6+ (if using container deployment)
+  - .NET Runtime: 6.0 or later
 
-:::note
-For distributed deployments, each component may have different requirements. Size each server according to its specific role.
-:::
+- **Network Requirements**:
+  - Inbound ports: Based on configured collectors (e.g., 514 for Syslog)
+  - Outbound connectivity to your storage and analytics services
 
-### Software Requirements
+## Choosing the Right Deployment Model
 
-|Component|Requirement|
-|---|---|
-|**Operating System**|Linux (Ubuntu 20.04+, RHEL 8+, CentOS 8+)<br/>Windows Server 2019+|
-|**Container Runtime**|Docker 20.10+ (if using containerized deployment)|
-|**Orchestration**|Kubernetes 1.20+ (for cloud-native deployments)|
-|**Database**|PostgreSQL 12+ (for metadata storage)|
+Consider these factors when selecting a deployment option:
 
-## Pre-Deployment Planning
+1. **Data Volume**: Higher volumes may require VM-based deployments for maximum performance
+2. **Operational Overhead**: Managed services reduce maintenance but may have configuration limitations
+3. **Cost Model**: Serverless options can be cost-effective for variable workloads
+4. **Integration Requirements**: Some deployment options offer better integration with existing systems
+5. **Security Requirements**: Different deployment models have different security boundaries
 
-Before deployment, consider the following key factors:
+## Deployment Process Overview
 
-1. **Data Volume Assessment**
-   - Estimate average and peak data volumes
-   - Calculate storage requirements based on retention policies
-   - Determine processing capacity needed for expected workloads
+Regardless of the deployment model, the general process follows these steps:
 
-2. **Network Architecture**
-   - Map data sources and destinations
-   - Identify network segmentation and firewall considerations
-   - Plan for required connectivity between components
+1. **Prepare Environment**: Set up the target infrastructure and dependencies
+2. **Configure DataStream**: Define collectors, pipelines, and output destinations
+3. **Deploy Application**: Install DataStream using the appropriate method
+4. **Verify Operation**: Check logs and metrics to ensure proper functioning
+5. **Monitor and Scale**: Adjust resources based on actual usage patterns
 
-3. **Security Requirements**
-   - Define authentication and authorization needs
-   - Plan for encryption requirements (in-transit and at-rest)
-   - Consider regulatory compliance factors
+## Next Steps
 
-4. **Scaling Strategy**
-   - Determine initial deployment size
-   - Plan for future growth
-   - Identify scaling triggers and methods
+Choose the deployment model that best fits your needs from the navigation menu. Each section provides detailed, model-specific instructions for setting up DataStream.
 
-5. **High Availability Requirements**
-   - Define acceptable downtime
-   - Plan redundancy levels
-   - Consider disaster recovery needs
-
-## Deployment Approaches
-
-### Bare Metal Deployment
-
-Installing directly on physical servers offers maximum performance and control:
-
-```bash
-# Example installation on Linux
-wget https://example.com/installer.sh
-chmod +x installer.sh
-sudo ./installer.sh --install-dir=/opt/system
-```
-
-### Containerized Deployment
-
-Using Docker containers provides isolation and simplified management:
-
-```bash
-# Pull the official image
-docker pull example/system:latest
-
-# Run with basic configuration
-docker run -d --name system \
-  -v /path/to/config:/etc/system/config \
-  -v /path/to/data:/var/lib/system \
-  -p 8080:8080 \
-  example/system:latest
-```
-
-### Kubernetes Deployment
-
-For cloud-native environments, Kubernetes offers orchestration and scaling:
-
-```yaml
-# Example deployment manifest
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: system
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: system
-  template:
-    metadata:
-      labels:
-        app: system
-    spec:
-      containers:
-      - name: system
-        image: example/system:latest
-        ports:
-        - containerPort: 8080
-        volumeMounts:
-        - name: config-volume
-          mountPath: /etc/system/config
-        - name: data-volume
-          mountPath: /var/lib/system
-      volumes:
-      - name: config-volume
-        configMap:
-          name: system-config
-      - name: data-volume
-        persistentVolumeClaim:
-          claimName: system-data
-```
-
-## Post-Deployment Verification
-
-After deployment, verify the installation using these checks:
-
-1. **Component Status**
-   ```bash
-   system-ctl status
-   ```
-
-2. **Configuration Validation**
-   ```bash
-   system-ctl validate
-   ```
-
-3. **Connectivity Test**
-   ```bash
-   system-ctl test-connection
-   ```
-
-4. **Data Flow Verification**
-   ```bash
-   system-ctl test-pipeline --source=test
-   ```
+For questions or assistance with deployment, contact our support team at support@datastream.example.com.
