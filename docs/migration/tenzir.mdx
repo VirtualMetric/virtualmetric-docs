@@ -2,4 +2,193 @@
 sidebar_label: From Tenzir
 ---
 
-# Migration: From Tenzir
+# Migrating from Tenzir to DataStream
+
+This guide outlines the process for migrating from Tenzir platform to DataStream, highlighting key concepts, configuration differences, and practical steps.
+
+## Feature Comparison
+
+| Feature | Tenzir | DataStream |
+|---------|--------|------------|
+| Configuration Format | YAML | YAML |
+| Data Model | Event-based | Event-based |
+| Query Language | Tenzir Query Language (TQL) | Processing Pipelines |
+| Sources | Sources | Devices |
+| Connectors | Connectors | Outputs |
+| Deployment | Containers/Kubernetes | Standalone/Distributed |
+
+## Concept Mapping
+
+### Sources to Devices
+
+Tenzir sources map to DataStream devices as follows:
+
+| Tenzir Source | DataStream Device |
+|---------------|-------------------|
+| HTTP | HTTP |
+| Syslog | Syslog |
+| TCP | TCP |
+| UDP | UDP |
+| eStreamer | eStreamer |
+
+### Operators to Processors
+
+Tenzir operators can be mapped to DataStream processors:
+
+| Tenzir Operator | DataStream Processor |
+|-----------------|----------------------|
+| where | Script (conditional) |
+| select | Set/Remove |
+| rename | Rename |
+| parse | Grok/KV/JSON |
+| compute | Script |
+
+### Pipelines
+
+In Tenzir, pipelines are defined with operators chained together. In DataStream, pipelines are explicitly defined with ordered processors.
+
+## Migration Steps
+
+1. **Inventory Your Tenzir Deployment**
+   - Document all sources, operators, and connectors
+   - Identify custom TQL expressions
+
+2. **Create Device Configurations**
+   - Transform Tenzir sources to DataStream devices
+   - Example: Convert Syslog source to Syslog device
+
+   ```yaml
+   # Tenzir Syslog Source
+   sources:
+     syslog:
+       type: syslog
+       listen: 0.0.0.0:514
+       protocol: udp
+   
+   # DataStream Syslog Device
+   - id: 1
+     name: syslog_device
+     type: syslog
+     properties:
+       protocol: udp
+       address: "0.0.0.0"
+       port: 514
+   ```
+
+3. **Create Processor Configurations**
+   - Convert Tenzir operators to DataStream processors
+   - Example: Convert parse operator to KV processor
+
+   ```yaml
+   # Tenzir Parse Operator
+   operators:
+     parse:
+       field: message
+       as: parsed
+       with: key-value
+   
+   # DataStream KV Processor
+   - kv:
+     - field: message
+     - field_split: " "
+     - value_split: "="
+   ```
+
+4. **Create Output Configurations**
+   - Map Tenzir connectors to DataStream outputs
+   - Adapt Tenzir's routing logic to DataStream's pipeline structure
+
+5. **Test Your Configuration**
+   - Deploy in a test environment
+   - Validate data flows through the system correctly
+   - Compare output with original Tenzir deployment
+
+6. **Deploy in Production**
+   - Run both systems in parallel
+   - Gradually shift traffic to DataStream
+   - Verify metrics and logs are properly processed
+
+## Configuration Examples
+
+### Query Conversion
+
+```yaml
+# Tenzir Query
+from syslog
+| where event_type == "login"
+| select src_ip, dst_ip, username, status
+| rename src_ip to source.ip, dst_ip to destination.ip
+
+# DataStream Pipeline
+pipelines:
+  - name: login_events
+    processors:
+      - script:
+          - lang: golang
+            source: |
+              package main
+              func main() {
+                eventType, ok := logEntry["event_type"]
+                if !ok || eventType != "login" {
+                  dropMessage()
+                }
+              }
+      - rename:
+          - fields:
+              - from: src_ip
+                to: source.ip
+              - from: dst_ip
+                to: destination.ip
+      - remove:
+          - field:
+              - event_type
+              - timestamp
+              - raw_message
+```
+
+## Advanced Considerations
+
+### Custom TQL Functions
+
+For custom TQL expressions, use DataStream's Script processor with Go:
+
+```yaml
+script:
+  - lang: golang
+    source: |
+      package main
+      
+      func main() {
+        // Implementation of TQL logic
+        if val, ok := logEntry["field"].(string); ok {
+          result := processField(val)
+          logEntry["processed"] = result
+        }
+      }
+      
+      func processField(input string) string {
+        // Custom processing logic
+        return strings.ToUpper(input)
+      }
+```
+
+### Data Types
+
+Tenzir has specific data types that need mapping to DataStream's type system. Use explicit type conversion in processors where needed.
+
+## Performance Tuning
+
+After migration, optimize your DataStream deployment:
+
+1. Adjust batch sizes based on your ingestion volume
+2. Configure appropriate worker counts for high-throughput sources
+3. Implement efficient filtering early in your processing pipelines
+4. Use appropriate framing options for TCP/UDP devices
+
+## Additional Resources
+
+- DataStream documentation for configuration examples
+- Community forum for assistance with complex migrations
+- Migration tools for automated configuration conversion
+
+For assistance with your Tenzir to DataStream migration, contact our support team or consulting services.
