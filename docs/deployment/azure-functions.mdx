@@ -82,6 +82,13 @@ For most DataStream deployments, the Premium plan offers the best balance of per
 
 3. **Create HTTP Trigger function**:
    ```csharp
+   using System.Threading.Tasks;
+   using Microsoft.AspNetCore.Mvc;
+   using Microsoft.Azure.WebJobs;
+   using Microsoft.Azure.WebJobs.Extensions.Http;
+   using Microsoft.AspNetCore.Http;
+   using Microsoft.Extensions.Logging;
+   
    public static class DataStreamProcessor
    {
        [FunctionName("ProcessLogs")]
@@ -106,12 +113,12 @@ For most DataStream deployments, the Premium plan offers the best balance of per
 #### Option 2: Deploy from Container Image
 
 1. **Pull the DataStream Functions image**:
-   ```bash
+   ```PowerShell
    docker pull datastream/datastream-functions:latest
    ```
 
 2. **Push to Azure Container Registry**:
-   ```bash
+   ```PowerShell
    az acr login --name yourRegistryName
    docker tag datastream/datastream-functions:latest yourRegistryName.azurecr.io/datastream-functions:latest
    docker push yourRegistryName.azurecr.io/datastream-functions:latest
@@ -125,7 +132,7 @@ For most DataStream deployments, the Premium plan offers the best balance of per
 ### 4. Create DataStream Configuration
 
 1. **Prepare configuration files**:
-   ```bash
+   ```PowerShell
    mkdir -p config
    
    # Create main config file
@@ -156,7 +163,7 @@ For most DataStream deployments, the Premium plan offers the best balance of per
    ```
 
 2. **Upload to blob storage**:
-   ```bash
+   ```PowerShell
    az storage blob upload-batch \
      --account-name youraccount \
      --destination datastream-config \
@@ -197,7 +204,7 @@ For optimal performance, configure appropriate bindings:
 ### 6. Verify Deployment
 
 1. **Test the function endpoint**:
-   ```bash
+   ```PowerShell
    curl -X POST \
      -H "Content-Type: application/json" \
      -H "x-functions-key: YOUR_FUNCTION_KEY" \
@@ -217,16 +224,19 @@ For optimal performance, configure appropriate bindings:
 Optimize Azure Functions deployment with:
 
 1. **Premium plan settings**:
+
    - Configure minimum instance count (1+ for production)
    - Set maximum burst limit based on expected peak load
    - Enable pre-warmed instances to eliminate cold starts
 
 2. **Consumption plan optimization**:
+
    - Implement retry logic for cold start handling
    - Keep functions warm with scheduled pings if needed
    - Set appropriate timeout values
 
 3. **Performance tuning**:
+
    - Configure batch size for optimal throughput
    - Implement connection pooling for database connections
    - Use async patterns throughout your code
@@ -245,17 +255,21 @@ For Azure Functions deployments, control costs with:
 Be aware of these Azure Functions constraints:
 
 1. **Execution time limits**:
+
    - Consumption plan: 10-minute maximum execution
    - Premium plan: 30-minute maximum execution
 
 2. **Network constraints**:
+
    - Limited support for custom TCP/UDP listeners
    - HTTP/HTTPS primary ingress method
 
 3. **State management**:
+
    - Functions are stateless by design
    - Use external storage for state persistence
 
 4. **Cold start impact**:
+
    - First requests after idle periods may experience latency
    - Premium plan reduces cold start issues

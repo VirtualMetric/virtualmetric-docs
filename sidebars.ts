@@ -217,17 +217,17 @@ const sidebars: SidebarsConfig = {
         'configuration/routes',
       ],
     },
-    // {
-    //   type: "category",
-    //   label: "Migration",
-    //   link: {type: "doc", id: "migration/index"},
-    //   items: [
-    //     'migration/cribl',
-    //     'migration/tenzir',
-    //     'migration/vector',
-    //     'migration/logstash',
-    //   ],
-    // },
+    {
+      type: "category",
+      label: "Migration",
+      link: {type: "doc", id: "migration/index"},
+      items: [
+        'migration/cribl',
+        'migration/tenzir',
+        'migration/vector',
+        'migration/logstash',
+      ],
+    },
     {
       type: "category",
       label: "Architecture",
