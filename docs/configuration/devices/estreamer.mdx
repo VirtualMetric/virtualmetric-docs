@@ -35,6 +35,14 @@ See [Appendix](/appendix.mdx#estreamer) for details.
         status: <boolean>
 ```
 
+## Key Features
+
+- Real-time event streaming with TLS encryption
+- Support for multiple event types and metadata
+- Configurable batch processing and performance tuning
+- Automatic reconnection handling
+- Event filtering capabilities
+
 ## Configuration
 
 The following are the minimum requirements to define the device.
@@ -49,7 +57,7 @@ The following are the minimum requirements to define the device.
 |`type`|Y||Must be `estreamer`|
 |`status`|N|`true`|Enable/disable the device|
 
-### Network
+### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -89,19 +97,12 @@ The **event types** are specified with:
 |`inputs[].id`|N|-|Event type ID to process|
 |`inputs[].status`|N|`true`|Enable/disable specific event type. Available options: `102` (Connection), `103` (File), `104` (Malware), `106` (Intrusion)|
 
-## Key Features
-
-- Real-time event streaming with TLS encryption
-- Support for multiple event types and metadata
-- Configurable batch processing and performance tuning
-- Automatic reconnection handling
-- Event filtering capabilities
-
 ## Event Types
 
 eStreamer supports four main types of security events:
 
 1. **Connection Events (ID: 102)**
+
    - Network connection tracking
    - Protocol information
    - Source and destination details
@@ -109,18 +110,21 @@ eStreamer supports four main types of security events:
    - Available block types: 163, 160, 157, 155, 154, 152, 137
 
 2. **File Events (ID: 103)**
+
    - File transfers detection
    - File type identification
    - File SHA hashes
    - Available block types: 56, 46, 43, 38, 32
 
 3. **Malware Events (ID: 104)**
+
    - Malware detection results
    - File disposition
    - Threat scores
    - Available block types: 62, 47, 44, 35, 33, 24, 16
 
 4. **Intrusion Events (ID: 106)**
+
    - IPS/IDS alerts
    - Rule-based detections
    - Threat classifications
