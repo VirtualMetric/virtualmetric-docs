@@ -1,7 +1,7 @@
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
-import prismLight from "./src/utils/customColoring";
+
 import customColoring from "./src/utils/customColoring";
 
 const config: Config = {

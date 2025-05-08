@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import {themes, type PrismTheme} from 'prism-react-renderer';
 
 const baseTheme = themes.palenight;
@@ -23,7 +16,7 @@ export default {
     {
       types: ['parameter'],
       style: {
-        color: '#33FFFF',
+        color: '#E4080A',
       },
     },
     {
@@ -51,9 +44,9 @@ export default {
       },
     },
     {
-      types: ['font-matter', 'string', 'attr-value'],
+      types: ['front-matter', 'string', 'attr-value'],
       style: {
-        color: '#33FFFF',
+        color: '#CAFDB5',
       },
     },
     {
@@ -96,6 +89,7 @@ export default {
       types: ['comment'],
       style: {
         color: '#33FFFF',
+        fontStyle: 'normal'
       },
     },
   ],
