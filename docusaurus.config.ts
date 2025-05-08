@@ -1,6 +1,8 @@
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import prismLight from "./src/utils/customColoring";
+import customColoring from "./src/utils/customColoring";
 
 const config: Config = {
   title: "VirtualMetric",
@@ -123,7 +125,7 @@ const config: Config = {
       copyright: `Copyright ©${new Date().getFullYear()} VirtualMetric B.V.`,
     },
     prism: {
-      theme: prismThemes.jettwaveLight
+      theme: customColoring
     },
   } satisfies Preset.ThemeConfig,
 };
