@@ -61,7 +61,6 @@ The following are the minimum requirements to define the target.
 |---|---|---|---|
 |`endpoint`|Y||DCR ingestion endpoint or Resource ID|
 |`rule_id`|N||Default Data Collection Rule (DCR) ID|
-|`stream`|N|-|Target table streams (string array)|
 |`streams`|N|-|Detailed stream configurations|
 |`buffer_size`|N|`1048576`|Buffer size in bytes (1MB)|
 |`keep_phantom_fields`|N|`false`|Keep fields not defined in DCR schema|
@@ -71,7 +70,7 @@ The following are the minimum requirements to define the target.
 
 ## Automatic Table Selection
 
-When `stream` is not specified, tables are automatically selected based on input type:
+When `streams` is not specified, tables are automatically selected based on input type:
 
 |Input Type|Target Table|
 |---|---|
@@ -201,9 +200,9 @@ properties:
   endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
   buffer_size: 5242880  # 5MB
   format: "asim"
-  stream:
-    - "Custom-ASimProcessEventLogs"
-    - "Custom-ASimNetworkSessionLogs"
+  streams:
+    - name: "Custom-ASimProcessEventLogs"
+    - name: "Custom-ASimNetworkSessionLogs"
 ```
 
 :::tip
