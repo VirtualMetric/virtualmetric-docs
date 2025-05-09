@@ -1,8 +1,7 @@
 import {themes, type PrismTheme} from 'prism-react-renderer';
 
-const baseTheme = themes.palenight;
-
-export default {
+const baseTheme = themes.vsDark;
+const customTheme: PrismTheme = {
   ...baseTheme,
   styles: [
     ...baseTheme.styles,
@@ -93,4 +92,6 @@ export default {
       },
     },
   ],
-} satisfies PrismTheme;
+};
+
+export default customTheme;
