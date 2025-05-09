@@ -17,8 +17,8 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "about/comparisons/index"},
           items: [
             'about/comparisons/cribl',
-            'about/comparisons/tenzir',
             'about/comparisons/logstash',
+            'about/comparisons/tenzir',
             'about/comparisons/vector',
           ]
         },
@@ -223,9 +223,9 @@ const sidebars: SidebarsConfig = {
       link: {type: "doc", id: "migration/index"},
       items: [
         'migration/cribl',
+        'migration/logstash',
         'migration/tenzir',
         'migration/vector',
-        'migration/logstash',
       ],
     },
     {

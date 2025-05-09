@@ -21,7 +21,7 @@ This guide provides step-by-step instructions for migrating your existing Cribl 
 
 ### Sources to Devices
 
-Cribl sources can be mapped to DataStream devices as follows:
+**Cribl** sources can be mapped to **DataStream** devices as follows:
 
 | Cribl Source | DataStream Device |
 |--------------|-------------------|
@@ -35,7 +35,7 @@ Cribl sources can be mapped to DataStream devices as follows:
 
 ### Functions to Processors
 
-Cribl functions can be mapped to DataStream processors:
+**Cribl** functions can be mapped to **DataStream** processors:
 
 | Cribl Function | DataStream Processor |
 |----------------|----------------------|
@@ -49,13 +49,13 @@ Cribl functions can be mapped to DataStream processors:
 
 ### Routes to Pipelines
 
-Cribl routes are conceptually similar to DataStream pipelines. In DataStream, define clear processing paths with conditional branching where needed.
+**Cribl** routes are conceptually similar to **DataStream** pipelines. In **DataStream**, define clear processing paths with conditional branching where needed.
 
 ### Destinations to Outputs
 
-Cribl destinations can be mapped to DataStream outputs:
+**Cribl** destinations can be mapped to **DataStream** targets:
 
-| Cribl Destination | DataStream Output |
+| Cribl Destination | DataStream Target |
 |-------------------|-------------------|
 | AWS S3 | S3 |
 | Elasticsearch | Elasticsearch |
@@ -65,119 +65,149 @@ Cribl destinations can be mapped to DataStream outputs:
 
 ## Migration Steps
 
-1. **Inventory Your Cribl Deployment**
-   - Document all sources, destinations, and pipelines
-   - Note any custom JavaScript functions or expressions
+1. **Inventory Your Cribl Deployment** - Document all sources, destinations, and pipelines. Note any custom JavaScript functions or expressions.
 
-2. **Create Device Configurations**
-   - Convert Cribl sources to DataStream devices
-   - Example: Convert HTTP source to HTTP device
+2. **Create Device Configurations** - Convert **Cribl** sources to DataStream devices, e.g.:
+  
+    <ExampleGrid>
+    <CommentCol>
+      **Cribl** _HTTP_ source:
+    </CommentCol>
+    <CodeCol>
+      ```json title="JSON"
+      {
+        "id": "http_in",
+        "type": "http",
+        "host": "0.0.0.0",
+        "port": 10080,
+        "authType": "none"
+      }
+      ```
+    </CodeCol>
+    <CommentCol>
+      **DataStream** _HTTP_ device:
+    </CommentCol>
+    <CodeCol>
+      ```yaml title="YAML"
+      id: 1
+      name: http_in
+      type: http
+      properties:
+        address: "0.0.0.0"
+        port: 10080
+    ```
+    </CodeCol>
+    </ExampleGrid>
 
-   ```yaml
-   # Cribl HTTP Source
-   {
-     "id": "http_in",
-     "type": "http",
-     "host": "0.0.0.0",
-     "port": 10080,
-     "authType": "none"
-   }
-   
-   # DataStream HTTP Device
-   - id: 1
-     name: http_in
-     type: http
-     properties:
-       address: "0.0.0.0"
-       port: 10080
-   ```
-
-3. **Create Processor Configurations**
-   - Map Cribl functions to DataStream processors
-   - Example: Convert Eval function to Script processor
-
-   ```yaml
-   # Cribl Eval Function
-   {
-     "id": "set_source",
-     "filter": "true",
-     "disabled": false,
-     "conf": {
-       "add": [
-         {
-           "name": "source",
-           "value": "'cribl_http'"
-         }
-       ]
-     }
-   }
-   
-   # DataStream Script Processor
-   - set:
-     - field: source
-     - value: "cribl_http"
-   ```
+3. **Create Processor Configurations** - Map **Cribl** functions to **DataStream** processors, e.g.:
+  
+    <ExampleGrid>
+    <CommentCol>
+      **Cribl** _Eval_ function:
+    </CommentCol>
+    <CodeCol>
+      ```json title="JSON"
+      {
+        "id": "set_source",
+        "filter": "true",
+        "disabled": false,
+        "conf": {
+          "add": [
+            {
+              "name": "source",
+              "value": "'cribl_http'"
+            }
+          ]
+        }
+      }
+      ```
+    </CodeCol>
+    <CommentCol>
+      **DataStream** _Script_ processor:
+    </CommentCol>
+    <CodeCol>
+      ```yaml title="YAML"
+      - set:
+        field: source
+        value: "cribl_http"
+      ```
+    </CodeCol>
+    </ExampleGrid>
 
 4. **Create Output Configurations**
-   - Convert Cribl destinations to DataStream outputs
-   - Adapt any routing logic to DataStream's pipeline model
+  
+    - Convert Cribl destinations to DataStream outputs
+    - Adapt any routing logic to DataStream's pipeline model
 
 5. **Test Configuration**
-   - Deploy configuration in a test environment
-   - Validate data flows through the system as expected
-   - Compare output with original Cribl deployment
+  
+    - Deploy configuration in a test environment
+    - Validate data flows through the system as expected
+    - Compare output with original Cribl deployment
 
 6. **Deploy in Production**
-   - Set up parallel ingestion to both systems
-   - Gradually shift traffic to DataStream
-   - Verify metrics and logs are properly processed
+  
+    - Set up parallel ingestion to both systems
+    - Gradually shift traffic to DataStream
+    - Verify metrics and logs are properly processed
 
 ## Configuration Examples
 
-### Complex Pipeline Conversion
+A Complex pipeline conversion:
 
-```yaml
-# Cribl Pipeline (simplified JSON)
-{
-  "id": "main",
-  "functions": [
+<ExampleGrid>
+  <CommentCol>
+    **Cribl** pipeline:
+  </CommentCol>
+  <CodeCol>
+    ```json title="JSON"
     {
-      "id": "eval",
-      "conf": {
-        "add": [{"name": "meta_source", "value": "'cribl'"}]
-      }
-    },
-    {
-      "id": "parser",
-      "filter": "true",
-      "conf": {
-        "type": "kv",
-        "srcField": "message"
-      }
+      "id": "main",
+      "functions": [
+        {
+          "id": "eval",
+          "conf": {
+            "add": [{"name": "meta_source", "value": "'cribl'"}]
+          }
+        },
+        {
+          "id": "parser",
+          "filter": "true",
+          "conf": {
+            "type": "kv",
+            "srcField": "message"
+          }
+        }
+      ]
     }
-  ]
-}
-
-# DataStream Pipeline
-pipelines:
-  - name: main
-    processors:
-      - set:
-        - field: meta_source
-        - value: "cribl"
-      - kv:
-        - field: message
-        - field_split: " "
-        - value_split: "="
-```
+    ```
+  </CodeCol>
+  <CommentCol>
+    **DataStream** pipeline:
+  </CommentCol>
+  <CodeCol>
+    ```yaml title="YAML"
+    pipelines:
+      - name: main
+        processors:
+          - set:
+            field: meta_source
+            value: "cribl"
+          - kv:
+            field: message
+            field_split: " "
+            value_split: "="
+    ```
+  </CodeCol>
+</ExampleGrid>
 
 ## Advanced Considerations
 
 ### JavaScript Functions
 
-For custom JavaScript functions in Cribl, use DataStream's Script processor with `lang: golang`:
+For custom JavaScript functions in **Cribl**, use **DataStream**'s Script processor with `lang: golang`:
 
-```yaml
+```yaml title="YAML"
 script:
   - lang: golang
     source: |
@@ -198,15 +228,15 @@ script:
 
 ### Lookup Tables
 
-Convert Cribl lookup tables to DataStream's equivalent format and reference them in your processors.
+Convert **Cribl** lookup tables to** DataStream**'s equivalent format and reference them in your processors.
 
 ### Event Breakers
 
-For custom event breaking in Cribl, use DataStream's appropriate framing options in TCP/UDP devices.
+For custom event breaking in **Cribl**, use **DataStream**'s appropriate framing options in TCP/UDP devices.
 
 ## Performance Tuning
 
-After migration, optimize your DataStream deployment:
+After migration, optimize your **DataStream** deployment:
 
 1. Adjust batch sizes and flush intervals based on throughput requirements
 2. Configure appropriate worker counts for devices
@@ -215,7 +245,8 @@ After migration, optimize your DataStream deployment:
 
 ## Need Help?
 
-Contact DataStream support for assistance with your migration:
+Contact **DataStream** support for assistance with your migration:
+
 - Submit a support ticket
 - Join our community forum
 - Schedule a migration consultation with our experts

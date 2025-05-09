@@ -87,7 +87,7 @@ const customTheme: PrismTheme = {
     {
       types: ['comment'],
       style: {
-        color: '#33FFFF',
+        color: '#CECECE',
         fontStyle: 'normal'
       },
     },
