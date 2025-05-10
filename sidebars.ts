@@ -17,8 +17,8 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "about/comparisons/index"},
           items: [
             'about/comparisons/cribl',
-            'about/comparisons/tenzir',
             'about/comparisons/logstash',
+            'about/comparisons/tenzir',
             'about/comparisons/vector',
           ]
         },
@@ -35,13 +35,13 @@ const sidebars: SidebarsConfig = {
         'getting-started/single-node-deployment',
         'getting-started/cluster-deployment',
         // 'getting-started/virtual-ip-address',
-        'getting-started/basics',
-        'getting-started/example-device',
-        'getting-started/example-target',
-        // 'getting-started/example-process',
-        'getting-started/example-route',
+        'getting-started/configuration-basics',
+        'getting-started/example-ingesting-data',
+        'getting-started/example-forwarding-data',
+        // 'getting-started/example-processing-data',
+        'getting-started/example-routing-data',
         // 'getting-started/example-multi-event-routing',
-        'getting-started/example-pipeline',
+        'getting-started/example-a-syslog-to-sentinel-pipeline',
       ],
     },
     {
@@ -223,9 +223,9 @@ const sidebars: SidebarsConfig = {
       link: {type: "doc", id: "migration/index"},
       items: [
         'migration/cribl',
+        'migration/logstash',
         'migration/tenzir',
         'migration/vector',
-        'migration/logstash',
       ],
     },
     {

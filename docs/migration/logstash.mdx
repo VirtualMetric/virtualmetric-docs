@@ -4,7 +4,7 @@ sidebar_label: From Logstash
 
 # Migrating from Logstash to DataStream
 
-This guide provides a comprehensive approach to migrating from Logstash to DataStream, focusing on configuration conversion, conceptual mapping, and practical implementation steps.
+This guide provides a comprehensive approach to migrating from **Logstash** to **DataStream**, focusing on configuration conversion, conceptual mapping, and practical implementation steps.
 
 ## Feature Comparison
 
@@ -22,231 +22,264 @@ This guide provides a comprehensive approach to migrating from Logstash to DataS
 
 ### Inputs to Devices
 
-Logstash inputs map to DataStream devices:
+**Logstash** inputs map to **DataStream** devices:
 
 | Logstash Input | DataStream Device |
 |----------------|-------------------|
-| http | http |
-| syslog | syslog |
-| tcp | tcp |
-| udp | udp |
-| beats | http |
-| file | file (coming soon) |
-| azure_event_hubs | azure_monitor |
-| elasticsearch | elasticsearch_in (coming soon) |
+| `http` | `http` |
+| `syslog` | `syslog` |
+| `tcp` | `tcp` |
+| `udp` | `udp` |
+| `beats` | `http` |
+| `file` | `file` |
+| `azure_event_hubs` | `azmon` |
+| `elasticsearch` | `elasticsearch` |
 
 ### Filters to Processors
 
-Logstash filters map to DataStream processors:
+**Logstash** filters map to **DataStream** processors:
 
 | Logstash Filter | DataStream Processor |
 |-----------------|----------------------|
-| grok | grok |
-| csv | csv |
-| json | json |
-| kv | kv |
-| mutate (add_field) | set |
-| mutate (remove_field) | remove |
-| mutate (rename) | rename |
-| ruby | script |
-| date | date (coming soon) |
+| `grok` | `grok` |
+| `csv` | `csv` |
+| `json` | `json` |
+| `kv` | `kv` |
+| `mutate` (add_field) | `set` |
+| `mutate` (remove_field) | `remove` |
+| `mutate` (rename) | `rename` |
+| `ruby` | `script` |
+| `date` | `date` |
 
 ### Outputs to Outputs
 
-Logstash outputs map to DataStream outputs:
+**Logstash** outputs map to **DataStream** targets:
 
-| Logstash Output | DataStream Output |
+| Logstash Output | DataStream Target |
 |-----------------|-------------------|
-| elasticsearch | elasticsearch |
-| s3 | s3 |
-| http | http |
-| kafka | kafka (coming soon) |
-| stdout | stdout (for testing) |
+| `elasticsearch` | `elasticsearch` |
+| `s3` | `s3` |
+| `http` | `http` |
+| `kafka` | `kafka` |
+| `stdout` | `stdout` (for testing) |
 
 ## Migration Steps
 
-1. **Analyze Current Logstash Configuration**
-   - Identify all inputs, filters, and outputs
-   - Document conditional logic and Ruby code
-   - Catalog custom plugins and gems
+1. **Analyze Current Logstash Configuration** - Identify all inputs, filters, and outputs. Document conditional logic and Ruby code. Catalog custom plugins and gems.
 
-2. **Create Device Configurations**
-   - Convert Logstash inputs to DataStream devices
-   - Example: Convert HTTP input to HTTP device
+2. **Create Device Configurations** - Convert **Logstash** inputs to **DataStream** devices, e.g.
 
-   ```ruby
-   # Logstash HTTP Input
-   input {
-     http {
-       host => "0.0.0.0"
-       port => 8080
-       codec => "json"
-     }
-   }
-   ```
+    <ExampleGrid>
+      <CommentCol>
+        **Logstash** _HTTP_ input:
+      </CommentCol>
+      <CodeCol>
+        ```ruby title="Ruby"
+        input {
+          http {
+            host => "0.0.0.0"
+            port => 8080
+            codec => "json"
+          }
+        }
+        ```
+      </CodeCol>
+      <CommentCol>
+        **DataStream** _HTTP_ device:
+      </CommentCol>
+      <CodeCol>
+        ```yaml title="YAML"
+        devices:
+          - id: 1
+            name: http_input
+            type: http
+            properties:
+              address: "0.0.0.0"
+              port: 8080
+              content_type: "application/json"
+        ```
+      </CodeCol>
+    </ExampleGrid>
 
-   ```yaml
-   # DataStream HTTP Device
-   - id: 1
-     name: http_input
-     type: http
-     properties:
-       address: "0.0.0.0"
-       port: 8080
-       content_type: "application/json"
-   ```
+3. **Create Processor Configurations** - Map Logstash filters to DataStream processors, e.g.
 
-3. **Create Processor Configurations**
-   - Map Logstash filters to DataStream processors
-   - Example: Convert Grok filter to Grok processor
+    <ExampleGrid>
+      <CommentCol>
+        **Logstash** _Grok_ filter:
+      </CommentCol>
+      <CodeCol>
+        ```ruby title="Ruby"
+        filter {
+          grok {
+            match => { "message" => "%{COMBINEDAPACHELOG}" }
+          }
+        }
+        ```
+      </CodeCol>
+      <CommentCol>
+        **DataStream** _Grok_ processor:
+      </CommentCol>
+      <CodeCol>
+        ```yaml title="YAML"
+        processors:
+          - grok:
+            field: message
+            patterns:
+              - "%{COMBINEDAPACHELOG}"
+        ```
+      </CodeCol>
+    </ExampleGrid>
 
-   ```ruby
-   # Logstash Grok Filter
-   filter {
-     grok {
-       match => { "message" => "%{COMBINEDAPACHELOG}" }
-     }
-   }
-   ```
+4. **Create Target Configurations** - Transform **Logstash** outputs to **DataStream** targets, e.g.
 
-   ```yaml
-   # DataStream Grok Processor
-   - grok:
-     - field: message
-     - patterns:
-       - "%{COMBINEDAPACHELOG}"
-   ```
+    <ExampleGrid>
+      <CommentCol>
+        **Logstash** _Elasticsearch_ output:
+      </CommentCol>
+      <CodeCol>
+        ```ruby title="Ruby"
+        output {
+          elasticsearch {
+            hosts => ["localhost:9200"]
+            index => "logs-%{+YYYY.MM.dd}"
+            user => "elastic"
+            password => "changeme"
+          }
+        }
+        ```
+      </CodeCol>
+      <CommentCol>
+        **DataStream** _Elasticsearch_ target:
+      </CommentCol>
+      <CodeCol>
+        ```yaml title="YAML"
+        targets:
+          - name: es_target
+            type: elasticsearch
+            properties:
+              hosts: ["localhost:9200"]
+              index: "logs-{@timestamp:YYYY.MM.dd}"
+              auth:
+                username: "elastic"
+                password: "changeme"
+        ```
+      </CodeCol>
+    </ExampleGrid>
 
-4. **Create Output Configurations**
-   - Transform Logstash outputs to DataStream outputs
-   - Example: Convert Elasticsearch output
+5. **Test Configuration**  - Deploy in a test environment. Validate data flows correctly. Compare output with **Logstash** results.
 
-   ```ruby
-   # Logstash Elasticsearch Output
-   output {
-     elasticsearch {
-       hosts => ["localhost:9200"]
-       index => "logs-%{+YYYY.MM.dd}"
-       user => "elastic"
-       password => "changeme"
-     }
-   }
-   ```
-
-   ```yaml
-   # DataStream Elasticsearch Output
-   - id: 1
-     name: es_output
-     type: elasticsearch
-     properties:
-       hosts: ["localhost:9200"]
-       index: "logs-{@timestamp:YYYY.MM.dd}"
-       auth:
-         username: "elastic"
-         password: "changeme"
-   ```
-
-5. **Test Configuration**
-   - Deploy in a test environment
-   - Validate data flows correctly
-   - Compare output with Logstash results
-
-6. **Production Deployment**
-   - Run both systems in parallel
-   - Gradually transition traffic to DataStream
-   - Monitor performance and data integrity
+6. **Production Deployment** - Run both systems in parallel. Gradually transition traffic to **DataStream**. Monitor performance and data integrity
 
 ## Configuration Examples
 
-### Conditional Logic Conversion
+* A conditional Logic conversion:
 
-```ruby
-# Logstash Conditional
-filter {
-  if [type] == "apache" {
-    grok {
-      match => { "message" => "%{COMBINEDAPACHELOG}" }
-    }
-  } else if [type] == "syslog" {
-    grok {
-      match => { "message" => "%{SYSLOGLINE}" }
-    }
-  }
-}
-```
-
-```yaml
-# DataStream Equivalent
-pipelines:
-  - name: router
-    processors:
-      - script:
-        - lang: golang
-          source: |
-            package main
-            
-            func main() {
-              logType, ok := logEntry["type"].(string)
-              if ok {
-                if logType == "apache" {
-                  setPipeline("apache_pipeline")
-                } else if logType == "syslog" {
-                  setPipeline("syslog_pipeline")
-                }
-              }
-            }
-
-  - name: apache_pipeline
-    processors:
-      - grok:
-        - field: message
-        - patterns:
-          - "%{COMBINEDAPACHELOG}"
-
-  - name: syslog_pipeline
-    processors:
-      - grok:
-        - field: message
-        - patterns:
-          - "%{SYSLOGLINE}"
-```
-
-### Ruby Code Conversion
-
-```ruby
-# Logstash Ruby Filter
-filter {
-  ruby {
-    code => "
-      event.set('uppercase_message', event.get('message').upcase)
-      if event.get('status').to_i >= 400
-        event.set('is_error', true)
-      end
-    "
-  }
-}
-```
-
-```yaml
-# DataStream Script Processor
-- script:
-  - lang: golang
-    source: |
-      package main
-      
-      func main() {
-        if msg, ok := logEntry["message"].(string); ok {
-          logEntry["uppercase_message"] = strings.ToUpper(msg)
-        }
-        
-        if status, ok := logEntry["status"].(string); ok {
-          statusCode, err := strconv.Atoi(status)
-          if err == nil && statusCode >= 400 {
-            logEntry["is_error"] = true
+  <ExampleGrid>
+    <CommentCol>
+      **Logstash** conditional:
+    </CommentCol>
+    <CodeCol>
+      ```ruby title="Ruby"
+      filter {
+        if [type] == "apache" {
+          grok {
+            match => { "message" => "%{COMBINEDAPACHELOG}" }
+          }
+        } else if [type] == "syslog" {
+          grok {
+            match => { "message" => "%{SYSLOGLINE}" }
           }
         }
       }
-```
+      ```
+    </CodeCol>
+    <CommentCol>
+      **DataStream** equivalent:
+    </CommentCol>
+    <CodeCol>
+      ```yaml title="YAML"
+      pipelines:
+        - name: router
+          processors:
+            - script:
+              lang: golang
+              source: |
+                package main
+                  
+                func main() {
+                  logType, ok := logEntry["type"].(string)
+                  if ok {
+                    if logType == "apache" {
+                      setPipeline("apache_pipeline")
+                    } else if logType == "syslog" {
+                      setPipeline("syslog_pipeline")
+                    }
+                  }
+                }
+
+        - name: apache_pipeline
+          processors:
+            - grok:
+              field: message
+              patterns:
+                - "%{COMBINEDAPACHELOG}"
+
+        - name: syslog_pipeline
+          processors:
+            - grok:
+              field: message
+              patterns:
+                - "%{SYSLOGLINE}"
+      ```
+    </CodeCol>
+  </ExampleGrid>
+
+* Ruby code conversion:
+
+  <ExampleGrid>
+    <CommentCol>
+      **Logstash** Ruby filter:
+    </CommentCol>
+    <CodeCol>
+      ```ruby title="Ruby"
+      filter {
+        ruby {
+          code => "
+            event.set('uppercase_message', event.get('message').upcase)
+            if event.get('status').to_i >= 400
+              event.set('is_error', true)
+            end
+          "
+        }
+      }
+      ```
+    </CodeCol>
+    <CommentCol>
+      **DataStream** _Script_ processor:
+    </CommentCol>
+    <CodeCol>
+      ```yaml title="YAML"
+      processors:
+        - script:
+          lang: golang
+          source: |
+            package main
+              
+            func main() {
+              if msg, ok := logEntry["message"].(string); ok {
+                logEntry["uppercase_message"] = strings.ToUpper(msg)
+              }
+                
+              if status, ok := logEntry["status"].(string); ok {
+                statusCode, err := strconv.Atoi(status)
+                if err != nil && statusCode >= 400 {
+                  logEntry["is_error"] = true
+                }
+              }
+            }          
+      ```
+    </CodeCol>
+  </ExampleGrid>
 
 ## Advanced Considerations
 
@@ -256,50 +289,49 @@ For Logstash configurations with multiple pipelines, map each pipeline to a dist
 
 ### Custom Plugins
 
-For custom Logstash plugins, implement equivalent functionality:
+For custom **Logstash** plugins, implement equivalent functionality:
 
-1. Use the DataStream Script processor for custom logic
+1. Use the **DataStream** _Script_ processor for custom logic
 2. Create reusable pipeline components
 3. Implement data transformations in Go
 
 ### Date/Timestamp Handling
 
-For Logstash date filter functionality:
+For **Logstash** date filter functionality, **DataStream** date handling:
 
-```yaml
-# DataStream Date Handling
+```yaml title="YAML" 
 - script:
-  - lang: golang
-    source: |
-      package main
+  lang: golang
+  source: |
+    package main
       
-      func main() {
-        if timestamp, ok := logEntry["timestamp"].(string); ok {
-          parsedTime, err := time.Parse("2006-01-02T15:04:05", timestamp)
-          if err == nil {
-            logEntry["@timestamp"] = parsedTime.Format(time.RFC3339)
-          }
+    func main() {
+      if timestamp, ok := logEntry["timestamp"].(string); ok {
+        parsedTime, err := time.Parse("2006-01-02T15:04:05", timestamp)
+        if err == nil {
+          logEntry["@timestamp"] = parsedTime.Format(time.RFC3339)
         }
       }
+    }
 ```
 
 ## Performance Tuning
 
-After migrating, optimize DataStream's performance:
+After migrating, optimize **DataStream**'s performance:
 
-1. Configure appropriate batch sizes and flush intervals
-2. Adjust buffer settings to match your throughput requirements
-3. Implement efficient filtering early in processing pipelines
-4. Use appropriate worker counts for high-volume inputs
+- Configure appropriate batch sizes and flush intervals
+- Adjust buffer settings to match your throughput requirements
+- Implement efficient filtering early in processing pipelines
+- Use appropriate worker counts for high-volume inputs
 
 ## Logstash-Specific Feature Migration
 
 | Logstash Feature | DataStream Approach |
-|------------------|---------------------|
-| Persistent Queues | Use DataStream's disk persistence |
-| Dead Letter Queues | Implement error handling in processors |
-| Pipeline-to-Pipeline | Use DataStream's pipeline routing |
-| Monitoring API | Use DataStream's metrics endpoint |
+|-----------------:|---------------------|
+| Persistent Queues | Use **DataStream**'s disk persistence |
+| Dead-Letter Queues | Implement error handling in processors |
+| Pipeline-to-Pipeline | Use **DataStream**'s pipeline routing |
+| Monitoring API | Use **DataStream**'s metrics endpoint |
 
 ## Additional Resources
 

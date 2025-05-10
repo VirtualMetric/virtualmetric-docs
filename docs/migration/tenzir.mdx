@@ -4,7 +4,7 @@ sidebar_label: From Tenzir
 
 # Migrating from Tenzir to DataStream
 
-This guide outlines the process for migrating from Tenzir platform to DataStream, highlighting key concepts, configuration differences, and practical steps.
+This guide outlines the process for migrating from **Tenzir** platform to **DataStream**, highlighting key concepts, configuration differences, and practical steps.
 
 ## Feature Comparison
 
@@ -14,137 +14,158 @@ This guide outlines the process for migrating from Tenzir platform to DataStream
 | Data Model | Event-based | Event-based |
 | Query Language | Tenzir Query Language (TQL) | Processing Pipelines |
 | Sources | Sources | Devices |
-| Connectors | Connectors | Outputs |
+| Connectors | Connectors | Targets |
 | Deployment | Containers/Kubernetes | Standalone/Distributed |
 
 ## Concept Mapping
 
 ### Sources to Devices
 
-Tenzir sources map to DataStream devices as follows:
+**Tenzir** sources map to **DataStream** devices:
 
 | Tenzir Source | DataStream Device |
 |---------------|-------------------|
-| HTTP | HTTP |
-| Syslog | Syslog |
-| TCP | TCP |
-| UDP | UDP |
-| eStreamer | eStreamer |
+| `HTTP` | `http` |
+| `Syslog` | `syslog` |
+| `TCP` | `tcp` |
+| `UDP` | `udp` |
+| `eStreamer` | `estreamer` |
 
 ### Operators to Processors
 
-Tenzir operators can be mapped to DataStream processors:
+**Tenzir** operators can be mapped to **DataStream** processors:
 
 | Tenzir Operator | DataStream Processor |
 |-----------------|----------------------|
-| where | Script (conditional) |
-| select | Set/Remove |
-| rename | Rename |
-| parse | Grok/KV/JSON |
-| compute | Script |
+| `where` | `script` (conditional) |
+| `select` | `set`/`remove` |
+| `rename` | `rename` |
+| `parse` | `grok`/`kv`/`json` |
+| `compute` | `script` |
 
 ### Pipelines
 
-In Tenzir, pipelines are defined with operators chained together. In DataStream, pipelines are explicitly defined with ordered processors.
+In **Tenzir**, pipelines are defined with operators chained together. In **DataStream**, pipelines are explicitly defined with ordered processors.
 
 ## Migration Steps
 
-1. **Inventory Your Tenzir Deployment**
-   - Document all sources, operators, and connectors
-   - Identify custom TQL expressions
+1. **Inventory Your Tenzir Deployment** - Document all sources, operators, and connectors. Identify custom TQL expressions
 
-2. **Create Device Configurations**
-   - Transform Tenzir sources to DataStream devices
-   - Example: Convert Syslog source to Syslog device
-
-   ```yaml
-   # Tenzir Syslog Source
-   sources:
-     syslog:
-       type: syslog
-       listen: 0.0.0.0:514
-       protocol: udp
+2. **Create Device Configurations** - Transform Tenzir sources to DataStream devices, e.g.
    
-   # DataStream Syslog Device
-   - id: 1
-     name: syslog_device
-     type: syslog
-     properties:
-       protocol: udp
-       address: "0.0.0.0"
-       port: 514
-   ```
+    <ExampleGrid>
+      <CommentCol>
+        **Tenzir** _Syslog_ source:
+      </CommentCol>
+      <CodeCol>
+        ```yaml title="YAML"
+        sources:
+          - syslog:
+            type: syslog
+            listen: 0.0.0.0:514
+            protocol: udp
+        ```
+      </CodeCol>
+      <CommentCol>
+        **DataStream** _Syslog_ device:
+      </CommentCol>
+      <CodeCol>
+        ```yaml title="YAML"
+        devices:
+          - id: 1
+            name: syslog_device
+            type: syslog
+            properties:
+              protocol: udp
+              address: "0.0.0.0"
+              port: 514
+        ```
+      </CodeCol>
+    </ExampleGrid>
 
-3. **Create Processor Configurations**
-   - Convert Tenzir operators to DataStream processors
-   - Example: Convert parse operator to KV processor
+3. **Create Processor Configurations** - Convert Tenzir operators to DataStream processors, e.g.
 
-   ```yaml
-   # Tenzir Parse Operator
-   operators:
-     parse:
-       field: message
-       as: parsed
-       with: key-value
-   
-   # DataStream KV Processor
-   - kv:
-     - field: message
-     - field_split: " "
-     - value_split: "="
-   ```
+    <ExampleGrid>
+      <CommentCol>
+        **Tenzir** _Parse_ operator:
+      </CommentCol>
+      <CodeCol>
+        ```yaml title="YAML"
+        operators:
+          - parse:
+            field: message
+            as: parsed
+            with: key-value
+        ```
+      </CodeCol>
+      <CommentCol>
+        **DataStream** _KV_ processor:
+      </CommentCol>
+      <CodeCol>
+        ```yaml title="YAML"
+        processors:
+          - kv:
+            field: message
+            field_split: " "
+            value_split: "="
+        ```
+      </CodeCol>
+    </ExampleGrid>
 
-4. **Create Output Configurations**
-   - Map Tenzir connectors to DataStream outputs
-   - Adapt Tenzir's routing logic to DataStream's pipeline structure
+4. **Create Target Configurations** - Map **Tenzir** connectors to **DataStream** targets. Adapt **Tenzir**'s routing logic to **DataStream**'s pipeline structure.
 
-5. **Test Your Configuration**
-   - Deploy in a test environment
-   - Validate data flows through the system correctly
-   - Compare output with original Tenzir deployment
+5. **Test Your Configuration** - Deploy in a test environment. Validate data flows through the system correctly. Compare output with original **Tenzir** deployment.
 
-6. **Deploy in Production**
-   - Run both systems in parallel
-   - Gradually shift traffic to DataStream
-   - Verify metrics and logs are properly processed
+6. **Deploy in Production** - Run both systems in parallel. Gradually shift traffic to **DataStream**. Verify metrics and logs are properly processed
 
 ## Configuration Examples
 
-### Query Conversion
+* Query conversion:
 
-```yaml
-# Tenzir Query
-from syslog
-| where event_type == "login"
-| select src_ip, dst_ip, username, status
-| rename src_ip to source.ip, dst_ip to destination.ip
-
-# DataStream Pipeline
-pipelines:
-  - name: login_events
-    processors:
-      - script:
-          - lang: golang
-            source: |
-              package main
-              func main() {
-                eventType, ok := logEntry["event_type"]
-                if !ok || eventType != "login" {
-                  dropMessage()
+  <ExampleGrid>
+    <CommentCol>
+      **Tenzir** query:
+    </CommentCol>
+    <CodeCol>
+      ``` title="?"
+      from syslog
+        | where event_type == "login"
+        | select src_ip, dst_ip, username, status
+        | rename src_ip to source.ip, dst_ip to destination.ip
+      ```
+    </CodeCol>
+    <CommentCol>
+      **DataStream** pipeline:
+    </CommentCol>
+    <CodeCol>
+      ```yaml title="YAML"
+      pipelines:
+        - name: login_events
+          processors:
+            - script:
+              lang: golang
+              source: |
+                package main
+                func main() {
+                  eventType, ok := logEntry["event_type"]
+                  if !ok || eventType != "login" {
+                    dropMessage()
+                  }
                 }
-              }
-      - rename:
-          - fields:
-              - from: src_ip
-                to: source.ip
-              - from: dst_ip
-                to: destination.ip
-      - remove:
-          - field:
-              - event_type
-              - timestamp
-              - raw_message
-```
+            - rename:
+                fields:
+                  - from: src_ip
+                    to: source.ip
+                  - from: dst_ip
+                    to: destination.ip
+            - remove:
+                field:
+                  - event_type
+                  - timestamp
+                  - raw_message
+      ```
+    </CodeCol>
+  </ExampleGrid>
 
 ## Advanced Considerations
 
@@ -152,7 +173,7 @@ pipelines:
 
 For custom TQL expressions, use DataStream's Script processor with Go:
 
-```yaml
+```yaml title="YAML"
 script:
   - lang: golang
     source: |
@@ -191,4 +212,4 @@ After migration, optimize your DataStream deployment:
 - Community forum for assistance with complex migrations
 - Migration tools for automated configuration conversion
 
-For assistance with your Tenzir to DataStream migration, contact our support team or consulting services.
+For assistance with your **Tenzir**-to-**DataStream** migration, contact our support team or consulting services.
