@@ -14,7 +14,7 @@ This guide outlines the process for migrating from **Tenzir** platform to **Data
 | Data Model | Event-based | Event-based |
 | Query Language | Tenzir Query Language (TQL) | Processing Pipelines |
 | Sources | Sources | Devices |
-| Connectors | Connectors | Outputs |
+| Connectors | Connectors | Targets |
 | Deployment | Containers/Kubernetes | Standalone/Distributed |
 
 ## Concept Mapping
@@ -25,11 +25,11 @@ This guide outlines the process for migrating from **Tenzir** platform to **Data
 
 | Tenzir Source | DataStream Device |
 |---------------|-------------------|
-| HTTP | HTTP |
-| Syslog | Syslog |
-| TCP | TCP |
-| UDP | UDP |
-| eStreamer | eStreamer |
+| `HTTP` | `http` |
+| `Syslog` | `syslog` |
+| `TCP` | `tcp` |
+| `UDP` | `udp` |
+| `eStreamer` | `estreamer` |
 
 ### Operators to Processors
 
@@ -37,11 +37,11 @@ This guide outlines the process for migrating from **Tenzir** platform to **Data
 
 | Tenzir Operator | DataStream Processor |
 |-----------------|----------------------|
-| where | Script (conditional) |
-| select | Set/Remove |
-| rename | Rename |
-| parse | Grok/KV/JSON |
-| compute | Script |
+| `where` | `script` (conditional) |
+| `select` | `set`/`remove` |
+| `rename` | `rename` |
+| `parse` | `grok`/`kv`/`json` |
+| `compute` | `script` |
 
 ### Pipelines
 
@@ -51,7 +51,7 @@ In **Tenzir**, pipelines are defined with operators chained together. In **DataS
 
 1. **Inventory Your Tenzir Deployment** - Document all sources, operators, and connectors. Identify custom TQL expressions
 
-2. **Create Device Configurations** - Transform Tenzir sources to DataStream devices, e.g.:
+2. **Create Device Configurations** - Transform Tenzir sources to DataStream devices, e.g.
    
     <ExampleGrid>
       <CommentCol>
@@ -83,7 +83,7 @@ In **Tenzir**, pipelines are defined with operators chained together. In **DataS
       </CodeCol>
     </ExampleGrid>
 
-3. **Create Processor Configurations** - Convert Tenzir operators to DataStream processors, e.g.:
+3. **Create Processor Configurations** - Convert Tenzir operators to DataStream processors, e.g.
 
     <ExampleGrid>
       <CommentCol>
@@ -143,15 +143,15 @@ In **Tenzir**, pipelines are defined with operators chained together. In **DataS
         - name: login_events
           processors:
             - script:
-                lang: golang
-                source: |
-                  package main
-                  func main() {
-                    eventType, ok := logEntry["event_type"]
-                    if !ok || eventType != "login" {
-                      dropMessage()
-                    }
+              lang: golang
+              source: |
+                package main
+                func main() {
+                  eventType, ok := logEntry["event_type"]
+                  if !ok || eventType != "login" {
+                    dropMessage()
                   }
+                }
             - rename:
                 fields:
                   - from: src_ip

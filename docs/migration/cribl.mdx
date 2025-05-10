@@ -13,7 +13,7 @@ This guide provides step-by-step instructions for migrating your existing Cribl 
 | Configuration Format | YAML/JSON | YAML |
 | Functions/Pipelines | Functions, Pipelines, Routes | Processors, Pipelines |
 | Sources | Sources | Devices |
-| Destinations | Destinations | Outputs |
+| Destinations | Destinations | Targets |
 | Deployment Model | Leader/Worker or Standalone | Distributed or Standalone |
 | Management | Leader UI or API | Configuration Files or API |
 
@@ -25,13 +25,13 @@ This guide provides step-by-step instructions for migrating your existing Cribl 
 
 | Cribl Source | DataStream Device |
 |--------------|-------------------|
-| HTTP | HTTP |
-| Syslog | Syslog |
-| TCP | TCP |
-| UDP | UDP |
+| `HTTP` | `http` |
+| `Syslog` | `syslog` |
+| `TCP` | `tcp` |
+| `UDP` | `udp` |
+| `Kafka` | `kafka` |
 | Windows Event Logs | Windows |
 | Azure Monitor | Azure Monitor |
-| Kafka | Kafka (coming soon) |
 
 ### Functions to Processors
 
@@ -39,35 +39,35 @@ This guide provides step-by-step instructions for migrating your existing Cribl 
 
 | Cribl Function | DataStream Processor |
 |----------------|----------------------|
-| Eval | Script |
-| Rename | Rename |
-| Drop | Remove |
-| Parser (CSV) | CSV |
-| Parser (JSON) | JSON |
-| Parser (Regex) | Grok |
-| Parser (Key-Value) | KV |
+| `Eval` | `script` |
+| `Rename` | `rename` |
+| `Drop` | `remove` |
+| Parser (CSV) | `csv` |
+| Parser (JSON) | `json` |
+| Parser (Regex) | `grok` |
+| Parser (Key-Value) | `kv` |
 
 ### Routes to Pipelines
 
 **Cribl** routes are conceptually similar to **DataStream** pipelines. In **DataStream**, define clear processing paths with conditional branching where needed.
 
-### Destinations to Outputs
+### Destinations to Targets
 
 **Cribl** destinations can be mapped to **DataStream** targets:
 
 | Cribl Destination | DataStream Target |
 |-------------------|-------------------|
-| AWS S3 | S3 |
-| Elasticsearch | Elasticsearch |
-| Splunk | Splunk |
-| HTTP | HTTP |
-| Kafka | Kafka (coming soon) |
+| `AWS S3` | `s3` |
+| `Elasticsearch` | `elasticsearch` |
+| `Splunk` | `splunk` |
+| `HTTP` | `http` |
+| `Kafka` | `kafka` |
 
 ## Migration Steps
 
 1. **Inventory Your Cribl Deployment** - Document all sources, destinations, and pipelines. Note any custom JavaScript functions or expressions.
 
-2. **Create Device Configurations** - Convert **Cribl** sources to DataStream devices, e.g.:
+2. **Create Device Configurations** - Convert **Cribl** sources to DataStream devices, e.g.
   
     <ExampleGrid>
     <CommentCol>
@@ -89,17 +89,18 @@ This guide provides step-by-step instructions for migrating your existing Cribl 
     </CommentCol>
     <CodeCol>
       ```yaml title="YAML"
-      id: 1
-      name: http_in
-      type: http
-      properties:
-        address: "0.0.0.0"
-        port: 10080
+      devices:
+        - id: 1
+          name: http_in
+          type: http
+          properties:
+            address: "0.0.0.0"
+            port: 10080
     ```
     </CodeCol>
     </ExampleGrid>
 
-3. **Create Processor Configurations** - Map **Cribl** functions to **DataStream** processors, e.g.:
+3. **Create Processor Configurations** - Map **Cribl** functions to **DataStream** processors, e.g.
   
     <ExampleGrid>
     <CommentCol>
@@ -127,9 +128,10 @@ This guide provides step-by-step instructions for migrating your existing Cribl 
     </CommentCol>
     <CodeCol>
       ```yaml title="YAML"
-      - set:
-        field: source
-        value: "cribl_http"
+      processors:
+        - set:
+          field: source
+          value: "cribl_http"
       ```
     </CodeCol>
     </ExampleGrid>
@@ -208,18 +210,19 @@ A Complex pipeline conversion:
 For custom JavaScript functions in **Cribl**, use **DataStream**'s Script processor with `lang: golang`:
 
 ```yaml title="YAML"
-script:
-  - lang: golang
+processors:
+  - script:
+    lang: golang
     source: |
       package main
-      
+        
       func main() {
         // Your conversion of the JavaScript logic
         if val, ok := logEntry["field"].(string); ok {
           logEntry["processed"] = processField(val)
         }
       }
-      
+        
       func processField(input string) string {
         // Processing logic here
         return input

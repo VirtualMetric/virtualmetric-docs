@@ -26,14 +26,14 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
 
 | Logstash Input | DataStream Device |
 |----------------|-------------------|
-| http | http |
-| syslog | syslog |
-| tcp | tcp |
-| udp | udp |
-| beats | http |
-| file | file (coming soon) |
-| azure_event_hubs | azure_monitor |
-| elasticsearch | elasticsearch_in (coming soon) |
+| `http` | `http` |
+| `syslog` | `syslog` |
+| `tcp` | `tcp` |
+| `udp` | `udp` |
+| `beats` | `http` |
+| `file` | `file` |
+| `azure_event_hubs` | `azmon` |
+| `elasticsearch` | `elasticsearch` |
 
 ### Filters to Processors
 
@@ -41,33 +41,33 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
 
 | Logstash Filter | DataStream Processor |
 |-----------------|----------------------|
-| grok | grok |
-| csv | csv |
-| json | json |
-| kv | kv |
-| mutate (add_field) | set |
-| mutate (remove_field) | remove |
-| mutate (rename) | rename |
-| ruby | script |
-| date | date (coming soon) |
+| `grok` | `grok` |
+| `csv` | `csv` |
+| `json` | `json` |
+| `kv` | `kv` |
+| `mutate` (add_field) | `set` |
+| `mutate` (remove_field) | `remove` |
+| `mutate` (rename) | `rename` |
+| `ruby` | `script` |
+| `date` | `date` |
 
 ### Outputs to Outputs
 
 **Logstash** outputs map to **DataStream** targets:
 
-| Logstash Output | DataStream Output |
+| Logstash Output | DataStream Target |
 |-----------------|-------------------|
-| elasticsearch | elasticsearch |
-| s3 | s3 |
-| http | http |
-| kafka | kafka (coming soon) |
-| stdout | stdout (for testing) |
+| `elasticsearch` | `elasticsearch` |
+| `s3` | `s3` |
+| `http` | `http` |
+| `kafka` | `kafka` |
+| `stdout` | `stdout` (for testing) |
 
 ## Migration Steps
 
 1. **Analyze Current Logstash Configuration** - Identify all inputs, filters, and outputs. Document conditional logic and Ruby code. Catalog custom plugins and gems.
 
-2. **Create Device Configurations** - Convert **Logstash** inputs to **DataStream** devices, e.g.:
+2. **Create Device Configurations** - Convert **Logstash** inputs to **DataStream** devices, e.g.
 
     <ExampleGrid>
       <CommentCol>
@@ -89,18 +89,19 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
       </CommentCol>
       <CodeCol>
         ```yaml title="YAML"
-        - id: 1
-          name: http_input
-          type: http
-          properties:
-            address: "0.0.0.0"
-            port: 8080
-            content_type: "application/json"
+        devices:
+          - id: 1
+            name: http_input
+            type: http
+            properties:
+              address: "0.0.0.0"
+              port: 8080
+              content_type: "application/json"
         ```
       </CodeCol>
     </ExampleGrid>
 
-3. **Create Processor Configurations** - Map Logstash filters to DataStream processors, e.g.:
+3. **Create Processor Configurations** - Map Logstash filters to DataStream processors, e.g.
 
     <ExampleGrid>
       <CommentCol>
@@ -120,15 +121,16 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
       </CommentCol>
       <CodeCol>
         ```yaml title="YAML"
-        - grok:
-          - field: message
-          - patterns:
-            - "%{COMBINEDAPACHELOG}"
+        processors:
+          - grok:
+            field: message
+            patterns:
+              - "%{COMBINEDAPACHELOG}"
         ```
       </CodeCol>
     </ExampleGrid>
 
-4. **Create Target Configurations** - Transform **Logstash** outputs to **DataStream** targets, e.g.:
+4. **Create Target Configurations** - Transform **Logstash** outputs to **DataStream** targets, e.g.
 
     <ExampleGrid>
       <CommentCol>
@@ -147,18 +149,19 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
         ```
       </CodeCol>
       <CommentCol>
-        **DataStream** _Elasticsearch_ output:
+        **DataStream** _Elasticsearch_ target:
       </CommentCol>
       <CodeCol>
         ```yaml title="YAML"
-        - name: es_target
-          type: elasticsearch
-          properties:
-            hosts: ["localhost:9200"]
-            index: "logs-{@timestamp:YYYY.MM.dd}"
-            auth:
-              username: "elastic"
-              password: "changeme"
+        targets:
+          - name: es_target
+            type: elasticsearch
+            properties:
+              hosts: ["localhost:9200"]
+              index: "logs-{@timestamp:YYYY.MM.dd}"
+              auth:
+                username: "elastic"
+                password: "changeme"
         ```
       </CodeCol>
     </ExampleGrid>
@@ -199,20 +202,20 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
         - name: router
           processors:
             - script:
-              - lang: golang
-                source: |
-                  package main
+              lang: golang
+              source: |
+                package main
                   
-                  func main() {
-                    logType, ok := logEntry["type"].(string)
-                    if ok {
-                      if logType == "apache" {
-                        setPipeline("apache_pipeline")
-                      } else if logType == "syslog" {
-                        setPipeline("syslog_pipeline")
-                      }
+                func main() {
+                  logType, ok := logEntry["type"].(string)
+                  if ok {
+                    if logType == "apache" {
+                      setPipeline("apache_pipeline")
+                    } else if logType == "syslog" {
+                      setPipeline("syslog_pipeline")
                     }
                   }
+                }
 
         - name: apache_pipeline
           processors:
@@ -256,24 +259,24 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
     </CommentCol>
     <CodeCol>
       ```yaml title="YAML"
-      - script:
-        - lang: golang
+      processors:
+        - script:
+          lang: golang
           source: |
             package main
-            
+              
             func main() {
               if msg, ok := logEntry["message"].(string); ok {
                 logEntry["uppercase_message"] = strings.ToUpper(msg)
               }
-              
+                
               if status, ok := logEntry["status"].(string); ok {
                 statusCode, err := strconv.Atoi(status)
                 if err != nil && statusCode >= 400 {
                   logEntry["is_error"] = true
                 }
               }
-            }
-          
+            }          
       ```
     </CodeCol>
   </ExampleGrid>
@@ -298,18 +301,18 @@ For **Logstash** date filter functionality, **DataStream** date handling:
 
 ```yaml title="YAML" 
 - script:
-  - lang: golang
-    source: |
-      package main
+  lang: golang
+  source: |
+    package main
       
-      func main() {
-        if timestamp, ok := logEntry["timestamp"].(string); ok {
-          parsedTime, err := time.Parse("2006-01-02T15:04:05", timestamp)
-          if err == nil {
-            logEntry["@timestamp"] = parsedTime.Format(time.RFC3339)
-          }
+    func main() {
+      if timestamp, ok := logEntry["timestamp"].(string); ok {
+        parsedTime, err := time.Parse("2006-01-02T15:04:05", timestamp)
+        if err == nil {
+          logEntry["@timestamp"] = parsedTime.Format(time.RFC3339)
         }
       }
+    }
 ```
 
 ## Performance Tuning
@@ -324,9 +327,9 @@ After migrating, optimize **DataStream**'s performance:
 ## Logstash-Specific Feature Migration
 
 | Logstash Feature | DataStream Approach |
-|------------------|---------------------|
+|-----------------:|---------------------|
 | Persistent Queues | Use **DataStream**'s disk persistence |
-| Dead Letter Queues | Implement error handling in processors |
+| Dead-Letter Queues | Implement error handling in processors |
 | Pipeline-to-Pipeline | Use **DataStream**'s pipeline routing |
 | Monitoring API | Use **DataStream**'s metrics endpoint |
 

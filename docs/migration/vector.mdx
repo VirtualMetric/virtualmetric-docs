@@ -25,12 +25,12 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
 
 | Vector Source | DataStream Device |
 |---------------|-------------------|
-| http | http |
-| syslog | syslog |
-| tcp | tcp |
-| udp | udp |
-| windows_event_log | windows |
-| exec | (custom integration) |
+| `http` | `http` |
+| `syslog` | `syslog` |
+| `tcp` | `tcp` |
+| `udp` | `udp` |
+| `windows_event_log` | `windows` |
+| `exec` | _custom integration_ |
 
 ### Transforms to Processors
 
@@ -38,33 +38,33 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
 
 | Vector Transform | DataStream Processor |
 |------------------|----------------------|
-| remap | script |
-| filter | script (conditional) |
-| parse_csv | csv |
-| parse_json | json |
-| parse_regex | grok |
-| parse_key_value | kv |
-| remove_fields | remove |
-| rename_fields | rename |
-| add_fields | set |
+| `remap` | `script` |
+| `filter` | `script` (conditional) |
+| `parse_csv` | `csv` |
+| `parse_json` | `json` |
+| `parse_regex` | `grok` |
+| `parse_key_value` | `kv` |
+| `remove_fields` | `remove` |
+| `rename_fields` | `rename` |
+| `add_fields` | `set` |
 
-### Sinks to Outputs
+### Sinks to Targets
 
 **Vector** sinks map to **DataStream** targets:
 
 | Vector Sink | DataStream Target |
 |-------------|-------------------|
-| aws_s3 | s3 |
-| elasticsearch | elasticsearch |
-| http | http |
-| kafka | kafka (coming soon) |
-| splunk_hec | splunk |
+| `aws_s3` | `s3` |
+| `elasticsearch` | `elasticsearch` |
+| `http` | `http` |
+| `kafka` | `kafka` |
+| `splunk_hec` | `splunk` |
 
 ## Migration Steps
 
 1. **Analyze Current Vector Configuration** - Document all sources, transforms, and sinks. Note any VRL (Vector Remap Language) expressions. Identify event routing patterns.
 
-2. **Create Device Configurations** - Convert Vector sources to DataStream devices, e.g.:
+2. **Create Device Configurations** - Convert Vector sources to DataStream devices, e.g.
 
     <ExampleGrid>
       <CommentCol>
@@ -83,18 +83,19 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
       </CommentCol>
       <CodeCol>
         ```yaml title="YAML"
-        - id: 1
-          name: http_in
-          type: http
-          properties:
-            address: "0.0.0.0"
-            port: 8080
-            content_type: "application/json"
+        devices:
+          - id: 1
+            name: http_in
+            type: http
+            properties:
+              address: "0.0.0.0"
+              port: 8080
+              content_type: "application/json"
         ```
       </CodeCol>
     </ExampleGrid>
 
-3. **Create Processor Configurations** - Map Vector transforms to DataStream processors, e.g.:
+3. **Create Processor Configurations** - Map Vector transforms to DataStream processors, e.g.
 
     <ExampleGrid>
       <CommentCol>
@@ -116,11 +117,12 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
       </CommentCol>
       <CodeCol>
         ```yaml title="YAML"
-        - script:
-          - lang: golang
+        processors:
+          - script:
+            lang: golang
             source: |
               package main
-              
+                
               func main() {
                 logEntry["source"] = "vector"
                 if msg, ok := logEntry["message"].(string); ok {
@@ -168,31 +170,32 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
     </CommentCol>
     <CodeCol>
       ```yaml title="YAML"
-      - kv:
-        field: message
-        field_split: " "
-        value_split: "="
+      processors:
+        - kv:
+          field: message
+          field_split: " "
+          value_split: "="
 
-      - script:
-        lang: golang
-        source: |
-          package main
-            
-          func main() {
-            if ts, ok := logEntry["timestamp"].(string); ok {
-              parsedTime, err := time.Parse(time.RFC3339, ts)
-              if err == nil {
-                logEntry["timestamp"] = parsedTime
-              }
-            }
+        - script:
+          lang: golang
+          source: |
+            package main
               
-            if sc, ok := logEntry["status_code"].(string); ok {
-              statusCode, err := strconv.Atoi(sc)
-              if err == nil && statusCode >= 400 {
-                logEntry["is_error"] = true
+            func main() {
+              if ts, ok := logEntry["timestamp"].(string); ok {
+                parsedTime, err := time.Parse(time.RFC3339, ts)
+                if err == nil {
+                  logEntry["timestamp"] = parsedTime
+                }
+              }
+                
+              if sc, ok := logEntry["status_code"].(string); ok {
+                statusCode, err := strconv.Atoi(sc)
+                if err == nil && statusCode >= 400 {
+                  logEntry["is_error"] = true
+                }
               }
             }
-          }
       ```
     </CodeCol>
   </ExampleGrid>
@@ -235,14 +238,17 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
     </CommentCol>
     <CodeCol>
       ```yaml title="YAML"
-      - id: 1
-        name: http_logs
-        type: http
-        properties:
-          address: "0.0.0.0"
-          port: 8080
-        pipelines:
-          - router
+      routes:
+        name: http_route
+        devices:
+          - id: 1
+            name: http_logs
+            type: http
+            properties:
+              address: "0.0.0.0"
+              port: 8080
+            pipelines:
+              - router
 
       pipelines:
         - name: router
@@ -303,23 +309,24 @@ VRL expressions can be converted to Go for the **DataStream** _Script_ processor
 For **Vector** metric events, use **DataStream**'s metric processing capabilities or custom scripting:
 
 ```yaml
-script:
-  - lang: golang
-    source: |
-      package main
-      
-      func main() {
-        if metricType, ok := logEntry["type"].(string); ok && metricType == "counter" {
-          // Process counter metric
-          name := logEntry["name"].(string)
-          value := logEntry["value"].(float64)
-          logEntry["processed_metric"] = map[string]interface{}{
-            "name": name,
-            "value": value,
-            "timestamp": time.Now().Unix(),
+processors:
+  script:
+    - lang: golang
+      source: |
+        package main
+        
+        func main() {
+          if metricType, ok := logEntry["type"].(string); ok && metricType == "counter" {
+            // Process counter metric
+            name := logEntry["name"].(string)
+            value := logEntry["value"].(float64)
+            logEntry["processed_metric"] = map[string]interface{}{
+              "name": name,
+              "value": value,
+              "timestamp": time.Now().Unix(),
+            }
           }
         }
-      }
 ```
 
 ### Performance Tuning

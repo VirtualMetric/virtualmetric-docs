@@ -8,38 +8,38 @@ const customTheme: PrismTheme = {
     {
       types: ['title'],
       style: {
-        color: '#33FFFF',
+        color: '#99F5F9',
         fontWeight: 'bold',
       },
     },
     {
       types: ['parameter'],
       style: {
-        color: '#E4080A',
+        color: '#99F5F9',
+      },
+    },
+    {
+      types: ['variable'],
+      style: {
+        color: '#99F5F9',
       },
     },
     {
       types: ['boolean', 'rule', 'color', 'number', 'constant', 'property'],
       style: {
-        color: '#33FFFF',
+        color: '#99F5F9',
       },
     },
     {
-      types: ['atrule', 'tag'],
+      types: ['atrule', 'tag', 'script'],
       style: {
-        color: '#33FFFF',
-      },
-    },
-    {
-      types: ['script'],
-      style: {
-        color: '#33FFFF',
+        color: '#99F5F9',
       },
     },
     {
       types: ['operator', 'unit', 'rule'],
       style: {
-        color: '#33FFFF',
+        color: '#99F5F9',
       },
     },
     {
@@ -51,37 +51,31 @@ const customTheme: PrismTheme = {
     {
       types: ['class-name'],
       style: {
-        color: '#33FFFF',
+        color: '#99F5F9',
       },
     },
     {
       types: ['attr-name'],
       style: {
-        color: '#33FFFF',
+        color: '#99F5F9',
       },
     },
     {
       types: ['keyword'],
       style: {
-        color: '#33FFFF',
+        color: '#99F5F9',
       },
     },
     {
       types: ['function'],
       style: {
-        color: '#33FFFF',
+        color: '#99F5F9',
       },
     },
     {
       types: ['selector'],
       style: {
-        color: '#33FFFF',
-      },
-    },
-    {
-      types: ['variable'],
-      style: {
-        color: '#33FFFF',
+        color: '#99F5F9',
       },
     },
     {

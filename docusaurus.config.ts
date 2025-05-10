@@ -126,6 +126,7 @@ const config: Config = {
     },
     prism: {
       theme: customColoring
+      // theme: prismThemes.vsDark
     },
   } satisfies Preset.ThemeConfig,
 };
