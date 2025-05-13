@@ -58,6 +58,37 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Microsoft Sentinel",
+      link: {type: "doc", id: "microsoft-sentinel/index"},
+      items: [
+        {
+          type: "category",
+          label: "Integration",
+          items: [
+            'microsoft-sentinel/integration/autodiscovery',
+            'microsoft-sentinel/integration/manual',
+          ],
+        },
+        {
+          type: "category",
+          label: "Automation",
+          items: [
+            'microsoft-sentinel/automation/arm-templates',
+            'microsoft-sentinel/automation/bicep-templates',
+          ],
+        },
+        {
+          type: "category",
+          label: "Content Hub",
+          items: [
+            'microsoft-sentinel/content-hub/checkpoint',
+            'microsoft-sentinel/content-hub/fortigate',
+          ],
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Configuration",
       link: {type: "doc", id: "configuration/index"},
       items: [
@@ -237,37 +268,6 @@ const sidebars: SidebarsConfig = {
         'architecture/file-system',
         'architecture/persistency',
         'architecture/zero-trust',
-        {
-          type: "category",
-          label: "Microsoft Sentinel",
-          link: {type: "doc", id: "architecture/microsoft-sentinel/index"},
-          items: [
-            {
-              type: "category",
-              label: "Integration",
-              items: [
-                'architecture/microsoft-sentinel/integration/autodiscovery',
-                'architecture/microsoft-sentinel/integration/manual',
-              ],
-            },
-            {
-              type: "category",
-              label: "Automation",
-              items: [
-                'architecture/microsoft-sentinel/automation/arm-templates',
-                'architecture/microsoft-sentinel/automation/bicep-templates',
-              ],
-            },
-            {
-              type: "category",
-              label: "Content Hub",
-              items: [
-                'architecture/microsoft-sentinel/content-hub/checkpoint',
-                'architecture/microsoft-sentinel/content-hub/fortigate',
-              ],
-            },
-          ],
-        },
       ],
     },
     "appendix",
