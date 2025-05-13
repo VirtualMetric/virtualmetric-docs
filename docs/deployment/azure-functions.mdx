@@ -43,181 +43,199 @@ For most DataStream deployments, the Premium plan offers the best balance of per
 ### 1. Prepare Azure Resources
 
 1. **Create a Function App** in the Azure Portal:
-   - Select **.NET 6** as the runtime
-   - Choose your preferred hosting plan (Premium recommended)
-   - Enable Application Insights for monitoring
-   - Configure storage account for function state
+
+  - Select **.NET 6** as the runtime
+  - Choose your preferred hosting plan (Premium recommended)
+  - Enable Application Insights for monitoring
+  - Configure storage account for function state
 
 2. **Create supporting resources**:
-   - **Storage Account**: For configuration and state management
-   - **Event Hub or Service Bus** (optional): For message buffering
-   - **Key Vault**: For secure storage of credentials
+  
+  - **Storage Account**: For configuration and state management
+  - **Event Hub or Service Bus** (optional): For message buffering
+  - **Key Vault**: For secure storage of credentials
 
 ### 2. Configure Function Settings
 
 1. **Add application settings** in the Function App Configuration:
-   - `DATASTREAM_CONFIG_MODE`: `azure_blob`
-   - `DATASTREAM_STORAGE_CONNECTION`: Your storage connection string
-   - `DATASTREAM_CONFIG_CONTAINER`: `datastream-config`
-   - `DATASTREAM_CONFIG_PATH`: `config/`
-   - `DATASTREAM_PROCESSOR_MODE`: `functions`
+  
+  - `DATASTREAM_CONFIG_MODE`: `azure_blob`
+  - `DATASTREAM_STORAGE_CONNECTION`: Your storage connection string
+  - `DATASTREAM_CONFIG_CONTAINER`: `datastream-config`
+  - `DATASTREAM_CONFIG_PATH`: `config/`
+  - `DATASTREAM_PROCESSOR_MODE`: `functions`
 
 2. **Configure Function-specific settings**:
-   - Set Function runtime version to `~4`
-   - Configure host keys and CORS settings as needed
-   - For Premium plan: Set minimum instance count (1+ for production)
+  
+  - Set Function runtime version to `~4`
+  - Configure host keys and CORS settings as needed
+  - For Premium plan: Set minimum instance count (1+ for production)
 
 ### 3. Prepare Function Code
 
 #### Option 1: Deploy from Visual Studio
 
 1. **Create a new Azure Functions project**:
-   - Use Visual Studio or VS Code with Azure Functions extension
-   - Select .NET 6 as the runtime
+  
+  - Use Visual Studio or VS Code with Azure Functions extension
+  - Select .NET 6 as the runtime
 
 2. **Add the DataStream NuGet package**:
-   ```xml
-   <PackageReference Include="DataStream.Functions" Version="1.0.0" />
-   ```
+  
+  ```xml
+  <PackageReference Include="DataStream.Functions" Version="1.0.0" />
+  ```
 
 3. **Create HTTP Trigger function**:
-   ```csharp
-   using System.Threading.Tasks;
-   using Microsoft.AspNetCore.Mvc;
-   using Microsoft.Azure.WebJobs;
-   using Microsoft.Azure.WebJobs.Extensions.Http;
-   using Microsoft.AspNetCore.Http;
-   using Microsoft.Extensions.Logging;
+
+  ```csharp
+  using System.Threading.Tasks;
+  using Microsoft.AspNetCore.Mvc;
+  using Microsoft.Azure.WebJobs;
+  using Microsoft.Azure.WebJobs.Extensions.Http;
+  using Microsoft.AspNetCore.Http;
+  using Microsoft.Extensions.Logging;
    
-   public static class DataStreamProcessor
-   {
-       [FunctionName("ProcessLogs")]
-       public static async Task<IActionResult> Run(
-           [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
-           ILogger log)
-       {
-           // Initialize DataStream processor
-           var processor = new DataStreamFunctionProcessor();
-           
-           // Process incoming request
-           var result = await processor.ProcessHttpRequestAsync(req);
-           
-           // Return response
-           return new OkObjectResult(result);
-       }
-   }
-   ```
+  public static class DataStreamProcessor
+  {
+      [FunctionName("ProcessLogs")]
+      public static async Task<IActionResult> Run(
+          [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+          ILogger log)
+      {
+          // Initialize DataStream processor
+          var processor = new DataStreamFunctionProcessor();
+          
+          // Process incoming request
+          var result = await processor.ProcessHttpRequestAsync(req);
+          
+          // Return response
+          return new OkObjectResult(result);
+      }
+  }
+  ```
 
 4. **Publish to Azure** using Visual Studio's publish functionality
 
 #### Option 2: Deploy from Container Image
 
 1. **Pull the DataStream Functions image**:
-   ```PowerShell
-   docker pull datastream/datastream-functions:latest
-   ```
+  
+  ```PowerShell
+  docker pull datastream/datastream-functions:latest
+  ```
 
 2. **Push to Azure Container Registry**:
-   ```PowerShell
-   az acr login --name yourRegistryName
-   docker tag datastream/datastream-functions:latest yourRegistryName.azurecr.io/datastream-functions:latest
-   docker push yourRegistryName.azurecr.io/datastream-functions:latest
-   ```
+  
+  ```PowerShell
+  az acr login --name yourRegistryName
+  docker tag datastream/datastream-functions:latest yourRegistryName.azurecr.io/datastream-functions:latest
+  docker push yourRegistryName.azurecr.io/datastream-functions:latest
+  ```
 
 3. **Configure Function App** to use container:
-   - Go to Deployment Center in the Function App
-   - Select Container Registry as the source
-   - Configure registry, image, and tag settings
+  
+  - Go to Deployment Center in the Function App
+  - Select Container Registry as the source
+  - Configure registry, image, and tag settings
 
 ### 4. Create DataStream Configuration
 
 1. **Prepare configuration files**:
-   ```PowerShell
-   mkdir -p config
    
-   # Create main config file
-   cat > config/functions.yaml << EOF
-   triggers:
-     - name: http_trigger
-       type: http
-       route: logs
-       methods: ["POST"]
-       auth_level: function
+  ```PowerShell
+  mkdir -p config
    
-   processors:
-     - grok:
-         - field: message
-         - patterns:
-             - "%{COMMONAPACHELOG}"
-     - set:
-         - field: parsed_timestamp
-         - value: "{{{timestamp}}}"
+  # Create main config file
+  cat > config/functions.yaml << EOF
+  targets:
+    - name: http_target
+      type: http
+      route: logs
+      methods: ["POST"]
+      auth_level: function
    
-   outputs:
-     - name: azure_storage
-       type: azure_blob
-       connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
-       container: datastream-logs
-       path_format: "{date}/{hour}"
-   EOF
-   ```
+  processors:
+    - grok:
+      field: message
+      patterns:
+        - "%{COMMONAPACHELOG}"
+    - set:
+      field: parsed_timestamp
+      value: "{{{timestamp}}}"
+   
+  targets:
+    - name: azure_storage
+      type: azure_blob
+      connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
+      container: datastream-logs
+      path_format: "{date}/{hour}"
+  EOF
+  ```
 
 2. **Upload to blob storage**:
-   ```PowerShell
-   az storage blob upload-batch \
-     --account-name youraccount \
-     --destination datastream-config \
-     --source config
-   ```
+  
+  ```PowerShell
+  az storage blob upload-batch \
+    --account-name youraccount \
+    --destination datastream-config \
+    --source config
+  ```
 
 ### 5. Set Up Function Bindings
 
 For optimal performance, configure appropriate bindings:
 
 1. **HTTP Trigger** for receiving log data
-   - Configure authentication level (function, admin, or anonymous)
-   - Set appropriate route templates
+  
+  - Configure authentication level (function, admin, or anonymous)
+  - Set appropriate route templates
 
 2. **Queue output binding** for buffering messages:
-   ```csharp
-   [FunctionName("BufferLogs")]
-   public static async Task Run(
-       [HttpTrigger(AuthorizationLevel.Function, "post", Route = "logs")] HttpRequest req,
-       [Queue("log-buffer")] IAsyncCollector<string> outputQueue,
-       ILogger log)
-   {
-       // Process and buffer logs
-   }
-   ```
+  
+  ```csharp
+  [FunctionName("BufferLogs")]
+  public static async Task Run(
+      [HttpTrigger(AuthorizationLevel.Function, "post", Route = "logs")] HttpRequest req,
+      [Queue("log-buffer")] IAsyncCollector<string> outputQueue,
+      ILogger log)
+  {
+      // Process and buffer logs
+  }
+  ```
 
 3. **Event Hub trigger** for processing batched events:
-   ```csharp
-   [FunctionName("ProcessEvents")]
-   public static async Task Run(
-       [EventHubTrigger("logs", Connection = "EventHubConnection")] EventData[] events,
-       ILogger log)
-   {
-       // Process events in batches
-   }
-   ```
+  
+  ```csharp
+  [FunctionName("ProcessEvents")]
+  public static async Task Run(
+      [EventHubTrigger("logs", Connection = "EventHubConnection")] EventData[] events,
+      ILogger log)
+  {
+      // Process events in batches
+  }
+  ```
 
 ### 6. Verify Deployment
 
 1. **Test the function endpoint**:
-   ```PowerShell
-   curl -X POST \
-     -H "Content-Type: application/json" \
-     -H "x-functions-key: YOUR_FUNCTION_KEY" \
-     -d '{"message":"192.168.1.1 - user1 [10/Oct/2023:13:55:36 -0700] \"GET /index.html HTTP/1.0\" 200 2326"}' \
-     https://your-function-app.azurewebsites.net/api/logs
-   ```
+  
+  ```PowerShell
+  curl -X POST \
+    -H "Content-Type: application/json" \
+    -H "x-functions-key: YOUR_FUNCTION_KEY" \
+    -d '{"message":"192.168.1.1 - user1 [10/Oct/2023:13:55:36 -0700] \"GET /index.html HTTP/1.0\" 200 2326"}' \
+    https://your-function-app.azurewebsites.net/api/logs
+  ```
 
 2. **Check function logs**:
-   - Navigate to your Function App > Functions > ProcessLogs > Monitor
-   - View invocation logs and traces
+  
+  - Navigate to your Function App > Functions > ProcessLogs > Monitor
+  - View invocation logs and traces
 
 3. **Monitor output storage**:
-   - Verify that processed logs are being written to the configured storage location
+  
+  - Verify that processed logs are being written to the configured storage location
 
 ## Scaling and Performance
 
@@ -225,21 +243,21 @@ Optimize Azure Functions deployment with:
 
 1. **Premium plan settings**:
 
-   - Configure minimum instance count (1+ for production)
-   - Set maximum burst limit based on expected peak load
-   - Enable pre-warmed instances to eliminate cold starts
+  - Configure minimum instance count (1+ for production)
+  - Set maximum burst limit based on expected peak load
+  - Enable pre-warmed instances to eliminate cold starts
 
 2. **Consumption plan optimization**:
 
-   - Implement retry logic for cold start handling
-   - Keep functions warm with scheduled pings if needed
-   - Set appropriate timeout values
+  - Implement retry logic for cold start handling
+  - Keep functions warm with scheduled pings if needed
+  - Set appropriate timeout values
 
 3. **Performance tuning**:
 
-   - Configure batch size for optimal throughput
-   - Implement connection pooling for database connections
-   - Use async patterns throughout your code
+  - Configure batch size for optimal throughput
+  - Implement connection pooling for database connections
+  - Use async patterns throughout your code
 
 ## Cost Optimization
 
@@ -256,20 +274,20 @@ Be aware of these Azure Functions constraints:
 
 1. **Execution time limits**:
 
-   - Consumption plan: 10-minute maximum execution
-   - Premium plan: 30-minute maximum execution
+  - Consumption plan: 10-minute maximum execution
+  - Premium plan: 30-minute maximum execution
 
 2. **Network constraints**:
 
-   - Limited support for custom TCP/UDP listeners
-   - HTTP/HTTPS primary ingress method
+  - Limited support for custom TCP/UDP listeners
+  - HTTP/HTTPS primary ingress method
 
 3. **State management**:
 
-   - Functions are stateless by design
-   - Use external storage for state persistence
+  - Functions are stateless by design
+  - Use external storage for state persistence
 
 4. **Cold start impact**:
 
-   - First requests after idle periods may experience latency
-   - Premium plan reduces cold start issues
+  - First requests after idle periods may experience latency
+  - Premium plan reduces cold start issues

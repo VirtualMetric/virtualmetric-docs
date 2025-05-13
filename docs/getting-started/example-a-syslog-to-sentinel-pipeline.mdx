@@ -99,17 +99,17 @@ pipelines:
     description: "Process Syslog data for Microsoft Sentinel ASIM"
     processors:
       - grok:
-          field: message
-          patterns:
-            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"      
+        field: message
+        patterns:
+          - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"      
       - grok:
-          field: syslog.message
-          patterns:
-            - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
-          ignore_failure: true
+        field: syslog.message
+        patterns:
+          - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
+        ignore_failure: true
       - set:
-          field: event.kind
-          value: event
+        field: event.kind
+        value: event
       - script:
           lang: golang
           source: |
@@ -128,18 +128,18 @@ pipelines:
               }
             }
       - rename:
-          fields:
-            - from: timestamp
-              to: event.created
-            - from: source.ip
-              to: src.ip
-            - from: user.name
-              to: user.name_orig      
+        fields:
+          - from: timestamp
+            to: event.created
+          - from: source.ip
+            to: src.ip
+          - from: user.name
+            to: user.name_orig      
       - remove:
-          field:
-            - syslog.message
-            - message
-          ignore_missing: true
+        field:
+          - syslog.message
+          - message
+        ignore_missing: true
 ```
 
 This configuration will

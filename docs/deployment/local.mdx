@@ -190,15 +190,21 @@ After deployment, verify that DataStream is running correctly:
 2. **Review log output**:
 
    <Tabs groupId="os-options">
-      <TabItem value="native" label="Native" default>
+      <TabItem value="windows" label="Windows" default>
+         ```powershell
+         Get-WinEvent -LogName datastream
+         ```
+      </TabItem>
+      
+      <TabItem value="linux" label="Linux">
          ```bash
          sudo journalctl -u datastream -f
          ```
       </TabItem>
-      
-      <TabItem value="docker" label="Docker">
+
+      <TabItem value="macos" label="macOS">
          ```bash
-         ???
+         sudo journalctl -u datastream -f
          ```
       </TabItem>
    </Tabs>
@@ -242,11 +248,6 @@ Regular maintenance tasks for local deployments:
    ```bash
    # For native installation
    sudo ./datastream-installer.sh --update
-
-   # For container deployment
-   docker pull datastream/datastream:latest
-   docker-compose down && docker-compose up -d
-   ```
 
 2. **Backup configuration files** regularly:
 
