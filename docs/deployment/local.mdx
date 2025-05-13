@@ -11,22 +11,19 @@ This guide walks you through deploying DataStream on a local server or workstati
 Before starting the local deployment, ensure your system meets these requirements:
 
 - **Hardware**:
-
   - CPU: 2+ cores
   - RAM: 4GB minimum
   - Storage: 20GB available disk space
 
 - **Software**:
-
-  - Operating System: Linux (Ubuntu 20.04+, RHEL 8+) or Windows Server 2019+
+  - Operating System: Linux (Ubuntu 20.04+, RHEL 8+), Windows Server 2019+, or macOS
   - .NET Runtime 6.0 or later
-  - Optional: Docker 20.10+ for container-based deployment
 
 ## Deployment Options
 
-DataStream offers two primary methods for local deployment:
+DataStream offers a straightforward installation method for local deployment.
 
-### 1. Native Installation
+### Native Installation
 
 Install DataStream directly on the host operating system.
 
@@ -34,94 +31,108 @@ Install DataStream directly on the host operating system.
 
 1. **Download the installer package**:
 
-   <Tabs groupId="os-options">
-      <TabItem value="windows" label="Windows" default>
-         ```powershell
-         winget install https://download.datastream.com/latest/datastream-installer.ps1
-         ```
-      </TabItem>
-      
-      <TabItem value="linux" label="Linux">
-         ```bash
-         wget https://download.datastream.com/latest/datastream-installer.sh
-         ```
-      </TabItem>
+<Tabs>
+  <TabItem value="windows" label="Windows (PowerShell)">
+  ```powershell
+  Invoke-WebRequest -Uri "https://download.datastream.example.com/latest/datastream-installer.exe" -OutFile "datastream-installer.exe"
+  ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+  ```bash
+  wget https://download.datastream.example.com/latest/datastream-installer.sh
+  ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+  ```bash
+  curl -O https://download.datastream.example.com/latest/datastream-installer.sh
+  ```
+  </TabItem>
+</Tabs>
 
-      <TabItem value="macos" label="macOS">
-         ```bash
-         wget https://download.datastream.com/latest/datastream-installer.sh
-         ```
-      </TabItem>
-   </Tabs>
+2. **Make the installer executable** (Linux/macOS only):
 
-2. **Run the installer**:
+<Tabs>
+  <TabItem value="windows" label="Windows (PowerShell)">
+  ```powershell
+  # Not needed for Windows
+  ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+  ```bash
+  chmod +x datastream-installer.sh
+  ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+  ```bash
+  chmod +x datastream-installer.sh
+  ```
+  </TabItem>
+</Tabs>
 
-   <Tabs groupId="os-options">
-      <TabItem value="windows" label="Windows" default>
-         ```powershell
-         ???
-         ```
-      </TabItem>
-      
-      <TabItem value="linux" label="Linux">
-         ```bash
-         ???
-         ```
-      </TabItem>
+3. **Run the installer**:
 
-      <TabItem value="macos" label="macOS">
-         ```bash
-         ???
-         ```
-      </TabItem>
-   </Tabs>
+<Tabs>
+  <TabItem value="windows" label="Windows (PowerShell)">
+  ```powershell
+  .\datastream-installer.exe
+  ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+  ```bash
+  sudo ./datastream-installer.sh
+  ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+  ```bash
+  sudo ./datastream-installer.sh
+  ```
+  </TabItem>
+</Tabs>
 
-3. **Configure the service**:
+4. **Configure the service**:
 
-   - The installer will create a configuration directory at `/etc/datastream`
-   - Edit the base configuration file:
+<Tabs>
+  <TabItem value="windows" label="Windows (PowerShell)">
+  ```powershell
+  # The installer will create a configuration directory at C:\ProgramData\DataStream
+  notepad C:\ProgramData\DataStream\config.yaml
+  ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+  ```bash
+  # The installer will create a configuration directory at /etc/datastream
+  sudo nano /etc/datastream/config.yaml
+  ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+  ```bash
+  # The installer will create a configuration directory at /etc/datastream
+  sudo nano /etc/datastream/config.yaml
+  ```
+  </TabItem>
+</Tabs>
 
-   <Tabs groupId="os-options">
-      <TabItem value="windows" label="Windows" default>
-         ```powershell
-         ???
-         ```
-      </TabItem>
-      
-      <TabItem value="linux" label="Linux">
-         ```bash
-         ???
-         ```
-      </TabItem>
+5. **Start the service**:
 
-      <TabItem value="macos" label="macOS">
-         ```bash
-         ???
-         ```
-      </TabItem>
-   </Tabs>
-
-4. **Start the service**:
-
-   <Tabs groupId="os-options">
-      <TabItem value="windows" label="Windows" default>
-         ```powershell
-         ???
-         ```
-      </TabItem>
-      
-      <TabItem value="linux" label="Linux">
-         ```bash
-         ???
-         ```
-      </TabItem>
-
-      <TabItem value="macos" label="macOS">
-         ```bash
-         ???
-         ```
-      </TabItem>
-   </Tabs>
+<Tabs>
+  <TabItem value="windows" label="Windows (PowerShell)">
+  ```powershell
+  Start-Service DataStream
+  Set-Service DataStream -StartupType Automatic
+  ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+  ```bash
+  sudo systemctl enable datastream
+  sudo systemctl start datastream
+  ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+  ```bash
+  sudo launchctl load /Library/LaunchDaemons/com.datastream.service.plist
+  ```
+  </TabItem>
+</Tabs>
 
 ## Configuration
 
@@ -129,36 +140,35 @@ After deployment, configure DataStream to meet your specific requirements:
 
 1. **Define devices** in the configuration directory:
    
-   **Example** - _Syslog_ device configuration:
-
    ```yaml
+   # Example syslog devices configuration
    devices:
-     - id: 1
-       name: local_syslog
-       type: syslog
-       properties:
+      - id: 1
+      name: local_syslog
+      type: syslog
+      properties:
          port: 514
    ```
 
 2. **Add processors and pipelines** as needed:
-   
-   ```yaml
-   pipelines:
-     - name: basic_processing
-       processors:
-         - grok:
-             field: message
-             patterns:
-               - "%{COMMONAPACHELOG}"
+
+  ```yaml
+  pipelines:
+    - name: basic_processing
+      processors:
+        - grok:
+          field: message
+          patterns:
+            - "%{COMMONAPACHELOG}"
    ```
 
 3. **Configure targets** to forward processed data:
-   
-   ```yaml
-   targets:
-     - name: local_file
-       type: file
-       path: "/var/log/datastream/processed.log"
+
+  ```yaml
+  targets:
+    - name: local_file
+      type: file
+      path: /var/log/datastream/processed.log
    ```
 
 ## Verification
@@ -167,69 +177,67 @@ After deployment, verify that DataStream is running correctly:
 
 1. **Check the service status**:
 
-   <Tabs groupId="os-options">
-      <TabItem value="windows" label="Windows" default>
-         ```powershell
-         Get-Service -Name datastream | Select-Object -Property Status, Name, DisplayName
-         ```
-      </TabItem>
-      
-      <TabItem value="linux" label="Linux">
-         ```bash
-         sudo systemctl status datastream
-         ```
-      </TabItem>
-
-      <TabItem value="macos" label="macOS">
-         ```bash
-         systemctl status datastream
-         ```
-      </TabItem>
-   </Tabs>
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    Get-Service DataStream
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    sudo systemctl status datastream
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    sudo launchctl list | grep datastream
+    ```
+    </TabItem>
+  </Tabs>
 
 2. **Review log output**:
 
-   <Tabs groupId="os-options">
-      <TabItem value="windows" label="Windows" default>
-         ```powershell
-         Get-WinEvent -LogName datastream
-         ```
-      </TabItem>
-      
-      <TabItem value="linux" label="Linux">
-         ```bash
-         sudo journalctl -u datastream -f
-         ```
-      </TabItem>
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    Get-Content -Path "C:\ProgramData\DataStream\logs\service.log" -Tail 50 -Wait
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    sudo journalctl -u datastream -f
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    tail -f /Library/Logs/DataStream/service.log
+    ```
+    </TabItem>
+  </Tabs>
 
-      <TabItem value="macos" label="macOS">
-         ```bash
-         sudo journalctl -u datastream -f
-         ```
-      </TabItem>
-   </Tabs>
+3. **Test a collector**:
 
-3. **Test a configured device**:
-
-   <Tabs groupId="os-options">
-      <TabItem value="windows" label="Windows" default>
-         ```powershell
-         logger -n localhost -P 514 "Test message for DataStream"
-         ```
-      </TabItem>
-      
-      <TabItem value="linux" label="Linux">
-         ```bash
-         logger -n localhost -P 514 "Test message for DataStream"
-         ```
-      </TabItem>
-
-      <TabItem value="macos" label="macOS">
-         ```bash
-         logger -n localhost -P 514 "Test message for DataStream"
-         ```
-      </TabItem>
-   </Tabs>
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    # Using PowerShell to send a UDP message to port 514
+    $Message = [Text.Encoding]::ASCII.GetBytes("Test message for DataStream")
+    $UdpClient = New-Object System.Net.Sockets.UdpClient
+    $UdpClient.Connect("127.0.0.1", 514)
+    $UdpClient.Send($Message, $Message.Length)
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    logger -n localhost -P 514 "Test message for DataStream"
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    logger -n localhost -P 514 "Test message for DataStream"
+    ```
+    </TabItem>
+  </Tabs>
 
 ## Resource Allocation
 
@@ -245,27 +253,130 @@ Regular maintenance tasks for local deployments:
 
 1. **Update DataStream** when new versions are released:
 
-   ```bash
-   # For native installation
-   sudo ./datastream-installer.sh --update
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```powershell
+  # Download the latest installer
+  Invoke-WebRequest -Uri "https://download.datastream.example.com/latest/datastream-installer.exe" -OutFile "datastream-installer.exe"
+  
+  # Stop the service
+  Stop-Service DataStream
+  
+  # Run the installer to update
+  .\datastream-installer.exe
+  
+  # Start the service
+  Start-Service DataStream
+  ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+  ```bash
+  # Download the latest installer
+  wget https://download.datastream.example.com/latest/datastream-installer.sh
+  
+  # Make the installer executable
+  chmod +x datastream-installer.sh
+  
+  # Run the installer with update flag
+  sudo ./datastream-installer.sh --update
+  
+  # Restart the service
+  sudo systemctl restart datastream
+  ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+  ```bash
+  # Download the latest installer
+  curl -O https://download.datastream.example.com/latest/datastream-installer.sh
+  
+  # Make the installer executable
+  chmod +x datastream-installer.sh
+  
+  # Run the installer with update flag
+  sudo ./datastream-installer.sh --update
+  
+  # Restart the service
+  sudo launchctl unload /Library/LaunchDaemons/com.datastream.service.plist
+  sudo launchctl load /Library/LaunchDaemons/com.datastream.service.plist
+  ```
+  </TabItem>
+</Tabs>
 
 2. **Backup configuration files** regularly:
 
-   ```bash
-   tar -czf datastream-config-backup.tar.gz /etc/datastream
-   ```
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```powershell
+  Compress-Archive -Path "C:\ProgramData\DataStream" -DestinationPath "C:\Backups\datastream-config-backup.zip"
+  ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+  ```bash
+  sudo tar -czf /backup/datastream-config-backup.tar.gz /etc/datastream
+  ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+  ```bash
+  sudo tar -czf ~/Downloads/datastream-config-backup.tar.gz /etc/datastream
+  ```
+  </TabItem>
+</Tabs>
 
 3. **Monitor disk usage** to prevent storage issues:
-   ```bash
-   du -sh /var/log/datastream/
-   ```
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```powershell
+  Get-ChildItem -Path "C:\ProgramData\DataStream\logs" -Recurse | Measure-Object -Property Length -Sum
+  ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+  ```bash
+  du -sh /var/log/datastream/
+  ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+  ```bash
+  du -sh /Library/Logs/DataStream/
+  ```
+  </TabItem>
+</Tabs>
 
 ## Troubleshooting
 
 Common issues with local deployments:
 
-1. **Service fails to start**: Check system resources and configuration file syntax
-2. **No data collected**: Verify network settings and ports
-3. **High CPU/memory usage**: Adjust batch size and processing settings
+1. **Service fails to start**: 
 
-For detailed logs, check `/var/log/datastream/service.log` or use `docker logs`.
+  - Check system resources and configuration file syntax
+  - Verify .NET Runtime is installed correctly
+
+2. **No data collected**: 
+
+  - Verify network settings and ports
+  - Check firewall settings to ensure required ports are open
+
+3. **High CPU/memory usage**: 
+
+  - Adjust batch size and processing settings
+  - Increase system resources if consistently high
+
+For detailed logs, check:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+  ```powershell
+  Get-Content -Path "C:\ProgramData\DataStream\logs\service.log"
+  ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+  ```bash
+  cat /var/log/datastream/service.log
+  ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+  ```bash
+  cat /Library/Logs/DataStream/service.log
+  ```
+  </TabItem>
+</Tabs>

@@ -34,10 +34,10 @@ For disk-intensive operations, consider Premium SSD storage options.
 ### 1. Create the Azure VM
 
 1. **Navigate to the Azure Portal** and create a new Virtual Machine
-   - Select your preferred OS (Ubuntu 20.04 LTS recommended)
+   - Select your preferred OS (Ubuntu 20.04 LTS recommended for Linux, Windows Server 2019 for Windows)
    - Choose the appropriate VM size based on your workload
    - Configure networking to allow required ports (e.g., 514 for syslog)
-   - Set authentication method (SSH key recommended for Linux)
+   - Set authentication method (SSH key recommended for Linux, password for Windows)
 
 2. **Configure disk settings**:
    - OS disk: Premium SSD recommended for production
@@ -53,15 +53,47 @@ For disk-intensive operations, consider Premium SSD storage options.
 
 ### 2. Prepare the VM
 
-1. **Connect to the VM** using SSH (Linux) or RDP (Windows)
+1. **Connect to the VM** using RDP (Windows) or SSH (Linux)
 
 2. **Update the OS**:
+
+   <Tabs>
+   <TabItem value="windows" label="Windows" default>
+   ```powershell
+   # Install Windows updates
+   Install-WindowsUpdate -AcceptAll -AutoReboot
+   ```
+   </TabItem>
+   <TabItem value="linux" label="Linux">
    ```bash
    # For Ubuntu
    sudo apt update && sudo apt upgrade -y
    ```
+   </TabItem>
+   </Tabs>
 
 3. **Format and mount the data disk**:
+
+   <Tabs>
+   <TabItem value="windows" label="Windows" default>
+   ```powershell
+   # Initialize and format the disk using Disk Management
+   # Use the following commands to automate this process
+   
+   # Get the disk number of the raw disk
+   $disk = Get-Disk | Where-Object PartitionStyle -eq 'RAW'
+   
+   # Initialize the disk
+   Initialize-Disk -Number $disk.Number -PartitionStyle GPT
+   
+   # Create a new partition using the maximum size
+   $partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter
+   
+   # Format the volume
+   Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel "DataStream" -Confirm:$false
+   ```
+   </TabItem>
+   <TabItem value="linux" label="Linux">
    ```bash
    # Identify the disk
    sudo lsblk
@@ -76,8 +108,24 @@ For disk-intensive operations, consider Premium SSD storage options.
    # Make the mount persistent
    echo '/dev/sdc /datadisk ext4 defaults,nofail 0 0' | sudo tee -a /etc/fstab
    ```
+   </TabItem>
+   </Tabs>
 
 4. **Install dependencies**:
+
+   <Tabs>
+   <TabItem value="windows" label="Windows" default>
+   ```powershell
+   # Install .NET Runtime
+   Invoke-WebRequest -URI "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+   ./dotnet-install.ps1 -Runtime dotnet -Version 6.0.0 -InstallDir "C:\Program Files\dotnet"
+   
+   # Add dotnet to PATH if not already there
+   $env:Path += ";C:\Program Files\dotnet"
+   [Environment]::SetEnvironmentVariable("Path", $env:Path, [System.EnvironmentVariableTarget]::Machine)
+   ```
+   </TabItem>
+   <TabItem value="linux" label="Linux">
    ```bash
    # Install .NET Runtime
    sudo apt install -y apt-transport-https
@@ -86,117 +134,182 @@ For disk-intensive operations, consider Premium SSD storage options.
    sudo apt update
    sudo apt install -y dotnet-runtime-6.0
    ```
+   </TabItem>
+   </Tabs>
 
 ### 3. Install DataStream
 
-#### Option 1: Direct Installation
-
 1. **Download the DataStream installer**:
+
+   <Tabs>
+   <TabItem value="windows" label="Windows" default>
+   ```powershell
+   Invoke-WebRequest -Uri "https://download.datastream.example.com/latest/datastream-installer.exe" -OutFile "datastream-installer.exe"
+   ```
+   </TabItem>
+   <TabItem value="linux" label="Linux">
    ```bash
    wget https://download.datastream.example.com/latest/datastream-installer.sh
    chmod +x datastream-installer.sh
    ```
+   </TabItem>
+   </Tabs>
 
 2. **Run the installer**:
+
+   <Tabs>
+   <TabItem value="windows" label="Windows" default>
+   ```powershell
+   # Assuming E: is the data disk drive letter
+   .\datastream-installer.exe --data-dir "E:\DataStream"
+   ```
+   </TabItem>
+   <TabItem value="linux" label="Linux">
    ```bash
    sudo ./datastream-installer.sh --data-dir /datadisk/datastream
    ```
-
-#### Option 2: Container Installation
-
-1. **Install Docker**:
-   ```bash
-   sudo apt install -y docker.io
-   sudo systemctl enable --now docker
-   ```
-
-2. **Pull and run the DataStream container**:
-   ```bash
-   # Create configuration directory
-   sudo mkdir -p /datadisk/datastream/config
-
-   # Run the container
-   sudo docker run -d \
-     --name datastream \
-     -v /datadisk/datastream/config:/etc/datastream \
-     -v /datadisk/datastream/data:/var/lib/datastream \
-     -p 514:514/udp \
-     -p 1514:1514/tcp \
-     --restart unless-stopped \
-     datastream/datastream:latest
-   ```
+   </TabItem>
+   </Tabs>
 
 ### 4. Configure DataStream
 
 1. **Create basic configuration**:
+
+   <Tabs>
+   <TabItem value="windows" label="Windows" default>
+   ```powershell
+   # Create configuration directory if it doesn't exist
+   New-Item -ItemType Directory -Force -Path "E:\DataStream\config"
+   
+   # Create or edit the configuration file
+   notepad E:\DataStream\config\config.yaml
+   ```
+   </TabItem>
+   <TabItem value="linux" label="Linux">
    ```bash
+   sudo mkdir -p /datadisk/datastream/config
    sudo nano /datadisk/datastream/config/config.yaml
    ```
+   </TabItem>
+   </Tabs>
 
-2. **Add sample collector configuration**:
-   ```yaml
-   - id: 1
-     name: azure_syslog
-     type: syslog
-     properties:
-       port: 514
-   ```
+2. **Add sample devices configuration**:
 
-3. **Configure Azure-specific outputs**:
-   ```yaml
-   outputs:
-     - name: azure_storage
-       type: azure_blob
-       connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
-       container: "datastream-logs"
-       path_format: "{date}/{hour}/{source}"
-   ```
+  ```yaml
+  devices:
+    - id: 1
+      name: azure_syslog
+      type: syslog
+      properties:
+        port: 514
+  ```
+
+3. **Configure Azure-specific targets**:
+  
+  ```yaml
+  targets:
+    - name: azure_storage
+      type: azure_blob
+      connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
+      container: "datastream-logs"
+      path_format: "{date}/{hour}/{source}"
+  ```
 
 4. **Set up environment variables** (if needed):
-   ```bash
-   echo 'AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=youraccount;AccountKey=yourkey;EndpointSuffix=core.windows.net"' | sudo tee -a /etc/environment
-   ```
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    # Set system environment variable
+    [Environment]::SetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING", "DefaultEndpointsProtocol=https;AccountName=youraccount;AccountKey=yourkey;EndpointSuffix=core.windows.net", [System.EnvironmentVariableTarget]::Machine)
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    echo 'AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=youraccount;AccountKey=yourkey;EndpointSuffix=core.windows.net"' | sudo tee -a /etc/environment
+    ```
+    </TabItem>
+  </Tabs>
 
 ### 5. Start and Test DataStream
 
-1. **Start the service** (for direct installation):
-   ```bash
-   sudo systemctl enable datastream
-   sudo systemctl start datastream
-   ```
+1. **Start the service**:
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    # Set service to automatic start
+    Set-Service -Name DataStream -StartupType Automatic
+    
+    # Start the service
+    Start-Service DataStream
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    sudo systemctl enable datastream
+    sudo systemctl start datastream
+    ```
+    </TabItem>
+  </Tabs>
 
 2. **Check status**:
-   ```bash
-   sudo systemctl status datastream
-   # Or for container
-   sudo docker ps | grep datastream
-   ```
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    Get-Service DataStream
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    sudo systemctl status datastream
+    ```
+    </TabItem>
+  </Tabs>
 
 3. **Test the deployment**:
-   ```bash
-   # Send test message
-   logger -n localhost -P 514 "Test message for Azure VM deployment"
-   
-   # Check logs
-   sudo journalctl -u datastream -f
-   # Or for container
-   sudo docker logs -f datastream
-   ```
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    # Using PowerShell to send a UDP message to port 514
+    $Message = [Text.Encoding]::ASCII.GetBytes("Test message for Azure VM deployment")
+    $UdpClient = New-Object System.Net.Sockets.UdpClient
+    $UdpClient.Connect("127.0.0.1", 514)
+    $UdpClient.Send($Message, $Message.Length)
+    
+    # Check logs
+    Get-Content -Path "E:\DataStream\logs\service.log" -Tail 10
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    # Send test message
+    logger -n localhost -P 514 "Test message for Azure VM deployment"
+    
+    # Check logs
+    sudo journalctl -u datastream -f
+    ```
+    </TabItem>
+  </Tabs>
 
 ## Azure VM Scaling Options
 
 For scaling DataStream on Azure VMs, consider:
 
 1. **Vertical scaling**: Resize the VM to a larger size for increased capacity
-   - Can be done with minimal downtime but requires service restart
+
+  - Can be done with minimal downtime but requires service restart
 
 2. **Horizontal scaling**: Deploy multiple DataStream instances with a load balancer
-   - Requires additional configuration for coordination
-   - Consider using Azure Load Balancer for distributing incoming traffic
+  
+  - Requires additional configuration for coordination
+  - Consider using Azure Load Balancer for distributing incoming traffic
 
 3. **Azure VM Scale Sets**: For automated scaling based on metrics
-   - Works best with the containerized deployment option
-   - Configure appropriate auto-scaling rules based on CPU/memory usage
+  
+  - Configure appropriate auto-scaling rules based on CPU/memory usage
 
 ## Monitoring and Management
 
@@ -205,13 +318,14 @@ Enhance your Azure VM deployment with:
 1. **Azure Monitor**: Enable VM insights for resource utilization metrics
 
 2. **Azure Log Analytics**: Forward DataStream logs for centralized analysis
-   ```yaml
-   outputs:
-     - name: log_analytics
-       type: azure_monitor
-       workspace_id: "${WORKSPACE_ID}"
-       workspace_key: "${WORKSPACE_KEY}"
-   ```
+  
+  ```yaml
+  targets:
+    - name: log_analytics
+      type: azure_monitor
+      workspace_id: "${WORKSPACE_ID}"
+      workspace_key: "${WORKSPACE_KEY}"
+  ```
 
 3. **Azure Security Center**: Enable for security recommendations and monitoring
 

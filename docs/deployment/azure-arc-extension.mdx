@@ -45,103 +45,333 @@ Before deploying DataStream via Azure Arc, ensure you have:
 If not already done, register servers with Azure Arc:
 
 1. **Install Azure CLI** and the Arc extension:
-   ```bash
-   az extension add --name connectedmachine
-   ```
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    # Install Azure CLI if not already installed
+    Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
+    Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+    
+    # Add Arc extension
+    az extension add --name connectedmachine
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    # Install Azure CLI if not already installed
+    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    
+    # Add Arc extension
+    az extension add --name connectedmachine
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    # Install Azure CLI if not already installed
+    brew update && brew install azure-cli
+    
+    # Add Arc extension
+    az extension add --name connectedmachine
+    ```
+    </TabItem>
+  </Tabs>
 
 2. **Generate onboarding script** from Azure Portal or CLI:
-   ```bash
-   az connectedmachine generate-installation-script --resource-group myResourceGroup --location eastus
-   ```
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    az connectedmachine generate-installation-script --resource-group myResourceGroup --location eastus --output-dir .
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    az connectedmachine generate-installation-script --resource-group myResourceGroup --location eastus --output-dir .
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    az connectedmachine generate-installation-script --resource-group myResourceGroup --location eastus --output-dir .
+    ```
+    </TabItem>
+  </Tabs>
 
 3. **Run the script** on each target server:
-   ```bash
-   # Example for Linux
-   bash ./install_arc_agent.sh
-   ```
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    # Run the generated script
+    .\OnboardingScript.ps1
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    # Make the script executable
+    chmod +x ./install_arc_agent.sh
+    
+    # Run the script
+    sudo ./install_arc_agent.sh
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    # Arc agent is not directly supported on macOS
+    # Use this for managing remote servers only
+    ```
+    </TabItem>
+  </Tabs>
 
 ### 2. Register DataStream Extension
 
 1. **Register the DataStream extension provider** in your Azure subscription:
-   
-  ```bash
-  az provider register --namespace Microsoft.HybridCompute
-  az provider register --namespace Microsoft.GuestConfiguration
-  az provider register --namespace Microsoft.Extensions
-  ```
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    az provider register --namespace Microsoft.HybridCompute
+    az provider register --namespace Microsoft.GuestConfiguration
+    az provider register --namespace Microsoft.Extensions
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    az provider register --namespace Microsoft.HybridCompute
+    az provider register --namespace Microsoft.GuestConfiguration
+    az provider register --namespace Microsoft.Extensions
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    az provider register --namespace Microsoft.HybridCompute
+    az provider register --namespace Microsoft.GuestConfiguration
+    az provider register --namespace Microsoft.Extensions
+    ```
+    </TabItem>
+  </Tabs>
 
 2. **Create an extension deployment template**:
-  
-  ```json
-  {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-      "machineName": {
-        "type": "string",
-        "metadata": {
-          "description": "Name of the Azure Arc-enabled server"
-        }
-      },
-      "location": {
-        "type": "string",
-        "metadata": {
-          "description": "Location of the machine"
-        }
-      }
-    },
-    "resources": [
-      {
-        "type": "Microsoft.HybridCompute/machines/extensions",
-        "name": "[concat(parameters('machineName'), '/DataStreamExtension')]",
-        "apiVersion": "2020-08-15-preview",
-        "location": "[parameters('location')]",
-        "properties": {
-          "publisher": "DataStream",
-          "type": "CustomExtension",
-          "autoUpgradeMinorVersion": true,
-          "settings": {
-            "collectors": [
-              {
-                "id": 1,
-                "name": "syslog_collector",
-                "type": "syslog",
-                "properties": {
-                  "port": 514
-                }
-              }
-            ],
-            "outputs": [
-              {
-                "name": "azure_monitor",
-                "type": "azure_monitor",
-                "workspace_id": "${WORKSPACE_ID}",
-                "workspace_key": "${WORKSPACE_KEY}"
-              }
-            ]
-          },
-          "protectedSettings": {
-            "WORKSPACE_ID": "<your-workspace-id>",
-            "WORKSPACE_KEY": "<your-workspace-key>"
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    # Create a new ARM template for DataStream extension
+    @"
+    {
+      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "machineName": {
+          "type": "string",
+          "metadata": {
+            "description": "Name of the Azure Arc-enabled server"
+          }
+        },
+        "location": {
+          "type": "string",
+          "metadata": {
+            "description": "Location of the machine"
           }
         }
-      }
-    ]
-  }
-   ```
-
-3. **Save the template** as `datastream-extension.json`
+      },
+      "resources": [
+        {
+          "type": "Microsoft.HybridCompute/machines/extensions",
+          "name": "[concat(parameters('machineName'), '/DataStreamExtension')]",
+          "apiVersion": "2020-08-15-preview",
+          "location": "[parameters('location')]",
+          "properties": {
+            "publisher": "DataStream",
+            "type": "CustomExtension",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "collectors": [
+                {
+                  "id": 1,
+                  "name": "syslog_collector",
+                  "type": "syslog",
+                  "properties": {
+                    "port": 514
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "azure_monitor",
+                  "type": "azure_monitor",
+                  "workspace_id": "${WORKSPACE_ID}",
+                  "workspace_key": "${WORKSPACE_KEY}"
+                }
+              ]
+            },
+            "protectedSettings": {
+              "WORKSPACE_ID": "<your-workspace-id>",
+              "WORKSPACE_KEY": "<your-workspace-key>"
+            }
+          }
+        }
+      ]
+    }
+    "@ | Out-File -FilePath "datastream-extension.json" -Encoding utf8
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    # Create a new ARM template for DataStream extension
+    cat > datastream-extension.json << 'EOF'
+    {
+      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "machineName": {
+          "type": "string",
+          "metadata": {
+            "description": "Name of the Azure Arc-enabled server"
+          }
+        },
+        "location": {
+          "type": "string",
+          "metadata": {
+            "description": "Location of the machine"
+          }
+        }
+      },
+      "resources": [
+        {
+          "type": "Microsoft.HybridCompute/machines/extensions",
+          "name": "[concat(parameters('machineName'), '/DataStreamExtension')]",
+          "apiVersion": "2020-08-15-preview",
+          "location": "[parameters('location')]",
+          "properties": {
+            "publisher": "DataStream",
+            "type": "CustomExtension",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "collectors": [
+                {
+                  "id": 1,
+                  "name": "syslog_collector",
+                  "type": "syslog",
+                  "properties": {
+                    "port": 514
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "azure_monitor",
+                  "type": "azure_monitor",
+                  "workspace_id": "${WORKSPACE_ID}",
+                  "workspace_key": "${WORKSPACE_KEY}"
+                }
+              ]
+            },
+            "protectedSettings": {
+              "WORKSPACE_ID": "<your-workspace-id>",
+              "WORKSPACE_KEY": "<your-workspace-key>"
+            }
+          }
+        }
+      ]
+    }
+    EOF
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    # Create a new ARM template for DataStream extension
+    cat > datastream-extension.json << 'EOF'
+    {
+      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "machineName": {
+          "type": "string",
+          "metadata": {
+            "description": "Name of the Azure Arc-enabled server"
+          }
+        },
+        "location": {
+          "type": "string",
+          "metadata": {
+            "description": "Location of the machine"
+          }
+        }
+      },
+      "resources": [
+        {
+          "type": "Microsoft.HybridCompute/machines/extensions",
+          "name": "[concat(parameters('machineName'), '/DataStreamExtension')]",
+          "apiVersion": "2020-08-15-preview",
+          "location": "[parameters('location')]",
+          "properties": {
+            "publisher": "DataStream",
+            "type": "CustomExtension",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "collectors": [
+                {
+                  "id": 1,
+                  "name": "syslog_collector",
+                  "type": "syslog",
+                  "properties": {
+                    "port": 514
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "azure_monitor",
+                  "type": "azure_monitor",
+                  "workspace_id": "${WORKSPACE_ID}",
+                  "workspace_key": "${WORKSPACE_KEY}"
+                }
+              ]
+            },
+            "protectedSettings": {
+              "WORKSPACE_ID": "<your-workspace-id>",
+              "WORKSPACE_KEY": "<your-workspace-key>"
+            }
+          }
+        }
+      ]
+    }
+    EOF
+    ```
+    </TabItem>
+  </Tabs>
 
 ### 3. Deploy the Extension
 
 1. **Deploy to a single server** using Azure CLI:
-  
-  ```bash
-  az deployment group create \
-    --resource-group myResourceGroup \
-    --template-file datastream-extension.json \
-    --parameters machineName=myArcServer location=eastus
-  ```
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    az deployment group create `
+      --resource-group myResourceGroup `
+      --template-file datastream-extension.json `
+      --parameters machineName=myArcServer location=eastus
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    az deployment group create \
+      --resource-group myResourceGroup \
+      --template-file datastream-extension.json \
+      --parameters machineName=myArcServer location=eastus
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    az deployment group create \
+      --resource-group myResourceGroup \
+      --template-file datastream-extension.json \
+      --parameters machineName=myArcServer location=eastus
+    ```
+    </TabItem>
+  </Tabs>
 
 2. **Deploy to multiple servers** using Azure Policy:
   
@@ -161,76 +391,188 @@ Configure DataStream through the extension settings:
   - Update configuration parameters
 
 2. **Use Azure Resource Manager template**:
-  
-  ```json
-  {
-    "settings": {
-      "collectors": [
-        {
-          "id": 1,
-          "name": "windows_collector",
-          "type": "windows",
-          "properties": {
-            "address": "localhost",
-            "username": "datastream",
-            "password": "${WINDOWS_PASSWORD}"
-          }
-        }
-      ],
-      "pipelines": [
-        {
-          "name": "windows_events",
-          "processors": [
-            {
-              "grok": {
-                "field": "message",
-                "patterns": ["%{WINLOG}"]
-              }
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    # Create updated configuration template
+    @"
+    {
+      "settings": {
+        "collectors": [
+          {
+            "id": 1,
+            "name": "windows_collector",
+            "type": "windows",
+            "properties": {
+              "address": "localhost",
+              "username": "datastream",
+              "password": "${WINDOWS_PASSWORD}"
             }
-          ]
-        }
-      ]
-    },
-    "protectedSettings": {
-      "WINDOWS_PASSWORD": "your-secure-password"
+          }
+        ],
+        "pipelines": [
+          {
+            "name": "windows_events",
+            "processors": [
+              {
+                "grok": {
+                  "field": "message",
+                  "patterns": ["%{WINLOG}"]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "protectedSettings": {
+        "WINDOWS_PASSWORD": "your-secure-password"
+      }
     }
-  }
-  ```
+    "@ | Out-File -FilePath "updated-config.json" -Encoding utf8
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    cat > updated-config.json << 'EOF'
+    {
+      "settings": {
+        "collectors": [
+          {
+            "id": 1,
+            "name": "syslog_collector",
+            "type": "syslog",
+            "properties": {
+              "port": 514
+            }
+          }
+        ],
+        "pipelines": [
+          {
+            "name": "linux_events",
+            "processors": [
+              {
+                "grok": {
+                  "field": "message",
+                  "patterns": ["%{SYSLOGLINE}"]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+    EOF
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    cat > updated-config.json << 'EOF'
+    {
+      "settings": {
+        "collectors": [
+          {
+            "id": 1,
+            "name": "syslog_collector",
+            "type": "syslog",
+            "properties": {
+              "port": 514
+            }
+          }
+        ],
+        "pipelines": [
+          {
+            "name": "macos_events",
+            "processors": [
+              {
+                "grok": {
+                  "field": "message",
+                  "patterns": ["%{SYSLOGLINE}"]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+    EOF
+    ```
+    </TabItem>
+  </Tabs>
 
 3. **Apply configuration update**:
-  
-  ```bash
-  az deployment group create \
-    --resource-group myResourceGroup \
-    --template-file updated-config.json
-  ```
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    az deployment group create `
+      --resource-group myResourceGroup `
+      --template-file updated-config.json
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    az deployment group create \
+      --resource-group myResourceGroup \
+      --template-file updated-config.json
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    az deployment group create \
+      --resource-group myResourceGroup \
+      --template-file updated-config.json
+    ```
+    </TabItem>
+  </Tabs>
 
 ### 5. Verify Deployment
 
 1. **Check extension status** via Azure Portal:
-  
+   
   - Navigate to Arc-enabled server > Extensions
   - Verify DataStream extension shows "Provisioning succeeded"
 
 2. **Check extension logs** on the server:
-  
-  ```bash
-  # Linux
-  sudo cat /var/log/azure/datastream-extension/*
 
-  # Windows
-  type C:\ProgramData\AzureConnectedMachineAgent\Log\DataStreamExtension\*.log
-  ```
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    # Check log files in the extension directory
+    Get-Content -Path "C:\ProgramData\AzureConnectedMachineAgent\Log\DataStreamExtension\*.log"
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    sudo cat /var/log/azure/datastream-extension/*
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    # Not applicable for macOS hosts
+    ```
+    </TabItem>
+  </Tabs>
 
 3. **Verify DataStream service** is running:
-  
-  ```bash
-  # Linux
-  sudo systemctl status datastream
 
-  # Windows
-  Get-Service DataStream
-  ```
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+    ```powershell
+    Get-Service DataStream
+    ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+    ```bash
+    sudo systemctl status datastream
+    ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+    ```bash
+    # Not applicable for macOS hosts
+    ```
+    </TabItem>
+  </Tabs>
 
 ## Managing at Scale
 
@@ -296,7 +638,7 @@ For deployments in edge or occasionally connected environments:
       "flushInterval": "4h"
     }
   }
-  ```
+   ```
 
 2. **Enable data buffering**: Configure local storage for data persistence during disconnection
 
@@ -311,4 +653,4 @@ If migrating from other deployment models to Azure Arc:
 3. **Staged migration**: Deploy extension alongside existing installation before cutover
 4. **Validation**: Verify data flow and performance before decommissioning original deployment
 
-This deployment approach is ideal for organizations with hybrid infrastructure models, providing a consistent management experience regardless of where DataStream is running.
+This deployment approach is ideal for organizations with hybrid infrastructure models, providing a consistent management experience regardless of where **DataStream** is running.

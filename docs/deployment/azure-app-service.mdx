@@ -43,19 +43,18 @@ For production environments, Premium V2 or Premium V3 plans are recommended to e
 ### 1. Create Azure App Service
 
 1. **Navigate to the Azure Portal** and create a new Web App:
-   
+  
   - Select **.NET 6** as the runtime stack
   - Choose **Linux** as the operating system
   - Select or create a new App Service Plan
   - Enable **Application Insights** for monitoring
 
 2. **Configure deployment options**:
-   
+  
   - Select your preferred deployment method (GitHub Actions, Azure DevOps, or manual deployment)
-  - For container deployments, choose Docker Container and specify `datastream/datastream:latest`
 
 3. **Configure networking**:
-   
+  
   - Enable VNET integration if you need to connect to private networks
   - Configure inbound traffic settings in the Networking section
 
@@ -64,7 +63,7 @@ For production environments, Premium V2 or Premium V3 plans are recommended to e
 Set up the required environment variables in the App Service Configuration:
 
 1. **Navigate to Configuration > Application settings** and add the following:
-   
+  
   - `DATASTREAM_CONFIG_MODE`: `azure_blob` (to load config from blob storage)
   - `DATASTREAM_STORAGE_CONNECTION`: Your Azure Storage connection string
   - `DATASTREAM_CONFIG_CONTAINER`: Blob container name (e.g., `datastream-config`)
@@ -72,14 +71,25 @@ Set up the required environment variables in the App Service Configuration:
   - Any additional secret values referenced in your configuration
 
 2. **Configure general settings**:
-   
+  
   - Set Always On to `On` to prevent the app from being unloaded
   - Configure appropriate platform settings (32-bit vs 64-bit)
 
 ### 3. Prepare Configuration Storage
 
 1. **Create an Azure Storage account** if you don't have one:
-   
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell (Windows)" default>
+  ```powershell
+  az storage account create `
+    --name datastreamconfig `
+    --resource-group your-resource-group `
+    --location eastus `
+    --sku Standard_LRS
+  ```
+  </TabItem>
+  <TabItem value="bash" label="Bash (Linux/macOS)">
   ```bash
   az storage account create \
     --name datastreamconfig \
@@ -87,90 +97,151 @@ Set up the required environment variables in the App Service Configuration:
     --location eastus \
     --sku Standard_LRS
   ```
+  </TabItem>
+</Tabs>
 
 2. **Create a blob container**:
-   
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell (Windows)" default>
+  ```powershell
+  az storage container create `
+    --name datastream-config `
+    --account-name datastreamconfig
+  ```
+  </TabItem>
+  <TabItem value="bash" label="Bash (Linux/macOS)">
   ```bash
   az storage container create \
     --name datastream-config \
     --account-name datastreamconfig
   ```
+  </TabItem>
+</Tabs>
 
 3. **Create and upload configuration files**:
-   
-  ```bash
-  # Create config directory
-  mkdir -p config
-   
-  # Create main config file
-  cat > config/config.yaml << EOF
-  devics:
-    - id: 1
-      name: http_collector
-      type: http
-      properties:
-        port: 8080
-        url: "/api/logs"
-   
-  pipelines:
-    - name: basic_processing
-      processors:
-        - grok:
-          field: message
-          patterns:
-            - "%{COMMONAPACHELOG}"
-   
-  targets:
-    - name: azure_storage
-      type: azure_blob
-      connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
-      container: "datastream-logs"
-  EOF
-   
-  # Upload to blob storage
-  az storage blob upload-batch \
-    --account-name datastreamconfig \
-    --destination datastream-config \
-    --source config
-  ```
+
+  <Tabs>
+    <TabItem value="powershell" label="PowerShell (Windows)" default>
+    ```powershell
+    # Create config directory
+    New-Item -ItemType Directory -Force -Path config
+    
+    # Create main config file
+    @"
+    devices:
+      - id: 1
+        name: http_collector
+        type: http
+        properties:
+          port: 8080
+          url: "/api/logs"
+    
+    pipelines:
+      - name: basic_processing
+        processors:
+          - grok:
+              field: message
+              patterns:
+                - "%{COMMONAPACHELOG}"
+    
+    targets:
+      - name: azure_storage
+        type: azure_blob
+        connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
+        container: "datastream-logs"
+    "@ | Out-File -FilePath config\config.yaml -Encoding utf8
+    
+    # Upload to blob storage
+    az storage blob upload-batch `
+      --account-name datastreamconfig `
+      --destination datastream-config `
+      --source config
+    ```
+    </TabItem>
+    <TabItem value="bash" label="Bash (Linux/macOS)">
+    ```bash
+    # Create config directory
+    mkdir -p config
+    
+    # Create main config file
+    cat > config/config.yaml << EOF
+    devices:
+      - id: 1
+        name: http_collector
+        type: http
+        properties:
+          port: 8080
+          url: "/api/logs"
+    
+    pipelines:
+      - name: basic_processing
+        processors:
+          - grok:
+              field: message
+              patterns:
+                - "%{COMMONAPACHELOG}"
+    
+    targets:
+      - name: azure_storage
+        type: azure_blob
+        connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
+        container: "datastream-logs"
+    EOF
+    
+    # Upload to blob storage
+    az storage blob upload-batch \
+      --account-name datastreamconfig \
+      --destination datastream-config \
+      --source config
+    ```
+    </TabItem>
+  </Tabs>
 
 ### 4. Deploy DataStream
 
-#### Option 1: Container Deployment (Recommended)
-
-1. **Navigate to the App Service** in Azure Portal
-
-2. **Configure container settings**:
-  
-  - Go to Deployment Center > Settings
-  - Choose Container Type: `Single Container`
-  - Registry Source: `Docker Hub` (or your private registry)
-  - Image and Tag: `datastream/datastream:latest`
-  - Startup Command: Leave blank (use container default)
-
-3. **Save and apply** the container configuration
-
-#### Option 2: Code Deployment
+#### Code Deployment
 
 1. **Download the DataStream Web deployment package**:
-  
-  ```bash
-  wget https://download.datastream.example.com/latest/datastream-webapp.zip
-  ```
+
+  <Tabs>
+    <TabItem value="powershell" label="PowerShell (Windows)" default>
+    ```powershell
+    Invoke-WebRequest -Uri "https://download.datastream.example.com/latest/datastream-webapp.zip" -OutFile "datastream-webapp.zip"
+    ```
+    </TabItem>
+    <TabItem value="bash" label="Bash (Linux/macOS)">
+    ```bash
+    wget https://download.datastream.example.com/latest/datastream-webapp.zip
+    ```
+    </TabItem>
+  </Tabs>
 
 2. **Deploy using the Azure CLI**:
-  
-  ```bash
-  az webapp deployment source config-zip \
-    --resource-group your-resource-group \
-    --name your-app-name \
-    --src datastream-webapp.zip
-  ```
+
+  <Tabs>
+    <TabItem value="powershell" label="PowerShell (Windows)" default>
+    ```powershell
+    az webapp deployment source config-zip `
+      --resource-group your-resource-group `
+      --name your-app-name `
+      --src datastream-webapp.zip
+    ```
+    </TabItem>
+    <TabItem value="bash" label="Bash (Linux/macOS)">
+    ```bash
+    az webapp deployment source config-zip \
+      --resource-group your-resource-group \
+      --name your-app-name \
+      --src datastream-webapp.zip
+    ```
+    </TabItem>
+  </Tabs>
 
 ### 5. Configure App Service for DataStream
 
 1. **Update WebJobs configuration** (if needed):
-  
+
   - Create a `settings.job` file with appropriate cron expressions
   - Upload to the `wwwroot` directory
 
@@ -193,20 +264,36 @@ Set up the required environment variables in the App Service Configuration:
   - Check for successful startup messages
 
 3. **Test the HTTP endpoint**:
-  
-  ```bash
-  curl -X POST \
-    -H "Content-Type: application/json" \
-    -d '{"message":"test log message"}' \
-    https://your-app-name.azurewebsites.net/api/logs
-  ```
+
+  <Tabs>
+    <TabItem value="powershell" label="PowerShell (Windows)" default>
+    ```powershell
+    $headers = @{
+      "Content-Type" = "application/json"
+    }
+    $body = @{
+      message = "test log message"
+    } | ConvertTo-Json
+    
+    Invoke-RestMethod -Uri "https://your-app-name.azurewebsites.net/api/logs" -Method Post -Headers $headers -Body $body
+    ```
+    </TabItem>
+    <TabItem value="bash" label="Bash (Linux/macOS)">
+    ```bash
+    curl -X POST \
+      -H "Content-Type: application/json" \
+      -d '{"message":"test log message"}' \
+      https://your-app-name.azurewebsites.net/api/logs
+    ```
+    </TabItem>
+  </Tabs>
 
 ## Scaling and Performance
 
 Optimize your App Service deployment with:
 
 1. **Auto-scaling rules**:
-  
+
   - Navigate to Scale out (App Service plan)
   - Configure rules based on CPU percentage, memory usage, or schedule
   - Example: Add an instance when CPU > 70% for 10 minutes
