@@ -4,11 +4,15 @@
 
 ## Synopsis
 
-Creates a target that ingests log messages into Microsoft Sentinel workspace tables using Data Collection Rules (DCRs).
+Creates a target that ingests log messages into Microsoft Sentinel workspace tables using Data Collection Rules (DCRs). Supports automatic table selection, field normalization, and filtering options.
+
+:::tip
+For more details, refer to our [Microsoft Sentinel Automation](/docs/microsoft-sentinel/index.mdx) and [Microsoft Sentinel Autodiscovery](/docs/microsoft-sentinel/integration/autodiscovery.mdx) documentation.
+:::
 
 ## Schema
 
-```yaml {2,4}
+```yaml {1,3}
 - name: <string>
   description: <string>
   type: sentinel
@@ -23,17 +27,22 @@ Creates a target that ingests log messages into Microsoft Sentinel workspace tab
     streams:
       - name: <string>
         rule_id: <string>
+    stream: <string[]>
     buffer_size: <numeric>
+    batch_size: <numeric>
     keep_phantom_fields: <boolean>
     drop_unknown_stream_events: <boolean>
     cache:
       timeout: <numeric>
-    format: <string>
+    field_format: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
 ```
 
 ## Configuration
 
-The following fields are used to define the target.
+The following fields are used to define the target:
 
 ### Core Settings
 
@@ -62,11 +71,20 @@ The following fields are used to define the target.
 |`endpoint`|Y||DCR ingestion endpoint or Resource ID|
 |`rule_id`|N||Default Data Collection Rule (DCR) ID|
 |`streams`|N|-|Detailed stream configurations|
+|`stream`|N|-|Legacy string array of stream names|
 |`buffer_size`|N|`1048576`|Buffer size in bytes (1MB)|
+|`batch_size`|N|`1000`|Maximum number of messages per batch|
 |`keep_phantom_fields`|N|`false`|Keep fields not defined in DCR schema|
-|`drop_unknown_stream_events`|N|`false`|Silently drop events for undefined streams|
+|`drop_unknown_stream_events`|N|`true`|Silently drop events for undefined streams|
 |`cache.timeout`|N|`300`|Stream cache timeout in seconds|
-|`format`|N|`asim`|Data normalization format|
+|`field_format`|N|-|Data normalization format|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to Sentinel (testing)|
 
 ## Automatic Table Selection
 
@@ -88,18 +106,37 @@ When `streams` is not specified, tables are automatically selected based on inpu
 > `WindowsEvent` `SecurityEvent` `CommonSecurityLog` `Syslog`
 
 **ASim Tables** (Prefix: `Custom-` or `Microsoft-`)
-> `ASimAuditEventLogs` `ASimAuthenticationEventLogs` `ASimDhcpEventLogs` `ASimDnsActivityLogs` `ASimFileEventLogs` `ASimNetworkSessionLogs` `ASimProcessEventLogs` `ASimRegistryEventLogs` `ASimUserManagementActivityLogs`
+> `ASimAuditEventLogs` `ASimAuthenticationEventLogs` `ASimDhcpEventLogs` `ASimDnsActivityLogs` `ASimFileEventLogs` `ASimNetworkSessionLogs` `ASimProcessEventLogs` `ASimRegistryEventLogs` `ASimUserManagementActivityLogs` `ASimWebSessionLogs`
 
 ## Details
 
-The target supports automatic table selection, ASim normalization, advanced filtering options, and autodiscovery capabilities.
+The Microsoft Sentinel target enables direct ingestion into Microsoft Sentinel tables with flexible configuration options. It supports using the `SystemS3` field to route messages to specific stream tables, using the format `Custom-TableName`.
 
-Data is automatically normalized to the specified format, which is by default: ASim.
-
-Stream configurations are cached for improved performance. Large messages are stored temporarily and retried during finalization.
+The target automatically detects table schemas and can clean messages to remove phantom fields that aren't defined in the schema when `keep_phantom_fields` is set to `false`. 
 
 :::warning
-Large buffer sizes increase memory usage.
+Disabling `keep_phantom_fields` may result in data loss for undefined fields.
+:::
+
+Data is buffered until either the batch size limit is reached or an explicit flush is triggered. Each stream type has different limits based on the Log Analytics ingestion API.
+
+:::warning
+Enabling `drop_unknown_stream_events` silently discards unmatched events.
+:::
+
+### Preconfigured Schemas
+
+The target includes built-in schema definitions for standard tables like:
+- Syslog
+- Common Security Log
+- Security Event
+- Windows Event
+- ASim tables (various types)
+
+These predefined schemas ensure proper column mapping and validation when sending data to Sentinel.
+
+:::warning
+Large buffer sizes or batch sizes increase memory usage.
 :::
 
 ## Autodiscovery
@@ -179,14 +216,6 @@ targets:
       drop_unknown_stream_events: true
 ```
 
-:::warning
-Disabling `keep_phantom_fields` may result in data loss for undefined fields.
-:::
-
-:::warning
-Enabling `drop_unknown_stream_events` silently discards unmatched events.
-:::
-
 ### High-Volume
 
 Optimization for high-volume ingestion:
@@ -203,12 +232,27 @@ targets:
       client_secret: "your-client-secret"
       endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
       buffer_size: 5242880  # 5MB
-      format: "asim"
+      batch_size: 5000
+      field_format: "asim"
       streams:
         - name: "Custom-ASimProcessEventLogs"
         - name: "Custom-ASimNetworkSessionLogs"
 ```
 
-:::tip
-For more details, refer to our [Microsoft Sentinel Automation](/docs/microsoft-sentinel/index.mdx) and [Microsoft Sentinel Autodiscovery](/docs/microsoft-sentinel/integration/autodiscovery.mdx) documentation.
-:::
+### With Debugging
+
+Configuration with debug options:
+
+```yaml
+targets:
+  - name: debug_sentinel
+    type: sentinel
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+      debug:
+        status: true
+        dont_send_logs: true  # Test mode that doesn't actually upload
+```

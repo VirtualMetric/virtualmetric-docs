@@ -14,13 +14,13 @@ Creates a target that forwards log messages to a remote syslog server. Supports 
 The syslog target uses the RFC5424 format for all messages, ensuring modern syslog compatibility.
 :::
 
-:::note
-See [**Appendix**](/appendix.mdx#syslog) for details of the format.
+:::tip
+For details of the format, see [**Appendix**](/appendix.mdx#syslog).
 :::
 
 ## Schema
 
-```yaml {2,4}
+```yaml {1,2}
 - name: <string>
   description: <string>
   type: syslog
@@ -30,7 +30,7 @@ See [**Appendix**](/appendix.mdx#syslog) for details of the format.
     type: <string>
     address: <string>
     port: <numeric>
-    format: <string>
+    field_format: <string>
     template: <string>
     app_name: <string>
     priority: <numeric>
@@ -43,7 +43,7 @@ See [**Appendix**](/appendix.mdx#syslog) for details of the format.
 
 ## Configuration
 
-The following fields are used to define the target.
+The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -68,7 +68,7 @@ The following fields are used to define the target.
 |`template`|N|`"<{{.Priority}}> {{.Timestamp}} {{.AppName}}[{{.PID}}]: {{.Message}}"`|Message template|
 |`app_name`|N|`"vmetric"`|Application name in the messages|
 |`priority`|N|`14`|Syslog priority value|
-|`format`|N|-|Field normalization format: `ecs`, `cim`, `asim`, `cef`, `leef`, `csl`|
+|`field_format`|N|-|Field normalization format: `ecs`, `cim`, or `asim`|
 
 ### TLS
 
@@ -102,6 +102,14 @@ The following variables can be used in the message template:
 Invalid templates will fall back to sending the raw message content without formatting.
 :::
 
+## Field Normalization
+
+Field normalization helps standardize log data before sending it to the syslog server, ensuring consistent data formats:
+
+- `ecs` - Elastic Common Schema
+- `cim` - Common Information Model
+- `asim` - Advanced Security Information Model
+
 ## Examples
 
 ### Basic UDP
@@ -110,7 +118,7 @@ The minimum configuration for a UDP syslog:
 
 ```yaml
 targets:
-  - name: basic_syslog
+  - name: udp_syslog
     type: syslog
     properties:
       address: "192.168.1.100"
@@ -148,4 +156,17 @@ targets:
       template: "{{.Timestamp}} [{{.AppName}}] severity={{.Priority}} {{.Message}}"
       app_name: "myapp"
       priority: 13
+```
+
+### With Field Normalization
+
+Using field normalization for standard format:
+
+```yaml
+targets:
+  - name: normalized_syslog
+    type: syslog
+    properties:
+      address: "192.168.1.100"
+      field_format: "cim"
 ```

@@ -51,7 +51,7 @@ const config: Config = {
           routeBasePath: "/",
         },
         googleTagManager: {
-          containerId: 'VirtualMetric-10.0.0',
+          containerId: 'VirtualMetric-1.0.1',
         },
         blog: {
           showReadingTime: true,

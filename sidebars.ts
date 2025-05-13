@@ -125,11 +125,13 @@ const sidebars: SidebarsConfig = {
           items: [
             "configuration/targets/azure-blob-storage",
             "configuration/targets/azure-data-explorer",
+            "configuration/targets/clickhouse",
             "configuration/targets/console",
             "configuration/targets/discard",
             "configuration/targets/elasticsearch",
             "configuration/targets/file",
             "configuration/targets/ms-sentinel",
+            "configuration/targets/nats",
             "configuration/targets/splunk-hec",
             "configuration/targets/syslog",
           ],
