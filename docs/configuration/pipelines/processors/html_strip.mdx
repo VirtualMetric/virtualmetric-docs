@@ -16,7 +16,7 @@ Removes HTML tags from text fields while preserving the content between the tags
 ## Schema
 
 ```yaml {2}
-html_strip:
+- html_strip:
   field: <ident>
   description: <text>
   if: <script>
@@ -73,8 +73,9 @@ The processor expects valid HTML input. Malformed HTML may produce unexpected re
     }
     ```
     ```yaml
-    html_strip:
-      field: message
+    processors:
+      - html_strip:
+        field: message
     ```
   </CodeCol>
   <CommentCol>
@@ -103,9 +104,10 @@ The processor expects valid HTML input. Malformed HTML may produce unexpected re
     }
     ```
     ```yaml
-    html_strip:
-      field: html
-      target_field: text
+    processors:
+      - html_strip:
+        field: html
+        target_field: text
     ```
   </CodeCol>
   <CommentCol>
@@ -134,9 +136,10 @@ The processor expects valid HTML input. Malformed HTML may produce unexpected re
     }
     ```
     ```yaml
-    html_strip:
-      field: content
-      target_field: plain_text
+    processors:
+      - html_strip:
+        field: content
+        target_field: plain_text
     ```
   </CodeCol>
   <CommentCol>
@@ -166,9 +169,10 @@ The processor expects valid HTML input. Malformed HTML may produce unexpected re
     }
     ```
     ```yaml
-    html_strip:
-      field: message
-      if: "ctx.should_strip == true"
+    processors:
+      - html_strip:
+        field: message
+        if: "ctx.should_strip == true"
     ```
   </CodeCol>
   <CommentCol>
@@ -197,11 +201,12 @@ The processor expects valid HTML input. Malformed HTML may produce unexpected re
     }
     ```
     ```yaml
-    html_strip:
-      field: html_content
-      ignore_missing: true
-      on_failure:
-        - set:
+    processors:
+      - html_strip:
+        field: html_content
+        ignore_missing: true
+        on_failure:
+          - set:
             field: processing_status
             value: "field_missing"
     ```

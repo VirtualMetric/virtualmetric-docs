@@ -16,16 +16,16 @@ Extracts log levels from text messages by analyzing common logging patterns.
 ## Schema
 
 ```yaml {2}
-level:
-  - field: <ident>
-  - target_field: <ident>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
+- level:
+  field: <ident>
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
 ```
 
 ## Configuration
@@ -71,8 +71,9 @@ Non-string input fields will cause processing errors unless `ignore_failure` is 
     }
     ```
     ```yaml
-    level:
-      - field: message
+    processors:
+      - level:
+        field: message
     ```
   </CodeCol>
   <CommentCol>
@@ -100,9 +101,10 @@ Non-string input fields will cause processing errors unless `ignore_failure` is 
     }
     ```
     ```yaml
-    level:
-      - field: message
-      - target_field: log_level
+    processors:
+      - level:
+        field: message
+        target_field: log_level
     ```
   </CodeCol>
   <CommentCol>
@@ -131,9 +133,10 @@ Non-string input fields will cause processing errors unless `ignore_failure` is 
     }
     ```
     ```yaml
-    level:
-      - field: message
-      - target_field: level
+    processors:
+      - level:
+        field: message
+        target_field: level
     ```
   </CodeCol>
   <CommentCol>
@@ -162,13 +165,14 @@ Non-string input fields will cause processing errors unless `ignore_failure` is 
     }
     ```
     ```yaml
-    level:
-      - field: message
-      - ignore_failure: true
-      - on_failure:
+    processors:
+      - level:
+        field: message
+        ignore_failure: true
+        on_failure:
           - append:
-              field: tags
-              value: level_parse_error
+            field: tags
+            value: level_parse_error
     ```
   </CodeCol>
   <CommentCol>

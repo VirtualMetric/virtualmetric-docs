@@ -16,7 +16,7 @@ Encrypts string values using AES encryption with optional compression.
 ## Schema
 
 ```yaml {3-5}
-encrypt:
+- encrypt:
   algorithm: <string>
   encryption_key: <string>
   field: <ident>
@@ -98,11 +98,12 @@ Implement filesystem-level encryption as a policy, and always use authenticated 
     }
     ```
     ```yaml
-    encrypt:
-      field: password
-      iv_field: password_iv
-      encryption_key: "${ENCRYPTION_KEY}"
-      algorithm: AES-256-GCM
+    processors:
+      - encrypt:
+        field: password
+        iv_field: password_iv
+        encryption_key: "${ENCRYPTION_KEY}"
+        algorithm: AES-256-GCM
     ```
   </CodeCol>
   <CommentCol>
@@ -131,12 +132,13 @@ Implement filesystem-level encryption as a policy, and always use authenticated 
     }
     ```
     ```yaml
-    encrypt:
-      field: log_data
-      iv_field: log_iv
-      encryption_key: "${ENCRYPTION_KEY}"
-      algorithm: AES-256-GCM
-      with_compression: true
+    processors:
+      - encrypt:
+        field: log_data
+        iv_field: log_iv
+        encryption_key: "${ENCRYPTION_KEY}"
+        algorithm: AES-256-GCM
+        with_compression: true
     ```
   </CodeCol>
   <CommentCol>
@@ -165,15 +167,16 @@ Implement filesystem-level encryption as a policy, and always use authenticated 
     }
     ```
     ```yaml
-    encrypt:
-      field: missing_field
-      iv_field: missing_iv
-      encryption_key: "${ENCRYPTION_KEY}"
-      ignore_missing: true
-      on_failure:
-        - set:
-          field: error_status
-          value: "encryption_failed"
+    processors:
+      - encrypt:
+        field: missing_field
+        iv_field: missing_iv
+        encryption_key: "${ENCRYPTION_KEY}"
+        ignore_missing: true
+        on_failure:
+          - set:
+            field: error_status
+            value: "encryption_failed"
     ```
   </CodeCol>
   <CommentCol>

@@ -137,16 +137,17 @@ The minimum required settings for a basic server are POST endpoint at `/logs`, a
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_http
-      type: http
-      properties:
-        port: 8080
-        url: "/logs"
-        content_type: "application/json"
-        response:
-          code: 200
-          body: '{"status":"ok"}'
+    devices:
+      - id: 1
+        name: basic_http
+        type: http
+        properties:
+          port: 8080
+          url: "/logs"
+          content_type: "application/json"
+          response:
+            code: 200
+            body: '{"status":"ok"}'
     ```
   </CodeCol>
 </ExampleGrid>
@@ -161,16 +162,17 @@ For authentication, define a username/password, and an environment variable for 
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: auth_http
-      type: http
-      properties:
-        port: 8080
-        url: "/api/logs"
-        authentication:
-          type: "basic"
-        username: "vmetric"
-        password: "P@ssw0rd"
+    devices:
+      - id: 2
+        name: auth_http
+        type: http
+        properties:
+          port: 8080
+          url: "/api/logs"
+          authentication:
+            type: "basic"
+          username: "vmetric"
+          password: "P@ssw0rd"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -185,17 +187,18 @@ To enable API key authentication, use a custom header-based authentication, a co
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: apikey_http
-      type: http
-      properties:
-        port: 8080
-        url: "/api/v1/logs"
-        authentication:
-          type: "header"
-        header:
-          key: "X-API-Key"
-          value: "${API_KEY}"
+    devices:
+      - id: 3
+        name: apikey_http
+        type: http
+        properties:
+          port: 8080
+          url: "/api/v1/logs"
+          authentication:
+            type: "header"
+          header:
+            key: "X-API-Key"
+            value: "${API_KEY}"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -210,19 +213,20 @@ For a secure HMAC authentication, use SHA-256 signature verification, a custom s
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
-      name: hmac_http
-      type: http
-      properties:
-        port: 8080
-        url: "/secure/logs"
-        authentication:
-          type: "hmac"
-        hmac:
-          type: "sha256"
-          header: "X-Signature"
-          key: "${HMAC_SECRET}"
-          prefix: "sha256="
+    devices:
+      - id: 4
+        name: hmac_http
+        type: http
+        properties:
+          port: 8080
+          url: "/secure/logs"
+          authentication:
+            type: "hmac"
+          hmac:
+            type: "sha256"
+            header: "X-Signature"
+            key: "${HMAC_SECRET}"
+            prefix: "sha256="
     ```
   </CodeCol>
 </ExampleGrid>
@@ -241,24 +245,25 @@ For a secure server, use TLS encryption, basic authentication, a custom response
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 5
-      name: secure_http
-      type: http
-      properties:
-        port: 8443
-        url: "/api/ingest"
-        tls:
-          status: true
-          cert_name: "server.crt"
-          key_name: "server.key"
-        authentication:
-          type: "basic"
-        username: "ingest_user"
-        password: "${INGEST_PASSWORD}"
-        response:
-          code: 201
-          body: '{"status":"created"}'
-          content_type: "application/json"
+    devices:
+      - id: 5
+        name: secure_http
+        type: http
+        properties:
+          port: 8443
+          url: "/api/ingest"
+          tls:
+            status: true
+            cert_name: "server.crt"
+            key_name: "server.key"
+          authentication:
+            type: "basic"
+          username: "ingest_user"
+          password: "${INGEST_PASSWORD}"
+          response:
+            code: 201
+            body: '{"status":"created"}'
+            content_type: "application/json"
     ```
   </CodeCol>
 </ExampleGrid>

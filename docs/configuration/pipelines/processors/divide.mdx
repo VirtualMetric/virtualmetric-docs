@@ -11,7 +11,7 @@ Performs division operations on numeric values.
 ## Schema
 
 ```yaml {2-4}
-divide:
+- divide:
   field: <ident>
   left_operand: <string>
   right_operand: <string>
@@ -70,10 +70,11 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    - divide:
-      field: metrics.ratio
-      left_operand: "100"
-      right_operand: "25"
+    processors:
+      - divide:
+        field: metrics.ratio
+        left_operand: "100"
+        right_operand: "25"
     ```
   </CodeCol>
   <CommentCol>
@@ -106,10 +107,11 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    - divide:
-      field: network.bytes_per_packet
-      left_operand: "network.bytes_sent"
-      right_operand: "network.packets_sent"
+    processors:
+      - divide:
+        field: network.bytes_per_packet
+        left_operand: "network.bytes_sent"
+        right_operand: "network.packets_sent"
     ```
   </CodeCol>
   <CommentCol>
@@ -143,10 +145,11 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    - divide:
-      field: disk.used_gb
-      left_operand: "disk.used_bytes"
-      right_operand: "1073741824"
+    processors:
+      - divide:
+        field: disk.used_gb
+        left_operand: "disk.used_bytes"
+        right_operand: "1073741824"
     ```
   </CodeCol>
   <CommentCol>
@@ -180,15 +183,16 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    - divide:
-      field: cpu.active_percentage
-      left_operand: "cpu.idle_time"
-      right_operand: "cpu.total_time" 
-      ignore_missing: true
-      on_failure:
-        - set:
-            field: cpu.error
-            value: "Failed to calculate CPU percentage"
+    processors:
+      - divide:
+        field: cpu.active_percentage
+        left_operand: "cpu.idle_time"
+        right_operand: "cpu.total_time" 
+        ignore_missing: true
+        on_failure:
+          - set:
+              field: cpu.error
+              value: "Failed to calculate CPU percentage"
     ```
   </CodeCol>
   <CommentCol>

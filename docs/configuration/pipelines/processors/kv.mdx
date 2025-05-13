@@ -16,7 +16,7 @@ Parses strings to extract key-value pairs into structured fields.
 ## Schema
 
 ```yaml {2-4}
-kv:
+- kv:
   field: <ident>
   field_split: <regex>
   value_split: <regex>
@@ -91,10 +91,11 @@ Malformed inputs may result in missing entries or incomplete parsing.
     }
     ```
     ```yaml
-    kv:
-      field: message
-      field_split: ";"
-      value_split: "="
+    processors:
+      - kv:
+        field: message
+        field_split: ";"
+        value_split: "="
     ```
   </CodeCol>
   <CommentCol>
@@ -125,11 +126,12 @@ Malformed inputs may result in missing entries or incomplete parsing.
     }
     ```
     ```yaml
-    kv:
-      field: data
-      field_split: ","
-      value_split: "="
-      target_field: request_info
+    processors:
+      - kv:
+        field: data
+        field_split: ","
+        value_split: "="
+        target_field: request_info
     ```
   </CodeCol>
   <CommentCol>
@@ -162,11 +164,12 @@ Malformed inputs may result in missing entries or incomplete parsing.
     }
     ```
     ```yaml
-    kv:
-      field: log
-      field_split: " "
-      value_split: "="
-      include_keys: ["user", "role"]
+    processors:
+      - kv:
+        field: log
+        field_split: " "
+        value_split: "="
+        include_keys: ["user", "role"]
     ```
   </CodeCol>
   <CommentCol>
@@ -196,13 +199,14 @@ Malformed inputs may result in missing entries or incomplete parsing.
     }
     ```
     ```yaml
-    kv:
-      field: data
-      field_split: ","
-      value_split: "="
-      strip_brackets: true
-      trim_value: "'"
-      lowercase_keys: true
+    processors:
+      - kv:
+        field: data
+        field_split: ","
+        value_split: "="
+        strip_brackets: true
+        trim_value: "'"
+        lowercase_keys: true
     ```
   </CodeCol>
   <CommentCol>
@@ -233,11 +237,12 @@ Malformed inputs may result in missing entries or incomplete parsing.
     }
     ```
     ```yaml
-    kv:
-      field: metrics
-      field_split: ","
-      value_split: "="
-      prefix: "system_"
+    processors:
+      - kv:
+        field: metrics
+        field_split: ","
+        value_split: "="
+        prefix: "system_"
     ```
   </CodeCol>
   <CommentCol>

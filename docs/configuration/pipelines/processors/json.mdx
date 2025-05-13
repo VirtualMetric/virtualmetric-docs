@@ -16,7 +16,7 @@ Parses JSON strings from a specified field into structured objects.
 ## Schema
 
 ```yaml {2}
-json:
+- json:
   field: <ident>
   add_to_root: <boolean>
   add_to_root_conflict_strategy: <enum>
@@ -82,9 +82,10 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    json:
-      field: raw_data
-      target_field: parsed_data
+    processors:
+      - json:
+        field: raw_data
+        target_field: parsed_data
     ```
   </CodeCol>
   <CommentCol>
@@ -117,10 +118,11 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    json:
-      field: json_data
-      add_to_root: true
-      add_to_root_conflict_strategy: replace
+    processors:
+      - json:
+        field: json_data
+        add_to_root: true
+        add_to_root_conflict_strategy: replace
     ```
   </CodeCol>
   <CommentCol>
@@ -154,10 +156,11 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    json:
-      field: json_update
-      add_to_root: true
-      add_to_root_conflict_strategy: merge
+    processors:
+      - json:
+        field: json_update
+        add_to_root: true
+        add_to_root_conflict_strategy: merge
     ```
   </CodeCol>
   <CommentCol>
@@ -190,10 +193,11 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    json:
-      field: data
-      allow_duplicate_keys: true
-      target_field: result
+    processors:
+      - json:
+        field: data
+        allow_duplicate_keys: true
+        target_field: result
     ```
   </CodeCol>
   <CommentCol>
@@ -224,11 +228,12 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    json:
-      field: data
-      ignore_failure: true
-      on_failure:
-        - set:
+    processors:
+      - json:
+        field: data
+        ignore_failure: true
+        on_failure:
+          - set:
             field: error
             value: "Invalid JSON format"
     ```

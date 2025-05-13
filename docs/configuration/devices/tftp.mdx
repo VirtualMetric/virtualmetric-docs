@@ -83,44 +83,13 @@ The worker count will be capped at the number of available CPU cores.
 
 The device upload operations observe the following procedure:
 
-* The client initiates a TFTP upload:
+* The client initiates a TFTP upload
 
-  ```mermaid
-  graph LR
-    A("`Client :: TFTP`")
-    B(Server:69)
-    A --> |WRQ| B
-  ```
-
-* The server accepts the connection:
-
-  ```mermaid
-  graph RL
-    A("`Client :: TFTP`")
-    B(Server)
-    B --> |ACK| A
-  ```
-
-* The client transfers the file:
-
-  ```mermaid
-  graph LR
-    A("`Client :: TFTP`")
-    B(Server)
-    A --> |FILE| B
-    B --> |ACK| A
-  ```
+* The server accepts the connection
+  
+* The client transfers the file
 
 * Finally, the server maps the client IP to the device, reads the file contents, applies the pipelines, and saves the processed data to a store.
-
-  ```mermaid
-  graph LR
-    A("`Client :: TFTP`")
-    B("`Server`")
-    C[(Store)]
-    B <--> |IP| A
-    B --> |SAVE| C
-  ```
 
 :::tip
 Configure clients to use binary mode for file transfers to avoid data corruption.
@@ -140,12 +109,13 @@ A basic server can be created easily:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_tftp
-      type: tftp
-      properties:
-        address: "0.0.0.0"
-        port: 69
+    devices:
+      - id: 1
+        name: basic_tftp
+        type: tftp
+        properties:
+          address: "0.0.0.0"
+          port: 69
     ```
   </CodeCol>
 </ExampleGrid>
@@ -160,14 +130,15 @@ Devices can be automatically captured:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: mapped_tftp
-      type: tftp
-      properties:
-        address: "0.0.0.0"
-        port: 69
-        reuse: false
-        buffer_size: 16384
+    devices:
+      - id: 2
+        name: mapped_tftp
+        type: tftp
+        properties:
+          address: "0.0.0.0"
+          port: 69
+          reuse: false
+          buffer_size: 16384
     ```
   </CodeCol>
 </ExampleGrid>
@@ -182,14 +153,15 @@ Uploads from multiple devices can be handled easily:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
-      name: multi_device_tftp
-      type: tftp
-      properties:
-        address: "0.0.0.0"
-        port: 69
-        reuse: true
-        workers: 2
+    devices:
+      - id: 4
+        name: multi_device_tftp
+        type: tftp
+        properties:
+          address: "0.0.0.0"
+          port: 69
+          reuse: true
+          workers: 2
     ```
   </CodeCol>
 </ExampleGrid>
@@ -208,15 +180,16 @@ Performance can be enhanced for high file upload volumes:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: performant_tftp
-      type: tftp
-      properties:
-        address: "0.0.0.0"
-        port: 69
-        reuse: true
-        workers: 4
-        buffer_size: 32768
+    devices:
+      - id: 3
+        name: performant_tftp
+        type: tftp
+        properties:
+          address: "0.0.0.0"
+          port: 69
+          reuse: true
+          workers: 4
+          buffer_size: 32768
     ```
   </CodeCol>
 </ExampleGrid>
@@ -231,16 +204,17 @@ File contents can be handled according to requirements:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 5
-      name: pipeline_tftp
-      type: tftp
-      pipelines:
-        - config_parser
-        - field_extractor
-      properties:
-        address: "0.0.0.0"
-        port: 69
-        buffer_size: 16384
+    devices:
+      - id: 5
+        name: pipeline_tftp
+        type: tftp
+        pipelines:
+          - config_parser
+          - field_extractor
+        properties:
+          address: "0.0.0.0"
+          port: 69
+          buffer_size: 16384
     ```
   </CodeCol>
 </ExampleGrid>

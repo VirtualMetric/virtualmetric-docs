@@ -106,7 +106,8 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    - math:
+    processors:
+      - math:
         field: metrics.total
         operation: add
         left_operand: "100"
@@ -143,7 +144,8 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    - math:
+    processors:
+      - math:
         field: disk.usage_percent
         operation: multiply
         left_operand: "disk.used / disk.total"
@@ -182,7 +184,8 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    - math:
+    processors:
+      - math:
         field: temperature.absolute
         operation: abs
         left_operand: "temperature.celsius"
@@ -218,7 +221,8 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    - math:
+    processors:
+      - math:
         field: stats.rounded
         operation: round
         left_operand: "stats.raw_value"
@@ -255,12 +259,13 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    - math:
+    processors:
+      - math:
         field: circle.radius_squared
         operation: pow
         left_operand: "circle.radius"
         right_operand: "2"
-    - math:
+      - math:
         field: circle.area
         operation: multiply
         left_operand: "circle.radius_squared"
@@ -300,7 +305,8 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    - math:
+    processors:
+      - math:
         field: stats.result
         operation: divide
         left_operand: "stats.numerator"
@@ -308,11 +314,11 @@ Always provide appropriate error handling for operations that might encounter th
         ignore_failure: true
         on_failure:
           - set:
-              field: stats.error
-              value: "Division by zero error"
+            field: stats.error
+            value: "Division by zero error"
           - set:
-              field: stats.result
-              value: 0
+            field: stats.result
+            value: 0
     ```
   </CodeCol>
   <CommentCol>

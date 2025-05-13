@@ -16,7 +16,7 @@ Provides data masking capabilities using various hashing functions.
 ## Schema
 
 ```yaml {2-6}
-mask:
+- mask:
   field: <ident>
   masking_rules: <rule[]>
   target_fields: <string[]>
@@ -97,10 +97,11 @@ Conditional execution is also available.
     }
     ```
     ```yaml
-    mask:
-      target_fields: ["message"]
-      masking_rules:
-        - match_regex: "(social=)(\\d+)"
+    processors:
+      - mask:
+        target_fields: ["message"]
+        masking_rules:
+          - match_regex: "(social=)(\\d+)"
             hash_type: "md5"
             keep_first: 7
     ```
@@ -130,10 +131,11 @@ Conditional execution is also available.
     }
     ```
     ```yaml
-    mask:
-      target_fields: ["message"]
-      masking_rules:
-        - match_regex: "\\b(\\d{4})[- ]?(\\d{4})[- ]?(\\d{4})[- ]?(\\d{4})\\b"
+    processors:
+      - mask:
+        target_fields: ["message"]
+        masking_rules:
+          - match_regex: "\\b(\\d{4})[- ]?(\\d{4})[- ]?(\\d{4})[- ]?(\\d{4})\\b"
             hash_type: "sha256"
             keep_first: 4
             keep_last: 4
@@ -165,11 +167,12 @@ Conditional execution is also available.
     }
     ```
     ```yaml
-    mask:
-      target_fields: ["field1", "field2"]
-      masking_rules:
-        - match_regex: "secret\\d+"
-          hash_type: "md5"
+    processors:
+      - mask:
+        target_fields: ["field1", "field2"]
+        masking_rules:
+          - match_regex: "secret\\d+"
+            hash_type: "md5"
     ```
   </CodeCol>
   <CommentCol>
@@ -199,12 +202,13 @@ Conditional execution is also available.
     }
     ```
     ```yaml
-    mask:
-      if: "ctx.level == 'secure'"
-      target_fields: ["message"]
-      masking_rules:
-        - match_regex: "secret\\d+"
-          hash_type: "md5"
+    processors:
+      - mask:
+        if: "ctx.level == 'secure'"
+        target_fields: ["message"]
+        masking_rules:
+          - match_regex: "secret\\d+"
+            hash_type: "md5"
     ```
   </CodeCol>
   <CommentCol>
@@ -231,12 +235,13 @@ Conditional execution is also available.
     {}
     ```
     ```yaml
-    mask:
-      target_fields: ["nonexistent"]
-      masking_rules:
-        - match_regex: "secret\\d+"
-          hash_type: "md5"
-      ignore_missing: true
+    processors:
+      - mask:
+        target_fields: ["nonexistent"]
+        masking_rules:
+          - match_regex: "secret\\d+"
+            hash_type: "md5"
+        ignore_missing: true
     ```
   </CodeCol>
   <CommentCol>
@@ -262,11 +267,12 @@ Conditional execution is also available.
     }
     ```
     ```yaml
-    mask:
-      target_fields: ["message"]
-      masking_rules:
-        - match_regex: "secret\\d+"
-          hash_type: "sha256"
+    processors:
+      - mask:
+        target_fields: ["message"]
+        masking_rules:
+          - match_regex: "secret\\d+"
+            hash_type: "sha256"
     ```
   </CodeCol>
   <CommentCol>

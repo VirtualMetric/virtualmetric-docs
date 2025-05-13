@@ -70,7 +70,8 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    - modulo:
+    processors:
+      - modulo:
         field: math.remainder
         left_operand: "17"
         right_operand: "5"
@@ -106,11 +107,12 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    - modulo:
+    processors:
+      - modulo:
         field: check.remainder
         left_operand: "number"
         right_operand: "check.divisor"
-    - set:
+      - set:
         field: check.is_divisible
         value: "{{#eq check.remainder 0}}true{{else}}false{{/eq}}"
     ```
@@ -147,14 +149,15 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    - modulo:
+    processors:
+      - modulo:
         field: timestamp.day_cycle
         left_operand: "timestamp.hour"
         right_operand: "12"
-    - set:
+      - set:
         field: timestamp.period
         value: "{{#eq timestamp.day_cycle 0}}12{{else}}{{timestamp.day_cycle}}{{/eq}}"
-    - set:
+      - set:
         field: timestamp.am_pm
         value: "{{#lt timestamp.hour 12}}AM{{else}}PM{{/eq}}"
     ```
@@ -196,7 +199,8 @@ Division by zero will cause the processor to fail unless `ignore_failure` is set
     }
     ```
     ```yaml
-    - modulo:
+    processors:
+      - modulo:
         field: request.server_index
         left_operand: "request.hash"
         right_operand: "cluster.server_count"

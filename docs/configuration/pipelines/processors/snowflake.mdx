@@ -68,7 +68,8 @@ While Snowflake IDs are designed to be unique across distributed systems, they s
     }
     ```
     ```yaml
-    - snowflake:
+    processors:
+      - snowflake:
         target_field: event.id
     ```
   </CodeCol>
@@ -103,7 +104,8 @@ While Snowflake IDs are designed to be unique across distributed systems, they s
     }
     ```
     ```yaml
-    - snowflake:
+    processors:
+      - snowflake:
         target_field: transaction.metadata.id
     ```
   </CodeCol>
@@ -144,7 +146,8 @@ While Snowflake IDs are designed to be unique across distributed systems, they s
     }
     ```
     ```yaml
-    - snowflake:
+    processors:
+      - snowflake:
         target_field: trace.id
         if: "!hasField(logEntry, 'trace.id')"
     ```
@@ -186,11 +189,12 @@ While Snowflake IDs are designed to be unique across distributed systems, they s
     }
     ```
     ```yaml
-    - snowflake:
+    processors:
+      - snowflake:
         target_field: session.id
-    - snowflake:
+      - snowflake:
         target_field: transaction.id
-    - set:
+      - set:
         field: event.metadata.generated_at
         value: "{{@timestamp}}"
     ```

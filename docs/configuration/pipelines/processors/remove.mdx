@@ -16,7 +16,7 @@ Removes one or more fields from the document. Can handle both single fields and 
 ## Schema
 
 ```yaml {2}
-remove:
+- remove:
   field: <ident|ident[]>
   description: <text>
   if: <script>
@@ -73,8 +73,9 @@ Be careful when removing nested fields as it might affect the structure of your 
     }
     ```
     ```yaml
-    remove:
-      field: user.password
+    processors:
+      - remove:
+        field: user.password
     ```
   </CodeCol>
   <CommentCol>
@@ -108,10 +109,11 @@ Be careful when removing nested fields as it might affect the structure of your 
     }
     ```
     ```yaml
-    remove:
-      field: 
-        - debug
-        - temp_data
+    processors:
+      - remove:
+        field: 
+          - debug
+          - temp_data
     ```
   </CodeCol>
   <CommentCol>
@@ -142,10 +144,11 @@ Be careful when removing nested fields as it might affect the structure of your 
     }
     ```
     ```yaml
-    remove:
-      field: 
-        - "{{{type}}}_temp"
-        - "{{{type}}}_cache"
+    processors:
+      - remove:
+        field: 
+          - "{{{type}}}_temp"
+          - "{{{type}}}_cache"
     ```
   </CodeCol>
   <CommentCol>
@@ -173,13 +176,14 @@ Be careful when removing nested fields as it might affect the structure of your 
     }
     ```
     ```yaml
-    remove:
-      field: 
-        - field1
-        - field2
-      ignore_missing: true
-      on_failure:
-        - append:
+    processors:
+      - remove:
+        field: 
+          - field1
+          - field2
+        ignore_missing: true
+        on_failure:
+          - append:
             field: tags
             value: removal_incomplete
     ```

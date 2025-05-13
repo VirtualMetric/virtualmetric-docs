@@ -111,13 +111,14 @@ A basic collector can be easily created:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_redis
-      type: redis
-      properties:
-        address: "redis.example.com"
-        port: 6379
-        channel: "logs"
+    devices:
+      - id: 1
+        name: basic_redis
+        type: redis
+        properties:
+          address: "redis.example.com"
+          port: 6379
+          channel: "logs"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -132,19 +133,20 @@ The collector can connect to secure Redis servers:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: secure_redis
-      type: redis
-      properties:
-        address: "redis.example.com"
-        port: 6379
-        username: "subscriber"
-        password: "secret"
-        channel: "secure.logs"
-        tls:
-          status: true
-          cert_name: "redis.crt"
-          key_name: "redis.key"
+    devices:
+      - id: 2
+        name: secure_redis
+        type: redis
+        properties:
+          address: "redis.example.com"
+          port: 6379
+          username: "subscriber"
+          password: "secret"
+          channel: "secure.logs"
+          tls:
+            status: true
+            cert_name: "redis.crt"
+            key_name: "redis.key"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -159,16 +161,17 @@ Performance can be enhanced for high message volumes:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: performant_redis
-      type: redis
-      properties:
-        address: "redis.example.com"
-        port: 6379
-        channel: "high-volume"
-        reuse: true
-        workers: 4
-        buffer_size: 32768
+    devices:
+      - id: 3
+        name: performant_redis
+        type: redis
+        properties:
+          address: "redis.example.com"
+          port: 6379
+          channel: "high-volume"
+          reuse: true
+          workers: 4
+          buffer_size: 32768
     ```
   </CodeCol>
 </ExampleGrid>
@@ -183,15 +186,16 @@ Messages can be filtered using pattern-based matching:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
-      name: pattern_redis
-      type: redis
-      properties:
-        address: "redis.example.com"
-        port: 6379
-        channel: "logs.*"
-        reuse: true
-        workers: 2
+    devices:
+      - id: 4
+        name: pattern_redis
+        type: redis
+        properties:
+          address: "redis.example.com"
+          port: 6379
+          channel: "logs.*"
+          reuse: true
+          workers: 2
     ```
   </CodeCol>
 </ExampleGrid>
@@ -210,16 +214,17 @@ Messages can be pre-processed:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 5
-      name: pipeline_redis
-      type: redis
-      pipelines:
-        - json_parser
-        - field_extractor
-      properties:
-        address: "redis.example.com"
-        port: 6379
-        channel: "raw.logs"
+    devices:
+      - id: 5
+        name: pipeline_redis
+        type: redis
+        pipelines:
+          - json_parser
+          - field_extractor
+        properties:
+          address: "redis.example.com"
+          port: 6379
+          channel: "raw.logs"
     ```
   </CodeCol>
 </ExampleGrid>

@@ -21,24 +21,24 @@ See [**Appendix**](/appendix.mdx#syslog) for details of the format.
 ## Schema
 
 ```yaml
-name: <string>
-description: <string>
-type: syslog
-pipelines: <pipeline[]>
-status: <boolean>
-properties:
-  type: <string>
-  address: <string>
-  port: <numeric>
-  format: <string>
-  template: <string>
-  app_name: <string>
-  priority: <numeric>
-  tls:
-    status: <boolean>
-    verify: <boolean>
-    cert_name: <string>
-    key_name: <string>
+- name: <string>
+  description: <string>
+  type: syslog
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    type: <string>
+    address: <string>
+    port: <numeric>
+    format: <string>
+    template: <string>
+    app_name: <string>
+    priority: <numeric>
+    tls:
+      status: <boolean>
+      verify: <boolean>
+      cert_name: <string>
+      key_name: <string>
 ```
 
 ## Configuration
@@ -109,10 +109,11 @@ Invalid templates will fall back to sending the raw message content without form
 The minimum configuration for a UDP syslog:
 
 ```yaml
-name: udp_syslog
-type: syslog
-properties:
-  address: "192.168.1.100"
+targets:
+  - name: basic_syslog
+    type: syslog
+    properties:
+      address: "192.168.1.100"
 ```
 
 ### Secure TLS
@@ -120,17 +121,18 @@ properties:
 Configuration for a TLS-encrypted syslog:
 
 ```yaml
-name: secure_syslog
-type: syslog
-properties:
-  type: "tls"
-  address: "logs.example.com"
-  port: 6514
-  tls:
-    status: true
-    verify: true
-    cert_name: "client-cert.pem"
-    key_name: "client-key.pem"
+targets:
+  - name: secure_syslog
+    type: syslog
+    properties:
+      type: "tls"
+      address: "logs.example.com"
+      port: 6514
+      tls:
+        status: true
+        verify: true
+        cert_name: "client-cert.pem"
+        key_name: "client-key.pem"
 ```
 
 ### Template
@@ -138,11 +140,12 @@ properties:
 Configuration with a custom message template:
 
 ```yaml
-name: custom_syslog
-type: syslog
-properties:
-  address: "192.168.1.100"
-  template: "{{.Timestamp}} [{{.AppName}}] severity={{.Priority}} {{.Message}}"
-  app_name: "myapp"
-  priority: 13
+targets:
+  - name: custom_syslog
+    type: syslog
+    properties:
+      address: "192.168.1.100"
+      template: "{{.Timestamp}} [{{.AppName}}] severity={{.Priority}} {{.Message}}"
+      app_name: "myapp"
+      priority: 13
 ```

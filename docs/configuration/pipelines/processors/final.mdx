@@ -16,7 +16,7 @@ Terminates the processing of a pipeline gracefully without raising errors.
 ## Schema
 
 ```yaml
-final:
+- final:
   description: <text>
   if: <script>
   ignore_failure: <boolean>
@@ -46,36 +46,36 @@ Typical uses:
 
 * **Early Exit on Success**
 
-   ```yaml
-   processors:
-     - append:
-         field: tags
-         value: processed
-     - final:
-         if: "ctx.tags.contains('processed')"
+  ```yaml
+  processors:
+    - append:
+      field: tags
+      value: processed
+    - final:
+      if: "ctx.tags.contains('processed')"
    ```
 
 * **Prevent Duplicate Processing**
 
-   ```yaml
-   processors:
-     - set:
-         field: processed_by
-         value: pipeline_a
-     - final:
-         description: "Prevent other pipelines from processing"
+  ```yaml
+  processors:
+    - set:
+      field: processed_by
+      value: pipeline_a
+    - final:
+      description: "Prevent other pipelines from processing"
    ```
 
 * **Conditional Pipeline Branch**
  
-   ```yaml
-   processors:
-     - final:
-         if: "ctx.environment == 'production'"
-         description: "Skip test processors in production"
-     - set:
-         field: test_field
-         value: test_value
+  ```yaml
+  processors:
+    - final:
+      if: "ctx.environment == 'production'"
+      description: "Skip test processors in production"
+    - set:
+      field: test_field
+      value: test_value
    ```
 
 It is good practice to use detailed description to document the finalization points. Also, consider adding cleanup tasks using `on_success`, test conditional finalization thoroughly, and use tags for tracking finalization points in logs.
@@ -96,13 +96,13 @@ Once `final` is used, no further processors in any pipeline will execute. Use wi
     ```yaml
     processors:
       - set:
-          field: status
-          value: completed
+        field: status
+        value: completed
       - final:
-          description: "Stop after status update"
+        description: "Stop after status update"
       - set:  # This processor won't run
-          field: other_field
-          value: skipped
+        field: other_field
+        value: skipped
     ```
   </CodeCol>
   <CommentCol>
@@ -132,9 +132,10 @@ Once `final` is used, no further processors in any pipeline will execute. Use wi
     }
     ```
     ```yaml
-    final:
-      if: "ctx.source.packets == 10"
-      description: "Stop processing for 10-packet sources"
+    processors:
+      - final:
+        if: "ctx.source.packets == 10"
+        description: "Stop processing for 10-packet sources"
     ```
   </CodeCol>
   <CommentCol>
@@ -155,14 +156,15 @@ Once `final` is used, no further processors in any pipeline will execute. Use wi
   </CommentCol>
   <CodeCol>
     ```yaml
-    final:
-      description: "Clean finalization"
-      on_success:
-        - set:
-          field: processing_status
-          value: completed
-        - remove:
-          field: temporary_data
+    processors:
+      - final:
+        description: "Clean finalization"
+        on_success:
+          - set:
+            field: processing_status
+            value: completed
+          - remove:
+            field: temporary_data
     ```
   </CodeCol>
   <CommentCol>

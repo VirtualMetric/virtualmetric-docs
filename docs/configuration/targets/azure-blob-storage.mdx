@@ -6,30 +6,38 @@
 
 Creates a target that writes log messages to _Azure Blob Storage_ with support for various file formats, authentication methods, and retry mechanisms. Inherits file format capabilities from the base target.
 
+:::note
+Files are only deleted after successful upload.
+:::
+
+:::warning
+Failed uploads are retried automatically based on the `max_retry` and `retry_interval` settings. The `retry_interval` setting is based on an exponential backoff which is _retry_interval_&nbsp;*&nbsp;2&nbsp;^&nbsp;_attempt_, therefore each retry will wait longer than the previous one.
+:::
+
 ## Schema
 
 ```yaml
-name: <string>
-description: <string>
-type: azblob
-pipelines: <pipeline[]>
-status: <boolean>
-properties:
-  account: <string>
-  tenant_id: <string>
-  client_id: <string>
-  client_secret: <string>
-  container: <string>
-  name: <string>
-  type: <string>
-  compression: <string>
-  schema: <string>
-  format: <string>
-  no_buffer: <boolean>
-  max_retry: <numeric>
-  retry_interval: <numeric>
-  timeout: <numeric>
-  max_size: <numeric>
+- name: <string>
+  description: <string>
+  type: azblob
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    account: <string>
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    container: <string>
+    name: <string>
+    type: <string>
+    compression: <string>
+    schema: <string>
+    format: <string>
+    no_buffer: <boolean>
+    max_retry: <numeric>
+    retry_interval: <numeric>
+    timeout: <numeric>
+    max_size: <numeric>
 ```
 
 ## Configuration
@@ -87,13 +95,14 @@ The following upload configurations are available.
 The minimum configuration for a _JSON_ blob storage:
 
 ```yaml
-name: basic_blob
-type: azblob
-properties:
-  account: "mystorageaccount"
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "00000000-0000-0000-0000-000000000000"
-    client_secret: "your-client-secret"
+targets:
+- name: basic_blob
+  type: azblob
+  properties:
+    account: "mystorageaccount"
+    tenant_id: "00000000-0000-0000-0000-000000000000"
+    client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
 ```
 
 ### Parquet
@@ -101,17 +110,18 @@ properties:
 Configuration for daily partitioned _Parquet_ files:
 
 ```yaml
-name: parquet_blob
-type: azblob
-properties:
-  account: "mystorageaccount"
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "00000000-0000-0000-0000-000000000000"
-  client_secret: "your-client-secret"
-  container: "logs"
-  type: "parquet"
-  compression: "zstd"
-  name: "logs/year={{.Year}}/month={{.Month}}/day={{.Day}}/data_{{.Timestamp}}.parquet"
+targets:
+  - name: parquet_blob
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      container: "logs"
+      type: "parquet"
+      compression: "zstd"
+      name: "logs/year={{.Year}}/month={{.Month}}/day={{.Day}}/data_{{.Timestamp}}.parquet"
   max_size: 536870912  # 512MB
 ```
 
@@ -120,25 +130,17 @@ properties:
 Configuration with enhanced retry settings:
 
 ```yaml
-name: reliable_blob
-type: azblob
-pipelines:
-  - checkpoint
-properties:
-  account: "mystorageaccount"
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "00000000-0000-0000-0000-000000000000"
-  client_secret: "your-client-secret"
-  max_retry: 10
-  retry_interval: 30
-  timeout: 60
-  no_buffer: true
+targets:
+- name: reliable_blob
+  type: azblob
+  properties:
+    account: "mystorageaccount"
+    tenant_id: "00000000-0000-0000-0000-000000000000"
+    client_id: "00000000-0000-0000-0000-000000000000"
+    client_secret: "your-client-secret"
+    container: "logs"
+    type: "json"
+    compression: "zstd"
+    max_retry: 10
+    retry_interval: 30
 ```
-
-:::warning
-Failed uploads are retried automatically based on the `max_retry` and `retry_interval` settings. The `retry_interval` setting is based on an exponential backoff which is _retry_interval_&nbsp;*&nbsp;2&nbsp;^&nbsp;_attempt_, therefore each retry will wait longer than the previous one.
-:::
-
-:::note
-Files are only deleted after successful upload.
-:::

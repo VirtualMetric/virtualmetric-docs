@@ -20,7 +20,7 @@ See [Appendix](/appendix.mdx#leef)
 ## Schema
 
 ```yaml {2}
-leef:
+- leef:
   field: <ident>
   target_field: <ident>
   description: <text>
@@ -75,8 +75,9 @@ The processor expects valid LEEF formatted messages starting with "`LEEF:`". Inv
     }
     ```
     ```yaml
-    leef:
-      field: message
+    processors:
+      - leef:
+        field: message
     ```
   </CodeCol>
   <CommentCol>
@@ -113,9 +114,10 @@ The processor expects valid LEEF formatted messages starting with "`LEEF:`". Inv
     }
     ```
     ```yaml
-    leef:
-      field: raw_event
-      target_field: parsed_event
+    processors:
+      - leef:
+        field: raw_event
+        target_field: parsed_event
     ```
   </CodeCol>
   <CommentCol>
@@ -152,11 +154,12 @@ The processor expects valid LEEF formatted messages starting with "`LEEF:`". Inv
     }
     ```
     ```yaml
-    leef:
-      field: event
-      ignore_failure: true
-      on_failure:
-        - append:
+    processors:
+      - leef:
+        field: event
+        ignore_failure: true
+        on_failure:
+          - append:
             field: tags
             value: "leef_parse_error"
     ```

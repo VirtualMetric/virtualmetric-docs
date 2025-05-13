@@ -9,23 +9,23 @@ Creates a file target that writes log messages to files in various formats like 
 ## Schema
 
 ```yaml
-name: <string>
-description: <string>
-type: file
-pipelines: <pipeline[]>
-status: <boolean>
-properties:
-  location: <string>
-  name: <string>
-  type: <string>
-  compression: <string>
-  extension: <string>
-  schema: <string>
-  field_format: <string>
-  no_buffer: <boolean>
-  batch_size: <integer>
-  max_size: <integer>
-  locations: <location[]>
+- name: <string>
+  description: <string>
+  type: file
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    location: <string>
+    name: <string>
+    type: <string>
+    compression: <string>
+    extension: <string>
+    schema: <string>
+    field_format: <string>
+    no_buffer: <boolean>
+    batch_size: <integer>
+    max_size: <integer>
+    locations: <location[]>
 ```
 
 ## Configuration
@@ -62,28 +62,20 @@ Files can have the following properties:
 You can define multiple output locations with different settings:
 
 ```yaml
-properties:
-  locations:
-    - id: "security_logs"
-      path: "/var/log/security"
-      schema: "{{CommonSecurityLog}}"
-      format: "parquet"
-    - id: "system_logs"
-      path: "/var/log/system"
-      format: "json"
+targets:
+  - name: multi_location_logs
+    type: file
+    properties:
+      locations:
+        - id: "security_logs"
+          path: "/var/log/security"
+          schema: "{{CommonSecurityLog}}"
+          format: "parquet"
+        - id: "system_logs"
+          path: "/var/log/system"
+          schema: "{{CommonSystemLog}}"
+          format: "json"
 ```
-
-Each location supports the following properties:
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`id`|Y|-|Unique identifier for the location|
-|`path`|Y|-|File output directory|
-|`name`|N|From global config|File name template|
-|`format`|N|From global config|File format|
-|`compression`|N|From global config|Compression algorithm|
-|`extension`|N|From global config|Custom file extension|
-|`schema`|N|From global config|Data schema or template name|
 
 ## Details
 
@@ -146,10 +138,13 @@ Files can use the following compression algorithms:
 Configuration for a _JSON_ output:
 
 ```yaml
-name: json_logs
-type: file
-properties:
-  location: "/var/log/vmetric"
+targets:
+  - name: json_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      type: "json"
+      compression: "zstd"
 ```
 
 ### Multiple Locations
@@ -157,21 +152,22 @@ properties:
 Configuration with multiple output locations:
 
 ```yaml
-name: multi_location_logs
-type: file
-properties:
-  locations:
-    - id: "security"
-      path: "/var/log/vmetric/security"
-      format: "parquet"
-      schema: "{{CommonSecurityLog}}"
-    - id: "system"
-      path: "/var/log/vmetric/system"
-      format: "json"
-    - id: "application"
-      path: "/var/log/vmetric/app"
-      format: "multijson"
-      name: "app_{{.Year}}_{{.Month}}_{{.Day}}.json"
+targets:
+  - name: multi_location_logs
+    type: file
+    properties:
+      locations:
+        - id: "security"
+          path: "/var/log/vmetric/security"
+          format: "parquet"
+          schema: "{{CommonSecurityLog}}"
+        - id: "system"
+          path: "/var/log/vmetric/system"
+          format: "json"
+        - id: "application"
+          path: "/var/log/vmetric/app"
+          format: "multijson"
+          name: "app_{{.Year}}_{{.Month}}_{{.Day}}.json"
 ```
 
 ### Parquet
@@ -179,27 +175,26 @@ properties:
 Configuration for a _Parquet_ output with compression and schema:
 
 ```yaml
-name: parquet_logs
-type: file
-properties:
-  location: "/var/log/vmetric"
-  type: "parquet"
-  compression: "zstd"
-  schema: |
-    {
-      "timestamp": {
-        "type": "INT",
-        "bitWidth": 64,
-        "signed": true
-      },
-      "message": {
-        "type": "STRING",
-        "compression": "ZSTD"
-      }
-    }
+targets:
+  - name: parquet_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      type: "parquet"
+      compression: "zstd"
+      schema: |
+        {
+          "timestamp": {
+            "type": "INT",
+            "bitWidth": 64,
+            "signed": true
+          },
+          "message": {
+            "type": "STRING",
+            "compression": "ZSTD"
+          }
+        }
 ```
-
-### Using Schema Templates
 
 Using built-in schema templates:
 
@@ -217,13 +212,14 @@ properties:
 Configuration for an _OCF_ output with daily file rotation:
 
 ```yaml
-name: ocf_logs
-type: file
-properties:
-  location: "/var/log/vmetric"
-  type: "ocf"
-  compression: "zstd"
-  name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.ocf"
+targets:
+  - name: ocf_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      type: "ocf"
+      compression: "zstd"
+      name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.ocf"
 ```
 
 ### Windows
@@ -231,11 +227,12 @@ properties:
 Configuration for a _Windows_ environment with a proper path structure:
 
 ```yaml
-name: windows_logs
-type: file
-properties:
-  location: "C:\\ProgramData\\VMetric\\Logs"
-  type: "json"
-  compression: "zstd"
-  name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
+targets:
+  - name: windows_logs
+    type: file
+    properties:
+      location: "C:\\ProgramData\\VMetric\\Logs"
+      type: "json"
+      compression: "zstd"
+      name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
 ```

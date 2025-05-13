@@ -16,7 +16,7 @@ Expands fields containing dots in their names into nested objects.
 ## Schema
 
 ```yaml {2}
-dot_expander:
+- dot_expander:
   field: <ident>
   path: <string>
   description: <text>
@@ -71,8 +71,9 @@ Deeply nested fields can lead to performance issues.
     }
     ```
     ```yaml
-    dot_expander:
-      field: foo.bar.baz
+    processors:
+      - dot_expander:
+        field: foo.bar.baz
     ```
   </CodeCol>
   <CommentCol>
@@ -104,9 +105,10 @@ Deeply nested fields can lead to performance issues.
     }
     ```
     ```yaml
-    dot_expander:
-      field: source.field.value
-      path: target
+    processors:
+      - dot_expander:
+        field: source.field.value
+        path: target
     ```
   </CodeCol>
   <CommentCol>
@@ -141,9 +143,10 @@ Deeply nested fields can lead to performance issues.
     }
     ```
     ```yaml
-    dot_expander:
-      field: foo.bar.baz
-      if: ctx.condition == true
+    processors:
+      - dot_expander:
+        field: foo.bar.baz
+        if: ctx.condition == true
     ```
   </CodeCol>
   <CommentCol>
@@ -176,13 +179,14 @@ Deeply nested fields can lead to performance issues.
     }
     ```
     ```yaml
-    dot_expander:
-      field: foo
-      ignore_failure: true
-      on_failure:
-        - set:
-          field: error
-          value: "No dots in field name"
+    processors:
+      - dot_expander:
+        field: foo
+        ignore_failure: true
+        on_failure:
+          - set:
+            field: error
+            value: "No dots in field name"
     ```
   </CodeCol>
   <CommentCol>

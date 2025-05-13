@@ -16,7 +16,7 @@ Enriches events by sending field content to **OpenAI**'s API for analysis and st
 ## Schema
 
 ```yaml {2-5}
-openai:
+- openai:
   field: <ident>
   api_key: <string>
   target_field: <ident>
@@ -89,11 +89,12 @@ API keys should be securely stored and accessed.
     }
     ```
     ```yaml
-    openai:
-      field: message
-      target_field: analysis
-      api_key: "${OPENAI_API_KEY}"
-      system_msg: "You are an expert in Cisco networking. Analyze this log message."
+    processors:
+      - openai:
+        field: message
+        target_field: analysis
+        api_key: "${OPENAI_API_KEY}"
+        system_msg: "You are an expert in Cisco networking. Analyze this log message."
     ```
   </CodeCol>
   <CommentCol>
@@ -122,14 +123,15 @@ API keys should be securely stored and accessed.
     }
     ```
     ```yaml
-    openai:
-      field: error_msg
-      target_field: security_analysis
-      api_key: "${OPENAI_API_KEY}"
-      model: "gpt-4"
-      temperature: 0.2
-      max_tokens: 100
-      system_msg: "You are a security analyst. Provide a brief analysis of this error."
+    processors:
+      - openai:
+        field: error_msg
+        target_field: security_analysis
+        api_key: "${OPENAI_API_KEY}"
+        model: "gpt-4"
+        temperature: 0.2
+        max_tokens: 100
+        system_msg: "You are a security analyst. Provide a brief analysis of this error."
     ```
   </CodeCol>
   <CommentCol>
@@ -159,11 +161,12 @@ API keys should be securely stored and accessed.
     }
     ```
     ```yaml
-    openai:
-      if: "ctx.level == 'critical'"
-      field: message
-      target_field: ai_insight
-      api_key: "${OPENAI_API_KEY}"
+    processors:
+      - openai:
+        if: "ctx.level == 'critical'"
+        field: message
+        target_field: ai_insight
+        api_key: "${OPENAI_API_KEY}"
     ```
   </CodeCol>
   <CommentCol>
@@ -193,12 +196,13 @@ API keys should be securely stored and accessed.
     }
     ```
     ```yaml
-    openai:
-      field: message
-      api_key: "invalid-key"
-      ignore_failure: true
-      on_failure:
-        - set:
+    processors:
+      - openai:
+        field: message
+        api_key: "invalid-key"
+        ignore_failure: true
+        on_failure:
+          - set:
             field: analysis_status
             value: "failed"
     ```

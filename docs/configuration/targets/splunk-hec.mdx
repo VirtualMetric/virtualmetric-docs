@@ -9,26 +9,26 @@ Creates a Splunk HTTP Event Collector (HEC) target that sends events to one or m
 ## Schema
 
 ```yaml
-name: <string>
-description: <string>
-type: splunk
-tags: <string[]>
-pipelines: <pipeline[]>
-status: <boolean>
-properties:
-  endpoints:
-    - endpoint: <string>
-      auth_type: <string>
-      token: <string>
-      secret: <string>
-  index: <string>
-  source_type: <string>
-  batch_size: <numeric>
-  timeout: <numeric>
-  tcp_routing: <boolean>
-  compression: <boolean>
-  insecure_skip_verify: <boolean>
-  format: <string>
+- name: <string>
+  description: <string>
+  type: splunk
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    endpoints:
+      - endpoint: <string>
+        auth_type: <string>
+        token: <string>
+        secret: <string>
+    index: <string>
+    source_type: <string>
+    batch_size: <numeric>
+    timeout: <numeric>
+    tcp_routing: <boolean>
+    compression: <boolean>
+    insecure_skip_verify: <boolean>
+    format: <string>
 ```
 
 ## Configuration
@@ -76,6 +76,10 @@ The target supports multiple authentication methods, batching, compression, and 
 
 Events are automatically batched and compressed by default for optimal performance. Failover between endpoints is handled automatically if multiple endpoints are configured.
 
+:::warning
+Ensure your _HEC_ tokens have the appropriate permissions and indexes enabled in **Splunk**. Invalid tokens or insufficient permissions will result in ingestion failures.
+:::
+
 ## Examples
 
 ### Basic
@@ -86,15 +90,16 @@ Events are automatically batched and compressed by default for optimal performan
   </CommentCol>
   <CodeCol>
     ```yaml
-    name: basic_splunk
-    type: splunk
-    properties:
-      endpoints:
-        - endpoint: "https://splunk.example.com:8088/services/collector"
-          auth_type: token
-          token: "YOUR-HEC-TOKEN"
-      index: "main"
-      source_type: "vmetric"
+    targets: 
+      - name: basic_splunk
+        type: splunk
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              auth_type: token
+              token: "YOUR-HEC-TOKEN"
+          index: "main"
+          source_type: "vmetric"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -107,20 +112,21 @@ Events are automatically batched and compressed by default for optimal performan
   </CommentCol>
   <CodeCol>
     ```yaml
-    name: ha_splunk
-    type: splunk
-    properties:
-      endpoints:
-        - endpoint: "https://splunk1.example.com:8088/services/collector"
-          auth_type: token
-          token: "PRIMARY-TOKEN"
-        - endpoint: "https://splunk2.example.com:8088/services/collector"
-          auth_type: token
-          token: "BACKUP-TOKEN"
-      index: "main"
-      source_type: "vmetric"
-      batch_size: 5000
-    ```
+    targets:
+      - name: ha_splunk
+        type: splunk
+        properties:
+          endpoints:
+            - endpoint: "https://splunk1.example.com:8088/services/collector"
+              auth_type: token
+              token: "PRIMARY-TOKEN"
+            - endpoint: "https://splunk2.example.com:8088/services/collector"
+              auth_type: token
+              token: "BACKUP-TOKEN"
+          index: "main"
+          source_type: "vmetric"
+          batch_size: 5000
+        ```
   </CodeCol>
 </ExampleGrid>
 
@@ -132,19 +138,20 @@ Events are automatically batched and compressed by default for optimal performan
   </CommentCol>
   <CodeCol>
     ```yaml
-    name: perf_splunk
-    type: splunk
-    properties:
-      endpoints:
-        - endpoint: "https://splunk.example.com:8088/services/collector"
-          auth_type: token
-          token: "YOUR-HEC-TOKEN"
-      index: "metrics"
-      source_type: "vmetric"
-      batch_size: 20000
-      timeout: 60
-      compression: true
-      tcp_routing: true
+    targets:
+      - name: perf_splunk
+        type: splunk
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              auth_type: token
+              token: "YOUR-HEC-TOKEN"
+          index: "metrics"
+          source_type: "vmetric"
+          batch_size: 20000
+          timeout: 60
+          compression: true
+          tcp_routing: true
     ```
   </CodeCol>
 </ExampleGrid>
@@ -157,21 +164,18 @@ Events are automatically batched and compressed by default for optimal performan
   </CommentCol>
   <CodeCol>
     ```yaml
-    name: secure_splunk
-    type: splunk
-    properties:
-      endpoints:
-        - endpoint: "https://splunk.example.com:8088/services/collector"
-          auth_type: secret
-          secret: "YOUR-BEARER-TOKEN"
-      index: "secure"
-      source_type: "vmetric"
-      insecure_skip_verify: false
-      compression: true
+    targets:
+      - name: secure_splunk
+        type: splunk
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              auth_type: secret
+              secret: "YOUR-BEARER-TOKEN"
+          index: "secure"
+          source_type: "vmetric"
+          insecure_skip_verify: false
+          compression: true
     ```
   </CodeCol>
 </ExampleGrid>
-
-:::warning
-Ensure your _HEC_ tokens have the appropriate permissions and indexes enabled in **Splunk**. Invalid tokens or insufficient permissions will result in ingestion failures.
-:::

@@ -16,7 +16,7 @@ Extracts values from strings using predefined patterns without regular expressio
 ## Schema
 
 ```yaml {2,3}
-dissect:
+- dissect:
   field: <ident>
   pattern: <string>
   append_separator: <char>
@@ -81,9 +81,10 @@ The separator in `append_separator` must be a single character. All named captur
     }
     ```
     ```yaml
-    dissect:
-      field: message
-      pattern: "%{firstname} %{lastname} %{age}"
+    processors:
+      - dissect:
+        field: message
+        pattern: "%{firstname} %{lastname} %{age}"
     ```
   </CodeCol>
   <CommentCol>
@@ -118,10 +119,11 @@ The separator in `append_separator` must be a single character. All named captur
     }
     ```
     ```yaml
-    dissect:
-      field: checkpoint.additional_info
-      pattern: "Administrator failed to log in: %{event.reason}"
-      if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure'
+    processors:
+      - dissect:
+        field: checkpoint.additional_info
+        pattern: "Administrator failed to log in: %{event.reason}"
+        if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure'
     ```
   </CodeCol>
   <CommentCol>
@@ -156,10 +158,11 @@ The separator in `append_separator` must be a single character. All named captur
     }
     ```
     ```yaml
-    dissect:
-      field: message
-      pattern: "%{data}"
-      ignore_failure: true
+    processors:
+      - dissect:
+        field: message
+        pattern: "%{data}"
+        ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>
@@ -190,10 +193,11 @@ The separator in `append_separator` must be a single character. All named captur
     }
     ```
     ```yaml
-    dissect:
-      field: message
-      pattern: "%{firstname} %{lastname} %{age}"
-      ignore_failure: true
+    processors:
+      - dissect:
+        field: message
+        pattern: "%{firstname} %{lastname} %{age}"
+        ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>

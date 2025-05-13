@@ -16,7 +16,7 @@ Extracts structured patterns from log messages, identifying key components and n
 ## Schema
 
 ```yaml {2}
-pattern:
+- pattern:
   field: <ident>
   target_field: <ident>
   description: <text>
@@ -84,9 +84,10 @@ Long messages are truncated, and specific identifiers are replaced with generic 
     }
     ```
     ```yaml
-    pattern:
-      field: message
-      target_field: log_pattern
+    processors:
+      - pattern:
+        field: message
+        target_field: log_pattern
     ```
   </CodeCol>
   <CommentCol>
@@ -119,11 +120,12 @@ Long messages are truncated, and specific identifiers are replaced with generic 
     }
     ```
     ```yaml
-    pattern:
-      field: message
-      target_field: log_pattern
-      custom_patterns:
-        - ERROR_CODE: "ERR\\d{4}"
+    processors:
+      - pattern:
+        field: message
+        target_field: log_pattern
+        custom_patterns:
+          - ERROR_CODE: "ERR\\d{4}"
     ```
   </CodeCol>
   <CommentCol>
@@ -156,10 +158,11 @@ Long messages are truncated, and specific identifiers are replaced with generic 
     }
     ```
     ```yaml
-    pattern:
-      field: message
-      target_field: log_pattern
-      tokenize_all: true
+    processors:
+      - pattern:
+        field: message
+        target_field: log_pattern
+        tokenize_all: true
     ```
   </CodeCol>
   <CommentCol>
@@ -192,12 +195,13 @@ Long messages are truncated, and specific identifiers are replaced with generic 
     }
     ```
     ```yaml
-    pattern:
-      field: message
-      target_field: log_pattern
-      ignore_failure: true
-      on_failure:
-        - append:
+    processors:
+      - pattern:
+        field: message
+        target_field: log_pattern
+        ignore_failure: true
+        on_failure:
+          - append:
             field: tags
             value: pattern_parse_error
     ```

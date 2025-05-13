@@ -16,7 +16,7 @@ Uses Grok patterns to identify and redact sensitive information in text fields. 
 ## Schema
 
 ```yaml {2-3}
-redact:
+- redact:
   field: <ident>
   patterns: <string[]>
   description: <text>
@@ -79,10 +79,11 @@ Applying many patterns to large volumes of text may impact performance. Consider
     }
     ```
     ```yaml
-    redact:
-      field: message
-      patterns:
-        - "%{EMAILADDRESS:email}"
+    processors:
+      - redact:
+        field: message
+        patterns:
+          - "%{EMAILADDRESS:email}"
     ```
   </CodeCol>
   <CommentCol>
@@ -110,13 +111,14 @@ Applying many patterns to large volumes of text may impact performance. Consider
     }
     ```
     ```yaml
-    redact:
-      field: log
-      patterns:
-        - "%{IP:client}"
-        - "%{EMAILADDRESS:email}"
-      prefix: "["
-      suffix: "]"
+    processors:
+      - redact:
+        field: log
+        patterns:
+          - "%{IP:client}"
+          - "%{EMAILADDRESS:email}"
+        prefix: "["
+        suffix: "]"
     ```
   </CodeCol>
   <CommentCol>
@@ -144,12 +146,13 @@ Applying many patterns to large volumes of text may impact performance. Consider
     }
     ```
     ```yaml
-    redact:
-      field: data
-      patterns:
-        - "%{CUSTOMER_ID:id}"
-      pattern_definitions:
-        - CUSTOMER_ID: "[A-Z]{3}-\d{5}-[A-Z]{2}"
+    processors:
+      - redact:
+        field: data
+        patterns:
+          - "%{CUSTOMER_ID:id}"
+        pattern_definitions:
+          - CUSTOMER_ID: "[A-Z]{3}-\d{5}-[A-Z]{2}"
     ```
   </CodeCol>
   <CommentCol>
@@ -172,13 +175,14 @@ Applying many patterns to large volumes of text may impact performance. Consider
   </CommentCol>
   <CodeCol>
     ```yaml
-    redact:
-      field: nonexistent_field
-      patterns:
-        - "%{IP:client}"
-      ignore_missing: true
-      on_failure:
-        - append:
+    processors:
+      - redact:
+        field: nonexistent_field
+        patterns:
+          - "%{IP:client}"
+        ignore_missing: true
+        on_failure:
+          - append:
             field: tags
             value: redaction_failed
     ```

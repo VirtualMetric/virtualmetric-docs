@@ -16,7 +16,7 @@ Renames one or more fields in the document. Supports both single field renaming 
 ## Schema
 
 ```yaml
-rename:
+- rename:
   field: <ident>
   fields:
     - from: <ident>
@@ -76,9 +76,10 @@ Be careful when renaming fields that are part of a nested structure. The process
     }
     ```
     ```yaml
-    rename:
-      field: old_name
-      target_field: full_name
+    processors:
+      - rename:
+        field: old_name
+        target_field: full_name
     ```
   </CodeCol>
   <CommentCol>
@@ -109,14 +110,15 @@ Be careful when renaming fields that are part of a nested structure. The process
     }
     ```
     ```yaml
-    rename:
-      fields:
-        - from: src_ip
-          to: source.ip
-        - from: dst_ip
-          to: destination.ip
-        - from: src_port
-          to: source.port
+    processors:
+      - rename:
+        fields:
+          - from: src_ip
+            to: source.ip
+          - from: dst_ip
+            to: destination.ip
+          - from: src_port
+            to: source.port
     ```
   </CodeCol>
   <CommentCol>
@@ -152,9 +154,10 @@ Be careful when renaming fields that are part of a nested structure. The process
     }
     ```
     ```yaml
-    rename:
-      field: "{{{type}}}_name"
-      target_field: name
+    processors:
+      - rename:
+        field: "{{{type}}}_name"
+        target_field: name
     ```
   </CodeCol>
   <CommentCol>
@@ -184,15 +187,16 @@ Be careful when renaming fields that are part of a nested structure. The process
     }
     ```
     ```yaml
-    rename:
-      fields:
-        - from: existing_field
-            to: new_field
-        - from: missing_field
-            to: other_field
-      ignore_missing: true
-      on_failure:
-        - append:
+    processors:
+      - rename:
+        fields:
+          - from: existing_field
+              to: new_field
+          - from: missing_field
+              to: other_field
+        ignore_missing: true
+        on_failure:
+          - append:
             field: tags
             value: rename_incomplete
     ```

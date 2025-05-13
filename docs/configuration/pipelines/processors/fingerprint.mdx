@@ -16,7 +16,7 @@ Generates a cryptographic hash of specified document fields to create a unique f
 ## Schema
 
 ```yaml {2}
-fingerprint:
+- fingerprint:
   fields: <ident[]>
   method: <string>
   target_field: <ident>
@@ -87,29 +87,32 @@ Common use cases:
 
 * **Document Deduplication**
  
-   ```yaml
-   fingerprint:
-     fields: ["content", "metadata"]
-     method: SHA-256
-     target_field: content_hash
-   ```
+  ```yaml
+  processors:
+    - fingerprint:
+      fields: ["content", "metadata"]
+      method: SHA-256
+      target_field: content_hash
+  ```
 
 * **Change Detection**
    
-   ```yaml
-   fingerprint:
-     fields: ["user.profile", "user.settings"]
-     method: SHA-1
-     target_field: profile_hash
-   ```
+  ```yaml
+  processors:
+    - fingerprint:
+      fields: ["user.profile", "user.settings"]
+      method: SHA-1
+      target_field: profile_hash
+  ```
 
 * **Data Integrity**
  
-   ```yaml
-   fingerprint:
-     fields: ["payload"]
-     method: SHA-512
-     salt: "verification-key"
+  ```yaml
+  processors:
+    - fingerprint:
+      fields: ["payload"]
+      method: SHA-512
+      salt: "verification-key"
    ```
 
 ## Examples
@@ -128,10 +131,11 @@ Common use cases:
     }
     ```
     ```yaml
-    fingerprint:
-      fields: ["field1", "field2"]
-      method: SHA-256
-      target_field: doc_hash
+    processors:
+      - fingerprint:
+        fields: ["field1", "field2"]
+        method: SHA-256
+        target_field: doc_hash
     ```
   </CodeCol>
   <CommentCol>
@@ -165,10 +169,11 @@ Common use cases:
     }
     ```
     ```yaml
-    fingerprint:
-      fields: ["user"]
-      method: SHA-1
-      target_field: user_hash
+    processors:
+      - fingerprint:
+        fields: ["user"]
+        method: SHA-1
+        target_field: user_hash
     ```
   </CodeCol>
   <CommentCol>
@@ -202,10 +207,11 @@ Common use cases:
     }
     ```
     ```yaml
-    fingerprint:
-      fields: ["email", "timestamp"]
-      method: SHA-512
-      salt: "my-secret-salt"
+    processors:
+      - fingerprint:
+        fields: ["email", "timestamp"]
+        method: SHA-512
+        salt: "my-secret-salt"
     ```
   </CodeCol>
   <CommentCol>
@@ -235,10 +241,11 @@ Common use cases:
     }
     ```
     ```yaml
-    fingerprint:
-      fields: ["field1", "field2"]
-      ignore_missing: true
-      method: SHA-256
+    processors:
+      - fingerprint:
+        fields: ["field1", "field2"]
+        ignore_missing: true
+        method: SHA-256
     ```
   </CodeCol>
   <CommentCol>

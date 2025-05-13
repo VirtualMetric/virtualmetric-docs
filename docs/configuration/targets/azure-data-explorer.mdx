@@ -9,22 +9,22 @@ Creates an Azure Data Explorer (Kusto) target that ingests data directly into Az
 ## Schema
 
 ```yaml
-name: <string>
-description: <string>
-type: azdx
-pipelines: <pipeline[]>
-status: <boolean>
-properties:
-  tenant_id: <string>
-  client_id: <string>
-  client_secret: <string>
-  endpoint: <string>
-  database: <string>
-  table: <string>
-  type: <string>
-  max_retry: <numeric>
-  retry_interval: <numeric>
-  max_size: <numeric>
+- name: <string>
+  description: <string>
+  type: azdx
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    endpoint: <string>
+    database: <string>
+    table: <string>
+    type: <string>
+    max_retry: <numeric>
+    retry_interval: <numeric>
+    max_size: <numeric>
 ```
 
 ## Configuration
@@ -88,13 +88,14 @@ Large batch sizes may impact memory usage during ingestion.
 The minimum required configuration for Parquet ingestion:
 
 ```yaml
-name: basic_adx
-type: azdx
-properties:
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "11111111-1111-1111-1111-111111111111"
-  client_secret: "your-client-secret"
-  endpoint: "https://cluster.region.kusto.windows.net"
+targets:
+  - name: basic_adx
+    type: azdx
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "11111111-1111-1111-1111-111111111111"
+      client_secret: "your-client-secret"
+      endpoint: "https://cluster.region.kusto.windows.net"
 ```
 
 ### Custom
@@ -102,16 +103,17 @@ properties:
 Configuration with specific database and table:
 
 ```yaml
-name: custom_adx
-type: azdx
-properties:
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "11111111-1111-1111-1111-111111111111"
-  client_secret: "your-client-secret"
-  endpoint: "https://cluster.region.kusto.windows.net"
-  database: "logs"
-  table: "system_events"
-  type: "json"
+targets:
+  - name: custom_adx
+    type: azdx
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "11111111-1111-1111-1111-111111111111"
+      client_secret: "your-client-secret"
+      endpoint: "https://cluster.region.kusto.windows.net"
+      database: "logs"
+      table: "system_events"
+      type: "json"
 ```
 
 ### High-Volume
@@ -119,26 +121,18 @@ properties:
 Configuration optimized for high-volume ingestion:
 
 ```yaml
-name: high_volume_adx
-type: azdx
-properties:
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "11111111-1111-1111-1111-111111111111"
-  client_secret: "your-client-secret"
-  endpoint: "https://cluster.region.kusto.windows.net"
-  type: "parquet"
-  max_retry: 10
-  retry_interval: 30
-  max_size: 536870912
-```
-
-### Normalized
-
-Using data normalization before ingestion:
-
-```yaml
-name: normalized_adx
-type: azdx
+targets:
+  - name: high_volume_adx
+    type: azdx
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "11111111-1111-1111-1111-111111111111"
+      client_secret: "your-client-secret"
+      endpoint: "https://cluster.region.kusto.windows.net"
+      type: "parquet"
+      max_retry: 10
+      retry_interval: 30
+      max_size: 536870912
 pipelines:
   - normalize_logs
 properties:

@@ -9,26 +9,26 @@ Creates a target that ingests log messages into Microsoft Sentinel workspace tab
 ## Schema
 
 ```yaml
-name: <string>
-description: <string>
-type: sentinel
-pipelines: <pipeline[]>
-status: <boolean>
-properties:
-  tenant_id: <string>
-  client_id: <string>
-  client_secret: <string>
-  rule_id: <string>
-  endpoint: <string>
-  streams:
-    - name: <string>
-      rule_id: <string>
-  buffer_size: <numeric>
-  keep_phantom_fields: <boolean>
-  drop_unknown_stream_events: <boolean>
-  cache:
-    timeout: <numeric>
-  format: <string>
+- name: <string>
+  description: <string>
+  type: sentinel
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    rule_id: <string>
+    endpoint: <string>
+    streams:
+      - name: <string>
+        rule_id: <string>
+    buffer_size: <numeric>
+    keep_phantom_fields: <boolean>
+    drop_unknown_stream_events: <boolean>
+    cache:
+      timeout: <numeric>
+    format: <string>
 ```
 
 ## Configuration
@@ -135,13 +135,14 @@ Autodiscovery adapts to environment changes automatically.
 Configuration using Resource ID-based autodiscovery:
 
 ```yaml
-name: auto_sentinel
-type: sentinel
-properties:
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "00000000-0000-0000-0000-000000000000"
-  client_secret: "your-client-secret"
-  endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+targets:
+  - name: auto_sentinel
+    type: sentinel
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
 ```
 
 ### Managed Identity
@@ -149,10 +150,11 @@ properties:
 Using _Managed Identity Authentication_ instead of _App Registration_:
 
 ```yaml
-name: managed_identity_sentinel
-type: sentinel
-properties:
-  endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+targets:
+  - name: managed_identity_sentinel
+    type: sentinel
+    properties:
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
 ```
 
 ### Filtered
@@ -160,20 +162,21 @@ properties:
 Using specific stream filtering and custom cache timeout:
 
 ```yaml
-name: filtered_autodiscovery
-type: sentinel
-properties:
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "00000000-0000-0000-0000-000000000000"
-  client_secret: "your-client-secret"
-  endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
-  streams:
-    - name: "Custom-WindowsEvent"
-    - name: "Custom-SecurityEvent"
-  cache:
-    timeout: 300  # 5 minutes
-  keep_phantom_fields: false
-  drop_unknown_stream_events: true
+targets:
+  - name: filtered_autodiscovery
+    type: sentinel
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+      streams:
+        - name: "Custom-WindowsEvent"
+        - name: "Custom-SecurityEvent"
+      cache:
+        timeout: 300  # 5 minutes
+      keep_phantom_fields: false
+      drop_unknown_stream_events: true
 ```
 
 :::warning
@@ -189,20 +192,21 @@ Enabling `drop_unknown_stream_events` silently discards unmatched events.
 Optimization for high-volume ingestion:
 
 ```yaml
-name: optimized_sentinel
-type: sentinel
-pipelines:
-  - normalization
-properties:
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "00000000-0000-0000-0000-000000000000"
-  client_secret: "your-client-secret"
-  endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
-  buffer_size: 5242880  # 5MB
-  format: "asim"
-  streams:
-    - name: "Custom-ASimProcessEventLogs"
-    - name: "Custom-ASimNetworkSessionLogs"
+targets:
+  - name: optimized_sentinel
+    type: sentinel
+    pipelines:
+      - normalization
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+      buffer_size: 5242880  # 5MB
+      format: "asim"
+      streams:
+        - name: "Custom-ASimProcessEventLogs"
+        - name: "Custom-ASimNetworkSessionLogs"
 ```
 
 :::tip
