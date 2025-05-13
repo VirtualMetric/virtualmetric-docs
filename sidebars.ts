@@ -92,6 +92,7 @@ const sidebars: SidebarsConfig = {
       label: "Configuration",
       link: {type: "doc", id: "configuration/index"},
       items: [
+        "configuration/cli",
         {
           type: "category",
           label: "Devices",
