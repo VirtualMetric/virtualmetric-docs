@@ -28,7 +28,7 @@ const customTheme: PrismTheme = {
       },
     },
     {
-      types: ['boolean', 'rule', 'color', 'number', 'constant', 'property'],
+      types: ['boolean', 'color', 'number', 'constant', 'property', 'rule'],
       style: {
         color: '#FFDE59',
       },
