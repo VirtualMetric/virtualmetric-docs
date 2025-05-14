@@ -11,17 +11,17 @@ const sidebars: SidebarsConfig = {
         'about/applications',
         'about/features',
         'about/benchmarks',
-        {
-          type: "category",
-          label: "Comparisons",
-          link: {type: "doc", id: "about/comparisons/index"},
-          items: [
-            'about/comparisons/cribl',
-            'about/comparisons/logstash',
-            'about/comparisons/tenzir',
-            'about/comparisons/vector',
-          ]
-        },
+        // {
+        //   type: "category",
+        //   label: "Comparisons",
+        //   link: {type: "doc", id: "about/comparisons/index"},
+        //   items: [
+        //     'about/comparisons/cribl',
+        //     'about/comparisons/logstash',
+        //     'about/comparisons/tenzir',
+        //     'about/comparisons/vector',
+        //   ]
+        // },
         'about/licensing',
         // 'about/release-notes',
       ],
