@@ -2,7 +2,9 @@ import {themes, type PrismTheme} from 'prism-react-renderer';
 
 const baseTheme = themes.vsDark;
 const customTheme: PrismTheme = {
-  ...baseTheme,
+  plain: {
+    backgroundColor: '#060207',
+  },
   styles: [
     ...baseTheme.styles,
     {
@@ -82,7 +84,7 @@ const customTheme: PrismTheme = {
       types: ['comment'],
       style: {
         color: '#CECECE',
-        fontStyle: 'normal'
+        fontStyle: 'normal',
       },
     },
   ],

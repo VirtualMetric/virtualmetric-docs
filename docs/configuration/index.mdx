@@ -180,26 +180,25 @@ pipelines:
   - name: security_enrichment
     processors:
       - grok:
-          field: message
-          patterns:
-            - "%{CISCOFW106001}"
+        field: message
+        patterns:
+          - "%{CISCOFW106001}"
       - set:
-          field: event.category
-          value: security
+        field: event.category
+        value: security
       - geoip:
-          field: source.ip
-          target_field: source.geo
+        field: source.ip
+        target_field: source.geo
 targets:
   - name: security_elasticsearch
     type: elasticsearch
     properties:
-      url:
-        - https://es.example.com:9200
-      index: security-%{+yyyy.MM.dd}  
+      url: "https://es.example.com:9200"
+      index: "security-%{+yyyy.MM.dd}"
   - name: security_team_notification
     type: webhook
     properties:
-      url: https://alerts.example.com/security
+      url: "https://alerts.example.com/security"
       method: POST
 ```
 
