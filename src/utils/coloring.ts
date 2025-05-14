@@ -3,7 +3,8 @@ import {themes, type PrismTheme} from 'prism-react-renderer';
 const baseTheme = themes.vsDark;
 const customTheme: PrismTheme = {
   plain: {
-    backgroundColor: '#060207',
+    color: '#99F5F9',
+    backgroundColor: '#3D404D',
   },
   styles: [
     ...baseTheme.styles,
@@ -29,7 +30,7 @@ const customTheme: PrismTheme = {
     {
       types: ['boolean', 'rule', 'color', 'number', 'constant', 'property'],
       style: {
-        color: '#99F5F9',
+        color: '#FFDE59',
       },
     },
     {
