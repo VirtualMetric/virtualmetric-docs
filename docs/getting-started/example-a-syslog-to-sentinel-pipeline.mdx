@@ -164,11 +164,11 @@ Finally, we have to create a route to connect our device to the pipeline and the
 routes:
   - name: syslog_to_sentinel_route
     description: "Route Syslog data to Microsoft Sentinel ASIM"
-    sources:
+    devices:
       - name: syslog_server
     pipelines:
-      - syslog_to_sentinel
-    destinations:
+      - name: syslog_to_sentinel
+    targets:
       - name: sentinel_asim
 ```
 
@@ -202,9 +202,6 @@ We will first validate the pipeline:
   </TabItem>
 </Tabs>
 
-
 When **Director** is invoked with the specified configuration file, it starts sending _Syslog_ messages to port **1514**.
 
-Check the logs for any errors, and verify in **Microsoft Sentinel** that data is being received in the ASIM format.
-
-{/* TODO: How? */}
+Check the logs for any errors, and verify in **Microsoft Sentinel** that data is being received in the [ASIM](/docs/appendix.mdx#asim) format.
