@@ -40,7 +40,7 @@ const customTheme: PrismTheme = {
       },
     },
     {
-      types: ['operator', 'unit', 'rule'],
+      types: ['operator', 'unit'],
       style: {
         color: '#99F5F9',
       },
