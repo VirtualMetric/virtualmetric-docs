@@ -50,9 +50,14 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
           lastVersion: "current",
+          versions: {
+            current: {
+              label: "1.0.2",
+            }
+          }
         },
         googleTagManager: {
-          containerId: 'VirtualMetric-1.0.1',
+          containerId: 'VirtualMetric-1.0.2',
         },
         blog: {
           showReadingTime: true,
