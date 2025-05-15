@@ -50,11 +50,12 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
           lastVersion: "current",
+          includeCurrentVersion: true,
           versions: {
             current: {
               label: "1.0.2",
             }
-          }
+          },
         },
         googleTagManager: {
           containerId: 'VirtualMetric-1.0.2',
@@ -125,6 +126,10 @@ const config: Config = {
           type: "search",
           position: "right",
         },
+        {
+          type: "docsVersionDropdown",
+          position: "right"
+        }
       ],
     },
     footer: {
