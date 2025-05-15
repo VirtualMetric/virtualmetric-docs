@@ -1,0 +1,152 @@
+# UDP
+
+<span className="theme-doc-version-badge badge badge--secondary">Push</span>
+
+## Synopsis
+
+Creates a server that accepts network messages over UDP connections. Supports High-Volume message ingestion with configurable workers and buffering options.
+
+## Schema
+
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: udp
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    batch_size: <numeric>
+    queue:
+      interval: <numeric>
+```
+
+## Configuration
+
+The following are the minimum requirements to define the device.
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `udp`|
+|`status`|N|`true`|Enable/disable the device|
+
+### Network
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y||Listen port|
+
+## Advanced Configuration
+
+To enhance performance and achieve better event handling, the following settings are used.
+
+### Performance Tuning
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable socket address reuse|
+|`workers`|N|`<dynamic>`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Network read buffer size in bytes|
+
+### Messages
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`1000`|Number of messages to batch before processing|
+|`queue.interval`|N|`1`|Queue processing interval in seconds|
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic
+
+A basic server can be easily set up using the defaults for address, buffer size, and a single worker process.
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a simple UDP server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_udp
+      type: udp
+      properties:
+        port: 514
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+Performance can be enhanced using multiple workersi a larger buffer size, a larger batch size, and a longer queue interval.
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high message volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: performant_udp
+      type: udp
+      properties:
+        address: "0.0.0.0"
+        port: 514
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        batch_size: 5000
+        queue:
+          interval: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+The worker count will be automatically capped at the number of available cores.
+:::
+
+### Multiple Ports
+
+Multiple UDP servers can be used with different ports, separate workers, and independent message queues.
+
+<ExampleGrid>
+  <CommentCol>
+    Listening on multiple ports using separate configurations...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: udp_server_1
+      type: udp
+      properties:
+        port: 514
+        workers: 2
+
+    - id: 4
+      name: udp_server_2
+      type: udp
+      properties:
+        port: 515
+        workers: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When running multiple UDP servers, ensure that each configuration has a unique port number, and consider the total number of workers across all instances relative to the available system resources.
+:::

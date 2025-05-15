@@ -1,0 +1,232 @@
+# Redis
+
+<span className="theme-doc-version-badge badge badge--secondary">Pull</span><span className="theme-doc-version-badge badge badge--secondary">Push</span>
+
+## Synopsis
+
+Creates a Pub/Sub subscriber that connects to Redis servers and processes messages from specified channels. Supports authentication, TLS encryption, and multiple workers with automatic message handling.
+
+## Schema
+
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: redis
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    username: <string>
+    password: <string>
+    channel: <string>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    stats_frequency: <numeric>
+    tls:
+      status: <boolean>
+      cert_name: <string>
+      key_name: <string>
+```
+
+## Configuration
+
+The following are the minimum requirements to define the device.
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `redis`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Redis server address|
+|`port`|Y||Redis server port|
+|`username`|N|-|Authentication username|
+|`password`|N|-|Authentication password|
+|`channel`|Y||Channel pattern to subscribe to|
+
+### TLS
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y||TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y||TLS private key file path (required if TLS enabled)|
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
+### Performance
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`false`|Enable multi-worker mode|
+|`workers`|N|`4`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Read buffer size in bytes|
+|`stats_frequency`|N|`300`|Statistics collection interval in seconds|
+
+## Advanced Features
+
+The following are unique features that **Director** offers.
+
+### Channel Patterns
+
+The collector supports Redis Pub/Sub channel consuming with exact matching (e.g. `logs`) and single- or multi-pattern matching (e.g. `logs.*` or `logs.* app.*`).
+
+### Multiple Workers
+
+When `reuse` is enabled, the collector uses multiple workers which maintain their own Redis subscriptions and process messages independently thanks to which messages are automatically distributed.
+
+:::note
+The worker count is capped at the number of available CPU cores.
+:::
+
+### Messages
+
+The collector supports pattern-based subscriptions, multiple channel subscriptions, and custom message processing pipelines. It also supports TLS-encrypted connections and authentication methods.
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic
+
+A basic collector can be easily created:
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a simple Redis subscriber...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_redis
+      type: redis
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        channel: "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure
+
+The collector can connect to secure Redis servers:
+
+<ExampleGrid>
+  <CommentCol>
+    Connecting with authentication and encryption...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: secure_redis
+      type: redis
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        username: "subscriber"
+        password: "secret"
+        channel: "secure.logs"
+        tls:
+          status: true
+          cert_name: "redis.crt"
+          key_name: "redis.key"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+Performance can be enhanced for high message volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high throughput...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: performant_redis
+      type: redis
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        channel: "high-volume"
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Pattern Subscription
+
+Messages can be filtered using pattern-based matching:
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring pattern-based subscriptions...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: pattern_redis
+      type: redis
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        channel: "logs.*"
+        reuse: true
+        workers: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::tip
+Redis channel patterns support the `*` wildcard character for matching multiple channels.
+:::
+
+### Pipelines
+
+Messages can be pre-processed:
+
+<ExampleGrid>
+  <CommentCol>
+    Applying custom processing to messages...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: pipeline_redis
+      type: redis
+      pipelines:
+        - json_parser
+        - field_extractor
+      properties:
+        address: "redis.example.com"
+        port: 6379
+        channel: "raw.logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed sequentially, and can modify or drop messages before ingestion.
+:::

@@ -1,0 +1,167 @@
+import AppProtocols from "./_app-protocols.mdx"
+
+# sFlow
+
+<span className="theme-doc-version-badge badge badge--secondary">Push</span>
+
+## Synopsis
+
+Creates an sFlow collector that accepts flow sampling data over UDP connections. Supports High-Volume collection with multiple workers and configurable buffer sizes.
+
+See [Appendix](/appendix.mdx#sflow) for details.
+
+## Schema
+
+```yaml
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: sflow
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    reuse: <boolean>
+    buffer_size: <numeric>
+    stats_frequency: <numeric>
+```
+
+## Configuration
+
+The following are the minimum requirements to define the device.
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `sflow`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
+
+### Network
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|N|`6343`|Listen port|
+|`reuse`|N|`true`|Enable socket address reuse|
+
+### Performance
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`buffer_size`|N|`9000`|Network read buffer size in bytes|
+|`stats_frequency`|N|`300`|Statistics collection interval in seconds|
+
+## Advanced Features
+
+The following are unique features that **Director** offers.
+
+### Multiple Workers
+
+When `reuse` is enabled, the collector automatically scales to use multiple worker processes based on available CPU cores. Each worker maintains its own UDP listener, processes flows independently, and writes to a dedicated queue file.
+
+:::note
+The collector automatically scales up to use all available CPU cores.
+:::
+
+### Flows
+
+The collector supports interface-counter sampling, packet-flow sampling, application identification, port-based protocol mapping, flow-state tracking, and statistical aggregation.
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic
+
+The minimum required configuration using defaults:
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a simple sFlow collector...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: basic_sflow
+      type: sflow
+      properties:
+        port: 6343
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+Performance can be enhanced for high flow volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high message volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: performant_sflow
+      type: sflow
+      properties:
+        address: "0.0.0.0"
+        port: 6343
+        reuse: true
+        buffer_size: 32768
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Agents
+
+Multiple sFlow agents can be used for collection:
+
+<ExampleGrid>
+  <CommentCol>
+    Collecting from multiple network devices...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: multi_agent_sflow
+      type: sflow
+      properties:
+        address: "0.0.0.0"
+        port: 6343
+        reuse: true
+        buffer_size: 16384
+        stats_frequency: 60
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+All sFlow agents must be configured to send to the same collector port.
+:::
+
+<AppProtocols />
+
+<ExampleGrid>
+  <CommentCol>
+    Basic flow collection with application identification...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: app_aware_sflow
+      type: sflow
+      properties:
+        port: 6343
+        reuse: true
+        buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>
