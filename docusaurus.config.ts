@@ -106,12 +106,6 @@ const config: Config = {
         height: 18,
       },
       items: [
-        // {
-        //   type: "docSidebar",
-        //   sidebarId: "userDocs",
-        //   position: "left",
-        //   label: "Documentation",
-        // },
         {
           to: "https://community.virtualmetric.com/",
           position: "left",
