@@ -46,63 +46,103 @@ The expressions below describe the various stages where these components are use
 
 To help design the logic of the components that will define and run the processes of the above-mentioned stages, **DataStream** utilizes YAML-based configuration files. These can be found in some of the folders under its root directory, here indicated with `<vm_root>`:
 
-<blockquote>
-+ `<vm_root>/config/devices/`
-  - `syslog.yml`
-  - `estreamer.yml`
-  - `tcp.yml`
-+ `<vm_root>/config/targets/`
-  - `console.yml`
-  - `file.yml`
-+ `<vm_root>/config/routes/`
-  - `default.yml`
-+ `<vm_root>/config/vmetric.yml`
-+ `<vm_root>/package/definitions/pipelines/`
-  - `checkpoint.yml`
-  - `cisco.yml`
-  - `normalize.yml`
-+ `<vm_root>/user/definitions/pipelines/`
-  - `checkpoint.yml`
-  - `normalize.yml`
-</blockquote>
+```powershell
+<vm_root>
+│   vmetric.yml
+│
+├───config
+│   ├───devices
+│   │       estreamer.yml
+│   │       syslog.yml
+│   │       tcp.yml
+│   │
+│   ├───routes
+│   │       default.yml
+│   │
+│   └───targets
+│           console.yml
+│           file.yml
+│
+├───package
+│   └───definitions
+│       └───pipelines
+│               checkpoint.yml
+│               cisco.yml
+│               normalize.yml
+│
+└───user
+    └───definitions
+        └───pipelines
+                checkpoint.yml
+                normalize.yml
+```
 
 All tasks are carried out using these configuration files.
 
 By default, these files are located based on their component types. They contain predefined fields that the components recognize, and **Director** uses the settings in these fields to spawn and run its processes.
 
-Two directories are of significance: `package` and `user`.
+* Two directories are of importance: `package` and `user`.
 
-The `package` directory contains templates and ready-to-use definitions. These definitions are updated with newer versions of **Director**.
+  The `package` directory contains templates and ready-to-use definitions. These definitions are updated with newer versions of **Director**.
 
-:::warning
-Never modify the definition files under `package` directly. To create a configuration using one of these as a template, copy the relevant file to the corresponding location under `user` first, and then edit it.
-:::
+  :::warning
+  Never modify the definition files under `package` directly. To create a configuration using one of these as a template, copy the relevant file to the corresponding location under `user` first, and then edit it.
+  :::
 
-The `user` directory contains custom configurations. These definitions take precedence over those under the `package` directory. The definitions here are preserved between updates.
+  The `user` directory contains custom configurations. These definitions take precedence over those under the `package` directory. The definitions here are preserved between updates.
 
-The configurations may be placed in separate files or they may be grouped together logically, i.e. based on their intended purpose of use or the type of data streams they process. By default, these files reside in the directories under the `config` folder.
+* The configurations may be placed in separate files or they may be grouped together logically, i.e. based on their intended purpose of use or the type of data streams they process. By default, these files reside in the directories under the `config` folder.
 
-:::tip
-You can place your files anywhere you wish under the `config` directory. **Director** discovers all of them by traversing the folders recursively.
-:::
+  :::tip
+  You can place your files anywhere you wish under the `config` directory. **Director** discovers all of them by traversing the folders recursively.
+  :::
 
-To illustrate, a target configuration file can be named as, e.g.
+  To illustrate, a target configuration file can be named as, e.g.
 
-> `config/target.yml`
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+      > `C:\<vm_root>\config\target.yml`
 
--or-
+      -or-
 
-> `config/targets/outputs.yml`
+      > `C:\<vm_root>\config\targets\outputs.yml`
 
--or-
+      -or-
 
-> `config/targets/outputs/sentinel.yml`
+      > `C:\<vm_root>\config\targets\outputs\sentinel.yml`
 
-As the nesting level increases, file names become more specific, offering additional context for classification.
+    </TabItem>
+    <TabItem value="linux" label="Linux" default>
+      > `/usr/bin/<vm_root>/config/target.yml`
 
-It is also possible to use _standalone_ files placed in any arbitrary directory you wish. In that case, however, the full path of the file must be supplied to **Director**.
+      -or-
 
-Select the organizational style that best suits your needs.
+      > `/usr/bin/<vm_root>/config/targets/outputs.yml`
+
+      -or-
+
+      > `/usr/bin/<vm_root>/config/targets/outputs/sentinel.yml`
+
+    </TabItem>
+    <TabItem value="macos" label="macOS" default>
+      > `/Applications/<vm_root>/config/target.yml`
+
+      -or-
+
+      > `/Applications/<vm_root>/config/targets/outputs.yml`
+
+      -or-
+
+      > `/Applications/<vm_root>/config/targets/outputs/sentinel.yml`
+
+    </TabItem>
+  </Tabs>
+
+  As the nesting level increases, file names become more specific, offering additional context for classification.
+
+  It is also possible to use _standalone_ files placed in any arbitrary directory you wish. In that case, however, the full path of the file must be supplied to **Director**.
+
+  Select the organizational style that best suits your needs.
 
 ## General Format
 
@@ -111,19 +151,22 @@ All components follow a consistent YAML structure that emphasizes readability an
 :::warning[attention]
 Configurations must conform to [these syntactic rules](/docs/appendix.mdx#configuration-bnf).
 
-The **Schema** sections of relevant chapters provide the specific fields of the components.
+The **Overview** sections of the component types summarize their common fields under the **Configuration** heading. 
+
+The **Schema** paragraphs of specific component sections provide their fields.
 :::
 
 ### Properties
 
 All components have properties&mdash;i.e. yaml fields with parameters&mdash;that define their specific behavior. Some of these are mandatory and must be present in every component.
 
+A few are worth mentioning since they are frequently used:
+
 * **Identification** - Every component requires unique identification:
 
   ```yaml
   - id: 1                   # Numeric identifier
     name: example_component # Human-readable name
-    description: "Optional detailed explanation" # Documentation
   ```
 
 * **Status Control** - Components can be enabled or disabled:
@@ -142,14 +185,14 @@ All components have properties&mdash;i.e. yaml fields with parameters&mdash;that
     password: ${SECRET_PASSWORD}  # References environment variable
   ```
 
-* **Tagging** - Components can be tagged for better organization:
+* **Tagging** - Components can be tagged for better organization, and&mdash;optionally&mdash;a description can be used to document its purpose:
 
   ```yaml
   - id: 1
     name: example_component
-    description: "Optional detailed explanation"
+    description: "Optional detailed explanation" # Documentation
     tags:
-      - production
+      - production  # For quick search
       - security
   ```
 
@@ -157,25 +200,35 @@ All components have properties&mdash;i.e. yaml fields with parameters&mdash;that
 
 The system implements a modular architecture of components working together to create complete data flows. The following example illustrates a security monitoring flow:
 
+As an example, assume we have a `critical_security` route defined like so:
+
 ```yaml
 routes:
   - name: critical_security
     devices:
-      - firewall_logs
-    condition: "event.severity == 'critical'"
+      - name: firewall_logs
+    if: "event.severity == 'critical'"
     pipelines:
-      - security_enrichment
+      - name: security_enrichment
     targets:
-      - security_elasticsearch
-      - security_team_notification
+      - name: security_elasticsearch
+      - name: security_team_notification
+```
 
+The above definion means, it uses a `firewall_logs` device:
+
+```yaml
 devices:
   - id: 1
     name: firewall_logs
     type: syslog
     properties:
       port: 514
+```
 
+a `security_enrichment` pipeline:
+
+```yaml
 pipelines:
   - name: security_enrichment
     processors:
@@ -189,6 +242,11 @@ pipelines:
       - geoip:
         field: source.ip
         target_field: source.geo
+```
+
+and two targets named `security_elasticsearch` and `security_team_notification`:
+
+```yaml
 targets:
   - name: security_elasticsearch
     type: elasticsearch
@@ -202,29 +260,55 @@ targets:
       method: POST
 ```
 
-This configuration
+The components in this routing configuration do the following:
 
-* collects firewall logs via a _Syslog_ device
-* transforms raw logs into structured security events with pipelines
-* routes critical events to _Elasticsearch_ and a notification system
-* processes logs for security insights with a pipeline
-* delivers the results to multiple destinations
+* the device collects firewall logs from _Syslog_
+* the pipelines transform raw logs into structured security events and processes them for security insights
+* the targets forward critical events to _Elasticsearch_ and a notification system
 
 ### Validation
 
 Before deploying your configuration, check it using the available tools. The validator checks for syntactic correctness, required field presence, reference integrity, and logical consistency.
 
-- Check configuration file
+- Check the configuration file
 
-```bash
-vmetric -validate -c config.yaml
-```
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric -validate -c critical_security.yml
+      ```
+    </TabItem>
+    <TabItem value="linux" label="Linux" default>
+      ```bash
+      vmetric -validate -c critical_security.yml
+      ```
+    </TabItem>
+    <TabItem value="macos" label="macOS" default>
+      ```bash
+      vmetric -validate -c critical_security.yml
+      ```
+    </TabItem>
+  </Tabs>
 
 - Test configuration with sample data
 
-```bash
-vmetric -test -c config.yaml -i sample-data.json
-```
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric -test -c critical_security.yml -i sample-data.json
+      ```
+    </TabItem>
+    <TabItem value="linux" label="Linux" default>
+      ```bash
+      vmetric -test -c critical_security.yml -i sample-data.json
+      ```
+    </TabItem>
+    <TabItem value="macos" label="macOS" default>
+      ```bash
+      vmetric -test -c critical_security.yml -i sample-data.json
+      ```
+    </TabItem>
+  </Tabs>
 
 ## Best Practices
 
@@ -244,7 +328,7 @@ The following factors should be considered when designing your configuration:
 
 ### Administration
 
-Configuration administration involves creating, modifying, and managing configuration files. The following table summarizes common tasks and their suitable approaches:
+This involves creating, modifying, and managing the configuration files. The following table summarizes common tasks and suitable approaches to carry them out:
 
 | Task | Approach |
 |--:|:--|
@@ -255,6 +339,6 @@ Configuration administration involves creating, modifying, and managing configur
 | Secure sensitive data | Use environment variables for credentials and keys |
 | Structure complex configurations | Split into multiple files with logical organization |
 
-:::note
-Refer to specific component documentation for detailed configuration options and best practices.
+:::tip
+Refer to specific component documentation for detailed options and best practices.
 :::
