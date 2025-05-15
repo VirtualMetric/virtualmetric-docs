@@ -1,0 +1,27 @@
+# Post-processing
+
+This is the stage where pipelines attached to destinations perform final transformations before data reaches storage or analysis systems. These transformations ensure that the data meets destination-specific requirements and is optimized for storage efficiency.
+
+## Key Concepts
+
+The motivation for implementing this stage is rendering the data suitable for the destinations. As such, it involves the following:
+
+- Fields are optimized for storage and for queries using removal, renaming, restructuring, and format conversion. The latter two will typically involve the use of the `dot_nester` and `normalize` processors.
+
+- Data is directed to multiple destinations with  conditional routing logic based on content. Also, failover scenarios are handled at this stage. The `reroute` processor is suitable for this.
+
+  A typical case is _Microsoft Sentinel Integration_: the data is prepared by converting the data to the ASIM format with `normalize`, parsing the fields with `grok` or `kv`, and applying `network_direction` for traffic analysis.
+
+- Time-related transformations are made such as timestamps are converted with `date`, time-based indexes are created with `date_index_name`, and timestamps are cleaned with `gsub`.
+
+:::warning
+Heavy post-processing can impact delivery latency. Monitor and adjust based on performance requirements.
+:::
+
+## Best Practices
+
+For optimal performance: monitor latency, implement error handling, test with realistic data volumes, and verify destination compatibility.
+
+:::tip
+Align post-processing with destination capabilities to maximize performance and minimize storage costs.
+:::

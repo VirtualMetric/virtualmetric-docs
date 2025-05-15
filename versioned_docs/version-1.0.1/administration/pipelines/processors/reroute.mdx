@@ -1,0 +1,168 @@
+---
+description: Directs documents to specific destinations
+sidebar_custom_props:
+  customIcon: 🔀
+  customCategory: Control Flow
+---
+
+# Reroute
+
+<span className="theme-doc-version-badge badge badge--primary">Control Flow</span>
+
+## Synopsis
+
+Enables dynamic routing of logs to different target systems based on pipeline processing results.
+
+## Schema
+
+```yaml {2}
+reroute:
+  - destination: <string>
+  - description: <text>
+  - if: <script>
+  - ignore_failure: <boolean>
+  - on_failure: <processor[]>
+  - on_success: <processor[]>
+  - tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`destination`|Y|-|Name of the target system configuration to route to|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The Reroute processor is a powerful feature that allows you to make routing decisions after processing your logs through pipelines.
+
+While basic routing can be configured at the source level, Reroute gives you the ability to implement complex routing logic that depends on multiple conditions or transformations, and to route logs to different destinations based on the content extracted or transformed.
+
+:::warning
+Make sure the `destination` field matches exactly with a target system name in your configuration. Only one reroute processor will be executed even if there are multiple matches.
+:::
+
+The Reroute processor is particularly useful to achieve the following:
+
+* **Security** - Parse and normalize logs, enrich with threat intelligence, and route high-risk events to security platforms
+
+* **Compliance** - Filter sensitive data, apply transformations, and route them to compliance-mandated destinations
+
+* **Cost reduction** - Process high-volume logs, filter out unnecessary data, and route relevant logs to premium storage/analysis platforms
+
+## Examples
+
+### Microsoft Sentinel
+
+<ExampleGrid>
+  <CommentCol>
+    First, define your Sentinel target...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: auto_sentinel
+      type: sentinel
+      properties:
+        tenant_id: "00000000-0000-0000-0000-000000000000"
+        client_id: "00000000-0000-0000-0000-000000000000"
+        client_secret: "your-client-secret"
+        rule_id: "dcr-00000000-0000-0000-0000-000000000000"
+        endpoint: "https://your-dcr-endpoint"
+    ```
+  </CodeCol>
+  
+  <CommentCol>
+    then use Reroute to send the logs...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: security_pipeline
+        processors:
+          - grok:
+              field: message
+              pattern: '%{IPADDR:source_ip}'
+          - reroute:
+              if: 'source_ip matches "10.0.0.*"'
+              destination: auto_sentinel
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Process logs, and route them based on the extracted data...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: firewall_logs
+        processors:
+          - checkpoint:
+              field: message
+          - reroute:
+              if: 'checkpoint.action == "Drop" && checkpoint.severity >= 3'
+              destination: high_priority_sentinel
+          - reroute:
+              destination: standard_sentinel
+    ```
+  </CodeCol>
+  <CommentCol>
+    using different target configurations:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: high_priority_sentinel
+      type: sentinel
+      properties:
+        tenant_id: "tenant1"
+        # ... high priority
+        
+    - id: 2
+      name: standard_sentinel
+      type: sentinel
+      properties:
+        tenant_id: "tenant2"
+        # ... standard
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Stage
+
+<ExampleGrid>
+  <CommentCol>
+    Process logs through multiple stages before routing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: complex_processing
+        processors:
+          - json:
+              field: message
+          - grok:
+              field: parsed_message
+              pattern: '%{DATA:app_name}'
+          - user_agent:
+              field: user_agent
+          - geoip:
+              field: ip_address
+          - reroute:
+              if: 'geoip.country_code not in ["US", "CA"] && app_name == "core_banking"'
+              destination: security_analytics
+          - reroute:
+              destination: standard_logs
+    ```
+  </CodeCol>
+</ExampleGrid>

@@ -1,0 +1,237 @@
+---
+description: Enriches documents using lookup tables and SQL queries
+sidebar_custom_props: 
+  customIcon: 💠
+  customCategory: Enrich
+---
+
+# Enrich
+
+<span className="theme-doc-version-badge badge badge--primary">Enrich</span>
+
+## Synopsis
+
+Enriches documents by performing SQL queries against lookup tables loaded from CSV files or datasets. It can then join the data with externally referenced information to add context and semantic depth.
+
+## Schema
+
+```yaml {2-5}
+enrich:
+  - lookup_table: <string[]>
+  - dataset_name: <string[]>
+  - query: <string>
+  - type: <string>
+  - description: <text>
+  - if: <script>
+  - tag: <string>
+  - on_success: <processor[]>
+  - on_failure: <processor[]>
+  - override: <boolean>
+  - ignore_missing: <boolean>
+  - ignore_failure: <boolean>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`lookup_table`|N|-|Array of paths to CSV files containing lookup data|
+|`dataset_name`|N|-|Array of dataset names to load lookup data from|
+|`query`|Y|-|SQL or KQL query to execute for enrichment|
+|`type`|N|-|Query language type (`kusto` for KQL, empty for SQLite)|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if enrichment fails|
+|`ignore_missing`|N|`false`|Skip if fields don't exist|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`override`|N|`false`|If true, replaces existing document with query results|
+|`tag`|N|-|Identifier for logging|
+
+## Details
+
+Information gathering from external sources involves
+
+* loading lookup data from CSV files or datasets which may involve using SQL queries, including SQLite and Kusto Query Language (KQL),
+* extracting and manipulating JSON data, overriding fields, and
+* resolving conflicts.
+
+:::warning
+KQL queries are automatically converted to SQLite syntax, and some complex KQL features might not be supported.
+:::
+
+The processor provides the following special tables and fields for queries:
+
+<TermTable>
+  <TermCol>`_ingest`</TermCol>
+  <DefCol>Contains the current document's data</DefCol>
+
+  <TermCol>`_message`</TermCol>
+  <DefCol>JSON string of the entire document</DefCol>
+
+  <TermCol>`lookup_table`</TermCol>
+  <DefCol>Contains data loaded from CSV files</DefCol>
+</TermTable>
+
+CSV files must have headers in the first row as the column names become field names in queries. Headers are case-sensitive, and empty values are treated as NULL.
+
+:::warning
+As large CSV files are loaded directly into memory, the impact of using very large lookup tables must be carefully considered.
+:::
+
+## Examples
+
+### CSV Lookup
+
+<ExampleGrid>
+  <CommentCol>
+    Enriching logs with data from a CSV table...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_code": "1234"
+    }
+    ```
+    ```yaml
+    enrich:
+      - lookup_table: ["event_codes.csv"]
+      - query: |
+          SELECT 
+            _ingest.*,
+            lookup_table.description as event_description
+          FROM _ingest
+          LEFT JOIN lookup_table
+          ON _ingest.event_code = lookup_table.code
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds description:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_code": "1234",
+      "event_description": "System startup"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### KQL Queries
+
+<ExampleGrid>
+  <CommentCol>
+    Processing logs using Kusto Query Language...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "DeviceVendor": "Check Point",
+      "DeviceProduct": "VPN-1 & FireWall-1",
+      "SourceIP": "192.168.1.100"
+    }
+    ```
+    ```yaml
+    enrich:
+      - type: "kusto"
+      - query: |
+          _ingest
+          | where DeviceVendor == "Check Point"
+          | extend isInternal = SourceIP startswith "192.168."
+          | project DeviceVendor, DeviceProduct, SourceIP, isInternal
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds computed fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "DeviceVendor": "Check Point",
+      "DeviceProduct": "VPN-1 & FireWall-1",
+      "SourceIP": "192.168.1.100",
+      "isInternal": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Tables
+
+<ExampleGrid>
+  <CommentCol>
+    Joining data from multiple lookup tables...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": "U123",
+      "department_id": "D456"
+    }
+    ```
+    ```yaml
+    enrich:
+      - lookup_table: 
+          - "users.csv"
+          - "departments.csv"
+      - query: |
+          SELECT 
+            _ingest.*,
+            u.name as user_name,
+            d.name as department_name
+          FROM _ingest
+          LEFT JOIN lookup_table u ON _ingest.user_id = u.id
+          LEFT JOIN lookup_table d ON _ingest.department_id = d.id
+    ```
+  </CodeCol>
+  <CommentCol>
+    combines information from both tables:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": "U123",
+      "department_id": "D456",
+      "user_name": "John Doe",
+      "department_name": "IT Support"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Override Mode
+
+<ExampleGrid>
+  <CommentCol>
+    Replacing the document with query results...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_data": "lots of fields",
+      "event_type": "security"
+    }
+    ```
+    ```yaml
+    enrich:
+      - override: true
+      - query: |
+          SELECT event_type, 
+                 'processed' as status
+          FROM _ingest
+          WHERE event_type = 'security'
+    ```
+  </CodeCol>
+  <CommentCol>
+    keeps only the selected fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "security",
+      "status": "processed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

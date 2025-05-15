@@ -47,6 +47,7 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
+          lastVersion: "current"
         },
         googleTagManager: {
           containerId: 'VirtualMetric-10.0.0',
