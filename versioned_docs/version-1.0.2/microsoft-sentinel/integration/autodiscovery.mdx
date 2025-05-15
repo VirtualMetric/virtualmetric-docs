@@ -1,0 +1,173 @@
+---
+sidebar_label: Autodiscovery
+---
+
+# Autodiscovery
+
+**VirtualMetric Director** provides an autodiscovery feature for **Microsoft Sentinel** integration. This enables automatic detection and configuration of _Data Collection Rules_ (DCRs) and their associated streams, simplifying the setup process and providing dynamic updates as your Sentinel environment changes.
+
+**VirtualMetric**'s **Sentinel Automation** tool has the following prerequisites:
+
+- an **Azure** subscription with permissions to create resources
+- a _Log Analytics_ workspace required by **Microsoft Sentinel**
+
+:::note
+Autodiscovery is handled automatically if the **Automation** tool is used. You only need to complete the *Required Permissions* step if you're using the _Managed Identity_ option.
+:::
+
+Open a terminal with _Administrative_ access and navigate to `<vm_root>`. Then, type the following command and press <kb-short>Enter</kb-short>.
+
+<Tabs groupId="cli-options">
+  <TabItem value="powershell" label="PowerShell" default>
+  ```PowerShell
+  C:\<vm_root>\vmetric-director -sentinel -autodiscovery
+  ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+  ```bash
+  ~/path/to/<vm_root>: ./vmetric-director -sentinel -autodiscovery
+  ```
+  </TabItem>
+</Tabs>
+
+Follow the on-screen prompts to complete the setup process. For detailed step-by-step instructions, refer to our [Microsoft Sentinel Automation](/docs/microsoft-sentinel/index.mdx) documentation.
+
+:::tip
+The Autodiscovery configuration is handled automatically when using the Automation tool.
+You only need to complete the "Required Permissions" step if you're using Managed Identity.
+:::
+
+## Required Permissions
+
+**Director** needs the following permissions to fetch the _Data Collection Rules_ and their associated streams.
+
+:::note
+If you used the **Automation** tool with _App Registration_, these permissions are already configured.
+:::
+
+### For Data Collection
+
+For each DCR name prefixed with _vmetric_:
+
+1. Navigate to the DCR in **Azure Portal**
+2. Go to **Access Control (IAM)**
+3. Select **Add** > **Add role assignment**
+4. Assign the following permissions:
+   |Role|Assignee|
+   |---|---|
+   |Monitoring Metrics Publisher|Your _Managed Identity_ or _Application_|
+
+### For Autodiscovery
+
+To enable the DCR autodiscovery features:
+
+1. Navigate to the _Resource Group_ containing your DCRs
+2. Go to **Access Control (IAM)**
+3. Select **Add** > **Add role assignment**
+4. Assign the following permissions:
+   |Role|Assignee|
+   |---|---|
+   |Monitoring Reader|Your _Managed Identity_ or _Application_|
+
+:::important
+The `Monitoring Reader` role should be assigned at the _Resource Group_ level only. Assigning this role at the _Subscription_ level is **not recommended** since it is not required for the functionality to work, and it increases the autodiscovery scan duration.
+:::
+
+### Verification
+
+After assigning the permissions:
+
+1. Wait a few minutes for **Azure** RBAC to propagate
+2. Test the connection using **Director**
+3. Check the logs for any permission-related errors
+
+:::tip
+If you encounter permission issues, verify that all role assignments are properly configured, that **Azure** RBAC changes have propagated (can take up to 30 minutes), and that the identity has the correct access scope.
+:::
+
+## How It Works
+
+### Resource ID-Based Discovery
+
+Instead of manually configuring the _Data Collection Endpoint_ (DCE) URL, you can provide the _DCE Resource ID_. For example:
+
+```text
+/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.Insights/dataCollectionEndpoints/<dce-name>
+```
+
+When using a _Resource ID_, **Director** will discover all DCRs associated with the specified DCE, and collect detailed stream information including table names, table schemas (column definitions), and stream configurations.
+
+### Caching Mechanism
+
+The default cache duration is **5 minutes**. The cache is automatically invalidated when the configuration file (`sentinel.yml`) is modified or the cache timeout is reached.
+
+### Dynamic Updates
+
+The autodiscovery feature continuously adapts to changes in your **Sentinel** environment thanks to which new DCRs are automatically detected, and changes to table schemas are recognized while custom tables and columns are discovered and integrated.
+
+## Phantom Field Prevention
+
+**Microsoft Sentinel** has moved to DCR-based log ingestion and manual schema management. This change, while powerful, can lead to _phantom fields_, i.e. data fields that are ingested and billed even though they are not part of the table schema and therefore are inaccessible for querying, and yet are still incurring storage costs.
+
+> For a comprehensive understanding of phantom fields, see [Sentinel Phantom Fields](https://www.managedsentinel.com/sentinel-phantom-fields/) by ManagedSentinel.
+
+Among the common scenarios that cause these are log splitting with mismatched schemas, temporary fields in transformations, duplicate fields emerging from improper field mapping, and schema modifications without proper cleanup.
+
+**Director**'s autodiscovery feature includes a built-in phantom field prevention mechanism based on the following:
+
+**Schema Validation** - Automatically discovers table schemas from DCRs, validates each field against the known schema, and discards fields not present in the table schema.
+
+**Dynamic Field Mapping** - Fields that exist in the schema or are required are kept while others are discarded.
+
+**Cost Optimization** - Prevents unnecessary data ingestion thereby reducing storage costs while maintaining data accessibility.
+
+The most salient reason for preventing phantom fields is to reduce their **impact on cost**. Some environments show up to 65% of table data as phantom fields.
+
+The guiding principles here are:
+
+* For _schema management_, regularly review table schemas, update schemas when adding new fields, use autodiscovery to validate field usage.
+
+* For _field mapping_, let autodiscovery handle field validation, define critical fields explicitly when needed, and monitor for any dropped fields in logs.
+
+* For _cost monitoring_, track ingestion volumes, monitor field usage patterns, and verify data accessibility.
+
+A typical example:
+
+```yaml
+targets:
+  - name: sentinel
+    type: sentinel
+    properties:
+      tenant_id: "<your-tenant-id>"
+      client_id: "<your-client-id>"
+      client_secret: "<your-client-secret>"
+      endpoint: "/subscriptions/...</dataCollectionEndpoints/<dce-name>"  # Use Resource ID instead of URL
+```
+
+You can filter the autodiscovered streams that you intend to use:
+
+```yaml
+targets:
+  - name: sentinel
+    type: sentinel
+    properties:
+      tenant_id: "<your-tenant-id>"
+      client_id: "<your-client-id>"
+      client_secret: "<your-client-secret>"
+      endpoint: "/subscriptions/...</dataCollectionEndpoints/<dce-name>"
+      streams:
+        - name: "Custom-WindowsEvent"
+        - name: "Custom-SecurityEvent"
+```
+
+You can optionally adjust the cache timeout (in seconds):
+
+```yaml
+targets:
+  - name: sentinel
+    type: sentinel
+    properties:
+      endpoint: "/subscriptions/...</dataCollectionEndpoints/<dce-name>"
+      cache:
+        timeout: 300
+```

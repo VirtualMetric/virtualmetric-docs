@@ -1,0 +1,265 @@
+---
+description: Calculates the square root
+---
+
+# Sqrt
+
+## Synopsis
+
+Calculates the square root of a numeric value.
+
+## Schema
+
+```yaml {2,3}
+- sqrt:
+  field: <ident>
+  value: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the square root result|
+|`value`|Y|-|Value to process - can be a literal value or field reference|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if square root calculation fails|
+|`ignore_missing`|N|`false`|Skip if referenced fields don't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Calculates the square root of a numeric value and stores the result in the target field. The processor can extract values from existing fields or use literal numeric values.
+
+:::note
+The square root calculation uses the `math.Sqrt` function from Go's standard library, which provides accurate results for all non-negative numbers.
+:::
+
+The processor is useful for mathematical transformations, statistical calculations, and implementing various formulas that require square root operations.
+
+:::warning
+Attempting to calculate the square root of a negative number will result in an error unless `ignore_failure` is set to `true`. Real-valued square roots are only defined for non-negative numbers.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating the square root of a literal value...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "math": {}
+    }
+    ```
+    ```yaml
+    processors:
+      - sqrt:
+        field: math.result
+        value: "144"
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates and stores the result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "math": {
+        "result": 12
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Field-Based
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating square root of a field value...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "circle": {
+        "area": 78.54
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - sqrt:
+        field: circle.radius_from_area
+        value: "circle.area / 3.14159"
+    ```
+  </CodeCol>
+  <CommentCol>
+    computes radius from area:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "circle": {
+        "area": 78.54,
+        "radius_from_area": 5
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Statistical
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating standard deviation from variance...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stats": {
+        "variance": 25.6
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - sqrt:
+        field: stats.std_dev
+        value: "stats.variance"
+    ```
+  </CodeCol>
+  <CommentCol>
+    derives standard deviation:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stats": {
+        "variance": 25.6,
+        "std_dev": 5.06
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Distances
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating Euclidean distance...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "point1": {
+        "x": 3,
+        "y": 4
+      },
+      "point2": {
+        "x": 6,
+        "y": 8
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - set:
+        field: distance.x_diff
+        value: "{{point2.x - point1.x}}"
+      - set:
+        field: distance.y_diff
+        value: "{{point2.y - point1.y}}"
+      - set:
+        field: distance.sum_of_squares
+        value: "{{distance.x_diff * distance.x_diff + distance.y_diff * distance.y_diff}}"
+      - sqrt:
+        field: distance.euclidean
+        value: "distance.sum_of_squares"
+    ```
+  </CodeCol>
+  <CommentCol>
+    implements the distance formula:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "point1": {
+        "x": 3,
+        "y": 4
+      },
+      "point2": {
+        "x": 6,
+        "y": 8
+      },
+      "distance": {
+        "x_diff": 3,
+        "y_diff": 4,
+        "sum_of_squares": 25,
+        "euclidean": 5
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling potential negative values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": -9,
+      "calculation": {}
+    }
+    ```
+    ```yaml
+    processors:
+      - sqrt:
+        field: calculation.result
+        value: "value"
+        ignore_failure: true
+        on_failure:
+          - set:
+            field: calculation.error
+            value: "Cannot calculate square root of negative number"
+          - set:
+            field: calculation.result
+            value: "NaN"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": -9,
+      "calculation": {
+        "error": "Cannot calculate square root of negative number",
+        "result": "NaN"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

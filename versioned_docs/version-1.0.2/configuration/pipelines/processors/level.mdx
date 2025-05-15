@@ -1,0 +1,189 @@
+---
+description: Extracts log levels from messages
+sidebar_custom_props: 
+  customIcon: 📶
+  customCategory: Parse
+---
+
+# Level
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span>
+
+## Synopsis
+
+Extracts log levels from text messages by analyzing common logging patterns.
+
+## Schema
+
+```yaml {2}
+- level:
+  field: <ident>
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the message to analyze|
+|`target_field`|N|`field`|Field to store extracted log level|
+|`description`|N|-|Documentation note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|N|`false`|If `true`, skip if field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor detects five log levels: critical, error, warning, info, and debug. It supports multiple logging formats including standard text levels, Google's Glog format, and Redis log formats.
+
+:::note
+The processor examines only the first few fields of messages and truncates very long messages for efficient processing. Log level detection is case-insensitive and handles common variations and abbreviations.
+:::
+
+:::warning
+Non-string input fields will cause processing errors unless `ignore_failure` is enabled. When no recognized log level is found, the level is set to "`unknown`".
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Extracting the level from a log message...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "ERROR: Connection failed"
+    }
+    ```
+    ```yaml
+    processors:
+      - level:
+        field: message
+    ```
+  </CodeCol>
+  <CommentCol>
+    grabs the level:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "error"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Store Level
+
+<ExampleGrid>
+  <CommentCol>
+    Storing the level in a separate field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "WARNING: Disk space low"
+    }
+    ```
+    ```yaml
+    processors:
+      - level:
+        field: message
+        target_field: log_level
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves the original message:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "WARNING: Disk space low",
+      "log_level": "warning"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Glog Format
+
+<ExampleGrid>
+  <CommentCol>
+    Processing a Glog-formatted message...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "E0512 15:44:23.123123 123 server.go:123] Failed to connect"
+    }
+    ```
+    ```yaml
+    processors:
+      - level:
+        field: message
+        target_field: level
+    ```
+  </CodeCol>
+  <CommentCol>
+    detects the Glog error level:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "E0512 15:44:23.123123 123 server.go:123] Failed to connect",
+      "level": "error"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling parsing failures gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": 12345
+    }
+    ```
+    ```yaml
+    processors:
+      - level:
+        field: message
+        ignore_failure: true
+        on_failure:
+          - append:
+            field: tags
+            value: level_parse_error
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds error tag and continues execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": 12345,
+      "tags": ["level_parse_error"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

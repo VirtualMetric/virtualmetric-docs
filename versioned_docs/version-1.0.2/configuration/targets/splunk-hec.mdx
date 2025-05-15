@@ -1,0 +1,223 @@
+# Splunk HEC
+
+<span className="theme-doc-version-badge badge badge--primary">Experimental</span><span className="theme-doc-version-badge badge badge--secondary">Observability</span>
+
+## Synopsis
+
+Creates a Splunk HTTP Event Collector (HEC) target that sends events to one or more Splunk instances. Supports batching, compression, and field normalization.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: splunk
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    endpoints:
+      - endpoint: <string>
+        auth_type: <string>
+        token: <string>
+        secret: <string>
+    index: <string>
+    source_type: <string>
+    batch_size: <numeric>
+    timeout: <numeric>
+    tcp_routing: <boolean>
+    use_compression: <boolean>
+    insecure_skip_verify: <boolean>
+    field_format: <string>
+```
+
+## Configuration
+
+The following are the fields used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `splunk`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Endpoint
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`endpoint`|Y|-|Splunk HEC endpoint URL|
+|`auth_type`|N|`token`|Authentication type: `token` or `secret`|
+|`token`|N|-|HEC token when using token auth|
+|`secret`|N|-|Bearer token when using secret auth|
+
+### Event
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`index`|N|-|Default Splunk index|
+|`source_type`|N|-|Default sourcetype for events|
+|`batch_size`|N|10000|Number of events to batch before sending|
+|`timeout`|N|30|Connection timeout in seconds|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tcp_routing`|N|`false`|Enable TCP routing header|
+|`use_compression`|N|`true`|Enable gzip compression|
+|`insecure_skip_verify`|N|`false`|Skip TLS certificate verification|
+|`field_format`|N|-|Field normalization format: `ecs`, `cim`, or `asim`|
+
+## Details
+
+The Splunk HEC target sends log data to Splunk using the HTTP Event Collector (HEC) protocol. It supports multiple authentication methods, batching, compression, and automatic failover between endpoints.
+
+:::warning
+Ensure your _HEC_ tokens have the appropriate permissions and indexes enabled in **Splunk**. Invalid tokens or insufficient permissions will result in ingestion failures.
+:::
+
+Events are automatically batched and compressed by default for optimal performance. If multiple endpoints are configured, the target will try each endpoint in order until successful delivery occurs.
+
+:::warning
+Setting `insecure_skip_verify` to `true` is not recommended for production environments.
+:::
+
+### Dynamic Routing
+
+The target supports dynamic routing of events to different indexes and sourcetypes:
+
+- Use the `SystemS3` field in your logs to specify a custom index
+- Use the `SystemS2` field to specify a custom sourcetype
+
+This allows sending different event types to appropriate indexes without creating multiple target configurations.
+
+### Field Normalization
+
+Field normalization helps standardize log data before sending it to Splunk, ensuring consistent data formats that can be easily correlated:
+
+- `ecs` - Elastic Common Schema
+- `cim` - Common Information Model (recommended for Splunk)
+- `asim` - Advanced Security Information Model
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Send events to a single HEC endpoint...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: basic_splunk
+        type: splunk
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              auth_type: token
+              token: "YOUR-HEC-TOKEN"
+          index: "main"
+          source_type: "vmetric"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Endpoints
+
+<ExampleGrid>
+  <CommentCol>
+    Configure failover endpoints...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: ha_splunk
+        type: splunk
+        properties:
+          endpoints:
+            - endpoint: "https://splunk1.example.com:8088/services/collector"
+              auth_type: token
+              token: "PRIMARY-TOKEN"
+            - endpoint: "https://splunk2.example.com:8088/services/collector"
+              auth_type: token
+              token: "BACKUP-TOKEN"
+          index: "main"
+          source_type: "vmetric"
+          batch_size: 5000
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+<ExampleGrid>
+  <CommentCol>
+    Configure for high throughput...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: perf_splunk
+        type: splunk
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              auth_type: token
+              token: "YOUR-HEC-TOKEN"
+          index: "metrics"
+          source_type: "vmetric"
+          batch_size: 20000
+          timeout: 60
+          use_compression: true
+          tcp_routing: true
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Field Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Using CIM field normalization for better Splunk integration...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: normalized_splunk
+        type: splunk
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              auth_type: token
+              token: "YOUR-HEC-TOKEN"
+          index: "main"
+          field_format: "cim"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure
+
+<ExampleGrid>
+  <CommentCol>
+    Using secret-based auth and TLS verification...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: secure_splunk
+        type: splunk
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              auth_type: secret
+              secret: "YOUR-BEARER-TOKEN"
+          index: "secure"
+          source_type: "vmetric"
+          insecure_skip_verify: false
+          use_compression: true
+    ```
+  </CodeCol>
+</ExampleGrid>

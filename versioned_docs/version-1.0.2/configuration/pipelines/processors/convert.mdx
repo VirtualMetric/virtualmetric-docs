@@ -1,0 +1,255 @@
+---
+description: Converts values between types
+sidebar_custom_props: 
+  customIcon: 🔄
+  customCategory: Mutate
+---
+
+# Convert
+
+<span className="theme-doc-version-badge badge badge--primary">Mutate</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Converts field values from one data type to another. Supports single values and arrays, with the ability to specify precision for floating-point numbers.
+
+## Schema
+
+```yaml {2,3}
+- convert:
+  field: <ident>
+  type: <enum>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  precision: <numeric>
+  tag: <string>
+  target_field: <ident>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the value to convert|
+|`type`|Y|-|Target conversion type (`integer`, `long`, `float`, `double`, `string`, `boolean`, `ip`, `auto`)|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip processing if field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`precision`|N|3|Number of decimal places for floating-point numbers|
+|`tag`|N|-|Identifier|
+|`target_field`|N|`field`|Field to store the converted value. If not specified, overwrites the source field|
+
+## Details
+
+Supported conversion types:
+
+<TermTable>
+  <TermCol>`integer`</TermCol>
+  <DefCol>Converts to a whole number</DefCol>
+
+  <TermCol>`long`</TermCol>
+  <DefCol>Converts to a 64-bit integer</DefCol>
+
+  <TermCol>`float`</TermCol>
+  <DefCol>Converts to a single precision floating-point number</DefCol>
+
+  <TermCol>`double`</TermCol>
+  <DefCol>Converts to a double-precision floating-point</DefCol>
+
+  <TermCol>`string`</TermCol>
+  <DefCol>Converts to text representation</DefCol>
+
+  <TermCol>`boolean`</TermCol>
+  <DefCol>Converts to `true`/`false` value</DefCol>
+
+  <TermCol>`ip`</TermCol>
+  <DefCol>Validates and standardizes IP address format</DefCol>
+
+  <TermCol>`auto`</TermCol>
+  <DefCol>Automatically determines the most appropriate type</DefCol>
+</TermTable>
+
+When converting arrays, all elements in the array will be converted to the specified type. For floating-point conversions, the precision parameter controls decimal places.
+
+:::note
+With the `auto` type specified, the processor attempts conversion in the order: `integer`, `float`, `boolean`. If none of these matches, it falls back to `string`.
+:::
+
+:::warning
+IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `ignore_failure: true` to skip invalid IPs.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Convert to an integer...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stringToInt": "123"
+    }
+    ```
+    ```yaml
+    processors:
+      - convert:
+        field: stringToInt
+        type: integer
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stringToInt": 123
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Floating with Precision
+
+<ExampleGrid>
+  <CommentCol>
+    Convert to a float with precision...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": "3.14159"
+    }
+    ```
+    ```yaml
+    processors:
+      - convert:
+        field: value
+        type: float
+        precision: 3
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": 3.142
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Convert all elements of an array...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "numbers": ["1", "2", "3", "4", "5"]
+    }
+    ```
+    ```yaml
+    processors:
+      - convert:
+        field: numbers
+        type: integer
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "numbers": [1, 2, 3, 4, 5]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Type Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Automatically determine the type...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value1": "42",
+      "value2": "3.14",
+      "value3": "true",
+      "value4": "hello"
+    }
+    ```
+    ```yaml
+    processors:
+      - convert:
+        field: value1
+        type: auto
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value1": 42,
+      "value2": 3.14,
+      "value3": true,
+      "value4": "hello"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+Keep Original
+
+<ExampleGrid>
+  <CommentCol>
+    Write the converted values to a field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": "42"
+    }
+    ```
+    ```yaml
+    processors:
+      - convert:
+        field: source
+        type: integer
+        target_field: target
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": "42",
+      "target": 42
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

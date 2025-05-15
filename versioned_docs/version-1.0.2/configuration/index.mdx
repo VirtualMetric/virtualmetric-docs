@@ -1,0 +1,344 @@
+---
+sidebar_label: Overview
+pagination_prev: null
+pagination_next: null
+---
+
+# Configuration: Overview
+
+**DataStream**'s configuration involves the following key components:
+
+<TermTable>
+   <TermCol>[**Devices**](/configuration/devices/index.mdx) </TermCol>
+   <DefCol>Sources of log data, e.g. _Syslog_ or _eStreamer_</DefCol>
+
+   <TermCol>[**Pipelines**](/configuration/pipelines/index.mdx) </TermCol>
+   <DefCol>Processing workflows for data transformation</DefCol>
+
+   <TermCol>[**Processors**](/configuration/pipelines/processors/index.mdx) </TermCol>
+   <DefCol>Individual data manipulation functions</DefCol>
+
+   <TermCol>[**Targets**](/configuration/targets/index.mdx)</TermCol>
+   <DefCol>Destinations for processed data, e.g. Sentinel or a storage system</DefCol>
+
+   <TermCol>[**Routes**](/configuration/routes.mdx) </TermCol>
+   <DefCol>Traffic control for directing data flows</DefCol>
+</TermTable>
+
+The expressions below describe the various stages where these components are used and how they connect to each other:
+
+> **Ingest** [_Source_<sub>1</sub>, _Source_<sub>2</sub>, &#8230;, _Source_<sub>n</sub>]\
+> &map;\
+> **Preprocess** (Normalize)\
+> +\
+> **Route** [_Enrich_ &compfn; _Transform_ &compfn; _Select_]\
+> +\
+> **Postprocess** (Normalize)\
+> &map;\
+> **Forward** [_Target_<sub>1</sub>, _Target_<sub>2</sub>, &#8230;, _Target_<sub>n</sub>]
+* To ingest data from _Sources_ and to communicate with them, **Director** uses **Devices**.
+
+* For the **Preprocessing**, **Routes**, and **Postprocessing** stages, **Director** uses **Pipelines** which are sequential arrangements of **Processors**.
+
+* To forward processed data to _Targets_ and to communicate with them, **Director** uses **Targets**.
+
+## Files and Directories
+
+To help design the logic of the components that will define and run the processes of the above-mentioned stages, **DataStream** utilizes YAML-based configuration files. These can be found in some of the folders under its root directory, here indicated with `<vm_root>`:
+
+```powershell
+<vm_root>
+│   vmetric.yml
+│
+├───config
+│   ├───devices
+│   │       estreamer.yml
+│   │       syslog.yml
+│   │       tcp.yml
+│   │
+│   ├───routes
+│   │       default.yml
+│   │
+│   └───targets
+│           console.yml
+│           file.yml
+│
+├───package
+│   └───definitions
+│       └───pipelines
+│               checkpoint.yml
+│               cisco.yml
+│               normalize.yml
+│
+└───user
+    └───definitions
+        └───pipelines
+                checkpoint.yml
+                normalize.yml
+```
+
+All tasks are carried out using these configuration files.
+
+By default, these files are located based on their component types. They contain predefined fields that the components recognize, and **Director** uses the settings in these fields to spawn and run its processes.
+
+* Two directories are of importance: `package` and `user`.
+
+  The `package` directory contains templates and ready-to-use definitions. These definitions are updated with newer versions of **Director**.
+
+  :::warning
+  Never modify the definition files under `package` directly. To create a configuration using one of these as a template, copy the relevant file to the corresponding location under `user` first, and then edit it.
+  :::
+
+  The `user` directory contains custom configurations. These definitions take precedence over those under the `package` directory. The definitions here are preserved between updates.
+
+* The configurations may be placed in separate files or they may be grouped together logically, i.e. based on their intended purpose of use or the type of data streams they process. By default, these files reside in the directories under the `config` folder.
+
+  :::tip
+  You can place your files anywhere you wish under the `config` directory. **Director** discovers all of them by traversing the folders recursively.
+  :::
+
+  To illustrate, a target configuration file can be named as, e.g.
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+      > `C:\<vm_root>\config\target.yml`
+
+      -or-
+
+      > `C:\<vm_root>\config\targets\outputs.yml`
+
+      -or-
+
+      > `C:\<vm_root>\config\targets\outputs\sentinel.yml`
+
+    </TabItem>
+    <TabItem value="linux" label="Linux" default>
+      > `/usr/bin/<vm_root>/config/target.yml`
+
+      -or-
+
+      > `/usr/bin/<vm_root>/config/targets/outputs.yml`
+
+      -or-
+
+      > `/usr/bin/<vm_root>/config/targets/outputs/sentinel.yml`
+
+    </TabItem>
+    <TabItem value="macos" label="macOS" default>
+      > `/Applications/<vm_root>/config/target.yml`
+
+      -or-
+
+      > `/Applications/<vm_root>/config/targets/outputs.yml`
+
+      -or-
+
+      > `/Applications/<vm_root>/config/targets/outputs/sentinel.yml`
+
+    </TabItem>
+  </Tabs>
+
+  As the nesting level increases, file names become more specific, offering additional context for classification.
+
+  It is also possible to use _standalone_ files placed in any arbitrary directory you wish. In that case, however, the full path of the file must be supplied to **Director**.
+
+  Select the organizational style that best suits your needs.
+
+## General Format
+
+All components follow a consistent YAML structure that emphasizes readability and maintainability:
+
+:::warning[attention]
+Configurations must conform to [**these syntactic rules**](/docs/appendix.mdx#configuration-bnf).
+
+The **Overview** sections of the component types summarize their common fields under the **Configuration** heading. 
+
+The **Schema** paragraphs of specific component sections provide their fields.
+:::
+
+### Properties
+
+All components have properties&mdash;i.e. yaml fields with parameters&mdash;that define their specific behavior. Some of these are mandatory and must be present in every component.
+
+A few are worth mentioning since they are frequently used:
+
+* **Identification** - Every component requires unique identification:
+
+  ```yaml
+  - id: 1                   # Numeric identifier
+    name: example_component # Human-readable name
+  ```
+
+* **Status Control** - Components can be enabled or disabled:
+
+  ```yaml
+  - id: 1
+    name: example_component
+    status: true  # Enables this component
+  ```
+
+* **Environment Variables** - Sensitive information can be stored in system variables:
+
+  ```yaml
+  properties:
+    username: admin
+    password: ${SECRET_PASSWORD}  # References environment variable
+  ```
+
+* **Tagging** - Components can be tagged for better organization, and&mdash;optionally&mdash;a description can be used to document its purpose:
+
+  ```yaml
+  - id: 1
+    name: example_component
+    description: "Optional detailed explanation" # Documentation
+    tags:
+      - production  # For quick search
+      - security
+  ```
+
+### Data Flow
+
+The system implements a modular architecture of components working together to create complete data flows. The following example illustrates a security monitoring flow:
+
+As an example, assume we have a `critical_security` route defined like so:
+
+```yaml
+routes:
+  - name: critical_security
+    devices:
+      - name: firewall_logs
+    if: "event.severity == 'critical'"
+    pipelines:
+      - name: security_enrichment
+    targets:
+      - name: security_elasticsearch
+      - name: security_team_notification
+```
+
+The above definion means, it uses a `firewall_logs` device:
+
+```yaml
+devices:
+  - id: 1
+    name: firewall_logs
+    type: syslog
+    properties:
+      port: 514
+```
+
+a `security_enrichment` pipeline:
+
+```yaml
+pipelines:
+  - name: security_enrichment
+    processors:
+      - grok:
+        field: message
+        patterns:
+          - "%{CISCOFW106001}"
+      - set:
+        field: event.category
+        value: security
+      - geoip:
+        field: source.ip
+        target_field: source.geo
+```
+
+and two targets named `security_elasticsearch` and `security_team_notification`:
+
+```yaml
+targets:
+  - name: security_elasticsearch
+    type: elasticsearch
+    properties:
+      url: "https://es.example.com:9200"
+      index: "security-%{+yyyy.MM.dd}"
+  - name: security_team_notification
+    type: webhook
+    properties:
+      url: "https://alerts.example.com/security"
+      method: POST
+```
+
+The components in this routing configuration do the following:
+
+* the device collects firewall logs from _Syslog_
+* the pipelines transform raw logs into structured security events and processes them for security insights
+* the targets forward critical events to _Elasticsearch_ and a notification system
+
+### Validation
+
+Before deploying your configuration, check it using the available tools. The validator checks for syntactic correctness, required field presence, reference integrity, and logical consistency.
+
+- Check the configuration file
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric -validate -c critical_security.yml
+      ```
+    </TabItem>
+    <TabItem value="linux" label="Linux" default>
+      ```bash
+      vmetric -validate -c critical_security.yml
+      ```
+    </TabItem>
+    <TabItem value="macos" label="macOS" default>
+      ```bash
+      vmetric -validate -c critical_security.yml
+      ```
+    </TabItem>
+  </Tabs>
+
+- Test configuration with sample data
+
+  <Tabs>
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric -test -c critical_security.yml -i sample-data.json
+      ```
+    </TabItem>
+    <TabItem value="linux" label="Linux" default>
+      ```bash
+      vmetric -test -c critical_security.yml -i sample-data.json
+      ```
+    </TabItem>
+    <TabItem value="macos" label="macOS" default>
+      ```bash
+      vmetric -test -c critical_security.yml -i sample-data.json
+      ```
+    </TabItem>
+  </Tabs>
+
+## Best Practices
+
+To maintain system integrity, robustness, and health, follow these key guidelines:
+
+### Design
+
+The following factors should be considered when designing your configuration:
+
+|Category|Recommendations|
+|--:|:--|
+| **Modularization**  | - Use multiple smaller pipelines instead of monolithic ones<br/>- Create focused devices for specific data sources<br/>- Implement targeted routes for distinct data types |
+| **Maintainability** | - Add meaningful descriptions to all components<br/>- Use consistent naming conventions<br/>- Document complex logic with comments|
+| **Reliability**     | - Implement redundant targets for critical data,<br/>- Configure error handling in pipelines<br/>- Use disk buffering for unreliable network conditions |
+| **Security**        | - Store credentials in environment variables<br/>- Use appropriate authentication for all components<br/>- Implement TLS for network communications |
+| **Performance**     | - Configure appropriate batch sizes for high-volume flows<br/>- Use conditionals to process only necessary data<br/>- Monitor resource usage across components<br/>- Optimize processing times for better efficiency |
+
+### Administration
+
+This involves creating, modifying, and managing the configuration files. The following table summarizes common tasks and suitable approaches to carry them out:
+
+| Task | Approach |
+|--:|:--|
+| Add a new data source | Create a new device with appropriate type and properties |
+| Customize data processing | Develop or modify pipelines with relevant processors |
+| Change data destination | Update route targets or create new target definitions |
+| Filter specific events | Add or modify route conditions |
+| Secure sensitive data | Use environment variables for credentials and keys |
+| Structure complex configurations | Split into multiple files with logical organization |
+
+:::tip
+Refer to specific component documentation for detailed options and best practices.
+:::

@@ -1,0 +1,252 @@
+---
+description: Parses JSON data
+sidebar_custom_props: 
+  customIcon: 📄
+  customCategory: Parse
+---
+
+# JSON
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Parses JSON strings from a specified field into structured objects.
+
+## Schema
+
+```yaml {2}
+- json:
+  field: <ident>
+  add_to_root: <boolean>
+  add_to_root_conflict_strategy: <enum>
+  allow_duplicate_keys: <boolean>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+  target_field: <ident>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing JSON string|
+|`add_to_root`|N|`false`|Add parsed fields to document root|
+|`add_to_root_conflict_strategy`|N|`replace`|Strategy for root conflicts: `replace` or `merge`|
+|`allow_duplicate_keys`|N|`false`|Allow duplicate keys in JSON|
+|`description`|N|-|Documentation note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Skip processing errors|
+|`ignore_missing`|N|`false`|Skip if input field missing|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier for logging|
+|`target_field`|N|-|Output field for parsed object|
+
+## Details
+
+The processor can either store the parsed object in a target field or merge it into the document root, with configurable strategies for handling conflicts and duplicate keys.
+
+:::note
+When `add_to_root` is set to `true`, `target_field` must not be set as fields are added directly to the document root.
+:::
+
+The processor supports two strategies for handling conflicts when adding to root:
+
+* `replace` - Existing fields are overwritten with the new values
+* `merge` - Objects are merged recursively, arrays are concatenated, and primitive values are replaced
+
+:::warning
+Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as only the last value for a key is retained.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Parsing JSON string to object...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_data": "{\"key\": \"value\", \"number\": 123}"
+    }
+    ```
+    ```yaml
+    processors:
+      - json:
+        field: raw_data
+        target_field: parsed_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a structured object:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_data": "{\"key\": \"value\", \"number\": 123}",
+      "parsed_data": {
+        "key": "value",
+        "number": 123
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Adding to Root
+
+<ExampleGrid>
+  <CommentCol>
+    Merging JSON into the document root...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "existing_field": "old_value",
+      "json_data": "{\"new_field\": \"new_value\", \"existing_field\": \"updated_value\"}"
+    }
+    ```
+    ```yaml
+    processors:
+      - json:
+        field: json_data
+        add_to_root: true
+        add_to_root_conflict_strategy: replace
+    ```
+  </CodeCol>
+  <CommentCol>
+    replaces the existing values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "existing_field": "updated_value",
+      "json_data": "{\"new_field\": \"new_value\", \"existing_field\": \"updated_value\"}",
+      "new_field": "new_value"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Merge
+
+<ExampleGrid>
+  <CommentCol>
+    Merging nested objects...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "config": {
+        "timeout": 30,
+        "retries": 3
+      },
+      "json_update": "{\"config\": {\"maxSize\": 1000, \"timeout\": 60}}"
+    }
+    ```
+    ```yaml
+    processors:
+      - json:
+        field: json_update
+        add_to_root: true
+        add_to_root_conflict_strategy: merge
+    ```
+  </CodeCol>
+  <CommentCol>
+    combines existing and new values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "config": {
+        "timeout": 60,
+        "retries": 3,
+        "maxSize": 1000
+      },
+      "json_update": "{\"config\": {\"maxSize\": 1000, \"timeout\": 60}}"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Duplicate Keys
+
+<ExampleGrid>
+  <CommentCol>
+    Handling the duplicate keys in JSON...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "{\"key\": \"first\", \"key\": \"second\"}"
+    }
+    ```
+    ```yaml
+    processors:
+      - json:
+        field: data
+        allow_duplicate_keys: true
+        target_field: result
+    ```
+  </CodeCol>
+  <CommentCol>
+    keeps the last value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "{\"key\": \"first\", \"key\": \"second\"}",
+      "result": {
+        "key": "second"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling invalid JSON gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "{invalid json}"
+    }
+    ```
+    ```yaml
+    processors:
+      - json:
+        field: data
+        ignore_failure: true
+        on_failure:
+          - set:
+            field: error
+            value: "Invalid JSON format"
+    ```
+  </CodeCol>
+  <CommentCol>
+    captures the error information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "{invalid json}",
+      "error": "Invalid JSON format"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

@@ -1,0 +1,41 @@
+---
+sidebar_label: Vector
+---
+
+# Comparisons: Vector
+
+- **Strengths**: Low resource usage, simple deployment
+- **Best for**: Edge deployments, high performance needs
+- **Distinctive Features**: VRL language, observability focus
+
+## Discussion
+
+**Vector** is a lightweight, high-performance observability data pipeline written in Rust, designed for efficient collection, transformation, and routing of logs and metrics. It emphasizes performance and resource efficiency with a modern, modular architecture. While Vector excels in raw processing speed, it focuses primarily on being an efficient pipeline component rather than a complete log management solution, requiring integration with external storage systems for comprehensive observability.
+
+|Feature|VirtualMetric|Vector|
+|---|---|---|
+|Agentless Log Collection (auto-discovery)|Yes|Partial (requires configuration for each source, limited auto-discovery)|
+|Log Delivery Guarantee (WAL)|Yes|Yes (disk buffers with WAL for most sinks)|
+|Long-term Log storage|Yes|No (designed as a pipeline, requires external storage)|
+|Compression|Up to 99%|Moderate (supports compression but not optimized for storage efficiency)|
+|Processing Performance|Very high[^2]|High (written in Rust for performance)|
+|Forensic data Integrity|Yes|Partial (guarantees delivery but limited forensic features)|
+|Made in Europe|Yes|No (developed by Datadog, US-based company)|
+|Scalable pricing|Yes|Open source with paid support through Datadog|
+|Implementation Support|Comprehensive|Community-driven with commercial options via Datadog|
+
+## Conclusions
+
+* **VirtualMetric** and **Vector** both deliver high-performance log processing capabilities, but with fundamentally different design philosophies. **VirtualMetric** provides an all-in-one solution optimized for security log management with built-in storage, while **Vector** excels as a lightweight, flexible pipeline component that requires integration with external systems for complete functionality. This architectural difference makes **VirtualMetric** more immediately deployable for comprehensive log management, whereas **Vector** demands additional engineering to create a complete solution.
+
+* In terms of long-term storage capabilities, **VirtualMetric** has a clear advantage with its purpose-built, highly compressed log storage system that enables organizations to retain security logs for extended periods without excessive storage costs. **Vector** lacks native storage functionality entirely, requiring integration with external databases or object storage systems that must be separately licensed, configured, and maintained, introducing additional complexity and potential failure points.
+
+* **VirtualMetric**'s agentless architecture with auto-discovery capabilities significantly reduces deployment complexity compared to **Vector**, which typically requires detailed configuration of individual sources. While both solutions offer strong performance characteristics, **VirtualMetric**'s integrated approach removes the need for maintaining separate collection, processing, and storage systems, delivering a more streamlined operational experience, particularly in large or diverse environments.
+
+* For organizations focused on forensic data integrity, **VirtualMetric** provides comprehensive capabilities for maintaining chain of custody and ensuring the authenticity of security logs. While **Vector** offers reliable data delivery through its disk buffer and WAL implementations, it lacks the specialized forensic features found in **VirtualMetric**, making the latter a more suitable choice for environments with strict compliance requirements or where security incident investigation is a priority.
+
+---
+
+[^1]: Based on in-house performance tests, **VirtualMetric** processes logs up to 8 times faster than **Logstash** with significantly lower resource consumption.
+
+[^2]: While **Vector**'s Rust implementation delivers excellent raw performance, **VirtualMetric**'s integrated approach eliminates intermediate processing steps, resulting in comparable or better end-to-end efficiency for complete log management workflows.

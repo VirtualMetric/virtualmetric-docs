@@ -1,0 +1,277 @@
+---
+description: Multiplies two numeric values
+---
+
+# Multiply
+
+## Synopsis
+
+Multiplies two numeric values together and returns the result.
+
+## Schema
+
+```yaml {2-4}
+- multiply:
+  field: <ident>
+  left_operand: <string>
+  right_operand: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the multiplication result|
+|`left_operand`|Y|-|First factor - can be a literal value or field reference|
+|`right_operand`|Y|-|Second factor - can be a literal value or field reference|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if multiplication fails|
+|`ignore_missing`|N|`false`|Skip if referenced fields don't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Multiplies two numeric values together and stores the result in the target field. The processor can use literal values or extract values from existing fields in the log entry.
+
+:::note
+Numeric values are automatically converted to appropriate types for multiplication. The processor accepts both literal values and field references for operands.
+:::
+
+The processor is useful for scaling values, performing unit conversions, calculating derived metrics, and implementing various mathematical transformations.
+
+:::warning
+Be aware of potential numerical precision issues when multiplying very large numbers or numbers with many decimal places. The processor uses floating-point arithmetic which has inherent precision limitations.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Multiplying two literal values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "calculation": {}
+    }
+    ```
+    ```yaml
+    processors:
+      - multiply:
+        field: calculation.product
+        left_operand: "7"
+        right_operand: "6"
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates and stores the result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "calculation": {
+        "product": 42
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Units
+
+<ExampleGrid>
+  <CommentCol>
+    Converting bytes to kilobytes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file": {
+        "size_bytes": 1536
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - multiply:
+        field: file.size_kb
+        left_operand: "file.size_bytes"
+        right_operand: "0.001"
+    ```
+  </CodeCol>
+  <CommentCol>
+    performs unit conversion:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file": {
+        "size_bytes": 1536,
+        "size_kb": 1.536
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Areas
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating rectangle area from dimensions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "rectangle": {
+        "width": 4.5,
+        "height": 3.2
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - multiply:
+        field: rectangle.area
+        left_operand: "rectangle.width"
+        right_operand: "rectangle.height"
+    ```
+  </CodeCol>
+  <CommentCol>
+    computes the geometric property:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "rectangle": {
+        "width": 4.5,
+        "height": 3.2,
+        "area": 14.4
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Scaling
+
+<ExampleGrid>
+  <CommentCol>
+    Normalizing percentages to 0-1 scale...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stats": {
+        "cpu_usage_percent": 72.5,
+        "memory_usage_percent": 45.8,
+        "disk_usage_percent": 63.2
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - multiply:
+        field: stats.cpu_usage_normalized
+        left_operand: "stats.cpu_usage_percent"
+        right_operand: "0.01"
+      - multiply:
+        field: stats.memory_usage_normalized 
+        left_operand: "stats.memory_usage_percent"
+        right_operand: "0.01"
+      - multiply:
+        field: stats.disk_usage_normalized
+        left_operand: "stats.disk_usage_percent"
+        right_operand: "0.01"
+    ```
+  </CodeCol>
+  <CommentCol>
+    transforms percentage values to decimal:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "stats": {
+        "cpu_usage_percent": 72.5,
+        "memory_usage_percent": 45.8,
+        "disk_usage_percent": 63.2,
+        "cpu_usage_normalized": 0.725,
+        "memory_usage_normalized": 0.458,
+        "disk_usage_normalized": 0.632
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Compound
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating volume from radius...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sphere": {
+        "radius": 3
+      },
+      "constants": {
+        "pi": 3.14159
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - multiply:
+        field: sphere.radius_squared
+        left_operand: "sphere.radius"
+        right_operand: "sphere.radius"
+      - multiply:
+        field: sphere.radius_cubed
+        left_operand: "sphere.radius_squared"
+        right_operand: "sphere.radius"
+      - multiply:
+        field: sphere.volume_factor
+        left_operand: "constants.pi"
+        right_operand: "4/3"
+      - multiply:
+        field: sphere.volume
+        left_operand: "sphere.volume_factor"
+        right_operand: "sphere.radius_cubed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    implements a multi-step formula calculation:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sphere": {
+        "radius": 3,
+        "radius_squared": 9,
+        "radius_cubed": 27,
+        "volume_factor": 4.18879,
+        "volume": 113.097
+      },
+      "constants": {
+        "pi": 3.14159
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

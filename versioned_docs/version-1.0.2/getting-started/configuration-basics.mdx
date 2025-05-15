@@ -1,0 +1,117 @@
+---
+sidebar_label: Configuration Basics
+---
+
+# Getting Started: Configuration Basics
+
+The purpose of this section is to provide a basic understanding of the **VirtualMetric Director** works.
+
+## The Files
+
+**VirtualMetric Director** telemetry processes are configured with YAML files.
+
+:::tip
+To have a basic understanding of what types of files are used, where they are placed, and how they can be arranged, review [**this section**](/docs/configuration/index.mdx#files-and-directories).
+:::
+
+## The CLI
+
+You can run configured components by invoking **Director** with specific switches from the terminal.
+
+:::tip
+For an extensive description of the command line functionality, see [**this section**](/docs/configuration/cli.mdx).
+:::
+
+Here are a few typical uses:
+
+* Collecting _Syslog_:
+
+  <Tabs groupId="os-options">
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric-director -mode=generator -protocol=syslog -address=127.0.0.1:514
+      ```
+    </TabItem>
+    
+    <TabItem value="linux" label="Linux">
+      ```bash
+        vmetric-director -mode=generator -protocol=syslog -address=127.0.0.1:514
+      ```
+    </TabItem>
+
+    <TabItem value="macos" label="macOS">
+      ```bash
+        vmetric-director -mode=generator -protocol=syslog -address=127.0.0.1:514
+      ```
+    </TabItem>
+  </Tabs>
+
+* Viewing logs with a specific debug level:
+
+  <Tabs groupId="os-options">
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric-director -mode=console -debug-level=3
+      ```
+    </TabItem>
+    
+    <TabItem value="linux" label="Linux">
+      ```bash
+        vmetric-director -mode=console -debug-level=3
+      ```
+    </TabItem>
+
+    <TabItem value="macos" label="macOS">
+      ```bash
+        vmetric-director -mode=console -debug-level=3
+      ```
+    </TabItem>
+  </Tabs>
+
+* Running a specific pipeline with validation:
+
+  <Tabs groupId="os-options">
+    <TabItem value="windows" label="Windows" default>
+      ```powershell
+      vmetric-director -mode=pipeline -name=<pipeline_name> -validate
+      ```
+    </TabItem>
+
+    <TabItem value="linux" label="Linux">
+      ```bash
+        vmetric-director -mode=pipeline -name=<pipeline_name> -validate
+      ```
+    </TabItem>
+
+    <TabItem value="macos" label="macOS">
+      ```bash
+        vmetric-director -mode=pipeline -name=<pipeline_name> -validate
+      ```
+    </TabItem>
+  </Tabs>
+
+The examples provide the relevant commands required to execute them.
+
+## The Components
+
+**Director** uses the following types of configurable components to collect data points, to process them, and to forward them to destinations:
+
+* **Devices** - Data sources that collect or receive data. Review their [configuration](/docs/configuration/devices/index.mdx#configuration).
+
+* **Targets** - Destinations where processed data is sent. Review their [configuration](/docs/configuration/targets/index.mdx#configuration).
+
+* **Pipelines** - String of processors that transform the data. Review their [configuration](/docs/configuration/pipelines/index.mdx#configuration).
+
+* **Routes** - Predefined data flows from devices through pipelines to targets. Review their [configuration](/docs/configuration/routes.mdx#configuration).
+
+## The Examples
+
+You can see **Director** in action by trying the following introductory examples:
+
+- [Example: Ingesting Data](/docs/getting-started/example-ingesting-data.mdx)
+
+- [Example: Forwarding Data](/docs/getting-started/example-forwarding-data.mdx)
+
+- [Example: Routing Data](/docs/getting-started/example-routing-data.mdx)
+
+- [Example: A Syslog-To-Sentinel Pipeline](/docs/getting-started/example-a-syslog-to-sentinel-pipeline.mdx)

@@ -1,0 +1,190 @@
+---
+description: Split a string on a separator
+sidebar_custom_props: 
+  customIcon: ➗
+  customCategory: Mutate
+---
+
+# Split
+
+<span className="theme-doc-version-badge badge badge--primary">Mutate</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Splits a string field into an array using a specified separator pattern.
+
+## Schema
+
+```yaml {2,3}
+- split:
+  field: <ident>
+  separator: <char>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  preserve_trailing: <boolean>
+  tag: <string>
+  target_field: <ident>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the string to split|
+|`separator`|Y|-|Character or regular expression pattern to use as separator|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`ignore_missing`|N|`false`|If `true`, quietly exit if field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`preserve_trailing`|N|`false`|If `true`, preserve empty trailing values|
+|`tag`|N|-|Identifier|
+|`target_field`|N|`field`|Field to store the resulting array|
+
+## Details
+
+When splitting strings, the processor supports both basic string separators and advanced regular expression patterns. The result is stored as an array either in the original field or in a specified target field.
+
+:::note
+Regular expressions are cached for better performance when reused.
+:::
+
+:::warning
+The field must contain a string value, otherwise the processor will fail unless `ignore_failure` is set to `true`.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Split string using comma separator...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "one,two,three"
+    }
+    ```
+    ```yaml
+    processors:
+      - split:
+        field: data
+        separator: ","
+    ```
+  </CodeCol>
+  <CommentCol>
+    to create an array of values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": ["one", "two", "three"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Trailing Values
+
+<ExampleGrid>
+  <CommentCol>
+    Enabling `preserve_trailing`...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "one,two,three,"
+    }
+    ```
+    ```yaml
+    processors:
+      - split:
+        field: data
+        separator: ","
+        preserve_trailing: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    keeps empty trailing elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": ["one", "two", "three", ""]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Regular Expressions
+
+<ExampleGrid>
+  <CommentCol>
+    Splitting on multiple whitespace characters...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "hello   world     test"
+    }
+    ```
+    ```yaml
+    processors:
+      - split:
+        field: message
+        separator: '\s+'
+    ```
+  </CodeCol>
+  <CommentCol>
+    treats consecutive spaces as one separator:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": ["hello", "world", "test"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keep Original
+
+<ExampleGrid>
+  <CommentCol>
+    Storing the result in a new field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": "important,urgent,review"
+    }
+    ```
+    ```yaml
+    processors:
+      - split:
+        field: tags
+        separator: ","
+        target_field: tag_array
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves the original:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": "important,urgent,review",
+      "tag_array": ["important", "urgent", "review"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

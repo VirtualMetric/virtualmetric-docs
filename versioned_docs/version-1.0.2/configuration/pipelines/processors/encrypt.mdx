@@ -1,0 +1,193 @@
+---
+description: Encrypts string values using AES encryption with optional compression
+sidebar_custom_props: 
+  customIcon: 🔒
+  customCategory: Security
+---
+
+# Encrypt
+
+<span className="theme-doc-version-badge badge badge--primary">Security</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Encrypts string values using AES encryption with optional compression.
+
+## Schema
+
+```yaml {3-5}
+- encrypt:
+  algorithm: <string>
+  encryption_key: <string>
+  field: <ident>
+  iv_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+  with_compression: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`algorithm`|N|`AES-256-GCM`|Encryption algorithm. Valid values: `AES-256-GCM` or `AES-256-CFB`|
+|`encryption_key`|Y|-|32-byte key for encryption|
+|`field`|Y|-|Field containing the value to encrypt|
+|`iv_field`|Y|-|Field to store the initialization vector|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Continue if encryption fails|
+|`ignore_missing`|N|`false`|Continue if source field is missing|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`tag`|N|-|Identifier for logging|
+|`with_compression`|N|`false`|Compress data before encryption|
+
+## Details
+
+The processor encrypts string values using AES encryption, with support for two encryption modes:
+
+- **AES-256-GCM (Recommended)** - more secure against tampering, but has slightly slower performance
+- **AES-256-CFB** - has faster performance but no built-in authentication
+
+:::note
+The impact of encryption is minimal on previously compressed content.
+:::
+
+When `with_compression` is enabled, the data is compressed before encryption. This reduces encrypted data size, and therefore is most effective for text-based data.
+
+:::note
+Encryption keys are cached for performance.
+:::
+
+Use environment variables or secure key management for encryption keys. For keys, 32-byte encryption and cryptographically secure random number generators must be preferred.
+
+Never reuse initialization vectors (IVs) with the same key, and store encrypted data and IVs separately from encryption keys. Recommended IV sizes:
+
+* **GCM** mode: 12 bytes (96 bits)
+* **CFB** mode: 16 bytes (128 bits)
+
+Protect encryption keys rigorously, i.e. implement regular key rotation (every 90 days) and store keys using:
+
+* Key Management Services (KMS)
+* Hardware Security Modules (HSM)
+
+:::tip
+Implement filesystem-level encryption as a policy, and always use authenticated encryption (GCM mode), following the principle of least privilege.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Encrypting a sensitive field using GCM mode...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "password": "mysecret123"
+    }
+    ```
+    ```yaml
+    processors:
+      - encrypt:
+        field: password
+        iv_field: password_iv
+        encryption_key: "${ENCRYPTION_KEY}"
+        algorithm: AES-256-GCM
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "password": "KZh/JR2baS2MkZpseKZYoBN2tQ==",
+      "password_iv": "F+e8YorshrvFiFTC"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Compression
+
+<ExampleGrid>
+  <CommentCol>
+    Compressing while encrypting the data...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_data": "2024-01-01 DEBUG User logged in from IP 192.168.1.1\n2024-01-01 DEBUG User logged in from IP 192.168.1.1\n..."
+    }
+    ```
+    ```yaml
+    processors:
+      - encrypt:
+        field: log_data
+        iv_field: log_iv
+        encryption_key: "${ENCRYPTION_KEY}"
+        algorithm: AES-256-GCM
+        with_compression: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    reduces its size:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_data": "Yh8dR2S2kZpsMkYoBN2tQ==",
+      "log_iv": "K+r8YorvFiFTC"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling missing or invalid fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "other_field": "value"
+    }
+    ```
+    ```yaml
+    processors:
+      - encrypt:
+        field: missing_field
+        iv_field: missing_iv
+        encryption_key: "${ENCRYPTION_KEY}"
+        ignore_missing: true
+        on_failure:
+          - set:
+            field: error_status
+            value: "encryption_failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues the execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "other_field": "value",
+      "error_status": "encryption_failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

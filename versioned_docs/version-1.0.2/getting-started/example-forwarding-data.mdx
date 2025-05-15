@@ -1,0 +1,145 @@
+# Example: Forwarding Data
+
+This section will help you get started with targets to write processed data to specific formats, walking you through a common use case.
+
+## Scenario
+
+We will create a device that will send data received from _Syslog_ to **Sentinel** in _ASIM_ format.
+
+## Console
+
+The most basic target we can direct our output to is a _console_. For this purpose, we have to create a simple `stdout` configuration:
+
+```yaml
+targets:
+  - name: log_to_console
+    type: console
+    properties:
+      format: "ecs"
+```
+
+Here, we have named our target as `log_output`. Its type is `console`, and we intend to normalize the data to the [ECS](/docs/appendix.mdx#ecs) format, although this is optional.
+
+Put this configuration in a file named `log-to-console.yml`, and place it under `config`.
+
+## Storage File
+
+The next type of output we can use is a local file. (You can put any of the following configurations in a file named `file.yml`, and again place it under `config`.) Various formats are available:
+
+* The widely used **JSON** format:
+
+  ```yaml
+  targets:
+    - name: local_json_logs
+      type: file
+      properties:
+        location: "/path/to/directory"
+        type: "json"
+        name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.json"
+  ```
+
+The first `name` parameter is the one we will use for our target configuration. The nested `name` parameter is for the file in which we will store our output data. We intend to create a storage file name based on the internal field values of `Year`, `Month`, and `Day`.
+
+The `path` we have specified (i.e. `path/to/directory`) is where the data storage file will be created.
+
+* The **Parquet** format:
+
+  ```yaml
+  targets:
+    - name: log_to_parquet
+      type: file
+      properties:
+        location: "path/to/parquet-file"
+        format: "parquet"
+        compression: "zstd"
+        schema: |
+          {
+            "timestamp": {
+              "type": "INT",
+              "bitWidth": 64,
+              "signed": true
+            },
+            "message": {
+              "type": "STRING",
+              "compression": "ZSTD"
+            }
+          }
+  ```
+
+This describes the `schema` of the parquet file we will create, i.e. the layout of the data to be stored. Also, we are using _ZSTD_ compression. Finally, the output file will be placed in a directory of our choice, here specified as `path/to/parquet-file`.
+
+:::tip
+File targets with no messages are automatically cleaned up when disposed.
+:::
+
+## Cloud
+
+If you choose to store the output in the cloud, there are again various formats available:
+
+* **Azure Blob**:
+
+  ```yaml
+  targets:
+    - name: azure_logs
+      type: azblob
+      properties:
+        account: "<storage-account>"
+        tenant_id: "${AZURE_TENANT_ID}"
+        client_id: "${AZURE_CLIENT_ID}"
+        client_secret: "${AZURE_CLIENT_SECRET}"
+        container: "logs"
+        format: "parquet"
+        compression: "zstd"
+        max_size: 536870912
+  ```
+
+Put this in a file named `azure-blob.yml` and place it under `config`.
+
+For this type of configuration, we have to specify an **Azure** account, which requires a _client id_ and a _client secret_ for security.
+
+The size we want for storage here is roughly **512MB**.
+
+* **Microsoft Sentinel** with ASIM normalization:
+
+  ```yaml
+  targets:
+    - name: sentinel_logs
+      type: sentinel
+      properties:
+        tenant_id: "${AZURE_TENANT_ID}"
+        client_id: "${AZURE_CLIENT_ID}"
+        client_secret: "${AZURE_CLIENT_SECRET}"
+        rule_id: "${DCR_RULE_ID}"
+        endpoint: "${DCR_ENDPOINT}"
+        stream:
+          - "Custom-ASimProcessEventLogs"
+          - "Custom-ASimNetworkSessionLogs"
+  ```
+
+Put this in a file named `sentinel-logs.yml` placed under `config`.
+
+This configuration uses the `sentinel` target type. Once again, we have to specify our **Azure** account information. For this target, we also need to specify the type of stream we are using. Since that is ASIM, we have entered two names for our custom ASIM-based storage tables.
+
+## Monitoring
+
+You can invoke your configurations from the command line like so:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    .\vmetric-director.exe -console
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    ./vmetric-director -console
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    ./vmetric-director -console
+    ```
+  </TabItem>
+</Tabs>
+
+To monitor the stream, check **Director**'s logs for initialization messages, upload/ingestion status, buffer sizes, and number of retries.

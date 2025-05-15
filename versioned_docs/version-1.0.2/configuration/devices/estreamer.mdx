@@ -1,0 +1,245 @@
+# eStreamer
+
+<span className="theme-doc-version-badge badge badge--secondary">Pull</span>
+
+## Synopsis
+
+Creates an eStreamer client that connects to an eStreamer server to receive various security events. Supports TLS encryption, event filtering, and batch processing of events.
+
+See [Appendix](/appendix.mdx#estreamer) for details.
+
+## Schema
+
+```yaml {2,3,5}
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: estreamer
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    tls:
+      status: <boolean>
+      cert_name: <string>
+      key_name: <string>
+      non_secure: <boolean>
+    reuse: <boolean>
+    workers: <numeric>
+    batch_size: <numeric>
+    flush_interval: <numeric>
+    inputs:
+      - id: <numeric>
+        status: <boolean>
+```
+
+## Key Features
+
+- Real-time event streaming with TLS encryption
+- Support for multiple event types and metadata
+- Configurable batch processing and performance tuning
+- Automatic reconnection handling
+- Event filtering capabilities
+
+## Configuration
+
+The following fields are used to define the device:
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `estreamer`|
+|`status`|N|`true`|Enable/disable the device|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Server address to connect to|
+|`port`|N|`8302`|Server port|
+
+### TLS
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|Y|`true`|Enable TLS encryption (always required)|
+|`tls.cert_name`|Y||Client certificate file path|
+|`tls.key_name`|Y||Client private key file path|
+|`tls.non_secure`|N|`false`|Allow less secure TLS versions|
+
+:::note
+The client certificate and private key files must be placed in the service root directory.
+:::
+
+## Advanced Configuration
+
+To enhance performance and achieve better event handling, the following settings are used.
+
+### Events
+
+The following settings are used for **event processing**:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`1000`|Number of events to batch before processing|
+|`flush_interval`|N|`60`|Event flush interval in seconds|
+
+The **event types** are specified with:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`inputs[].id`|N|-|Event type ID to process|
+|`inputs[].status`|N|`true`|Enable/disable specific event type. Available options: `102` (Connection), `103` (File), `104` (Malware), `106` (Intrusion)|
+
+## Event Types
+
+eStreamer supports four main types of security events:
+
+1. **Connection Events (ID: 102)**
+
+   - Network connection tracking
+   - Protocol information
+   - Source and destination details
+   - Connection statistics
+   - Available block types: 163, 160, 157, 155, 154, 152, 137
+
+2. **File Events (ID: 103)**
+
+   - File transfers detection
+   - File type identification
+   - File SHA hashes
+   - Available block types: 56, 46, 43, 38, 32
+
+3. **Malware Events (ID: 104)**
+
+   - Malware detection results
+   - File disposition
+   - Threat scores
+   - Available block types: 62, 47, 44, 35, 33, 24, 16
+
+4. **Intrusion Events (ID: 106)**
+
+   - IPS/IDS alerts
+   - Rule-based detections
+   - Threat classifications
+   - Available block types: 60, 45, 42, 41, 34, 25
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic
+
+For a basic client, enable TLS encryption and use default event types and settings.
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a simple eStreamer client...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 1
+        name: basic_estreamer
+        type: estreamer
+        properties:
+          address: "192.168.1.100"
+          port: 8302
+          tls:
+            cert_name: "client.crt"
+            key_name: "client.key"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+To enhance performance, make sure that the batch size is larger, the flush interval is smaller, and multiple workers are used.
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high event volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 2
+        name: performant_estreamer
+        type: estreamer
+        properties:
+          address: "192.168.1.100"
+          port: 8302
+          tls:
+            cert_name: "client.crt"
+            key_name: "client.key"
+          batch_size: 5000
+          flush_interval: 30
+          reuse: true
+          workers: 4
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Events
+
+For selective event processing, enable connection and intrusion events, and disable file and malware events.
+
+<ExampleGrid>
+  <CommentCol>
+    Collecting specific event types...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 3
+        name: filtered_estreamer
+        type: estreamer
+        properties:
+          address: "192.168.1.100"
+          port: 8302
+          tls:
+            cert_name: "client.crt"
+            key_name: "client.key"
+          inputs:
+            - id: 102
+              status: true
+            - id: 106
+              status: true
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Legacy Systems
+
+Compatibility with legacy systems allows use of older TLS versions, standard event processing, and default security events.
+
+<ExampleGrid>
+  <CommentCol>
+    Connecting to older eStreamer servers...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 4
+        name: legacy_estreamer
+        type: estreamer
+        properties:
+          address: "192.168.1.100"
+          port: 8302
+          tls:
+            cert_name: "client.crt"
+            key_name: "client.key"
+            non_secure: true
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+For improved security, unless you are connecting to legacy systems that require older TLS versions, set `tls.non_secure: false`.
+:::

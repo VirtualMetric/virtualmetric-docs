@@ -1,0 +1,174 @@
+---
+description: Introduces a time delay
+---
+
+# Wait
+
+## Synopsis
+
+Introduces a time delay in the processing pipeline.
+
+## Schema
+
+```yaml {2}
+- wait:
+  timeout: <numeric>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`timeout`|Y|-|Number of seconds to wait/pause|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if wait fails|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Introduces a deliberate time delay (pause) in the processing pipeline. The processor waits for the specified number of seconds before allowing the pipeline to continue processing.
+
+:::note
+The wait processor blocks the current pipeline thread for the specified duration. During this time, other log entries can continue processing in parallel through their own pipeline instances, so overall system throughput is maintained.
+:::
+
+The processor is useful for rate limiting, implementing backoff strategies, synchronizing with external systems, or creating deliberate delays for testing and debugging purposes.
+
+:::warning
+Using long timeouts can impact performance by keeping threads and resources allocated longer than necessary. For very long delays (minutes or hours), consider using a different approach such as a message queue with delayed delivery instead of the wait processor.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Introducing a simple delay...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - wait:
+        timeout: 5
+    ```
+  </CodeCol>
+  <CommentCol>
+    pauses processing for 5 seconds
+  </CommentCol>
+</ExampleGrid>
+
+### Conditional
+
+<ExampleGrid>
+  <CommentCol>
+    Waiting only under specific conditions...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - wait:
+        timeout: 10
+        if: "logEntry.api.rate_limited == true"
+    ```
+  </CodeCol>
+  <CommentCol>
+    delays processing for 10 seconds only when rate limited
+  </CommentCol>
+</ExampleGrid>
+
+### Rates
+
+<ExampleGrid>
+  <CommentCol>
+    Controling API request frequency...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - set:
+        field: request.timestamp
+        value: "{{@timestamp}}"
+      - http_request:
+        url: "https://api.example.com/data"
+        method: "GET"
+        target_field: response
+      - wait:
+        timeout: 2
+      - http_request:
+        url: "https://api.example.com/status"
+        method: "GET"
+        target_field: status
+    ```
+  </CodeCol>
+  <CommentCol>
+    ensures 2-second spacing between API calls
+  </CommentCol>
+</ExampleGrid>
+
+### Simulating Latency
+
+<ExampleGrid>
+  <CommentCol>
+    Adding deliberate latency for testing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - wait:
+        timeout: 3
+        if: "logEntry.environment == 'testing' && logEntry.simulate_latency == true"
+        tag: "latency_simulation"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates artificial delay in test environments only
+  </CommentCol>
+</ExampleGrid>
+
+### Backoff Strategy
+
+<ExampleGrid>
+  <CommentCol>
+    Implementing a backoff increases the wait time exponentially between retry attempts
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - set:
+        field: retry.count
+        value: 0
+        if: "!hasField(logEntry, 'retry.count')"
+      - set:
+        field: retry.delay
+        value: 1
+        if: "!hasField(logEntry, 'retry.delay')"
+      - http_request:
+        url: "https://api.example.com/data"
+        method: "POST"
+        target_field: response
+        on_failure:
+          - set:
+            field: retry.count
+            value: "{{retry.count + 1}}"
+          - set:
+            field: retry.delay
+            value: "{{math.pow(2, retry.count)}}"
+          - wait:
+            timeout: "{{retry.delay}}"
+          - drop:
+            if: "retry.count > 5"
+    ```
+  </CodeCol>
+</ExampleGrid>

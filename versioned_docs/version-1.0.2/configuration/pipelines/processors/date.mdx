@@ -1,0 +1,290 @@
+---
+description: Parses dates from date fields
+sidebar_custom_props: 
+  customIcon: 📅
+  customCategory: Mutate
+---
+
+# Date
+
+<span className="theme-doc-version-badge badge badge--primary">Mutate</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Parses dates from a field in various formats into a standardized timestamp.
+
+## Schema
+
+```yaml {2}
+- date:
+  field: <ident>
+  formats: <enum[]>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  locale: <string>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  output_format: <string>
+  tag: <string>
+  target_field: <ident>
+  timezone: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the date to parse|
+|`formats`|N|-|Array of expected date formats. Supports: standard Go time layouts, `ISO8601`, `UNIX`, `UNIX_MS`|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if parsing fails|
+|`locale`|N|-|Locale for date parsing (e.g., "en_US")|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`output_format`|N|`2006-01-02T15:04:05.000Z07:00`|Format pattern for the output timestamp|
+|`tag`|N|-|Identifier|
+|`target_field`|N|`@timestamp`|Field to store the parsed date|
+|`timezone`|N|`UTC`|Timezone for parsing (e.g., "Europe/Amsterdam")|
+
+## Details
+
+The processor features an advanced timestamp parser that can automatically detect and parse a wide variety of date/time formats without requiring explicit format specification. It supports nearly all timestamp formats, including:
+
+<TermTable>
+  <TermCol>**Years**</TermCol>
+  <DefCol>`YYYY`, `YY`, `yyyy`, `yy`</DefCol>
+
+  <TermCol>**Months**</TermCol>
+  <DefCol>`MMMM` (full name), `MMM` (abbreviated), `MM` (zero-padded), `M`</DefCol>
+
+  <TermCol>**Days**</TermCol>
+  <DefCol>`DD`, `D`, `dd`, `d`</DefCol>
+
+  <TermCol>**Hours**</TermCol>
+  <DefCol>`HH` (24-hour), `hh` (12-hour), `h`</DefCol>
+
+  <TermCol>**Minutes** / **Seconds**</TermCol>
+  <DefCol>`mm`, `m`, `ss`, `s`</DefCol>
+
+  <TermCol>**Milliseconds**</TermCol>
+  <DefCol>`S`, `SSS`, `SSSSSS`, `SSSSSSSSS`</DefCol>
+
+  <TermCol>**Timezones**</TermCol>
+  <DefCol>`Z`, `ZZ`, `ZZZ`</DefCol>
+
+  <TermCol>**AM** / **PM**</TermCol>
+  <DefCol>`A`, `a`</DefCol>
+</TermTable>
+
+Human-readable and machine timestamps, as well as Java time patterns and Go time layouts are supported. Numeric timestamps (i.e. Unix epoch in seconds/milliseconds) are handled.
+
+Output formats and timezones are customizable. Also, templates can be used for dynamic timezone and locale selection.
+
+:::note
+By default, the parsed date is stored in the `@timestamp` field, but this can be customized using `target_field`.
+:::
+
+:::warning
+Date parsing will fail if none of the specified formats match the input. Set `ignore_failure` to `true` if errors should be tolerated.
+:::
+
+## Examples
+
+### Standard
+
+<ExampleGrid>
+  <CommentCol>
+    Parsing a date using the standard format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "initial_date": "25/04/2016 12:02:01"
+    }
+    ```
+    ```yaml
+    processors:
+      - date:
+        field: initial_date
+        target_field: timestamp
+        formats: ["02/01/2006 15:04:05"]
+        timezone: "Europe/Amsterdam"
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts it to the ISO format with timezone:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "initial_date": "25/04/2016 12:02:01",
+      "timestamp": "2016-04-25T12:02:01.000+02:00"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Parsing various timestamps without explicit specs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "date1": "2023-12-29_15:04:05",
+      "date2": "29/Dec/2023:15:04:05 +0000",
+      "date3": "Fri Dec 29 15:04:05 2023",
+      "date4": "1461578521",
+      "date5": "1461578521000"
+    }
+    ```
+    ```yaml
+    processors:
+      - date:
+        field: date1
+        target_field: time1
+      - date:
+        field: date2
+        target_field: time2
+      - date:
+        field: date3
+        target_field: time3
+      - date:
+        field: date4
+        target_field: time4
+      - date:
+        field: date5
+        target_field: time5
+    ```
+  </CodeCol>
+  <CommentCol>
+    detects and normalizes all dates automatically:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "time1": "2023-12-29T15:04:05.000Z",
+      "time2": "2023-12-29T15:04:05.000Z",
+      "time3": "2023-12-29T15:04:05.000Z",
+      "time4": "2016-04-25T12:02:01.000Z",
+      "time5": "2016-04-25T12:02:01.000Z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Nested Fields with ISO8601
+
+<ExampleGrid>
+  <CommentCol>
+    Processing dates in nested objects...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "login_date": "2016-04-25T12:02:01.789Z"
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - date:
+        field: user.login_date
+        target_field: timestamp
+        formats: ["2006-01-02T15:04:05.000Z07:00"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    maintains the correct timestamp:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "login_date": "2016-04-25T12:02:01.789Z"
+      },
+      "timestamp": "2016-04-25T12:02:01.789Z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Output Formats
+
+<ExampleGrid>
+  <CommentCol>
+    Specifying a custom format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "initial_date": "25/04/2016 12:02:01"
+    }
+    ```
+    ```yaml
+    processors:
+      - date:
+        field: initial_date
+        target_field: timestamp
+        formats: ["02/01/2006 15:04:05"]
+        output_format: "2006-01-02 15:04:05"
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "initial_date": "25/04/2016 12:02:01",
+      "timestamp": "2016-04-25 12:02:01"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Dynamic Timezone and Locale
+
+<ExampleGrid>
+  <CommentCol>
+    Template fields for timezone and locale...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_date": "2016-04-25 12:02:01",
+      "tz": "Europe/London",
+      "lang": "en_GB"
+    }
+    ```
+    ```yaml
+    processors:
+      - date:
+        field: event_date
+        target_field: timestamp
+        formats: ["2006-01-02 15:04:05"]
+        timezone: "{{{tz}}}"
+        locale: "{{{lang}}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    can be used for parsing:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_date": "2016-04-25 12:02:01",
+      "tz": "Europe/London",
+      "lang": "en_GB",
+      "timestamp": "2016-04-25T12:02:01.000+01:00"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

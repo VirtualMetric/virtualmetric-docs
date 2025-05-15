@@ -1,0 +1,225 @@
+---
+description: Generates a unique Snowflake ID
+---
+
+# Snowflake
+
+## Synopsis
+
+Generates a unique Snowflake ID and stores it in a target field.
+
+## Schema
+
+```yaml {2}
+- snowflake:
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`target_field`|Y|-|Field to store the generated Snowflake ID|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if ID generation fails|
+|`ignore_missing`|N|`false`|Skip if field doesn't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Generates a unique Snowflake ID and stores it in the specified target field. Snowflake IDs are 64-bit unique identifiers designed for distributed systems, combining a timestamp, worker ID, and sequence number to create globally unique values that are also roughly time-sortable.
+
+:::note
+Snowflake IDs are 64-bit integers typically represented as strings. They are time-sortable (IDs created later will generally be larger than IDs created earlier), which makes them useful for chronological sorting in databases.
+:::
+
+The processor is useful for assigning unique identifiers to log entries, tracking events across distributed systems, and creating correlation IDs without coordination between nodes.
+
+:::warning
+While Snowflake IDs are designed to be unique across distributed systems, they should not be used for cryptographic purposes. If you need IDs for security-sensitive operations, consider using a dedicated cryptographic random generator.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Generating a basic Snowflake ID...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "type": "login"
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - snowflake:
+        target_field: event.id
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds a unique identifier:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "type": "login",
+        "id": "1637812502315610112"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Nested Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Generating ID in a nested structure...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "transaction": {
+        "amount": 29.99,
+        "currency": "USD"
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - snowflake:
+        target_field: transaction.metadata.id
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates nested fields automatically:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "transaction": {
+        "amount": 29.99,
+        "currency": "USD",
+        "metadata": {
+          "id": "1637812635481661440"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Correlation
+
+<ExampleGrid>
+  <CommentCol>
+    Generating correlation ID for distributed tracing...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service": {
+        "name": "payment-gateway"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/payments"
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - snowflake:
+        target_field: trace.id
+        if: "!hasField(logEntry, 'trace.id')"
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds tracking ID only if not already present:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service": {
+        "name": "payment-gateway"
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/payments"
+      },
+      "trace": {
+        "id": "1637812728377626624"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-ID
+
+<ExampleGrid>
+  <CommentCol>
+    Generating multiple IDs for different purposes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "email": "user@example.com"
+      },
+      "session": {}
+    }
+    ```
+    ```yaml
+    processors:
+      - snowflake:
+        target_field: session.id
+      - snowflake:
+        target_field: transaction.id
+      - set:
+        field: event.metadata.generated_at
+        value: "{{@timestamp}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates multiple unique identifiers:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "email": "user@example.com"
+      },
+      "session": {
+        "id": "1637812912861540352"
+      },
+      "transaction": {
+        "id": "1637812912907677696"
+      },
+      "event": {
+        "metadata": {
+          "generated_at": "2023-07-30T15:42:19.123Z"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

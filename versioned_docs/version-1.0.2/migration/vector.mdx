@@ -1,0 +1,348 @@
+---
+sidebar_label: From Vector
+---
+
+# Migrating from Vector to DataStream
+
+This guide provides a comprehensive approach to migrating from **Vector** to **DataStream**, focusing on configuration conversion, conceptual mapping, and practical implementation steps.
+
+## Feature Comparison
+
+| Feature | Vector | DataStream |
+|---------|--------|------------|
+| Configuration Format | TOML/YAML/JSON | YAML |
+| Components | Sources, Transforms, Sinks | Devices, Processors, Outputs |
+| Event Model | Log, Metric, Trace | Event-based |
+| Runtime | Rust-based | Go-based |
+| Deployment | Binary, Container, K8s | Standalone, Distributed |
+| Configuration Method | File, API | File-based |
+
+## Component Mapping
+
+### Sources to Devices
+
+**Vector** sources map to **DataStream** devices:
+
+| Vector Source | DataStream Device |
+|---------------|-------------------|
+| `http` | `http` |
+| `syslog` | `syslog` |
+| `tcp` | `tcp` |
+| `udp` | `udp` |
+| `windows_event_log` | `windows` |
+| `exec` | _custom integration_ |
+
+### Transforms to Processors
+
+**Vector** transforms map to **DataStream** processors:
+
+| Vector Transform | DataStream Processor |
+|------------------|----------------------|
+| `remap` | `script` |
+| `filter` | `script` (conditional) |
+| `parse_csv` | `csv` |
+| `parse_json` | `json` |
+| `parse_regex` | `grok` |
+| `parse_key_value` | `kv` |
+| `remove_fields` | `remove` |
+| `rename_fields` | `rename` |
+| `add_fields` | `set` |
+
+### Sinks to Targets
+
+**Vector** sinks map to **DataStream** targets:
+
+| Vector Sink | DataStream Target |
+|-------------|-------------------|
+| `aws_s3` | `s3` |
+| `elasticsearch` | `elasticsearch` |
+| `http` | `http` |
+| `kafka` | `kafka` |
+| `splunk_hec` | `splunk` |
+
+## Migration Steps
+
+1. **Analyze Current Vector Configuration** - Document all sources, transforms, and sinks. Note any VRL (Vector Remap Language) expressions. Identify event routing patterns.
+
+2. **Create Device Configurations** - Convert Vector sources to DataStream devices, e.g.
+
+    <ExampleGrid>
+      <CommentCol>
+        **Vector** _HTTP_ source (TOML):
+      </CommentCol>
+      <CodeCol>
+        ```toml title="TOML"
+        [sources.http_in]
+        type = "http"
+        address = "0.0.0.0:8080"
+        encoding = "json"
+        ```
+      </CodeCol>
+      <CommentCol>
+        **DataStream** _HTTP_ device:
+      </CommentCol>
+      <CodeCol>
+        ```yaml title="YAML"
+        devices:
+          - id: 1
+            name: http_in
+            type: http
+            properties:
+              address: "0.0.0.0"
+              port: 8080
+              content_type: "application/json"
+        ```
+      </CodeCol>
+    </ExampleGrid>
+
+3. **Create Processor Configurations** - Map Vector transforms to DataStream processors, e.g.
+
+    <ExampleGrid>
+      <CommentCol>
+        **Vector** _Remap_ transform:
+      </CommentCol>
+      <CodeCol>
+        ```toml title="TOML"
+        [transforms.parse_log]
+        type = "remap"
+        inputs = ["http_in"]
+        source = '''
+          .source = "vector"
+          .parsed = parse_json(.message)
+        '''
+        ```
+      </CodeCol>
+      <CommentCol>
+        **DataStream** _Script_ processor:
+      </CommentCol>
+      <CodeCol>
+        ```yaml title="YAML"
+        processors:
+          - script:
+            lang: golang
+            source: |
+              package main
+                
+              func main() {
+                logEntry["source"] = "vector"
+                if msg, ok := logEntry["message"].(string); ok {
+                  parsed, err := parseJSON(msg)
+                  if err == nil {
+                    logEntry["parsed"] = parsed
+                  }
+                }
+              }
+        ```
+      </CodeCol>
+    </ExampleGrid>
+
+4. **Create Target Configurations** - Transform **Vector** sinks to **DataStream** targets. Adapt routing logic to pipeline structure.
+
+5. **Test Configuration** - Deploy in a controlled environment. Verify data flows correctly. Compare with **Vector** output.
+
+6. **Production Deployment** - Run both systems in parallel. Gradually transition traffic to **DataStream**. Monitor performance and correctness.
+
+## Configuration Examples
+
+* VRL to Go Script conversion:
+
+  <ExampleGrid>
+    <CommentCol>
+      **Vector** VRL:
+    </CommentCol>
+    <CodeCol>
+      ```toml title="TOML"
+      # Vector VRL Example
+      [transforms.enrich]
+      type = "remap"
+      inputs = ["logs"]
+      source = '''
+      . = merge(., parse_key_value!(.message))
+      .timestamp = to_timestamp!(.timestamp)
+      if exists(.status_code) {
+        .is_error = to_int!(.status_code) >= 400
+      }
+      '''
+      ```
+    </CodeCol>
+    <CommentCol>
+      **DataStream** equivalent:
+    </CommentCol>
+    <CodeCol>
+      ```yaml title="YAML"
+      processors:
+        - kv:
+          field: message
+          field_split: " "
+          value_split: "="
+
+        - script:
+          lang: golang
+          source: |
+            package main
+              
+            func main() {
+              if ts, ok := logEntry["timestamp"].(string); ok {
+                parsedTime, err := time.Parse(time.RFC3339, ts)
+                if err == nil {
+                  logEntry["timestamp"] = parsedTime
+                }
+              }
+                
+              if sc, ok := logEntry["status_code"].(string); ok {
+                statusCode, err := strconv.Atoi(sc)
+                if err == nil && statusCode >= 400 {
+                  logEntry["is_error"] = true
+                }
+              }
+            }
+      ```
+    </CodeCol>
+  </ExampleGrid>
+
+* Route mapping
+
+  <ExampleGrid>
+    <CommentCol>
+      **Vector** routing:
+    </CommentCol>
+    <CodeCol>
+      ```toml title="TOML"
+      [sources.logs]
+      type = "http"
+      address = "0.0.0.0:8080"
+
+      [transforms.app_logs]
+      type = "filter"
+      inputs = ["logs"]
+      condition = '.service == "app"'
+
+      [transforms.web_logs]
+      type = "filter"
+      inputs = ["logs"]
+      condition = '.service == "web"'
+
+      [sinks.app_storage]
+      type = "aws_s3"
+      inputs = ["app_logs"]
+      bucket = "app-logs"
+
+      [sinks.web_storage]
+      type = "aws_s3"
+      inputs = ["web_logs"]
+      bucket = "web-logs"
+      ```
+    </CodeCol>
+    <CommentCol>
+      **DataStream** pipeline equivalent:
+    </CommentCol>
+    <CodeCol>
+      ```yaml title="YAML"
+      routes:
+        name: http_route
+        devices:
+          - id: 1
+            name: http_logs
+            type: http
+            properties:
+              address: "0.0.0.0"
+              port: 8080
+            pipelines:
+              - router
+
+      pipelines:
+        - name: router
+          processors:
+            - script:
+              lang: golang
+              source: |
+                package main
+                  
+                func main() {
+                  service, ok := logEntry["service"].(string)
+                  if ok {
+                    if service == "app" {
+                      setPipeline("app_pipeline")
+                    } else if service == "web" {
+                      setPipeline("web_pipeline")
+                    }
+                  }
+                }
+
+        - name: app_pipeline
+          targets:
+            - s3_app
+
+        - name: web_pipeline
+          targets:
+            - s3_web
+
+      targets:
+        - name: s3_app
+          type: s3
+          properties:
+            bucket: "app-logs"
+            
+        - name: s3_web
+          type: s3
+          properties:
+            bucket: "web-logs"
+      ```
+    </CodeCol>
+  </ExampleGrid>
+
+## Advanced Considerations
+
+### Vector Remap Language (VRL)
+
+VRL expressions can be converted to Go for the **DataStream** _Script_ processor. Common patterns:
+
+| VRL Pattern | Go Equivalent |
+|-------------|---------------|
+| `parse_json(field)` | `parseJSON(field)` |
+| `to_int(value)` | `strconv.Atoi(value)` |
+| `exists(field)` | `_, ok := logEntry["field"]` |
+| `del(field)` | `delete(logEntry, "field")` |
+
+### Metrics Handling
+
+For **Vector** metric events, use **DataStream**'s metric processing capabilities or custom scripting:
+
+```yaml
+processors:
+  script:
+    - lang: golang
+      source: |
+        package main
+        
+        func main() {
+          if metricType, ok := logEntry["type"].(string); ok && metricType == "counter" {
+            // Process counter metric
+            name := logEntry["name"].(string)
+            value := logEntry["value"].(float64)
+            logEntry["processed_metric"] = map[string]interface{}{
+              "name": name,
+              "value": value,
+              "timestamp": time.Now().Unix(),
+            }
+          }
+        }
+```
+
+### Performance Tuning
+
+After migrating, optimize DataStream's performance:
+
+- Configure appropriate batch sizes and flush intervals
+- Adjust worker settings for high-volume sources
+- Implement efficient filtering early in processing chains
+- Use buffer settings that match your throughput requirements
+
+## Additional Resources
+
+- Sample configuration templates
+- Migration validation tools
+- Community support forum
+- Performance tuning guidelines
+
+For assistance with complex migrations, contact our professional services team.

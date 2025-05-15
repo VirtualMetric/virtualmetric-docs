@@ -1,0 +1,277 @@
+---
+description: Changes field locations
+sidebar_custom_props: 
+  customIcon: 📦
+  customCategory: Transform
+---
+
+# Move
+
+<span className="theme-doc-version-badge badge badge--primary">Transform</span>
+
+## Synopsis
+
+Moves fields from one location to another within the document structure.
+
+## Schema
+
+```yaml
+- move:
+  target_field: <ident>
+  fields: <string[]>
+  exclude: <string[]>
+  move_to_root: <boolean>
+  override: <boolean>
+  ignore_missing: <boolean>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`target_field`|N*|-|Destination field (required unless `move_to_root: true`)|
+|`fields`|N|`["*"]`|List of patterns to match fields for moving|
+|`exclude`|N|-|List of patterns to exclude from moving|
+|`move_to_root`|N|`false`|Move matched fields to document root|
+|`override`|N|`false`|Allow overwriting existing target fields|
+|`ignore_missing`|N|`false`|Continue silently if source fields don't exist|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor supports moving nested fields, pattern matching, and exclusions. It can move fields to a specific target field or to the root level of the document.
+
+The processor is particularly useful for modifying and tidying document hierarchies, flattening nested objects, and isolating specific fields.
+
+Fields are removed from their original location after moving. When `move_to_root` is set to `true`, `target_field` is ignored.
+
+:::note
+Pattern matching uses filepath.Match syntax, e.g. `*` for any characters, so patterns ending with `.*` handle immediate children differently.
+:::
+
+:::warning
+Moving fields to root level can overwrite existing fields. Be careful with pattern matching to avoid unintended moves.
+
+Also, when moving nested structures, field conflicts can occur. Consider using `exclude` patterns to protect critical fields.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Moving fields to a target location...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "category": "authentication",
+        "type": "start"
+      },
+      "other_field": "value"
+    }
+    ```
+    ```yaml
+    processors:
+      - move:
+        target_field: metadata
+        fields: ["event*"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    restructures the document:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metadata": {
+        "event": {
+          "category": "authentication",
+          "type": "start"
+        }
+      },
+      "other_field": "value"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Moving to Root
+
+<ExampleGrid>
+  <CommentCol>
+    Flattening nested structures...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "category": {
+          "name": "process",
+          "type": "system"
+        }
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - move:
+        move_to_root: true
+        fields: ["event.category.*"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    brings fields to the top level:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "name": "process",
+      "type": "system"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Exclusions
+
+<ExampleGrid>
+  <CommentCol>
+    Moving selected fields while excluding others...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "category": "process",
+        "type": "start",
+        "pid": 1234
+      },
+      "device": {
+        "name": "server01"
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - move:
+        target_field: metadata
+        fields: ["*"]
+        exclude: ["device*"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves excluded fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metadata": {
+        "event": {
+          "category": "process",
+          "type": "start",
+          "pid": 1234
+        }
+      },
+      "device": {
+        "name": "server01"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Immediate Children
+
+<ExampleGrid>
+  <CommentCol>
+    Children fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "category": "process",
+        "details": {
+          "pid": 1234
+        }
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - move:
+        move_to_root: true
+        fields: ["event.*"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    are moved up one level:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "category": "process",
+      "details": {
+        "pid": 1234
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Target Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Replacing existing fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "category": "process"
+      },
+      "metadata": {
+        "existing": "value"
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - move:
+        target_field: metadata
+        fields: ["event*"]
+        override: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    allows for field replacement:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metadata": {
+        "event": {
+          "category": "process"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
