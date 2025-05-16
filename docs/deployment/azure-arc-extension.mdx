@@ -175,6 +175,244 @@ If not already done, register servers with **Azure Arc**:
           ```powershell
           @"
           {
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+          "machineName": {
+            "type": "string",
+            "metadata": {
+          "description": "Name of the Azure Arc-enabled server"
+            }
+          },
+          "location": {
+            "type": "string",
+            "metadata": {
+          "description": "Location of the machine"
+            }
+          }
+        },
+        "resources": [
+          {
+            "type": "Microsoft.HybridCompute/machines/extensions",
+            "name": "[concat(parameters('machineName'), '/DataStreamExtension')]",
+            "apiVersion": "2020-08-15-preview",
+            "location": "[parameters('location')]",
+            "properties": {
+          "publisher": "DataStream",
+          "type": "CustomExtension",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "devices": [
+              {
+            "id": 1,
+            "name": "syslog_collector",
+            "type": "syslog",
+            "properties": {
+              "port": 514
+            }
+              }
+            ],
+            "targets": [
+              {
+            "name": "azure_monitor",
+            "type": "azure_monitor",
+            "workspace_id": "${WORKSPACE_ID}",
+            "workspace_key": "${WORKSPACE_KEY}"
+              }
+            ]
+          },
+          "protectedSettings": {
+            "WORKSPACE_ID": "<your-workspace-id>",
+            "WORKSPACE_KEY": "<your-workspace-key>"
+          }
+            }
+          }
+        ]
+          }
+          "@ | Out-File -FilePath "datastream-extension.json" -Encoding utf8
+          ```
+      <TabItem value="linux" label="Linux">
+        Create a new _ARM_ template for **DataStream** extension
+
+          ```bash
+          cat > datastream-extension.json << 'EOF'
+          {
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+          "machineName": {
+            "type": "string",
+            "metadata": {
+          "description": "Name of the Azure Arc-enabled server"
+            }
+          },
+          "location": {
+            "type": "string",
+            "metadata": {
+          "description": "Location of the machine"
+            }
+          }
+        },
+        "resources": [
+          {
+            "type": "Microsoft.HybridCompute/machines/extensions",
+            "name": "[concat(parameters('machineName'), '/DataStreamExtension')]",
+            "apiVersion": "2020-08-15-preview",
+            "location": "[parameters('location')]",
+            "properties": {
+          "publisher": "DataStream",
+          "type": "CustomExtension",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "devices": [
+              {
+            "id": 1,
+            "name": "syslog_collector",
+            "type": "syslog",
+            "properties": {
+              "port": 514
+            }
+              }
+            ],
+            "targets": [
+              {
+            "name": "azure_monitor",
+            "type": "azure_monitor",
+            "workspace_id": "${WORKSPACE_ID}",
+            "workspace_key": "${WORKSPACE_KEY}"
+              }
+            ]
+          },
+          "protectedSettings": {
+            "WORKSPACE_ID": "<your-workspace-id>",
+            "WORKSPACE_KEY": "<your-workspace-key>"
+          }
+            }
+          }
+        ]
+          }
+          EOF
+          ```
+      </TabItem>
+      <TabItem value="macos" label="macOS">
+        Create a new ARM template for **DataStream** extension
+
+          ```bash
+          cat > datastream-extension.json << 'EOF'
+          {
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+          "machineName": {
+            "type": "string",
+            "metadata": {
+          "description": "Name of the Azure Arc-enabled server"
+            }
+          },
+          "location": {
+            "type": "string",
+            "metadata": {
+          "description": "Location of the machine"
+            }
+          }
+        },
+        "resources": [
+          {
+            "type": "Microsoft.HybridCompute/machines/extensions",
+            "name": "[concat(parameters('machineName'), '/DataStreamExtension')]",
+            "apiVersion": "2020-08-15-preview",
+            "location": "[parameters('location')]",
+            "properties": {
+          "publisher": "DataStream",
+          "type": "CustomExtension",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "devices": [
+              {
+            "id": 1,
+            "name": "syslog_collector",
+            "type": "syslog",
+            "properties": {
+              "port": 514
+            }
+              }
+            ],
+            "targets": [
+              {
+            "name": "azure_monitor",
+            "type": "azure_monitor",
+            "workspace_id": "${WORKSPACE_ID}",
+            "workspace_key": "${WORKSPACE_KEY}"
+              }
+            ]
+          },
+          "protectedSettings": {
+            "WORKSPACE_ID": "<your-workspace-id>",
+            "WORKSPACE_KEY": "<your-workspace-key>"
+          }
+            }
+          }
+        ]
+          }
+          EOF
+          ```
+      </TabItem>
+          {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "machineName": {
+                "type": "string",
+                "metadata": {
+                  "description": "Name of the Azure Arc-enabled server"
+                }
+              },
+              "location": {
+                "type": "string",
+                "metadata": {
+                  "description": "Location of the machine"
+                }
+              }
+            },
+            "resources": [
+              {
+                "type": "Microsoft.HybridCompute/machines/extensions",
+                "name": "[concat(parameters('machineName'), '/DataStreamExtension')]",
+                "apiVersion": "2020-08-15-preview",
+                "location": "[parameters('location')]",
+                "properties": {
+                  "publisher": "DataStream",
+                  "type": "CustomExtension",
+                  "autoUpgradeMinorVersion": true,
+                  "settings": {
+                    "devices": [
+                      {
+                        "id": 1,
+                        "name": "syslog_collector",
+                        "type": "syslog",
+                        "properties": {
+                          "port": 514
+                        }
+                      }
+                    ],
+                    "targets": [
+                      {
+                        "name": "azure_monitor",
+                        "type": "azure_monitor",
+                        "workspace_id": "${WORKSPACE_ID}",
+                        "workspace_key": "${WORKSPACE_KEY}"
+                      }
+                    ]
+                  },
+                  "protectedSettings": {
+                    "WORKSPACE_ID": "<your-workspace-id>",
+                    "WORKSPACE_KEY": "<your-workspace-key>"
+                  }
+                }
+              }
+            ]
+          }
+          {
             "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
             "contentVersion": "1.0.0.0",
             "parameters": {
