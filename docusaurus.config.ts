@@ -58,7 +58,7 @@ const config: Config = {
           },
         },
         googleTagManager: {
-          containerId: 'VirtualMetric-1.0.2',
+          containerId: 'VirtualMetric',
         },
         blog: {
           showReadingTime: true,

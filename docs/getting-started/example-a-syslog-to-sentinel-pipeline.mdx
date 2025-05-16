@@ -14,8 +14,8 @@ We will implement the following scenario:
 
 |Step|Purpose|
 |---|---|
-|Create a device|Define the parameters of a `syslog` listener to receive messages. See the fields available in the [Syslog](/docs/appendix.mdx#syslog) format|
-|Create a target|Define the format for sending the messages to `sentinel` as the destination. See the fields available in the [ASIM](/docs/appendix.mdx#asim) format|
+|Create a device|Define the parameters of a `syslog` listener to receive messages. See the fields available in the [Syslog](../appendix.mdx#syslog) format|
+|Create a target|Define the format for sending the messages to `sentinel` as the destination. See the fields available in the [ASIM](../appendix.mdx#asim) format|
 |Speficy the processors|Using the `grok` processor, extract the `message` and `syslog.message` fields and map them to ASIM fields for routing|
 |Define a route|Specify the _source_, the _destination_, and the _pipeline_ to be used|
 
@@ -48,7 +48,7 @@ When configuring the pipeline, devices are referred to with the numbers in their
 
 ## Step 1: Configure The Device
 
-First, we have to define a device that will receive the log data. We will use the configuration we have created in our [ingesting data example](/docs/getting-started/example-ingesting-data.mdx) as our starting point, modifying it as fits our needs:
+First, we have to define a device that will receive the log data. We will use the configuration we have created in our [ingesting data example](../getting-started/example-ingesting-data.mdx) as our starting point, modifying it as fits our needs:
 
 ```yml
 devices:
@@ -70,7 +70,7 @@ This configuration will create a _TCP Syslog_ server listening on port `1514`. W
 
 ## Step 2: Configure The Target
 
-Next, we will define a target for **Microsoft Sentinel** in our file, again using the configuration we have created in our [forwarding data example](/docs/getting-started/example-forwarding-data.mdx) as the basis:
+Next, we will define a target for **Microsoft Sentinel** in our file, again using the configuration we have created in our [forwarding data example](../getting-started/example-forwarding-data.mdx) as the basis:
 
 ```yml
 targets:
@@ -144,7 +144,7 @@ pipelines:
 
 This configuration will
 
-* parse the _Syslog_ header information using the [`grok`](/docs/configuration/pipelines/processors/grok.mdx) processor&mdash;reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`&mdash;and will extract authentication event details
+* parse the _Syslog_ header information using the [`grok`](../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`&mdash;and will extract authentication event details
 
 * set the common event metadata `event.kind`
 
@@ -204,4 +204,4 @@ We will first validate the pipeline:
 
 When **Director** is invoked with the specified configuration file, it starts sending _Syslog_ messages to port **1514**.
 
-Check the logs for any errors, and verify in **Microsoft Sentinel** that data is being received in the [ASIM](/docs/appendix.mdx#asim) format.
+Check the logs for any errors, and verify in **Microsoft Sentinel** that data is being received in the [ASIM](../appendix.mdx#asim) format.
