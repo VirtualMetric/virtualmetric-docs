@@ -17,7 +17,7 @@ Creates a file target that writes log messages to files in various formats like 
   properties:
     location: <string>
     name: <string>
-    type: <string>
+    format: <string>
     compression: <string>
     extension: <string>
     schema: <string>
@@ -48,7 +48,7 @@ Files can have the following properties:
 |---|---|---|---|
 |`location`|N|`<service-root>`|File output directory|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|File name template|
-|`type`|N|`"json"`|File format: `json`, `multijson`, `avro`, or `parquet`|
+|`format`|N|`"json"`|File format: `json`, `multijson`, `avro`, or `parquet`|
 |`compression`|N|`"zstd"`|Compression algorithm|
 |`extension`|N|Matches `type`|Custom file extension|
 |`schema`|N|-|Data schema for Avro/Parquet formats or schema template name|
@@ -74,7 +74,7 @@ targets:
         - id: "system_logs"
           path: "/var/log/system"
           schema: "{{CommonSystemLog}}"
-          type: "json"
+          format: "json"
 ```
 
 ## Details
@@ -143,7 +143,7 @@ targets:
     type: file
     properties:
       location: "/var/log/vmetric"
-      type: "json"
+      format: "json"
       compression: "zstd"
 ```
 
@@ -180,7 +180,7 @@ targets:
     type: file
     properties:
       location: "/var/log/vmetric"
-      type: "parquet"
+      format: "parquet"
       compression: "zstd"
       schema: |
         {
@@ -203,7 +203,7 @@ name: cef_logs
 type: file
 properties:
   location: "/var/log/vmetric"
-  type: "parquet"
+  format: "parquet"
   schema: "{{CommonSecurityLog}}"
 ```
 
@@ -217,7 +217,7 @@ targets:
     type: file
     properties:
       location: "/var/log/vmetric"
-      type: "ocf"
+      format: "ocf"
       compression: "zstd"
       name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.ocf"
 ```
@@ -232,7 +232,7 @@ targets:
     type: file
     properties:
       location: "C:\\ProgramData\\VMetric\\Logs"
-      type: "json"
+      format: "json"
       compression: "zstd"
       name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
 ```
