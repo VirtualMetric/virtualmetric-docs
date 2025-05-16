@@ -63,6 +63,11 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Integration",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Integration",
+            description: "The following documents contain detailed information on this topic."
+          },
           items: [
             'microsoft-sentinel/integration/autodiscovery',
             'microsoft-sentinel/integration/manual',
@@ -71,6 +76,11 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Automation",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Automation",
+            description: "The following documents contain detailed information on this topic."
+          },
           items: [
             'microsoft-sentinel/automation/arm-templates',
             'microsoft-sentinel/automation/bicep-templates',
@@ -79,6 +89,11 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Content Hub",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Content Hub",
+            description: "The following documents contain detailed information on this topic."
+          },
           items: [
             'microsoft-sentinel/content-hub/checkpoint',
             'microsoft-sentinel/content-hub/fortigate',
