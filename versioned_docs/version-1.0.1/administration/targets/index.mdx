@@ -1,0 +1,100 @@
+---
+pagination_prev: null
+---
+
+# Targets
+
+**Director** uses _targets_ as the output destinations to forward, store, and analyze collected telemetry data. Targets provide flexible options for data persistence and integration with various analysis platforms.
+
+## Storage Types
+
+### Local
+
+**Director** supports the following local data output methods:
+
+* **Console** - Direct _stdout_ writing with real-time message viewing. Also provides debugging and testing capability, format normalization, and synchronous writing with mutex locking
+
+* **Files** - Multiple file formats like JSON (line-delimited), Avro (binary serialization), OCF (container), Parquet (columnar) are available. In addition, compression options like ZSTD (default), GZIP, Snappy, Brotli, and LZ4 are also supported. Also, dynamic file naming, size-based rotation, buffer management, and schema validation are among the features.
+
+### Cloud
+
+The integration options for the cloud are below:
+
+* **Azure Blob** - Direct blob writing and multiple containers are supported. Available authentication methods are service principal and managed Identity. Other features include automatic retries, exponential backoff, size-based chunking, connection pooling, and buffer management.
+
+* **Microsoft Sentinel** - Direct DCR integration and ASIM normalization are supported. In addition to standard tables, _WindowsEvent_, _SecurityEvent_, _CommonSecurityLog_, and _Syslog_ can be used. Various ASIM tables are also available. (See the [ASIM section](/appendix.mdx#asim) for a complete list.)
+
+## Deployment
+
+The following deployment types can be used:
+
+* **Single** (one-to-one) - data is routed to only one destination:
+
+  ```mermaid
+  block-beta
+    columns 5
+    A("Director"):1
+    B(["Analysis Platform"]):2
+    A --> B
+  ```
+
+* **Multiple** (one-to-many) - data is routed to two or more destinations:
+
+  ```mermaid
+  block-beta
+    columns 5
+    A("Director"):1
+    space
+    B[("Remote Site")]:2
+    space
+    space
+    C[("Client Site")]:2
+    space
+    space
+    D[("Local Storage")]:2
+    A --> B
+    A --> C
+    A --> D
+  ```
+
+* **Chained** - data is routed sequentially from one destination to the next:
+
+  ```mermaid
+  block-beta
+    columns 5
+    space
+    space
+    C[/"Cloud
+    Upload"\]:2
+    D(["Analysis
+    Platform"]):2
+    A("Director"):1
+    B[("Local
+    Storage")]:3
+    space
+    A --> B
+    B --> C
+    C --> D
+  ```
+
+## Use Cases
+
+The most common uses of targets are:
+
+* **Local analysis** - Debug logging, performance analysis, audit trails, and temporary storage.
+
+* **Cloud integration** - Long-term storage, data warehousing, security analysis, and compliance monitoring
+
+* **Real-time analysis** - Live monitoring, alert generation, trend analysis, and performance tracking
+
+* **Data lake building** - Raw data storage, schema evolution, data partitioning, and analytics preparation
+
+To serve these ends, the following _processing options_ are available:
+
+* **Pipelines** - Field normalization (for ECS, CIM, ASIM, CEF, LEEF, and CSL), data transformation, message batching, custom field mapping, schema validation, and format conversion.
+
+* **Buffer management** - Configurable buffer sizes, batch processing, flush intervals, queue management, checkpoint recovery, and error handling
+
+* **Performance** - Asynchronous writing, buffer optimization, connection pooling, retry mechanisms, resource monitoring, and size-based rotation
+
+* **Security** - Authentication using API keys, service principals, and client certificates. Encryption with TLS/SSL, HTTPS, or custom algorithms. Also, access control and audit logging.

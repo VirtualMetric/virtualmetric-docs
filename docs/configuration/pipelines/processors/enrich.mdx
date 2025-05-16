@@ -16,7 +16,7 @@ Enriches documents by performing SQL queries against lookup tables loaded from C
 ## Schema
 
 ```yaml {2-5}
-enrich:
+- enrich:
   lookup_table: <string[]>
   dataset_name: <string[]>
   query: <string>
@@ -32,6 +32,8 @@ enrich:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -94,15 +96,16 @@ As large CSV files are loaded directly into memory, the impact of using very lar
     }
     ```
     ```yaml
-    enrich:
-      lookup_table: ["event_codes.csv"]
-      query: |
-          SELECT 
-            _ingest.*,
-            lookup_table.description as event_description
-          FROM _ingest
-          LEFT JOIN lookup_table
-          ON _ingest.event_code = lookup_table.code
+    processors:
+      - enrich:
+        lookup_table: ["event_codes.csv"]
+        query: |
+            SELECT 
+              _ingest.*,
+              lookup_table.description as event_description
+            FROM _ingest
+            LEFT JOIN lookup_table
+            ON _ingest.event_code = lookup_table.code
     ```
   </CodeCol>
   <CommentCol>
@@ -133,13 +136,14 @@ As large CSV files are loaded directly into memory, the impact of using very lar
     }
     ```
     ```yaml
-    enrich:
-      type: "kusto"
-      query: |
-          _ingest
-          | where DeviceVendor == "Check Point"
-          | extend isInternal = SourceIP startswith "192.168."
-          | project DeviceVendor, DeviceProduct, SourceIP, isInternal
+    processors:
+      - enrich:
+        type: "kusto"
+        query: |
+            _ingest
+            | where DeviceVendor == "Check Point"
+            | extend isInternal = SourceIP startswith "192.168."
+            | project DeviceVendor, DeviceProduct, SourceIP, isInternal
     ```
   </CodeCol>
   <CommentCol>
@@ -171,18 +175,19 @@ As large CSV files are loaded directly into memory, the impact of using very lar
     }
     ```
     ```yaml
-    enrich:
-      lookup_table: 
-        - "users.csv"
-        - "departments.csv"
-      query: |
-          SELECT 
-            _ingest.*,
-            u.name as user_name,
-            d.name as department_name
-          FROM _ingest
-          LEFT JOIN lookup_table u ON _ingest.user_id = u.id
-          LEFT JOIN lookup_table d ON _ingest.department_id = d.id
+    processors:
+      - enrich:
+        lookup_table: 
+          - "users.csv"
+          - "departments.csv"
+        query: |
+            SELECT 
+              _ingest.*,
+              u.name as user_name,
+              d.name as department_name
+            FROM _ingest
+            LEFT JOIN lookup_table u ON _ingest.user_id = u.id
+            LEFT JOIN lookup_table d ON _ingest.department_id = d.id
     ```
   </CodeCol>
   <CommentCol>
@@ -214,13 +219,14 @@ As large CSV files are loaded directly into memory, the impact of using very lar
     }
     ```
     ```yaml
-    enrich:
-      override: true
-      query: |
-          SELECT event_type, 
-                 'processed' as status
-          FROM _ingest
-          WHERE event_type = 'security'
+    processors:
+      - enrich:
+        override: true
+        query: |
+            SELECT event_type, 
+                  'processed' as status
+            FROM _ingest
+            WHERE event_type = 'security'
     ```
   </CodeCol>
   <CommentCol>

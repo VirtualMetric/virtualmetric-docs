@@ -8,7 +8,7 @@ Creates a JetStream consumer that connects to NATS servers and processes message
 
 ## Schema
 
-```yaml
+```yaml {2,3,5}
 - id: <numeric>
   name: <string>
   description: <string>
@@ -35,7 +35,7 @@ Creates a JetStream consumer that connects to NATS servers and processes message
 
 ## Configuration
 
-The following are the minimum requirements to define the device.
+The following fields are used to define the device:
 
 ### Device
 
@@ -111,13 +111,14 @@ A basic consumer can be created easily.
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_nats
-      type: nats
-      properties:
-        address: "nats.example.com"
-        port: 4222
-        subject: "logs.>"
+    devices:
+      - id: 1
+        name: basic_nats
+        type: nats
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          subject: "logs.>"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -132,21 +133,22 @@ The consumer can connect to secure NATS servers.
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: secure_nats
-      type: nats
-      properties:
-        address: "nats.example.com"
-        port: 4222
-        username: "consumer"
-        password: "secret"
-        stream: "LOGS"
-        consumer: "processor"
-        subject: "logs.secure.>"
-        tls:
-          status: true
-          cert_name: "nats.crt"
-          key_name: "nats.key"
+    devices:
+      - id: 2
+        name: secure_nats
+        type: nats
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          username: "consumer"
+          password: "secret"
+          stream: "LOGS"
+          consumer: "processor"
+          subject: "logs.secure.>"
+          tls:
+            status: true
+            cert_name: "nats.crt"
+            key_name: "nats.key"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -161,18 +163,19 @@ Performance can be enhanced for high message volumes.
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: performant_nats
-      type: nats
-      properties:
-        address: "nats.example.com"
-        port: 4222
-        stream: "LOGS"
-        consumer: "high-perf"
-        subject: "logs.>"
-        reuse: true
-        workers: 4
-        buffer_size: 32768
+    devices:
+      - id: 3
+        name: performant_nats
+        type: nats
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          stream: "LOGS"
+          consumer: "high-perf"
+          subject: "logs.>"
+          reuse: true
+          workers: 4
+          buffer_size: 32768
     ```
   </CodeCol>
 </ExampleGrid>
@@ -187,17 +190,18 @@ Targeted message processing is possible:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
-      name: filtered_nats
-      type: nats
-      properties:
-        address: "nats.example.com"
-        port: 4222
-        stream: "LOGS"
-        consumer: "filtered"
-        subject: "logs.*.error"
-        reuse: true
-        workers: 2
+    devices:
+      - id: 4
+        name: filtered_nats
+        type: nats
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          stream: "LOGS"
+          consumer: "filtered"
+          subject: "logs.*.error"
+          reuse: true
+          workers: 2
     ```
   </CodeCol>
 </ExampleGrid>
@@ -216,18 +220,19 @@ Messages can be pre-processed based on custom criteria:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 5
-      name: pipeline_nats
-      type: nats
-      pipelines:
-        - json_parser
-        - field_extractor
-      properties:
-        address: "nats.example.com"
-        port: 4222
-        stream: "LOGS"
-        consumer: "processed"
-        subject: "logs.raw.>"
+    devices:
+      - id: 5
+        name: pipeline_nats
+        type: nats
+        pipelines:
+          - json_parser
+          - field_extractor
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          stream: "LOGS"
+          consumer: "processed"
+          subject: "logs.raw.>"
     ```
   </CodeCol>
 </ExampleGrid>

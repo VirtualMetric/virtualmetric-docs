@@ -8,7 +8,7 @@ Creates a consumer that connects to RabbitMQ servers and consumes messages from 
 
 ## Schema
 
-```yaml
+```yaml {2,3,5}
 - id: <numeric>
   name: <string>
   description: <string>
@@ -39,7 +39,7 @@ Creates a consumer that connects to RabbitMQ servers and consumes messages from 
 
 ## Configuration
 
-The following are the minimum requirements to define the device.
+The following fields are used to define the device:
 
 ### Device
 
@@ -137,19 +137,20 @@ A basic consumer can be easily created.
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_rabbitmq
-      type: rabbitmq
-      properties:
-        address: "rabbitmq.example.com"
-        port: 5672
-        authentication: "plain"
-        exchange:
-          name: "logs"
-          type: "direct"
-        queue:
-          name: "app_logs"
-          key: "app.*"
+    devices:
+      - id: 1
+        name: basic_rabbitmq
+        type: rabbitmq
+        properties:
+          address: "rabbitmq.example.com"
+          port: 5672
+          authentication: "plain"
+          exchange:
+            name: "logs"
+            type: "direct"
+          queue:
+            name: "app_logs"
+            key: "app.*"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -164,25 +165,26 @@ The collector can connect to secure servers:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: secure_rabbitmq
-      type: rabbitmq
-      properties:
-        address: "rabbitmq.example.com"
-        port: 5671
-        username: "consumer"
-        password: "secret"
-        authentication: "plain"
-        exchange:
-          name: "secure_logs"
-          type: "topic"
-        queue:
-          name: "secure_app_logs"
-          key: "secure.app.#"
-        tls:
-          status: true
-          cert_name: "rabbitmq.crt"
-          key_name: "rabbitmq.key"
+    devices:
+      - id: 2
+        name: secure_rabbitmq
+        type: rabbitmq
+        properties:
+          address: "rabbitmq.example.com"
+          port: 5671
+          username: "consumer"
+          password: "secret"
+          authentication: "plain"
+          exchange:
+            name: "secure_logs"
+            type: "topic"
+          queue:
+            name: "secure_app_logs"
+            key: "secure.app.#"
+          tls:
+            status: true
+            cert_name: "rabbitmq.crt"
+            key_name: "rabbitmq.key"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -197,22 +199,23 @@ Performance can be enhanced for high message volumes:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: performant_rabbitmq
-      type: rabbitmq
-      properties:
-        address: "rabbitmq.example.com"
-        port: 5672
-        authentication: "plain"
-        exchange:
-          name: "high_volume"
-          type: "direct"
-        queue:
-          name: "high_volume_logs"
-          key: "logs"
-        reuse: true
-        workers: 4
-        buffer_size: 32768
+    devices:
+      - id: 3
+        name: performant_rabbitmq
+        type: rabbitmq
+        properties:
+          address: "rabbitmq.example.com"
+          port: 5672
+          authentication: "plain"
+          exchange:
+            name: "high_volume"
+            type: "direct"
+          queue:
+            name: "high_volume_logs"
+            key: "logs"
+          reuse: true
+          workers: 4
+          buffer_size: 32768
     ```
   </CodeCol>
 </ExampleGrid>
@@ -227,19 +230,20 @@ Pattern-based message routing is possible:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
-      name: topic_rabbitmq
-      type: rabbitmq
-      properties:
-        address: "rabbitmq.example.com"
-        port: 5672
-        authentication: "plain"
-        exchange:
-          name: "logs"
-          type: "topic"
-        queue:
-          name: "filtered_logs"
-          key: "app.*.error"
+    devices:
+      - id: 4
+        name: topic_rabbitmq
+        type: rabbitmq
+        properties:
+          address: "rabbitmq.example.com"
+          port: 5672
+          authentication: "plain"
+          exchange:
+            name: "logs"
+            type: "topic"
+          queue:
+            name: "filtered_logs"
+            key: "app.*.error"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -258,22 +262,23 @@ Messages can be pre-processed:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 5
-      name: pipeline_rabbitmq
-      type: rabbitmq
-      pipelines:
-        - json_parser
-        - field_extractor
-      properties:
-        address: "rabbitmq.example.com"
-        port: 5672
-        authentication: "plain"
-        exchange:
-          name: "raw_logs"
-          type: "direct"
-        queue:
-          name: "processed_logs"
-          key: "logs"
+    devices:
+      - id: 5
+        name: pipeline_rabbitmq
+        type: rabbitmq
+        pipelines:
+          - json_parser
+          - field_extractor
+        properties:
+          address: "rabbitmq.example.com"
+          port: 5672
+          authentication: "plain"
+          exchange:
+            name: "raw_logs"
+            type: "direct"
+          queue:
+            name: "processed_logs"
+            key: "logs"
     ```
   </CodeCol>
 </ExampleGrid>

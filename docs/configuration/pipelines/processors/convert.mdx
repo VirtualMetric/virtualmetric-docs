@@ -16,7 +16,7 @@ Converts field values from one data type to another. Supports single values and 
 ## Schema
 
 ```yaml {2,3}
-convert:
+- convert:
   field: <ident>
   type: <enum>
   description: <text>
@@ -31,6 +31,8 @@ convert:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -101,9 +103,10 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
     }
     ```
     ```yaml
-    convert:
-      field: stringToInt
-      type: integer
+    processors:
+      - convert:
+        field: stringToInt
+        type: integer
     ```
   </CodeCol>
   <CommentCol>
@@ -131,9 +134,10 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
     }
     ```
     ```yaml
-    convert:
-      field: value
-      type: float
+    processors:
+      - convert:
+        field: value
+        type: float
         precision: 3
     ```
   </CodeCol>
@@ -162,9 +166,10 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
     }
     ```
     ```yaml
-    convert:
-      field: numbers
-      type: integer
+    processors:
+      - convert:
+        field: numbers
+        type: integer
     ```
   </CodeCol>
   <CommentCol>
@@ -195,9 +200,10 @@ IP conversion will fail if the value is not a valid IPv4 or IPv6 address. Set `i
     }
     ```
     ```yaml
-    convert:
-      field: value1
-      type: auto
+    processors:
+      - convert:
+        field: value1
+        type: auto
     ```
   </CodeCol>
   <CommentCol>
@@ -228,10 +234,11 @@ Keep Original
     }
     ```
     ```yaml
-    convert:
-      field: source
-      type: integer
-      target_field: target
+    processors:
+      - convert:
+        field: source
+        type: integer
+        target_field: target
     ```
   </CodeCol>
   <CommentCol>

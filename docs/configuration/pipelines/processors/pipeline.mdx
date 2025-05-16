@@ -16,7 +16,7 @@ Executes another pipeline by name, allowing for pipeline reuse and modular confi
 ## Schema
 
 ```yaml {2}
-pipeline:
+- pipeline:
   name: <string>
   description: <text>
   if: <script>
@@ -28,6 +28,8 @@ pipeline:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -78,8 +80,8 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
       name: parse-logs
       processors:
         - grok:
-            field: message 
-            pattern: '%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level}'
+          field: message 
+          pattern: '%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level}'
     ```
   </CodeCol>
 </ExampleGrid>
@@ -92,10 +94,11 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
   </CommentCol>
   <CodeCol>
     ```yaml
-    pipeline:
-      name: '{{ IngestPipeline "enrich-data" }}'
-      if: 'ctx.level == "ERROR"'
-      ignore_failure: true
+    processors:
+      - pipeline:
+        name: '{{ IngestPipeline "enrich-data" }}'
+        if: 'ctx.level == "ERROR"'
+        ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>
@@ -107,8 +110,8 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
       name: enrich-data
       processors:
         - append:
-            field: tags
-            value: needs-review
+          field: tags
+          value: needs-review
     ```
   </CodeCol>
 </ExampleGrid>
@@ -121,11 +124,12 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
   </CommentCol>
   <CodeCol>
     ```yaml
-    pipeline:
-      name: '{{ IngestPipeline "optional-pipeline" }}'
-      ignore_missing_pipeline: true
-      on_failure:
-        - append:
+    processors:
+      - pipeline:
+        name: '{{ IngestPipeline "optional-pipeline" }}'
+        ignore_missing_pipeline: true
+        on_failure:
+          - append:
             field: tags
             value: pipeline-failed
     ```
@@ -139,8 +143,8 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
       name: main
       processors:
         - append:
-            field: status
-            value: processed
+          field: status
+          value: processed
     ```
   </CodeCol>
 </ExampleGrid>

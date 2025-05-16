@@ -23,6 +23,8 @@ Keeps only specified fields and removes all others.
 
 ## Configuration
 
+The following fields are used to define the processor:
+
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`field`|Y|-|Field name(s) to keep. Can be a single string or an array of strings|
@@ -66,8 +68,9 @@ Using the `keep` processor is a destructive operation that removes all non-speci
     }
     ```
     ```yaml
-    - keep:
-        field: "id"
+    processors:
+      - keep:
+          field: "id"
     ```
   </CodeCol>
   <CommentCol>
@@ -110,13 +113,14 @@ Using the `keep` processor is a destructive operation that removes all non-speci
     }
     ```
     ```yaml
-    - keep:
-        field: 
-          - "event.id"
-          - "event.type"
-          - "event.timestamp"
-          - "user.id"
-          - "user.role"
+    processors:
+      - keep:
+          field: 
+            - "event.id"
+            - "event.type"
+            - "event.timestamp"
+            - "user.id"
+            - "user.role"
     ```
   </CodeCol>
   <CommentCol>
@@ -157,13 +161,14 @@ Using the `keep` processor is a destructive operation that removes all non-speci
     }
     ```
     ```yaml
-    - keep:
-        field: 
-          - "event_type"
-          - "{{event_type}}_username"
-          - "{{event_type}}_success"
-          - "source_ip"
-          - "timestamp"
+    processors:
+      - keep:
+          field: 
+            - "event_type"
+            - "{{event_type}}_username"
+            - "{{event_type}}_success"
+            - "source_ip"
+            - "timestamp"
     ```
   </CodeCol>
   <CommentCol>
@@ -204,21 +209,22 @@ Using the `keep` processor is a destructive operation that removes all non-speci
     }
     ```
     ```yaml
-    - keep:
-        field: 
-          - "log_level"
-          - "message"
-          - "user_id"
-          - "timestamp"
-        if: "logEntry.log_level != 'debug'"
-    - keep:
-        field: 
-          - "log_level"
-          - "message"
-          - "user_id"
-          - "timestamp"
-          - "debug_data"
-        if: "logEntry.log_level == 'debug'"
+    processors:
+      - keep:
+          if: "logEntry.log_level != 'debug'"
+          field: 
+            - "log_level"
+            - "message"
+            - "user_id"
+            - "timestamp"
+      - keep:
+          if: "logEntry.log_level == 'debug'"
+          field: 
+            - "log_level"
+            - "message"
+            - "user_id"
+            - "timestamp"
+            - "debug_data"
     ```
   </CodeCol>
   <CommentCol>

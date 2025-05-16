@@ -10,7 +10,7 @@ Calculates the square root of a numeric value.
 
 ## Schema
 
-```yaml {2-3}
+```yaml {2,3}
 - sqrt:
   field: <ident>
   value: <string>
@@ -24,6 +24,8 @@ Calculates the square root of a numeric value.
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -66,7 +68,8 @@ Attempting to calculate the square root of a negative number will result in an e
     }
     ```
     ```yaml
-    - sqrt:
+    processors:
+      - sqrt:
         field: math.result
         value: "144"
     ```
@@ -100,7 +103,8 @@ Attempting to calculate the square root of a negative number will result in an e
     }
     ```
     ```yaml
-    - sqrt:
+    processors:
+      - sqrt:
         field: circle.radius_from_area
         value: "circle.area / 3.14159"
     ```
@@ -135,7 +139,8 @@ Attempting to calculate the square root of a negative number will result in an e
     }
     ```
     ```yaml
-    - sqrt:
+    processors:
+      - sqrt:
         field: stats.std_dev
         value: "stats.variance"
     ```
@@ -175,16 +180,17 @@ Attempting to calculate the square root of a negative number will result in an e
     }
     ```
     ```yaml
-    - set:
+    processors:
+      - set:
         field: distance.x_diff
         value: "{{point2.x - point1.x}}"
-    - set:
+      - set:
         field: distance.y_diff
         value: "{{point2.y - point1.y}}"
-    - set:
+      - set:
         field: distance.sum_of_squares
         value: "{{distance.x_diff * distance.x_diff + distance.y_diff * distance.y_diff}}"
-    - sqrt:
+      - sqrt:
         field: distance.euclidean
         value: "distance.sum_of_squares"
     ```
@@ -228,17 +234,18 @@ Attempting to calculate the square root of a negative number will result in an e
     }
     ```
     ```yaml
-    - sqrt:
+    processors:
+      - sqrt:
         field: calculation.result
         value: "value"
         ignore_failure: true
         on_failure:
           - set:
-              field: calculation.error
-              value: "Cannot calculate square root of negative number"
+            field: calculation.error
+            value: "Cannot calculate square root of negative number"
           - set:
-              field: calculation.result
-              value: "NaN"
+            field: calculation.result
+            value: "NaN"
     ```
   </CodeCol>
   <CommentCol>

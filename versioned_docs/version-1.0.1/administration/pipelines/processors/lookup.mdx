@@ -1,0 +1,312 @@
+---
+description: Enriches documents using lookup tables
+sidebar_custom_props: 
+  customIcon: 📖
+  customCategory: Enrich
+---
+
+# Lookup
+
+<span className="theme-doc-version-badge badge badge--primary">Enrich</span><span className="theme-doc-version-badge badge badge--secondary">Cribl Compatible</span>
+
+## Synopsis
+
+Enriches log events by looking up values in a CSV file and adding corresponding fields to the event. Supports multiple matching modes, case-sensitive/insensitive matching, and various ways to handle multiple matches. 
+
+## Schema
+
+```yaml {2-7}
+lookup:
+  - lookup_file: <string>
+  - match_mode: <enum>
+  - match_type: <enum>
+  - lookup_fields: <LookupField[]>
+  - output_fields: <OutputField[]>
+  - ignore_case: <boolean>
+  - description: <text>
+  - if: <script>
+  - ignore_failure: <boolean>
+  - ignore_missing: <boolean>
+  - on_failure: <processor[]>
+  - on_success: <processor[]>
+  - tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`lookup_file`|Y|-|Path to CSV file containing lookup data|
+|`match_mode`|Y|-|Type of matching: `exact`, `regex`, or `cidr`|
+|`match_type`|Y|-|How to handle multiple matches: `first`, `most_specific`, or `all`|
+|`lookup_fields`|Y|-|Array of field mappings used for matching|
+|`output_fields`|Y|-|Array of fields to add to event from matched lookup entries|
+|`ignore_case`|N|`false`|Enable case-insensitive matching|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue on lookup errors|
+|`ignore_missing`|N|`false`|Continue if lookup fields don't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+### Lookup Field
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`event_field`|Y|-|Field name in the event|
+|`lookup_field`|N|`event_field`|Corresponding field name in lookup CSV|
+
+### Output Field
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`lookup_field`|Y|-|Field name in lookup CSV|
+|`event_field`|N|`lookup_field`|Field name to add to event|
+|`default_value`|N|-|Value to use if no match found|
+
+### Match Modes
+
+- **exact**: Exact string matching
+- **regex**: Regular expression matching (pattern from lookup table)
+- **cidr**: CIDR network matching (for IP addresses)
+
+### Match Types
+
+- **first**: Use first matching entry found
+- **most_specific**: Use most specific match (primarily for CIDR matching)
+- **all**: Use all matching entries (creates array of values)
+
+## Details
+
+The processor reads the lookup data from a CSV file where the first row contains header names. It matches event fields against lookup fields and adds corresponding output fields to the event.
+
+## Examples
+
+### Basic IP Lookup
+
+<ExampleGrid>
+  <CommentCol>
+    Map IP addresses to locations...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    lookup:
+      - lookup_file: "ip_locations.csv"
+      - match_mode: cidr
+      - match_type: most_specific
+      - lookup_fields:
+          - event_field: source.ip
+            lookup_field: network
+      - output_fields:
+          - lookup_field: location
+            event_field: source.location
+          - lookup_field: datacenter
+            event_field: source.datacenter
+    ```
+  </CodeCol>
+  <CommentCol>
+    where ip_locations.csv contains:
+  </CommentCol>
+  <CodeCol>
+    ```csv
+    network,location,datacenter
+    10.0.0.0/8,Internal,DC1
+    192.168.0.0/16,Office,DC2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### CIDR Network Zone Mapping
+
+<ExampleGrid>
+  <CommentCol>
+    Map IPs to network zones with different security levels...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    lookup:
+      - lookup_file: "network_zones.csv"
+      - match_mode: cidr
+      - match_type: most_specific
+      - lookup_fields:
+          - event_field: client_ip
+            lookup_field: network
+      - output_fields:
+          - lookup_field: zone
+            event_field: network_zone
+          - lookup_field: security_level
+            event_field: security
+    ```
+  </CodeCol>
+  <CommentCol>
+    where network_zones.csv contains overlapping networks:
+  </CommentCol>
+  <CodeCol>
+    ```csv
+    network,zone,security_level
+    10.0.0.0/8,internal,low
+    10.1.0.0/16,dmz,medium
+    10.1.1.0/24,secure,high
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+An IP address like "10.1.1.50" will match all three networks but return the most specific match (/24), resulting in zone="secure" and security_level="high".
+
+### Case-Insensitive Matching
+
+<ExampleGrid>
+  <CommentCol>
+    Match values regardless of case...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    lookup:
+      - lookup_file: "status_map.csv"
+      - match_mode: exact
+      - match_type: first
+      - ignore_case: true
+      - lookup_fields:
+          - event_field: state
+            lookup_field: Status
+      - output_fields:
+          - lookup_field: Description
+            event_field: status_desc
+    ```
+  </CodeCol>
+  <CommentCol>
+    where status_map.csv contains:
+  </CommentCol>
+  <CodeCol>
+    ```csv
+    Status,Description
+    Active,Running
+    INACTIVE,Stopped
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+With `ignore_case: true`, an event with state="ACTIVE" will match the "Active" entry and set status_desc="Running".
+
+### Multiple Field Regular Expression Matching
+
+<ExampleGrid>
+  <CommentCol>
+    Match on multiple fields using regex patterns...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    lookup:
+      - lookup_file: "access_rules.csv"
+      - match_mode: regex
+      - match_type: all
+      - lookup_fields:
+          - event_field: dept
+            lookup_field: department
+          - event_field: title
+            lookup_field: access_level
+      - output_fields:
+          - lookup_field: permissions
+            event_field: access
+    ```
+  </CodeCol>
+  <CommentCol>
+    where access_rules.csv contains:
+  </CommentCol>
+  <CodeCol>
+    ```csv
+    department,access_level,permissions
+    IT,.*,admin
+    Engineering,developer.*,read-write
+    Engineering,junior.*,read-only
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+When `match_type: all` is used with multiple matches, the output field becomes an array containing all matched values.
+
+### Default Values for Unmatched Events
+
+<ExampleGrid>
+  <CommentCol>
+    Provide default values when no match is found...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    lookup:
+      - lookup_file: "roles.csv"
+      - match_mode: exact
+      - match_type: first
+      - lookup_fields:
+          - event_field: username
+            lookup_field: user
+      - output_fields:
+          - lookup_field: role
+            event_field: user_role
+            default_value: guest
+    ```
+  </CodeCol>
+  <CommentCol>
+    where roles.csv contains:
+  </CommentCol>
+  <CodeCol>
+    ```csv
+    user,role
+    alice,admin
+    bob,user
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+When looking up a username not in the CSV (like "carol"), the `default_value` will be used.
+
+### Pattern Matching with Message Content
+
+<ExampleGrid>
+  <CommentCol>
+    Match log messages against patterns for classification...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    lookup:
+      - lookup_file: "error_patterns.csv"
+      - match_mode: regex
+      - match_type: first
+      - lookup_fields:
+          - event_field: message
+            lookup_field: pattern
+      - output_fields:
+          - lookup_field: severity
+            event_field: alert_level
+          - lookup_field: action
+            event_field: response
+    ```
+  </CodeCol>
+  <CommentCol>
+    where error_patterns.csv contains:
+  </CommentCol>
+  <CodeCol>
+    ```csv
+    pattern,severity,action
+    error.*,high,alert
+    warn.*,medium,log
+    info.*,low,ignore
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+The processor will match the message content against each pattern and enrich the event with the corresponding severity and action.
+
+:::note
+- The processor caches lookup data in memory for performance.
+- Malformed CSV rows (wrong number of fields) are skipped.
+- For CIDR matching, more specific networks (longer prefixes) take precedence.
+- When using `match_type: all`, matching fields become arrays containing all matched values.
+:::
+
+:::warning
+- When using regex matching, ensure patterns in the lookup table are valid regular expressions. Invalid patterns will be skipped.
+- Be cautious with case sensitivity when field names in the CSV differ only by case.
+- Large CSV files will be kept in memory, so consider memory usage for very large lookup tables.
+:::

@@ -11,17 +11,17 @@ const sidebars: SidebarsConfig = {
         'about/applications',
         'about/features',
         'about/benchmarks',
-        {
-          type: "category",
-          label: "Comparisons",
-          link: {type: "doc", id: "about/comparisons/index"},
-          items: [
-            'about/comparisons/cribl',
-            'about/comparisons/logstash',
-            'about/comparisons/tenzir',
-            'about/comparisons/vector',
-          ]
-        },
+        // {
+        //   type: "category",
+        //   label: "Comparisons",
+        //   link: {type: "doc", id: "about/comparisons/index"},
+        //   items: [
+        //     'about/comparisons/cribl',
+        //     'about/comparisons/logstash',
+        //     'about/comparisons/tenzir',
+        //     'about/comparisons/vector',
+        //   ]
+        // },
         'about/licensing',
         // 'about/release-notes',
       ],
@@ -38,7 +38,6 @@ const sidebars: SidebarsConfig = {
         'getting-started/configuration-basics',
         'getting-started/example-ingesting-data',
         'getting-started/example-forwarding-data',
-        // 'getting-started/example-processing-data',
         'getting-started/example-routing-data',
         // 'getting-started/example-multi-event-routing',
         'getting-started/example-a-syslog-to-sentinel-pipeline',
@@ -58,9 +57,41 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Microsoft Sentinel",
+      link: {type: "doc", id: "microsoft-sentinel/index"},
+      items: [
+        {
+          type: "category",
+          label: "Integration",
+          items: [
+            'microsoft-sentinel/integration/autodiscovery',
+            'microsoft-sentinel/integration/manual',
+          ],
+        },
+        {
+          type: "category",
+          label: "Automation",
+          items: [
+            'microsoft-sentinel/automation/arm-templates',
+            'microsoft-sentinel/automation/bicep-templates',
+          ],
+        },
+        {
+          type: "category",
+          label: "Content Hub",
+          items: [
+            'microsoft-sentinel/content-hub/checkpoint',
+            'microsoft-sentinel/content-hub/fortigate',
+          ],
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Configuration",
       link: {type: "doc", id: "configuration/index"},
       items: [
+        "configuration/cli",
         {
           type: "category",
           label: "Devices",
@@ -72,7 +103,7 @@ const sidebars: SidebarsConfig = {
             "configuration/devices/ipfix",
             "configuration/devices/kafka",
             "configuration/devices/linux",
-            "configuration/devices/ms-sentinel",
+            "configuration/devices/microsoft-sentinel",
             "configuration/devices/nats",
             "configuration/devices/netflow",
             "configuration/devices/rabbitmq",
@@ -94,11 +125,12 @@ const sidebars: SidebarsConfig = {
           items: [
             "configuration/targets/azure-blob-storage",
             "configuration/targets/azure-data-explorer",
+            "configuration/targets/clickhouse",
             "configuration/targets/console",
             "configuration/targets/discard",
             "configuration/targets/elasticsearch",
             "configuration/targets/file",
-            "configuration/targets/ms-sentinel",
+            "configuration/targets/microsoft-sentinel",
             "configuration/targets/splunk-hec",
             "configuration/targets/syslog",
           ],
@@ -217,59 +249,28 @@ const sidebars: SidebarsConfig = {
         'configuration/routes',
       ],
     },
-    {
-      type: "category",
-      label: "Migration",
-      link: {type: "doc", id: "migration/index"},
-      items: [
-        'migration/cribl',
-        'migration/logstash',
-        'migration/tenzir',
-        'migration/vector',
-      ],
-    },
-    {
-      type: "category",
-      label: "Architecture",
-      link: {type: "doc", id: "architecture/index"},
-      items: [
-        'architecture/clustering',
-        'architecture/file-system',
-        'architecture/persistency',
-        'architecture/zero-trust',
-        {
-          type: "category",
-          label: "Microsoft Sentinel",
-          link: {type: "doc", id: "architecture/microsoft-sentinel/index"},
-          items: [
-            {
-              type: "category",
-              label: "Integration",
-              items: [
-                'architecture/microsoft-sentinel/integration/autodiscovery',
-                'architecture/microsoft-sentinel/integration/manual',
-              ],
-            },
-            {
-              type: "category",
-              label: "Automation",
-              items: [
-                'architecture/microsoft-sentinel/automation/arm-templates',
-                'architecture/microsoft-sentinel/automation/bicep-templates',
-              ],
-            },
-            {
-              type: "category",
-              label: "Content Hub",
-              items: [
-                'architecture/microsoft-sentinel/content-hub/checkpoint',
-                'architecture/microsoft-sentinel/content-hub/fortigate',
-              ],
-            },
-          ],
-        },
-      ],
-    },
+    // {
+    //   type: "category",
+    //   label: "Migration",
+    //   link: {type: "doc", id: "migration/index"},
+    //   items: [
+    //     'migration/cribl',
+    //     'migration/logstash',
+    //     'migration/tenzir',
+    //     'migration/vector',
+    //   ],
+    // },
+    // {
+    //   type: "category",
+    //   label: "Architecture",
+    //   link: {type: "doc", id: "architecture/index"},
+    //   items: [
+    //     'architecture/clustering',
+    //     'architecture/file-system',
+    //     'architecture/persistency',
+    //     'architecture/zero-trust',
+    //   ],
+    // },
     "appendix",
     "glossary"
   ],

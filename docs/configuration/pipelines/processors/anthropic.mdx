@@ -15,8 +15,8 @@ Enriches events by sending field content to **Anthropic**'s Claude API to analyz
 
 ## Schema
 
-```yaml {2-5}
-anthropic:
+```yaml {2,3}
+- anthropic:
   field: <ident>
   api_key: <string>
   target_field: <ident>
@@ -34,6 +34,8 @@ anthropic:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -89,11 +91,12 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    anthropic:
-      field: message
-      target_field: analysis
-      api_key: "${ANTHROPIC_SECRET_KEY}"
-      developer_msg: "You are an expert in Cisco networking. Analyze this log message."
+    processors:
+      - anthropic:
+        field: message
+        target_field: analysis
+        api_key: "${ANTHROPIC_SECRET_KEY}"
+        developer_msg: "You are an expert in Cisco networking. Analyze this log message."
     ```
   </CodeCol>
   <CommentCol>
@@ -122,14 +125,15 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    anthropic:
-      field: error_msg
-      target_field: security_analysis
-      api_key: "${ANTHROPIC_SECRET_KEY}"
-      model: "claude-3-sonnet-20240229"
-      temperature: 0.2
-      max_tokens: 100
-      developer_msg: "You are a security analyst. Provide a brief analysis of this error."
+    processors:
+      - anthropic:
+        field: error_msg
+        target_field: security_analysis
+        api_key: "${ANTHROPIC_SECRET_KEY}"
+        model: "claude-3-sonnet-20240229"
+        temperature: 0.2
+        max_tokens: 100
+        developer_msg: "You are a security analyst. Provide a brief analysis of this error."
     ```
   </CodeCol>
   <CommentCol>
@@ -159,11 +163,12 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    anthropic:
-      if: "ctx.level == 'critical'"
-      field: message
-      target_field: ai_insight
-      api_key: "${ANTHROPIC_SECRET_KEY}"
+    processors:
+      - anthropic:
+        if: "ctx.level == 'critical'"
+        field: message
+        target_field: ai_insight
+        api_key: "${ANTHROPIC_SECRET_KEY}"
     ```
   </CodeCol>
   <CommentCol>
@@ -193,14 +198,15 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    anthropic:
-      field: message
-      api_key: "invalid-key"
-      ignore_failure: true
-      on_failure:
-        - set:
-          field: analysis_status
-          value: "failed"
+    processors:
+      - anthropic:
+        field: message
+        api_key: "invalid-key"
+        ignore_failure: true
+        on_failure:
+          - set:
+            field: analysis_status
+            value: "failed"
     ```
   </CodeCol>
   <CommentCol>

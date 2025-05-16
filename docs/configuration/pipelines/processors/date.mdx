@@ -16,7 +16,7 @@ Parses dates from a field in various formats into a standardized timestamp.
 ## Schema
 
 ```yaml {2}
-date:
+- date:
   field: <ident>
   formats: <enum[]>
   description: <text>
@@ -32,6 +32,8 @@ date:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -105,11 +107,12 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
     }
     ```
     ```yaml
-    date:
-      field: initial_date
-      target_field: timestamp
-      formats: ["02/01/2006 15:04:05"]
-      timezone: "Europe/Amsterdam"
+    processors:
+      - date:
+        field: initial_date
+        target_field: timestamp
+        formats: ["02/01/2006 15:04:05"]
+        timezone: "Europe/Amsterdam"
     ```
   </CodeCol>
   <CommentCol>
@@ -191,10 +194,11 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
     }
     ```
     ```yaml
-    date:
-      field: user.login_date
-      target_field: timestamp
-      formats: ["2006-01-02T15:04:05.000Z07:00"]
+    processors:
+      - date:
+        field: user.login_date
+        target_field: timestamp
+        formats: ["2006-01-02T15:04:05.000Z07:00"]
     ```
   </CodeCol>
   <CommentCol>
@@ -225,11 +229,12 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
     }
     ```
     ```yaml
-    date:
-      field: initial_date
-      target_field: timestamp
-      formats: ["02/01/2006 15:04:05"]
-      output_format: "2006-01-02 15:04:05"
+    processors:
+      - date:
+        field: initial_date
+        target_field: timestamp
+        formats: ["02/01/2006 15:04:05"]
+        output_format: "2006-01-02 15:04:05"
     ```
   </CodeCol>
   <CommentCol>
@@ -260,12 +265,13 @@ Date parsing will fail if none of the specified formats match the input. Set `ig
     }
     ```
     ```yaml
-    date:
-      field: event_date
-      target_field: timestamp
-      formats: ["2006-01-02 15:04:05"]
-      timezone: "{{{tz}}}"
-      locale: "{{{lang}}}"
+    processors:
+      - date:
+        field: event_date
+        target_field: timestamp
+        formats: ["2006-01-02 15:04:05"]
+        timezone: "{{{tz}}}"
+        locale: "{{{lang}}}"
     ```
   </CodeCol>
   <CommentCol>

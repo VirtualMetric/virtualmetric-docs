@@ -16,7 +16,7 @@ Extracts structured fields from unstructured log messages using predefined patte
 ## Schema
 
 ```yaml {2-3}
-grok:
+- grok:
   field: <ident>
   patterns: <string[]>
   description: <text>
@@ -31,6 +31,8 @@ grok:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -83,10 +85,11 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    grok:
-      field: message
-      patterns:
-        - "%{COMMONAPACHELOG}"
+    processors:
+      - grok:
+        field: message
+        patterns:
+          - "%{COMMONAPACHELOG}"
     ```
   </CodeCol>
   <CommentCol>
@@ -120,14 +123,15 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    grok:
-      field: log_entry
-      pattern_definitions:
-        USER_ID: "User\\[(?<user_id>\\d+)\\]"
-        ACTION: "Action=(?<action>\\w+)"
-        STATUS: "Status=(?<status>\\w+)"
-      patterns:
-        - "%{USER_ID} %{ACTION} %{STATUS}"
+    processors:
+      - grok:
+        field: log_entry
+        pattern_definitions:
+          USER_ID: "User\\[(?<user_id>\\d+)\\]"
+          ACTION: "Action=(?<action>\\w+)"
+          STATUS: "Status=(?<status>\\w+)"
+        patterns:
+          - "%{USER_ID} %{ACTION} %{STATUS}"
     ```
   </CodeCol>
   <CommentCol>
@@ -157,12 +161,13 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    grok:
-      field: message
-      patterns:
-        - "Error: %{GREEDYDATA:error_message}"
-        - "Warning: %{GREEDYDATA:warning_message}"
-        - "Info: %{GREEDYDATA:info_message}"
+    processors:
+      - grok:
+        field: message
+        patterns:
+          - "Error: %{GREEDYDATA:error_message}"
+          - "Warning: %{GREEDYDATA:warning_message}"
+          - "Info: %{GREEDYDATA:info_message}"
     ```
   </CodeCol>
   <CommentCol>
@@ -190,10 +195,11 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    grok:
-      field: metric
-      patterns:
-        - "cpu_usage=%{NUMBER:cpu:int} memory=%{NUMBER:memory:long}"
+    processors:
+      - grok:
+        field: metric
+        patterns:
+          - "cpu_usage=%{NUMBER:cpu:int} memory=%{NUMBER:memory:long}"
     ```
   </CodeCol>
   <CommentCol>
@@ -222,10 +228,11 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    grok:
-      field: message
-      patterns:
-        - "%{SYSLOG5424PRI}%{NONNEGINT:ver} +(?:%{TIMESTAMP_ISO8601:ts}|-) +(?:%{IPORHOST:host}|-) +(?:%{SYSLOG5424PRINTASCII:app}) +(?:%{NONNEGINT:pid}|-) +(?:%{SYSLOG5424PRINTASCII:msgid}|-) +\\[%{GREEDYDATA:structured_data}\\]"
+    processors:
+      - grok:
+        field: message
+        patterns:
+          - "%{SYSLOG5424PRI}%{NONNEGINT:ver} +(?:%{TIMESTAMP_ISO8601:ts}|-) +(?:%{IPORHOST:host}|-) +(?:%{SYSLOG5424PRINTASCII:app}) +(?:%{NONNEGINT:pid}|-) +(?:%{SYSLOG5424PRINTASCII:msgid}|-) +\\[%{GREEDYDATA:structured_data}\\]"
     ```
   </CodeCol>
   <CommentCol>

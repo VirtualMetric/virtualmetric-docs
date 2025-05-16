@@ -16,7 +16,7 @@ Runs a processor on each element of an array or object when the number of elemen
 ## Schema
 
 ```yaml {2-3}
-foreach:
+- foreach:
   field: <ident>
   processor: <processor>
   description: <text>
@@ -29,6 +29,8 @@ foreach:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -92,13 +94,14 @@ If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was speci
     }
     ```
     ```yaml
-    foreach:
-      field: messages
-      processor:
-        set:
-          field: "_ingest._value.read"
-          value: true
-    ```
+    processors:
+      - foreach:
+        field: messages
+        processor:
+          set:
+            field: "_ingest._value.read"
+            value: true
+      ```
   </CodeCol>
   <CommentCol>
     and mark each as read:
@@ -132,12 +135,13 @@ If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was speci
     }
     ```
     ```yaml
-    foreach:
-      field: counts
-      processor:
-        convert:
-          field: "_ingest._value"
-          type: integer
+    processors:
+      - foreach:
+        field: counts
+        processor:
+          convert:
+            field: "_ingest._value"
+            type: integer
     ```
   </CodeCol>
   <CommentCol>
@@ -172,15 +176,16 @@ If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was speci
     }
     ```
     ```yaml
-    foreach:
-      field: users
-      processor:
-        pipeline:
-          - uppercase:
-            field: "_ingest._value.name"
-          - set:
-            field: "_ingest._value.processed"
-            value: true
+    processors:
+      - foreach:
+        field: users
+        processor:
+          pipeline:
+            - uppercase:
+              field: "_ingest._value.name"
+            - set:
+              field: "_ingest._value.processed"
+              value: true
     ```
   </CodeCol>
   <CommentCol>
@@ -215,17 +220,18 @@ If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was speci
     }
     ```
     ```yaml
-    foreach:
-      field: values
-      processor:
-        convert:
-          field: "_ingest._value.num"
-          type: integer
-      ignore_failure: true
-      on_failure:
-        - set:
-          field: "_ingest._value.error"
-          value: "Conversion failed"
+    processors:
+      - foreach:
+        field: values
+        processor:
+          convert:
+            field: "_ingest._value.num"
+            type: integer
+        ignore_failure: true
+        on_failure:
+          - set:
+            field: "_ingest._value.error"
+            value: "Conversion failed"
     ```
   </CodeCol>
   <CommentCol>

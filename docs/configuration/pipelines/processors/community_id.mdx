@@ -16,7 +16,7 @@ Computes the **Community ID** for network flow data, as defined in the [**Commun
 ## Schema
 
 ```yaml
-community_id:
+- community_id:
   description: <text>
   destination_ip: <string>
   destination_port: <string>
@@ -37,6 +37,8 @@ community_id:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -91,9 +93,10 @@ Use to correlate network events related to a single flow. By default, reads netw
   </CommentCol>
   <CodeCol>
     ```yaml
-    community_id:
-      field: source.ip
-      target_field: network.community_id
+    processors:
+      - community_id:
+        source_ip: source.ip
+        target_field: network.community_id
     ```
   </CodeCol>
 

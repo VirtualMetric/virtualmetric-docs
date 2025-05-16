@@ -16,7 +16,7 @@ Transforms geo-grid definitions (geohash, geotile) into standard geometric shape
 ## Schema
 
 ```yaml {2,3}
-geo_grid:
+- geo_grid:
   field: <ident>
   tile_type: <enum>
   children_field: <ident>
@@ -35,6 +35,8 @@ geo_grid:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -133,10 +135,11 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
     }
     ```
     ```yaml
-    geo_grid:
-      field: geocell
-      tile_type: geohash
-      target_field: geoshape
+    processors:
+      - geo_grid:
+        field: geocell
+        tile_type: geohash
+        target_field: geoshape
     ```
   </CodeCol>
   <CommentCol>
@@ -176,11 +179,12 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
     }
     ```
     ```yaml
-    geo_grid:
-      field: tile
-      tile_type: geotile
-      target_field: shape
-      target_format: wkt
+    processors:
+      - geo_grid:
+        field: tile
+        tile_type: geotile
+        target_field: shape
+        target_format: wkt
     ```
   </CodeCol>
   <CommentCol>
@@ -210,11 +214,12 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
     }
     ```
     ```yaml
-    geo_grid:
-      field: geocell
-      tile_type: geotile
-      if: "ctx.process == true"
-      target_field: shape
+    processors:
+      - geo_grid:
+        field: geocell
+        tile_type: geotile
+        if: "ctx.process == true"
+        target_field: shape
     ```
   </CodeCol>
   <CommentCol>
@@ -250,14 +255,15 @@ ENVELOPE(minLon, maxLon, maxLat, minLat)
     }
     ```
     ```yaml
-    geo_grid:
-      field: geocell
-      tile_type: geohash
-      ignore_failure: true
-      on_failure:
-        - set:
-          field: error
-          value: "Invalid geohash"
+    processors:
+      - geo_grid:
+        field: geocell
+        tile_type: geohash
+        ignore_failure: true
+        on_failure:
+          - set:
+            field: error
+            value: "Invalid geohash"
     ```
   </CodeCol>
   <CommentCol>

@@ -16,7 +16,7 @@ Converts log field names between different normalization formats (ECS, CIM, ASIM
 ## Schema
 
 ```yaml {3}
-normalize:
+- normalize:
   source_format: <string>
   target_format: <string>
   description: <text>
@@ -28,6 +28,8 @@ normalize:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -98,9 +100,10 @@ Field mapping is non-reversible if the targeted format doesn't have equivalent f
     }
     ```
     ```yaml
-    normalize:
-      source_format: ecs
-      target_format: cim
+    processors:
+      - normalize:
+        source_format: ecs
+        target_format: cim
     ```
   </CodeCol>
   <CommentCol>
@@ -132,9 +135,10 @@ Field mapping is non-reversible if the targeted format doesn't have equivalent f
     }
     ```
     ```yaml
-    normalize:
-      source_format: cim
-      target_format: ecs
+    processors:
+      - normalize:
+        source_format: cim
+        target_format: ecs
     ```
   </CodeCol>
   <CommentCol>
@@ -173,8 +177,9 @@ Field mapping is non-reversible if the targeted format doesn't have equivalent f
     }
     ```
     ```yaml
-    normalize:
-      target_format: asim
+    processors:
+      - normalize:
+        target_format: asim
     ```
   </CodeCol>
   <CommentCol>
@@ -207,11 +212,12 @@ Field mapping is non-reversible if the targeted format doesn't have equivalent f
     }
     ```
     ```yaml
-    normalize:
-      target_format: cim
-      ignore_failure: true
-      on_failure:
-        - set:
+    processors:
+      - normalize:
+        target_format: cim
+        ignore_failure: true
+        on_failure:
+          - set:
             field: error
             value: "Conversion failed"
     ```

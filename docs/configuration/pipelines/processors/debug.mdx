@@ -10,7 +10,7 @@ Logs debugging information for monitoring and troubleshooting pipelines.
 
 ## Schema
 
-```yaml {2-5}
+```yaml
 - debug:
   level: <string>
   message: <string>
@@ -24,6 +24,8 @@ Logs debugging information for monitoring and troubleshooting pipelines.
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -61,9 +63,10 @@ Extensive use of debug processors in production pipelines may impact performance
   </CommentCol>
   <CodeCol>
     ```yaml
-    - debug:
-      level: "Info"
-      message: "Processing started"
+    processors:
+      - debug:
+        level: "Info"
+        message: "Processing started"
     ```
   </CodeCol>
   <CommentCol>
@@ -79,10 +82,11 @@ Extensive use of debug processors in production pipelines may impact performance
   </CommentCol>
   <CodeCol>
     ```yaml
-    - debug:
-      level: "Debug"
-      message: "Processing user {{user.id}} with role {{user.role}}"
-      keyword: "user_processing"
+    processors:
+      - debug:
+        level: "Debug"
+        message: "Processing user {{user.id}} with role {{user.role}}"
+        keyword: "user_processing"
     ```
   </CodeCol>
   <CommentCol>
@@ -98,11 +102,12 @@ Extensive use of debug processors in production pipelines may impact performance
   </CommentCol>
   <CodeCol>
     ```yaml
-    - debug:
-      level: "Warning"
-      message: "High value transaction: {{transaction.amount}}"
-      if: "getNumericValue(logEntry, 'transaction.amount') > 10000"
-      tag: "high_value"
+    processors:
+      - debug:
+        level: "Warning"
+        message: "High value transaction: {{transaction.amount}}"
+        if: "getNumericValue(logEntry, 'transaction.amount') > 10000"
+        tag: "high_value"
     ```
   </CodeCol>
   <CommentCol>
@@ -120,28 +125,28 @@ Extensive use of debug processors in production pipelines may impact performance
     ```yaml
     processors:
       - set:
-          field: event.stage
-          value: "start"
+        field: event.stage
+        value: "start"
       - debug:
-          level: "Info"
-          message: "Initial state"
-          tag: "checkpoint_1"
+        level: "Info"
+        message: "Initial state"
+        tag: "checkpoint_1"
       # Other processors...
       - set:
-          field: event.stage
-          value: "middle"
+        field: event.stage
+        value: "middle"
       - debug:
-          level: "Info"
-          message: "Intermediate state"
-          tag: "checkpoint_2"
+        level: "Info"
+        message: "Intermediate state"
+        tag: "checkpoint_2"
       # More processors...
       - set:
-          field: event.stage
-          value: "end"
+        field: event.stage
+        value: "end"
       - debug:
-          level: "Info"
-          message: "Final state"
-          tag: "checkpoint_3"
+        level: "Info"
+        message: "Final state"
+        tag: "checkpoint_3"
     ```
   </CodeCol>
   <CommentCol>

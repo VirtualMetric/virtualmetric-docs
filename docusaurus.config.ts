@@ -2,7 +2,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
-import customColoring from "./src/utils/customColoring";
+import customTheme from "./src/utils/coloring";
 
 const config: Config = {
   title: "VirtualMetric",
@@ -49,9 +49,16 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
+          lastVersion: "current",
+          includeCurrentVersion: true,
+          versions: {
+            current: {
+              label: "1.0.2",
+            }
+          },
         },
         googleTagManager: {
-          containerId: 'VirtualMetric-10.0.0',
+          containerId: 'VirtualMetric',
         },
         blog: {
           showReadingTime: true,
@@ -99,12 +106,6 @@ const config: Config = {
         height: 18,
       },
       items: [
-        // {
-        //   type: "docSidebar",
-        //   sidebarId: "userDocs",
-        //   position: "left",
-        //   label: "Documentation",
-        // },
         {
           to: "https://community.virtualmetric.com/",
           position: "left",
@@ -119,14 +120,18 @@ const config: Config = {
           type: "search",
           position: "right",
         },
+        {
+          type: "docsVersionDropdown",
+          position: "right"
+        }
       ],
     },
     footer: {
       copyright: `Copyright ©${new Date().getFullYear()} VirtualMetric B.V.`,
     },
     prism: {
-      theme: customColoring
-      // theme: prismThemes.vsDark
+      // theme: prismThemes.palenight
+      theme: customTheme
     },
   } satisfies Preset.ThemeConfig,
 };

@@ -16,7 +16,7 @@ Extracts named fields from text using regular expressions with named capture gro
 ## Schema
 
 ```yaml {2-4}
-regex_extract:
+- regex_extract:
   field: <ident>
   regex: <string>
   additional_regex: <string[]>
@@ -33,6 +33,8 @@ regex_extract:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -91,9 +93,10 @@ Consider using `ignore_failure` when regex patterns might not match all inputs.
     }
     ```
     ```yaml
-    regex_extract:
-      field: message
-      regex: "metric1=(?<metric1>\\d+)"
+    processors:
+      - regex_extract:
+        field: message
+        regex: "metric1=(?<metric1>\\d+)"
     ```
   </CodeCol>
   <CommentCol>
@@ -122,9 +125,10 @@ Consider using `ignore_failure` when regex patterns might not match all inputs.
     }
     ```
     ```yaml
-    regex_extract:
-      field: message
-      regex: "^(?<container_id>[^\\s]+)\\[(?<process_id>\\d+)\\]:\\s+(?<remote_host>[^\\s]+)\\s+(?<remote_user>-)\\s+(?<auth_user>-)\\s+\\[(?<timestamp>[^\\]]+)\\]\\s+\"(?<request_method>\\w+)\\s+(?<requested_url>[^\\s]+)\\s+(?<http_version>[^\"]+)\"\\s+(?<status>\\d+)\\s+(?<bytes>.+)$"
+    processors:
+      - regex_extract:
+        field: message
+        regex: "^(?<container_id>[^\\s]+)\\[(?<process_id>\\d+)\\]:\\s+(?<remote_host>[^\\s]+)\\s+(?<remote_user>-)\\s+(?<auth_user>-)\\s+\\[(?<timestamp>[^\\]]+)\\]\\s+\"(?<request_method>\\w+)\\s+(?<requested_url>[^\\s]+)\\s+(?<http_version>[^\"]+)\"\\s+(?<status>\\d+)\\s+(?<bytes>.+)$"
     ```
   </CodeCol>
   <CommentCol>
@@ -160,9 +164,10 @@ Consider using `ignore_failure` when regex patterns might not match all inputs.
     }
     ```
     ```yaml
-    regex_extract:
-      field: message
-      regex: "(?<_NAME_0>[^\\s=]+)=\"?(?<_VALUE_0>(?<=\")[^\"]*|[^\\s\"]+)"
+    processors:
+      - regex_extract:
+        field: message
+        regex: "(?<_NAME_0>[^\\s=]+)=\"?(?<_VALUE_0>(?<=\")[^\"]*|[^\\s\"]+)"
     ```
   </CodeCol>
   <CommentCol>
@@ -193,10 +198,11 @@ Consider using `ignore_failure` when regex patterns might not match all inputs.
     }
     ```
     ```yaml
-    regex_extract:
-      field: message
-      regex: "(?<_NAME_0>[^=]+)=(?<_VALUE_0>.+)"
-      field_name_format: "${name}_field"
+    processors:
+      - regex_extract:
+        field: message
+        regex: "(?<_NAME_0>[^=]+)=(?<_VALUE_0>.+)"
+        field_name_format: "${name}_field"
     ```
   </CodeCol>
   <CommentCol>
@@ -225,10 +231,11 @@ Consider using `ignore_failure` when regex patterns might not match all inputs.
     }
     ```
     ```yaml
-    regex_extract:
-      field: message
-      regex: "value=(?<value>\\d+)"
-      max_exec: 3
+    processors:
+      - regex_extract:
+        field: message
+        regex: "value=(?<value>\\d+)"
+        max_exec: 3
     ```
   </CodeCol>
   <CommentCol>
@@ -257,11 +264,12 @@ Consider using `ignore_failure` when regex patterns might not match all inputs.
     }
     ```
     ```yaml
-    regex_extract:
-      field: message
-      regex: "\\[(?<__fields>.*?)\\]"
-      additional_regex:
-        - "(?<_NAME_0>[^:]+):\"(?<_VALUE_0>[^\"]+)\""
+    processors:
+      - regex_extract:
+        field: message
+        regex: "\\[(?<__fields>.*?)\\]"
+        additional_regex:
+          - "(?<_NAME_0>[^:]+):\"(?<_VALUE_0>[^\"]+)\""
     ```
   </CodeCol>
   <CommentCol>

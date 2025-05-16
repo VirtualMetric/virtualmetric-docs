@@ -16,7 +16,7 @@ Enables dynamic routing of logs to different target systems based on pipeline pr
 ## Schema
 
 ```yaml {2}
-reroute:
+- reroute:
   destination: <string>
   description: <text>
   if: <script>
@@ -27,6 +27,8 @@ reroute:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -66,7 +68,7 @@ The Reroute processor is particularly useful to achieve the following:
   </CommentCol>
   <CodeCol>
     ```yaml
-      id: 1
+    targets:
       name: auto_sentinel
       type: sentinel
       properties:
@@ -87,11 +89,11 @@ The Reroute processor is particularly useful to achieve the following:
       name: security_pipeline
       processors:
         - grok:
-            field: message
-            pattern: '%{IPADDR:source_ip}'
+          field: message
+          pattern: '%{IPADDR:source_ip}'
         - reroute:
-            if: 'source_ip matches "10.0.0.*"'
-            destination: auto_sentinel
+          if: 'source_ip matches "10.0.0.*"'
+          destination: auto_sentinel
     ```
   </CodeCol>
 </ExampleGrid>
@@ -108,12 +110,12 @@ The Reroute processor is particularly useful to achieve the following:
       name: firewall_logs
       processors:
         - checkpoint:
-            field: message
+          field: message
         - reroute:
-            if: 'checkpoint.action == "Drop" && checkpoint.severity >= 3'
-            destination: high_priority_sentinel
+          if: 'checkpoint.action == "Drop" && checkpoint.severity >= 3'
+          destination: high_priority_sentinel
         - reroute:
-            destination: standard_sentinel
+          destination: standard_sentinel
     ```
   </CodeCol>
   <CommentCol>
@@ -121,18 +123,17 @@ The Reroute processor is particularly useful to achieve the following:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: high_priority_sentinel
-      type: sentinel
-      properties:
-        - tenant_id: "tenant1"
-        # ... high priority        
-    - id: 2
-      name: standard_sentinel
-      type: sentinel
-      properties:
-        - tenant_id: "tenant2"
-        # ... standard
+    targets:
+      - name: high_priority_sentinel
+        type: sentinel
+        properties:
+          - tenant_id: "tenant1"
+          # ... high priority        
+      - name: standard_sentinel
+        type: sentinel
+        properties:
+          - tenant_id: "tenant2"
+          # ... standard
     ```
   </CodeCol>
 </ExampleGrid>
@@ -149,19 +150,19 @@ The Reroute processor is particularly useful to achieve the following:
       name: complex_processing
       processors:
         - json:
-            field: message
+          field: message
         - grok:
-            field: parsed_message
-            pattern: '%{DATA:app_name}'
+          field: parsed_message
+          pattern: '%{DATA:app_name}'
         - user_agent:
-            field: user_agent
+          field: user_agent
         - geoip:
-            field: ip_address
+          field: ip_address
         - reroute:
-            if: 'geoip.country_code not in ["US", "CA"] && app_name == "core_banking"'
-            destination: security_analytics
+          if: 'geoip.country_code not in ["US", "CA"] && app_name == "core_banking"'
+          destination: security_analytics
         - reroute:
-            destination: standard_logs
+          destination: standard_logs
     ```
   </CodeCol>
 </ExampleGrid>

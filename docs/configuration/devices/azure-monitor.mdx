@@ -8,7 +8,7 @@ Creates an Azure Monitor client that collects logs from specified Log Analytics 
 
 ## Schema
 
-```yaml
+```yaml {2,3,5}
 - id: <numeric>
   name: <string>
   description: <string>
@@ -23,12 +23,11 @@ Creates an Azure Monitor client that collects logs from specified Log Analytics 
     workspace_id: <string>
     stream: <string[]>
     batch_size: <numeric>
-    event_frequency: <numeric>
 ```
 
 ## Configuration
 
-The following are the minimum requirements to define the device.
+The following fields are used to define the device.
 
 ### Device
 
@@ -73,16 +72,17 @@ The minimum required configuration:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_azmon
-      type: azmon
-      properties:
-        tenant_id: "00000000-0000-0000-0000-000000000000"
-        client_id: "11111111-1111-1111-1111-111111111111"
-        client_secret: "your-client-secret"
-        workspace_id: "22222222-2222-2222-2222-222222222222"
-        stream:
-          - "SecurityEvent"
+    devices:
+      - id: 1
+        name: basic_azmon
+        type: azmon
+        properties:
+          tenant_id: "00000000-0000-0000-0000-000000000000"
+          client_id: "11111111-1111-1111-1111-111111111111"
+          client_secret: "your-client-secret"
+          workspace_id: "22222222-2222-2222-2222-222222222222"
+          stream:
+            - "SecurityEvent"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -97,22 +97,22 @@ The collecter can consume multiple log types with pre-processing:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: multi_stream_azmon
-      type: azmon
-      pipelines:
-        - security_events
-      properties:
-        tenant_id: "00000000-0000-0000-0000-000000000000"
-        client_id: "11111111-1111-1111-1111-111111111111"
-        client_secret: "your-client-secret"
-        workspace_id: "22222222-2222-2222-2222-222222222222"
-        stream:
-          - "SecurityEvent"
-          - "Syslog"
-          - "AzureActivity"
-        batch_size: 2000
-        event_frequency: 600
+    devices:
+      - id: 2
+        name: multi_stream_azmon
+        type: azmon
+        pipelines:
+          - security_events
+        properties:
+          tenant_id: "00000000-0000-0000-0000-000000000000"
+          client_id: "11111111-1111-1111-1111-111111111111"
+          client_secret: "your-client-secret"
+          workspace_id: "22222222-2222-2222-2222-222222222222"
+          stream:
+            - "SecurityEvent"
+            - "Syslog"
+            - "AzureActivity"
+          batch_size: 2000
     ```
   </CodeCol>
 </ExampleGrid>
@@ -131,19 +131,19 @@ Performance can be enhanced for high log volumes:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: high_volume_azmon
-      type: azmon
-      properties:
-        tenant_id: "00000000-0000-0000-0000-000000000000"
-        client_id: "11111111-1111-1111-1111-111111111111"
-        client_secret: "your-client-secret"
-        workspace_id: "22222222-2222-2222-2222-222222222222"
-        stream:
-          - "SecurityEvent | where Level == 'Critical' or Level == 'Error'"
-          - "Syslog | where Facility == 'auth'"
-        batch_size: 5000
-        event_frequency: 120
+    devices:
+      - id: 3
+        name: high_volume_azmon
+        type: azmon
+        properties:
+          tenant_id: "00000000-0000-0000-0000-000000000000"
+          client_id: "11111111-1111-1111-1111-111111111111"
+          client_secret: "your-client-secret"
+          workspace_id: "22222222-2222-2222-2222-222222222222"
+          stream:
+            - "SecurityEvent | where Level == 'Critical' or Level == 'Error'"
+            - "Syslog | where Facility == 'auth'"
+          batch_size: 5000
     ```
   </CodeCol>
 </ExampleGrid>

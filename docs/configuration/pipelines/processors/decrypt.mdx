@@ -16,7 +16,7 @@ Decrypts encrypted string values using AES encryption with a specified key and i
 ## Schema
 
 ```yaml {2-5}
-decrypt:
+- decrypt:
   algorithm: <ident>
   encryption_key: <string>
   field: <ident>
@@ -32,6 +32,8 @@ decrypt:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -82,11 +84,12 @@ To improve performance, the processor automatically caches cipher instances for 
     }
     ```
     ```yaml
-    decrypt:
-      field: encrypted_value
-      iv_field: iv
-      encryption_key: 6B58703273357638792F423F4528482B
-      algorithm: AES-256-CFB
+    processors:
+      - decrypt:
+        field: encrypted_value
+        iv_field: iv
+        encryption_key: 6B58703273357638792F423F4528482B
+        algorithm: AES-256-CFB
     ```
   </CodeCol>
   <CommentCol>
@@ -116,12 +119,13 @@ To improve performance, the processor automatically caches cipher instances for 
     }
     ```
     ```yaml
-    decrypt:
-      field: secret
-      iv_field: vector
-      encryption_key: 6B58703273357638792F423F4528482B
-      algorithm: AES-256-GCM
-      with_compression: true
+    processors:
+      - decrypt:
+        field: secret
+        iv_field: vector
+        encryption_key: 6B58703273357638792F423F4528482B
+        algorithm: AES-256-GCM
+        with_compression: true
     ```
   </CodeCol>
   <CommentCol>
@@ -151,12 +155,13 @@ To improve performance, the processor automatically caches cipher instances for 
     }
     ```
     ```yaml
-    decrypt:
-      field: data
-      iv_field: iv
-      encryption_key: too_short
-      algorithm: AES-256-CFB
-      ignore_failure: true
+    processors:
+      - decrypt:
+        field: data
+        iv_field: iv
+        encryption_key: too_short
+        algorithm: AES-256-CFB
+        ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>

@@ -15,8 +15,8 @@ Enriches events by retrieving intelligence information from **Cloudflare**'s API
 
 ## Schema
 
-```yaml {2-6}
-cloudflare:
+```yaml {3,4}
+- cloudflare:
   field: <ident>
   api_token: <string>
   account_id: <string>
@@ -32,6 +32,8 @@ cloudflare:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -92,11 +94,12 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    cloudflare:
-      field: domain
-      api_token: "${CLOUDFLARE_API_TOKEN}"
-      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      query_type: whois
+    processors:
+      - cloudflare:
+        field: domain
+        api_token: "${CLOUDFLARE_API_TOKEN}"
+        account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+        query_type: whois
     ```
   </CodeCol>
   <CommentCol>
@@ -161,12 +164,13 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    cloudflare:
-      field: source_ip
-      target_field: ip_intel
-      api_token: "${CLOUDFLARE_API_TOKEN}"
-      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      query_type: ip
+    processors:
+      - cloudflare:
+        field: source_ip
+        target_field: ip_intel
+        api_token: "${CLOUDFLARE_API_TOKEN}"
+        account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+        query_type: ip
     ```
   </CodeCol>
   <CommentCol>
@@ -214,12 +218,13 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    cloudflare:
-      field: asn
-      target_field: asn_intel
-      api_token: "${CLOUDFLARE_API_TOKEN}"
-      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      query_type: asn
+    processors:
+      - cloudflare:
+        field: asn
+        target_field: asn_intel
+        api_token: "${CLOUDFLARE_API_TOKEN}"
+        account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+        query_type: asn
     ```
   </CodeCol>
   <CommentCol>
@@ -254,13 +259,14 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    cloudflare:
-      field: domain
-      if: "ctx.threat_level == 'high'"
-      target_field: domain_threat_intel
-      api_token: "${CLOUDFLARE_API_TOKEN}"
-      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      query_type: domain
+    processors:
+      - cloudflare:
+        field: domain
+        if: "ctx.threat_level == 'high'"
+        target_field: domain_threat_intel
+        api_token: "${CLOUDFLARE_API_TOKEN}"
+        account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+        query_type: domain
     ```
   </CodeCol>
   <CommentCol>
@@ -313,16 +319,17 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    cloudflare:
-      field: investigate_ip
-      ignore_missing: true
-      ignore_failure: true
-      api_token: "${CLOUDFLARE_API_TOKEN}"
-      account_id: "${CLOUDFLARE_ACCOUNT_ID}"
-      on_failure:
-        - set:
-          field: lookup_status
-          value: "intelligence_lookup_failed"
+    processors:
+      - cloudflare:
+        field: investigate_ip
+        ignore_missing: true
+        ignore_failure: true
+        api_token: "${CLOUDFLARE_API_TOKEN}"
+        account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+        on_failure:
+          - set:
+            field: lookup_status
+            value: "intelligence_lookup_failed"
     ```
   </CodeCol>
   <CommentCol>

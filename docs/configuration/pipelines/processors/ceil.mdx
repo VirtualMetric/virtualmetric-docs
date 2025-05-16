@@ -12,18 +12,20 @@ Rounds a number up to the nearest integer.
 
 ```yaml {2-3}
 - ceil:
-    field: <ident>
-    value: <string>
-    description: <text>
-    if: <script>
-    ignore_failure: <boolean>
-    ignore_missing: <boolean>
-    on_failure: <processor[]>
-    on_success: <processor[]>
-    tag: <string>
+  field: <ident>
+  value: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -66,7 +68,8 @@ If the specified value or referenced field cannot be converted to a number, the 
     }
     ```
     ```yaml
-    - ceil:
+    processors:
+      - ceil:
         field: price_rounded
         value: "{{price}}"
     ```
@@ -97,9 +100,10 @@ If the specified value or referenced field cannot be converted to a number, the 
     }
     ```
     ```yaml
-    - ceil:
-      field: value
-      value: "{{value}}"
+    processors:
+      - ceil:
+        field: value
+        value: "{{value}}"
     ```
   </CodeCol>
   <CommentCol>
@@ -127,9 +131,10 @@ If the specified value or referenced field cannot be converted to a number, the 
     }
     ```
     ```yaml
-    - ceil:
-      field: rounded_value
-      value: "9.999"
+    processors:
+      - ceil:
+        field: rounded_value
+        value: "9.999"
     ```
   </CodeCol>
   <CommentCol>
@@ -158,9 +163,10 @@ If the specified value or referenced field cannot be converted to a number, the 
     }
     ```
     ```yaml
-    - ceil:
-      field: quantity_ceiling
-      value: "{{quantity}}"
+    processors:
+      - ceil:
+        field: quantity_ceiling
+        value: "{{quantity}}"
     ```
   </CodeCol>
   <CommentCol>
@@ -190,10 +196,11 @@ If the specified value or referenced field cannot be converted to a number, the 
     }
     ```
     ```yaml
-    - ceil:
-      field: metric_rounded
-      value: "{{metric}}"
-      if: "logEntry.needs_rounding == true"
+    processors:
+      - ceil:
+        field: metric_rounded
+        value: "{{metric}}"
+        if: "logEntry.needs_rounding == true"
     ```
   </CodeCol>
   <CommentCol>

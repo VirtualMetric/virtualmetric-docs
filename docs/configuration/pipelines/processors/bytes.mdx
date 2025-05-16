@@ -16,7 +16,7 @@ Converts string field values expressing size in byte units to their numeric valu
 ## Schema
 
 ```yaml {2}
-bytes:
+- bytes:
   field: <ident>
   description: <text>
   if: <script>
@@ -29,6 +29,8 @@ bytes:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -63,8 +65,9 @@ Allowed units are `B`, `KB`, `MB`, `GB`, `TB`, and `PB`, all case insensitive. F
     }
     ```
     ```yaml
-    bytes:
-      field: file.size
+    processors:
+      - bytes:
+        field: file.size
     ```
   </CodeCol>
   <CommentCol>
@@ -97,14 +100,15 @@ Allowed units are `B`, `KB`, `MB`, `GB`, `TB`, and `PB`, all case insensitive. F
     }
     ```
     ```yaml
-    bytes:
-      field: sizes.a
-    bytes:
-      field: sizes.b
-    bytes:
-      field: sizes.c
-    bytes:
-      field: sizes.d
+    processors:
+      - bytes:
+        field: sizes.a
+      - bytes:
+        field: sizes.b
+      - bytes:
+        field: sizes.c
+      - bytes:
+        field: sizes.d
     ```
   </CodeCol>
   <CommentCol>
@@ -137,9 +141,10 @@ Allowed units are `B`, `KB`, `MB`, `GB`, `TB`, and `PB`, all case insensitive. F
     }
     ```
     ```yaml
-    bytes:
-      field: raw_size
-      target_field: size_in_bytes
+    processors:
+      - bytes:
+        field: raw_size
+        target_field: size_in_bytes
     ```
   </CodeCol>
   <CommentCol>
@@ -168,9 +173,10 @@ Allowed units are `B`, `KB`, `MB`, `GB`, `TB`, and `PB`, all case insensitive. F
     }
     ```
     ```yaml
-    bytes:
-      field: size
-      ignore_failure: true
+    processors:
+      - bytes:
+        field: size
+        ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>
@@ -201,9 +207,10 @@ Allowed units are `B`, `KB`, `MB`, `GB`, `TB`, and `PB`, all case insensitive. F
     }
     ```
     ```yaml
-    bytes:
-      field: size
-      ignore_missing: true
+    processors:
+      - bytes:
+        field: size
+        ignore_missing: true
     ```
   </CodeCol>
   <CommentCol>

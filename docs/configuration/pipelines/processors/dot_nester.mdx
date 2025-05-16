@@ -16,7 +16,7 @@ Converts nested structures into flattened ones using dot notation for field name
 ## Schema
 
 ```yaml
-dot_nester:
+- dot_nester:
   field: <ident>
   format: <string>
   target_field: <ident>
@@ -32,6 +32,8 @@ dot_nester:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -94,8 +96,9 @@ Only mapped objects are flattened. Non-map values will cause an error unless `ig
     }
     ```
     ```yaml
-    dot_nester:
-      target_field: flattened
+    processors:
+      - dot_nester:
+        target_field: flattened
     ```
   </CodeCol>
   <CommentCol>
@@ -133,9 +136,10 @@ Only mapped objects are flattened. Non-map values will cause an error unless `ig
     }
     ```
     ```yaml
-    dot_nester:
-      field: nested
-      target_field: flattened
+    processors:
+      - dot_nester:
+        field: nested
+        target_field: flattened
     ```
   </CodeCol>
   <CommentCol>
@@ -177,10 +181,11 @@ Only mapped objects are flattened. Non-map values will cause an error unless `ig
     }
     ```
     ```yaml
-    dot_nester:
-      field: nested
-      delimiter: "_"
-      target_field: flattened
+    processors:
+      - dot_nester:
+        field: nested
+        delimiter: "_"
+        target_field: flattened
     ```
   </CodeCol>
   <CommentCol>
@@ -218,10 +223,11 @@ Only mapped objects are flattened. Non-map values will cause an error unless `ig
     }
     ```
     ```yaml
-    dot_nester:
-      field: root
-      depth: 2
-      target_field: flat
+    processors:
+      - dot_nester:
+        field: root
+        depth: 2
+        target_field: flat
     ```
   </CodeCol>
   <CommentCol>
@@ -257,9 +263,10 @@ Only mapped objects are flattened. Non-map values will cause an error unless `ig
     }
     ```
     ```yaml
-    dot_nester:
-      field: nested
-      if: "source == 'external'"
+    processors:
+      - dot_nester:
+        field: nested
+        if: "source == 'external'"
     ```
   </CodeCol>
   <CommentCol>
@@ -295,9 +302,10 @@ Only mapped objects are flattened. Non-map values will cause an error unless `ig
     }
     ```
     ```yaml
-    dot_nester:
-      field: User
-      format: ecs
+    processors:
+      - dot_nester:
+        field: User
+        format: ecs
     ```
   </CodeCol>
   <CommentCol>

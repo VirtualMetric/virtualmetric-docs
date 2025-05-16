@@ -10,19 +10,21 @@ Adds two numeric values and stores the result in a field.
 
 ```yaml {2-4}
 - add:
-    field: <ident>
-    left_operand: <string>
-    right_operand: <string>
-    description: <text>
-    if: <script>
-    ignore_failure: <boolean>
-    ignore_missing: <boolean>
-    on_failure: <processor[]>
-    on_success: <processor[]>
-    tag: <string>
+  field: <ident>
+  left_operand: <string>
+  right_operand: <string>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -67,7 +69,8 @@ If either operand cannot be converted to a number, the processor will fail unles
     }
     ```
     ```yaml
-    - add:
+    processors:
+      - add:
         field: sum
         left_operand: "{{x}}"
         right_operand: "{{y}}"
@@ -100,7 +103,8 @@ If either operand cannot be converted to a number, the processor will fail unles
     }
     ```
     ```yaml
-    - add:
+    processors:
+      - add:
         field: adjusted_value
         left_operand: "{{base_value}}"
         right_operand: "25"
@@ -132,7 +136,8 @@ If either operand cannot be converted to a number, the processor will fail unles
     }
     ```
     ```yaml
-    - add:
+    processors:
+      - add:
         field: counter
         left_operand: "{{counter}}"
         right_operand: "1"
@@ -163,7 +168,8 @@ If either operand cannot be converted to a number, the processor will fail unles
     }
     ```
     ```yaml
-    - add:
+    processors:
+      - add:
         field: total
         left_operand: "{{available}}"
         right_operand: "{{missing}}"
@@ -199,7 +205,8 @@ If either operand cannot be converted to a number, the processor will fail unles
     }
     ```
     ```yaml
-    - add:
+    processors:
+      - add:
         field: metrics.total
         left_operand: "{{metrics.sent}}"
         right_operand: "{{metrics.received}}"

@@ -10,7 +10,7 @@ See [Appendix](/appendix.mdx#estreamer) for details.
 
 ## Schema
 
-```yaml
+```yaml {2,3,5}
 - id: <numeric>
   name: <string>
   description: <string>
@@ -45,7 +45,7 @@ See [Appendix](/appendix.mdx#estreamer) for details.
 
 ## Configuration
 
-The following are the minimum requirements to define the device.
+The following fields are used to define the device:
 
 ### Device
 
@@ -144,15 +144,16 @@ For a basic client, enable TLS encryption and use default event types and settin
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_estreamer
-      type: estreamer
-      properties:
-        address: "192.168.1.100"
-        port: 8302
-        tls:
-          cert_name: "client.crt"
-          key_name: "client.key"
+    devices:
+      - id: 1
+        name: basic_estreamer
+        type: estreamer
+        properties:
+          address: "192.168.1.100"
+          port: 8302
+          tls:
+            cert_name: "client.crt"
+            key_name: "client.key"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -167,19 +168,20 @@ To enhance performance, make sure that the batch size is larger, the flush inter
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: performant_estreamer
-      type: estreamer
-      properties:
-        address: "192.168.1.100"
-        port: 8302
-        tls:
-          cert_name: "client.crt"
-          key_name: "client.key"
-        batch_size: 5000
-        flush_interval: 30
-        reuse: true
-        workers: 4
+    devices:
+      - id: 2
+        name: performant_estreamer
+        type: estreamer
+        properties:
+          address: "192.168.1.100"
+          port: 8302
+          tls:
+            cert_name: "client.crt"
+            key_name: "client.key"
+          batch_size: 5000
+          flush_interval: 30
+          reuse: true
+          workers: 4
     ```
   </CodeCol>
 </ExampleGrid>
@@ -194,20 +196,21 @@ For selective event processing, enable connection and intrusion events, and disa
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: filtered_estreamer
-      type: estreamer
-      properties:
-        address: "192.168.1.100"
-        port: 8302
-        tls:
-          cert_name: "client.crt"
-          key_name: "client.key"
-        inputs:
-          - id: 102
-            status: true
-          - id: 106
-            status: true
+    devices:
+      - id: 3
+        name: filtered_estreamer
+        type: estreamer
+        properties:
+          address: "192.168.1.100"
+          port: 8302
+          tls:
+            cert_name: "client.crt"
+            key_name: "client.key"
+          inputs:
+            - id: 102
+              status: true
+            - id: 106
+              status: true
     ```
   </CodeCol>
 </ExampleGrid>
@@ -222,16 +225,17 @@ Compatibility with legacy systems allows use of older TLS versions, standard eve
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
-      name: legacy_estreamer
-      type: estreamer
-      properties:
-        address: "192.168.1.100"
-        port: 8302
-        tls:
-          cert_name: "client.crt"
-          key_name: "client.key"
-          non_secure: true
+    devices:
+      - id: 4
+        name: legacy_estreamer
+        type: estreamer
+        properties:
+          address: "192.168.1.100"
+          port: 8302
+          tls:
+            cert_name: "client.crt"
+            key_name: "client.key"
+            non_secure: true
     ```
   </CodeCol>
 </ExampleGrid>

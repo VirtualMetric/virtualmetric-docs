@@ -16,7 +16,7 @@ Creates dynamic index names based on date fields in documents by combining a con
 ## Schema
 
 ```yaml {2,3}
-date_index_name:
+- date_index_name:
   field: <ident>
   date_rounding: <enum>
   date_formats: <string[]>
@@ -34,6 +34,8 @@ date_index_name:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -81,11 +83,12 @@ The date parsing will fail if none of the specified date formats match the input
     }
     ```
     ```yaml
-    date_index_name:
-      field: raw-date
-      date_rounding: "M"
-      index_name_prefix: "monthly-"
-      index_name_format: "2006-01-02"
+    processors:
+      - date_index_name:
+        field: raw-date
+        date_rounding: "M"
+        index_name_prefix: "monthly-"
+        index_name_format: "2006-01-02"
     ```
   </CodeCol>
   <CommentCol>
@@ -116,11 +119,12 @@ The date parsing will fail if none of the specified date formats match the input
     }
     ```
     ```yaml
-    date_index_name:
-      field: "user.login"
-      date_rounding: "d"
-      index_name_prefix: "logins-"
-      index_name_format: "2006-01-02"
+    processors:
+      - date_index_name:
+        field: "user.login"
+        date_rounding: "d"
+        index_name_prefix: "logins-"
+        index_name_format: "2006-01-02"
     ```
   </CodeCol>
   <CommentCol>
@@ -151,11 +155,12 @@ The date parsing will fail if none of the specified date formats match the input
     }
     ```
     ```yaml
-    date_index_name:
-      field: timestamp
-      date_rounding: "w"
-      index_name_prefix: "weekly-"
-      index_name_format: "2006-01-02"
+    processors:
+      - date_index_name:
+        field: timestamp
+        date_rounding: "w"
+        index_name_prefix: "weekly-"
+        index_name_format: "2006-01-02"
     ```
   </CodeCol>
   <CommentCol>

@@ -16,19 +16,21 @@ Converts string values to lowercase.
 ## Schema
 
 ```yaml {2}
-lowercase:
-  - field: <ident>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
-  - target_field: <ident>
+- lowercase:
+  field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+  target_field: <ident>
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -71,8 +73,9 @@ Non-string values in the input field will cause processing errors unless `ignore
     }
     ```
     ```yaml
-    lowercase:
-      - field: username
+    processors:
+      - lowercase:
+        field: username
     ```
   </CodeCol>
   <CommentCol>
@@ -100,8 +103,9 @@ Non-string values in the input field will cause processing errors unless `ignore
     }
     ```
     ```yaml
-    lowercase:
-      - field: tags
+    processors:
+      - lowercase:
+        field: tags
     ```
   </CodeCol>
   <CommentCol>
@@ -129,9 +133,10 @@ Non-string values in the input field will cause processing errors unless `ignore
     }
     ```
     ```yaml
-    lowercase:
-      - field: original
-      - target_field: lowercase_text
+    processors:
+      - lowercase:
+        field: original
+        target_field: lowercase_text
     ```
   </CodeCol>
   <CommentCol>
@@ -161,9 +166,10 @@ Non-string values in the input field will cause processing errors unless `ignore
     }
     ```
     ```yaml
-    lowercase:
-      - field: level
-      - if: "ctx.should_convert == true"
+    processors:
+      - lowercase:
+        field: level
+        if: "ctx.should_convert == true"
     ```
   </CodeCol>
   <CommentCol>
@@ -193,13 +199,14 @@ Non-string values in the input field will cause processing errors unless `ignore
     }
     ```
     ```yaml
-    lowercase:
-      - field: id
-      - ignore_failure: true
-      - on_failure:
+    processors:
+      - lowercase:
+        field: id
+        ignore_failure: true
+        on_failure:
           - set:
-              - field: error
-              - value: "Non-string field encountered"
+            field: error
+            value: "Non-string field encountered"
     ```
   </CodeCol>
   <CommentCol>

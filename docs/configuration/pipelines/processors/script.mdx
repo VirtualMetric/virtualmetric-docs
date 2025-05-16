@@ -16,7 +16,7 @@ Executes custom scripts and optimized built-in functions to transform and manipu
 ## Schema
 
 ```yaml {2-4}
-script:
+- script:
   source: <string>
   lang: <string>
   params: <map[string]any>
@@ -31,6 +31,8 @@ script:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -54,16 +56,17 @@ The processor supports three scripting modes:
 Go scripts provide full access to all of Go's features, and therefore is the recommended language for complex scenarios.
 
 ```yaml
-script:
-  lang: golang
-  source: |
-      package main
-      
-      func main() {
-        if val, ok := logEntry["field"].(string); ok {
-          logEntry["normalized"] = strings.ToLower(val)
+processors:
+  - script:
+    lang: golang
+    source: |
+        package main
+        
+        func main() {
+          if val, ok := logEntry["field"].(string); ok {
+            logEntry["normalized"] = strings.ToLower(val)
+          }
         }
-      }
 ```
 
 :::note
@@ -75,10 +78,11 @@ Scripts are cached using **xxHash** for performance, reusing compiled versions. 
 While there is support for Elasticsearch Painless for convenience, this may not cover all the features, and has an overhead.
 
 ```yaml
-script:
-  lang: painless
-  source: |
-      ctx.normalized = ctx.field.toLowerCase()
+processors:
+  - script:
+    lang: painless
+    source: |
+        ctx.normalized = ctx.field.toLowerCase()
 ```
 
 ### Built-in
@@ -102,21 +106,22 @@ Optimized implementations of common VirtualMetric functions that bypass script i
   </CommentCol>
   <CodeCol>
     ```yaml
-    script:
-      lang: golang
-      source: |
-          package main
-          
-          func main() {
-            val, err := getField(logEntry, "threat.indicator.confidence")
-            if err == nil {
-              if confidence, ok := val.(float64); ok {
-                if confidence > 70 {
-                  setField(logEntry, "threat.level", "high")
+    processors:
+      - script:
+        lang: golang
+        source: |
+            package main
+            
+            func main() {
+              val, err := getField(logEntry, "threat.indicator.confidence")
+              if err == nil {
+                if confidence, ok := val.(float64); ok {
+                  if confidence > 70 {
+                    setField(logEntry, "threat.level", "high")
+                  }
                 }
               }
             }
-          }
     ```
   </CodeCol>
 </ExampleGrid>
@@ -129,9 +134,10 @@ Optimized implementations of common VirtualMetric functions that bypass script i
   </CommentCol>
   <CodeCol>
     ```yaml
-    script:
-      lang: vmetric
-      function: processTimeFields("log.time", "log.timestamp", "log.times")
+    processors:
+      - script:
+        lang: vmetric
+        function: processTimeFields("log.time", "log.timestamp", "log.times")
     ```
   </CodeCol>
 </ExampleGrid>
@@ -146,19 +152,19 @@ Optimized implementations of common VirtualMetric functions that bypass script i
     ```yaml
     processors:
       - script:
-          lang: vmetric
-          function: getNetworkTransport()
+        lang: vmetric
+        function: getNetworkTransport()
       - script:
-          lang: golang
-          source: |
-            package main
-            func main() {
-              if transport, ok := logEntry["network.transport"].(string); ok {
-                if transport == "tcp" || transport == "udp" {
-                  logEntry["network.type"] = "ip_traffic"
-                }
+        lang: golang
+        source: |
+          package main
+          func main() {
+            if transport, ok := logEntry["network.transport"].(string); ok {
+              if transport == "tcp" || transport == "udp" {
+                logEntry["network.type"] = "ip_traffic"
               }
             }
+          }
     ```
   </CodeCol>
 </ExampleGrid>

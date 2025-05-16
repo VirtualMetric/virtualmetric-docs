@@ -10,7 +10,7 @@ Converts time duration strings to seconds.
 
 ## Schema
 
-```yaml {2-3}
+```yaml {2}
 - duration:
   field: <ident>
   target_field: <ident>
@@ -24,6 +24,8 @@ Converts time duration strings to seconds.
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -41,13 +43,15 @@ Converts time duration strings to seconds.
 
 The processor can handle the following duration formats:
 
-1. **Go Duration Format**: 
+1. **Go Duration Format**:
+
    - "5s" (5 seconds)
    - "1m30s" (1 minute and 30 seconds)
    - "2h45m" (2 hours and 45 minutes)
    - "24h" (24 hours)
 
 2. **Time Format**:
+
    - "HH:MM:SS" (hours:minutes:seconds)
    - "MM:SS" (minutes:seconds)
 
@@ -82,9 +86,10 @@ Invalid duration formats will cause the processor to fail unless `ignore_failure
     }
     ```
     ```yaml
-    - duration:
-      field: event.duration_str
-      target_field: event.duration_seconds
+    processors:
+      - duration:
+        field: event.duration_str
+        target_field: event.duration_seconds
     ```
   </CodeCol>
   <CommentCol>
@@ -117,9 +122,10 @@ Invalid duration formats will cause the processor to fail unless `ignore_failure
     }
     ```
     ```yaml
-    - duration:
-      field: video.length
-      target_field: video.length_seconds
+    processors:
+      - duration:
+        field: video.length
+        target_field: video.length_seconds
     ```
   </CodeCol>
   <CommentCol>
@@ -152,8 +158,9 @@ Invalid duration formats will cause the processor to fail unless `ignore_failure
     }
     ```
     ```yaml
-    - duration:
-      field: task.elapsed_time
+    processors:
+      - duration:
+        field: task.elapsed_time
     ```
   </CodeCol>
   <CommentCol>
@@ -185,14 +192,15 @@ Invalid duration formats will cause the processor to fail unless `ignore_failure
     }
     ```
     ```yaml
-    - duration:
-      field: log.duration
-      target_field: log.duration_seconds
-      ignore_failure: true
-      on_failure:
-        - set:
-            field: log.error
-            value: "Failed to parse duration"
+    processors:
+      - duration:
+        field: log.duration
+        target_field: log.duration_seconds
+        ignore_failure: true
+        on_failure:
+          - set:
+              field: log.error
+              value: "Failed to parse duration"
     ```
   </CodeCol>
   <CommentCol>

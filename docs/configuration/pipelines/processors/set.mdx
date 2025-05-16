@@ -16,7 +16,7 @@ Sets a field and associates it with a specified value.
 ## Schema
 
 ```yaml {2}
-set:
+- set:
   field: <ident>
   copy_from: <ident>
   description: <text>
@@ -32,6 +32,8 @@ set:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -75,9 +77,10 @@ When using templates, ensure that they reference valid fields as missing fields 
     }
     ```
     ```yaml
-    set:
-      field: metrics.packets
-      value: 150
+    processors:
+      - set:
+        field: metrics.packets
+        value: 150
     ```
   </CodeCol>
   <CommentCol>
@@ -111,9 +114,10 @@ When using templates, ensure that they reference valid fields as missing fields 
     }
     ```
     ```yaml
-    set:
-      field: observer.product
-      value: "{{checkpoint.product}}"
+    processors:
+      - set:
+        field: observer.product
+        value: "{{checkpoint.product}}"
     ```
   </CodeCol>
   <CommentCol>
@@ -150,12 +154,13 @@ When using templates, ensure that they reference valid fields as missing fields 
     }
     ```
     ```yaml
-    set:
-      field: event.category
-      value: 
-        - "{{event.service}}"
-        - authentication
-        - "{{event.type}}"
+    processors:
+      - set:
+        field: event.category
+        value: 
+          - "{{event.service}}"
+          - authentication
+          - "{{event.type}}"
     ```
   </CodeCol>
   <CommentCol>
@@ -190,12 +195,13 @@ When using templates, ensure that they reference valid fields as missing fields 
     }
     ```
     ```yaml
-    set:
-      field: service.details
-      value:
-        name: "{{source.service}}"
-        type: "web"
-        version: "{{source.version}}"
+    processors:
+      - set:
+        field: service.details
+        value:
+          name: "{{source.service}}"
+          type: "web"
+          version: "{{source.version}}"
     ```
   </CodeCol>
   <CommentCol>
@@ -231,9 +237,10 @@ When using templates, ensure that they reference valid fields as missing fields 
     }
     ```
     ```yaml
-    set:
-      field: metrics.packets
-      copy_from: source.packets
+    processors:
+      - set:
+        field: metrics.packets
+        copy_from: source.packets
     ```
   </CodeCol>
   <CommentCol>
@@ -268,10 +275,11 @@ When using templates, ensure that they reference valid fields as missing fields 
     }
     ```
     ```yaml
-    set:
-      field: checkpoint.title
-      value: "NewTitle"
-      override: false
+    processors:
+      - set:
+        field: checkpoint.title
+        value: "NewTitle"
+        override: false
     ```
   </CodeCol>
   <CommentCol>

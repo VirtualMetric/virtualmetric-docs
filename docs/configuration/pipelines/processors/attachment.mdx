@@ -16,7 +16,7 @@ Extracts content and metadata from common document formats like **XLSX**, **DOCX
 ## Schema
 
 ```yaml {3}
-attachment:
+- attachment:
   description: <text>
   field: <ident>
   target_field: <ident>
@@ -34,6 +34,8 @@ attachment:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -90,8 +92,9 @@ The files to be attached to the JSON documents must first be encoded as `base64`
     }
     ```
     ```yaml
-    attachment:
-      field: data
+    processors:
+      - attachment:
+        field: data
     ```
   </CodeCol>
   <CommentCol>
@@ -128,9 +131,10 @@ The files to be attached to the JSON documents must first be encoded as `base64`
     }
     ```
     ```yaml
-    attachment:
-      field: data
-      indexed_chars_field: max_size
+    processors:
+      - attachment:
+        field: data
+        indexed_chars_field: max_size
     ```
   </CodeCol>
   <CommentCol>
@@ -164,12 +168,13 @@ The files to be attached to the JSON documents must first be encoded as `base64`
     }
     ```
     ```yaml
-    attachment:
-      field: data
-      properties:
-        - author
-        - title
-        - content_status
+    processors:
+      - attachment:
+        field: data
+        properties:
+          - author
+          - title
+          - content_status
     ```
   </CodeCol>
   <CommentCol>
@@ -202,9 +207,10 @@ The files to be attached to the JSON documents must first be encoded as `base64`
     }
     ```
     ```yaml
-    attachment:
-      field: data
-      resource_name: document.rtf
+    processors:
+      - attachment:
+        field: data
+        resource_name: document.rtf
     ```
   </CodeCol>
   <CommentCol>

@@ -16,7 +16,7 @@ Checks if a specified field value exists within a list of values, enabling condi
 ## Schema
 
 ```yaml {2}
-contains:
+- contains:
   field: <ident>
   description: <text>
   if: <script>
@@ -30,6 +30,8 @@ contains:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -67,9 +69,10 @@ Either `list` or `list_field` must be specified, but not both, and the field bei
     }
     ```
     ```yaml
-    contains:
-      field: status
-      list: ["active", "pending", "completed"]
+    processors:
+      - contains:
+        field: status
+        list: ["active", "pending", "completed"]
     ```
   </CodeCol>
   <CommentCol>
@@ -91,9 +94,10 @@ Either `list` or `list_field` must be specified, but not both, and the field bei
     }
     ```
     ```yaml
-    contains:
-      field: user_type
-      list_field: allowed_types
+    processors:
+      - contains:
+        field: user_type
+        list_field: allowed_types
     ```
   </CodeCol>
   <CommentCol>
@@ -114,10 +118,11 @@ Either `list` or `list_field` must be specified, but not both, and the field bei
     }
     ```
     ```yaml
-    contains:
-      field: status
-      list: ["active", "pending"]
-      ignore_missing: true
+    processors:
+      - contains:
+        field: status
+        list: ["active", "pending"]
+        ignore_missing: true
     ```
   </CodeCol>
   <CommentCol>
@@ -139,9 +144,10 @@ Either `list` or `list_field` must be specified, but not both, and the field bei
     }
     ```
     ```yaml
-    contains:
-      field: role
-      list: ["role_{{{org_id}}}_admin", "role_{{{org_id}}}_user"]
+    processors:
+      - contains:
+        field: role
+        list: ["role_{{{org_id}}}_admin", "role_{{{org_id}}}_user"]
     ```
   </CodeCol>
   <CommentCol>

@@ -8,33 +8,38 @@ Creates a target that writes log messages to _Azure Blob Storage_ with support f
 
 ## Schema
 
-```yaml
-name: <string>
-description: <string>
-type: azblob
-pipelines: <pipeline[]>
-status: <boolean>
-properties:
-  account: <string>
-  tenant_id: <string>
-  client_id: <string>
-  client_secret: <string>
-  container: <string>
-  name: <string>
-  type: <string>
-  compression: <string>
-  schema: <string>
-  format: <string>
-  no_buffer: <boolean>
-  max_retry: <numeric>
-  retry_interval: <numeric>
-  timeout: <numeric>
-  max_size: <numeric>
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: azblob
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    account: <string>
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    container: <string>
+    name: <string>
+    type: <string>
+    extension: <string>
+    compression: <string>
+    schema: <string>
+    field_format: <string>
+    no_buffer: <boolean>
+    max_retry: <numeric>
+    retry_interval: <numeric>
+    timeout: <numeric>
+    max_size: <numeric>
+    batch_size: <numeric>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
 ```
 
 ## Configuration
 
-The following are the minimum requirements to define the target.
+The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -62,6 +67,7 @@ The following are the minimum requirements to define the target.
 |`retry_interval`|N|`10`|Base interval between retries in seconds|
 |`timeout`|N|`30`|Connection timeout in seconds|
 |`max_size`|N|`0`|Maximum file size in bytes|
+|`batch_size`|N|`100000`|Maximum number of messages per file|
 
 :::note
 When `max_size` is reached, the current file is uploaded to blob storage and a new file is created. For unlimited file size, set the field to `0`.
@@ -69,14 +75,76 @@ When `max_size` is reached, the current file is uploaded to blob storage and a n
 
 ### Files
 
+The following fields can be used for files:
+
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Blob name template|
-|`type`|N|`"json"`|File format (`json`, `avro`, `ocf`, `parquet`)|
+|`type`|N|`"json"`|File format (`json`, `multijson`, `avro`, `parquet`)|
+|`extension`|N|Matches `type`|Custom file extension|
 |`compression`|N|`"zstd"`|Compression algorithm|
-|`schema`|N|-|Data schema for Avro/OCF/Parquet formats|
+|`schema`|N|-|Data schema for Avro/Parquet formats or schema template name|
 |`no_buffer`|N|`false`|Disable write buffering|
-|`format`|N|-|Field normalization format (`ecs`, `cim`, `asim`, `cef`, `leef`, or `csl`)|
+|`field_format`|N|-|Field normalization format (`ecs`, `cim`, `asim`)|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to Azure (testing)|
+
+## Details
+
+The Azure Blob Storage target supports writing to different containers with various file formats and schemas. When using the `SystemS3` field in your logs, the value will be used to route the message to the appropriate container.
+
+The target supports the following built-in schema templates for structured data formats:
+
+- `{{Syslog}}` - Standard schema for Syslog messages
+- `{{CommonSecurityLog}}` - Schema compatible with Common Event Format (CEF)
+
+### Templates
+
+The following template variables can be used in the blob name:
+
+|Variable|Description|Example|
+|---|---|---|
+|`{{.Year}}`|Current year|`2024`|
+|`{{.Month}}`|Current month|`01`|
+|`{{.Day}}`|Current day|`15`|
+|`{{.Timestamp}}`|Current timestamp in nanoseconds|`1703688533123456789`|
+|`{{.Format}}`|File format|`json`|
+|`{{.Extension}}`|File extension|`json`|
+|`{{.Compression}}`|Compression type|`zstd`|
+|`{{.TargetName}}`|Target name|`my_logs`|
+|`{{.TargetType}}`|Target type|`azblob`|
+|`{{.Table}}`|Container name|`logs`|
+
+### Formats
+
+|Format|Description|
+|---|---|
+|`json`|Each log entry is written as a separate JSON line (JSONL format)|
+|`multijson`|All log entries are written as a single JSON array|
+|`avro`|Apache Avro format with schema|
+|`parquet`|Apache Parquet columnar format with schema|
+
+### Compression
+
+|Format|Compression Options|
+|---|---|
+|JSON/MultiJSON|`zstd` (default)|
+|Avro|`null`, `deflate`, `snappy`, `zstd`|
+|Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+
+
+:::warning
+Failed uploads are retried automatically based on the `max_retry` and `retry_interval` settings. The `retry_interval` setting is based on an exponential backoff which is _retry_interval_&nbsp;*&nbsp;2&nbsp;^&nbsp;_attempt_, therefore each retry will wait longer than the previous one.
+:::
+
+:::note
+Files with no messages (i.e. with `counter=0`) are automatically skipped during upload.
+:::
 
 ## Examples
 
@@ -87,58 +155,71 @@ The following upload configurations are available.
 The minimum configuration for a _JSON_ blob storage:
 
 ```yaml
-name: basic_blob
-type: azblob
-properties:
-  account: "mystorageaccount"
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "00000000-0000-0000-0000-000000000000"
-    client_secret: "your-client-secret"
+targets:
+  - name: basic_blob
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+  ```
+
+  ### Parquet
+
+  Configuration for daily partitioned _Parquet_ files:
+
+  ```yaml
+  targets:
+    - name: parquet_blob
+      type: azblob
+      properties:
+        account: "mystorageaccount"
+        tenant_id: "00000000-0000-0000-0000-000000000000"
+        client_id: "00000000-0000-0000-0000-000000000000"
+        client_secret: "your-client-secret"
+        container: "logs"
+        type: "parquet"
+        compression: "zstd"
+        name: "logs/year={{.Year}}/month={{.Month}}/day={{.Day}}/data_{{.Timestamp}}.parquet"
+        max_size: 536870912  # 512MB
+  ```
+
+  ### High Reliability
+
+  Configuration with enhanced retry settings:
+
+  ```yaml
+  targets:
+    - name: reliable_blob
+      type: azblob
+      pipelines:
+        - checkpoint
+      properties:
+        account: "mystorageaccount"
+        tenant_id: "00000000-0000-0000-0000-000000000000"
+        client_id: "00000000-0000-0000-0000-000000000000"
+        client_secret: "your-client-secret"
+        max_retry: 10
+        retry_interval: 30
+        timeout: 60
+        no_buffer: true
+      ```
+
+  ### Debug Configuration
+
+  Configuration with debugging enabled:
+
+  ```yaml
+  targets:
+    - name: debug_blob
+      type: azblob
+      properties:
+        account: "mystorageaccount"
+        tenant_id: "00000000-0000-0000-0000-000000000000"
+        client_id: "00000000-0000-0000-0000-000000000000"
+        client_secret: "your-client-secret"
+        debug:
+          status: true
+          dont_send_logs: true  # Test mode that doesn't actually upload
 ```
-
-### Parquet
-
-Configuration for daily partitioned _Parquet_ files:
-
-```yaml
-name: parquet_blob
-type: azblob
-properties:
-  account: "mystorageaccount"
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "00000000-0000-0000-0000-000000000000"
-  client_secret: "your-client-secret"
-  container: "logs"
-  type: "parquet"
-  compression: "zstd"
-  name: "logs/year={{.Year}}/month={{.Month}}/day={{.Day}}/data_{{.Timestamp}}.parquet"
-  max_size: 536870912  # 512MB
-```
-
-### High Reliability
-
-Configuration with enhanced retry settings:
-
-```yaml
-name: reliable_blob
-type: azblob
-pipelines:
-  - checkpoint
-properties:
-  account: "mystorageaccount"
-  tenant_id: "00000000-0000-0000-0000-000000000000"
-  client_id: "00000000-0000-0000-0000-000000000000"
-  client_secret: "your-client-secret"
-  max_retry: 10
-  retry_interval: 30
-  timeout: 60
-  no_buffer: true
-```
-
-:::warning
-Failed uploads are retried automatically based on the `max_retry` and `retry_interval` settings. The `retry_interval` setting is based on an exponential backoff which is _retry_interval_&nbsp;*&nbsp;2&nbsp;^&nbsp;_attempt_, therefore each retry will wait longer than the previous one.
-:::
-
-:::note
-Files are only deleted after successful upload.
-:::

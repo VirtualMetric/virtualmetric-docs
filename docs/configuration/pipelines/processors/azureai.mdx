@@ -15,8 +15,8 @@ Enriches events by sending field content to Azure OpenAI API for analysis and st
 
 ## Schema
 
-```yaml {2-6}
-azureai:
+```yaml {2-5}
+- azureai:
   field: <ident>
   api_key: <string>
   resource_name: <string>
@@ -36,6 +36,8 @@ azureai:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -97,13 +99,14 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    azureai:
-      field: message
-      target_field: analysis
-      api_key: "${AZURE_OPENAI_API_KEY}"
-      resource_name: "myopenai-resource"
-      deployment_name: "gpt4-deployment"
-      developer_msg: "You are an expert in Cisco networking. Analyze this log message."
+    processors:
+      - azureai:
+        field: message
+        target_field: analysis
+        api_key: "${AZURE_OPENAI_API_KEY}"
+        resource_name: "myopenai-resource"
+        deployment_name: "gpt4-deployment"
+        developer_msg: "You are an expert in Cisco networking. Analyze this log message."
     ```
   </CodeCol>
   <CommentCol>
@@ -132,15 +135,16 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    azureai:
-      field: error_msg
-      target_field: security_analysis
-      api_key: "${AZURE_OPENAI_API_KEY}"
-      resource_name: "myopenai-resource"
-      deployment_name: "gpt4-deployment"
-      temperature: 0.2
-      max_tokens: 100
-      developer_msg: "You are a security analyst. Provide a brief analysis of this error."
+    processors:
+      - azureai:
+        field: error_msg
+        target_field: security_analysis
+        api_key: "${AZURE_OPENAI_API_KEY}"
+        resource_name: "myopenai-resource"
+        deployment_name: "gpt4-deployment"
+        temperature: 0.2
+        max_tokens: 100
+        developer_msg: "You are a security analyst. Provide a brief analysis of this error."
     ```
   </CodeCol>
   <CommentCol>
@@ -170,13 +174,14 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    azureai:
-      if: "ctx.level == 'critical'"
-      field: message
-      target_field: ai_insight
-      api_key: "${AZURE_OPENAI_API_KEY}"
-      resource_name: "myopenai-resource"
-      deployment_name: "gpt4-deployment"
+    processors:
+      - azureai:
+        if: "ctx.level == 'critical'"
+        field: message
+        target_field: ai_insight
+        api_key: "${AZURE_OPENAI_API_KEY}"
+        resource_name: "myopenai-resource"
+        deployment_name: "gpt4-deployment"
     ```
   </CodeCol>
   <CommentCol>
@@ -206,13 +211,15 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    azureai:
+    processors:
+      - azureai:
       field: message
       target_field: analysis
-      api_key: "${AZURE_OPENAI_API_KEY}"
-      resource_name: "myopenai-resource"
-      deployment_name: "gpt4-deployment"
       api_version: "2024-02-15-preview"
+        api_key: "${AZURE_OPENAI_API_KEY}"
+        resource_name: "myopenai-resource"
+        deployment_name: "gpt4-deployment"
+        api_version: "2024-02-15-preview"
     ```
   </CodeCol>
   <CommentCol>

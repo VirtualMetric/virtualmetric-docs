@@ -4,29 +4,33 @@
 
 ## Synopsis
 
-Creates a file target that writes log messages to files in various formats like JSON, Avro, OCF, Parquet, with support for various compression methods and schemas.
+Creates a file target that writes log messages to files in various formats like JSON, MultiJSON, Avro, Parquet, with support for various compression methods and schemas.
 
 ## Schema
 
-```yaml
-name: <string>
-description: <string>
-type: file
-pipelines: <pipeline[]>
-status: <boolean>
-properties:
-  location: <string>
-  name: <string>
-  type: <string>
-  compression: <string>
-  schema: <string>
-  format: <string>
-  no_buffer: <boolean>
+```yaml {2,4}
+- name: <string>
+  description: <string>
+  type: file
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    location: <string>
+    name: <string>
+    format: <string>
+    compression: <string>
+    extension: <string>
+    schema: <string>
+    field_format: <string>
+    no_buffer: <boolean>
+    batch_size: <integer>
+    max_size: <integer>
+    locations: <location[]>
 ```
 
 ## Configuration
 
-The following are the minimum requirements to define the target.
+The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -38,22 +42,57 @@ The following are the minimum requirements to define the target.
 
 ### Files
 
+Files can have the following properties:
+
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`location`|N|`<service-root>`|File output directory|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|File name template|
-|`type`|N|`"json"`|File format: `json`, `avro`, `ocf`, or `parquet`|
+|`format`|N|`"json"`|File format: `json`, `multijson`, `avro`, `ocf`, or `parquet`|
 |`compression`|N|`"zstd"`|Compression algorithm|
-|`schema`|N|-|Data schema for Avro/OCF/Parquet formats|
+|`extension`|N|Matches `type`|Custom file extension|
+|`schema`|N|-|Data schema for Avro/Parquet formats or schema template name|
+|`batch_size`|N|`100000`|Maximum number of messages per file|
+|`max_size`|N|`32MB`|Maximum file size before rotating|
 |`no_buffer`|N|`false`|Disable write buffering|
-|`format`|N|-|Field normalization format: `ecs`, `cim`, or `asim`|
+|`field_format`|N|-|Field normalization format: `ecs`, `cim`, or `asim`|
+
+### Multiple Locations
+
+You can define multiple output locations with different settings:
+
+```yaml
+targets:
+  - name: multi_location_logs
+    type: file
+    properties:
+      locations:
+        - id: "security_logs"
+          path: "/var/log/security"
+          schema: "{{CommonSecurityLog}}"
+          format: "parquet"
+        - id: "system_logs"
+          path: "/var/log/system"
+          schema: "{{CommonSystemLog}}"
+          format: "json"
+```
 
 ## Details
 
-If no schema is specified the for the Avro, OCF, or Parquet formats, a default schema will be used that captures epoch timestamp and message content.
+The file target supports writing to multiple file locations with different formats and schemas. When using `SystemS3` field in your logs, the value will be used to route the message to the location with a matching ID.
+
+If no schema is specified for Avro or Parquet formats, a default schema will be used that captures epoch timestamp and message content.
+
+The target supports the following built-in schema templates:
+- `{{Syslog}}` - Standard schema for Syslog messages
+- `{{CommonSecurityLog}}` - Schema compatible with Common Event Format (CEF)
 
 :::note
 Files with no messages (i.e. with `counter=0`) are automatically removed when the target is disposed.
+:::
+
+:::warning
+When `no_buffer` is enabled, each write operation will be immediately flushed to disk. This provides durability but may impact performance.
 :::
 
 ### Templates
@@ -66,87 +105,135 @@ The following template variables can be used in the file name:
 |`{{.Month}}`|Current month|`01`|
 |`{{.Day}}`|Current day|`15`|
 |`{{.Timestamp}}`|Current timestamp in nanoseconds|`1703688533123456789`|
-|`{{.Type}}`|File type|`json`|
+|`{{.Format}}`|File format|`json`|
 |`{{.Extension}}`|File extension|`json`|
 |`{{.Compression}}`|Compression type|`zstd`|
 |`{{.TargetName}}`|Target name|`my_logs`|
 |`{{.TargetType}}`|Target type|`file`|
+|`{{.Table}}`|Location ID|`security_logs`|
+
+### Formats
+
+|Format|Description|
+|---|---|
+|`json`|Each log entry is written as a separate JSON line (JSONL format)|
+|`multijson`|All log entries are written as a single JSON array|
+|`ocf`|OCF format with schema|
+|`avro`|Apache Avro format with schema|
+|`parquet`|Apache Parquet columnar format with schema|
 
 ### Compression
 
-|Format|Compression|
+Files can use the following compression algorithms:
+
+|Format|Compression Options|
 |---|---|
-|JSON|`zstd`|
-|Avro|None|
-|OCF|`null`, `deflate`, `snappy`, `zstd`|
+|JSON/MultiJSON|`zstd` (default)|
+|Avro|`null`, `deflate`, `snappy`, `zstd`|
 |Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
 
 ## Examples
 
 ### JSON
 
-The minimum configuration for JSON file output:
+Configuration for a _JSON_ output:
 
 ```yaml
-name: json_logs
-type: file
-properties:
-  location: "/var/log/vmetric"
+targets:
+  - name: json_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      format: "json"
+      compression: "zstd"
+```
+
+### Multiple Locations
+
+Configuration with multiple output locations:
+
+```yaml
+targets:
+  - name: multi_location_logs
+    type: file
+    properties:
+      locations:
+        - id: "security"
+          path: "/var/log/vmetric/security"
+          format: "parquet"
+          schema: "{{CommonSecurityLog}}"
+        - id: "system"
+          path: "/var/log/vmetric/system"
+          format: "json"
+        - id: "application"
+          path: "/var/log/vmetric/app"
+          format: "multijson"
+          name: "app_{{.Year}}_{{.Month}}_{{.Day}}.json"
 ```
 
 ### Parquet
 
-Configuration for Parquet output with compression and schema:
+Configuration for a _Parquet_ output with compression and schema:
 
 ```yaml
-name: parquet_logs
+targets:
+  - name: parquet_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      format: "parquet"
+      compression: "zstd"
+      schema: |
+        {
+          "timestamp": {
+            "type": "INT",
+            "bitWidth": 64,
+            "signed": true
+          },
+          "message": {
+            "type": "STRING",
+            "compression": "ZSTD"
+          }
+        }
+```
+
+Using built-in schema templates:
+
+```yaml
+name: cef_logs
 type: file
 properties:
   location: "/var/log/vmetric"
-  type: "parquet"
-  compression: "zstd"
-  schema: |
-    {
-      "timestamp": {
-        "type": "INT",
-        "bitWidth": 64,
-        "signed": true
-      },
-      "message": {
-        "type": "STRING",
-        "compression": "ZSTD"
-      }
-    }
+  format: "parquet"
+  schema: "{{CommonSecurityLog}}"
 ```
 
 ### OCF
 
-Configuration for OCF output with daily file rotation:
+Configuration for an _OCF_ output with daily file rotation:
 
 ```yaml
-name: ocf_logs
-type: file
-properties:
-  location: "/var/log/vmetric"
-  type: "ocf"
-  compression: "zstd"
-  name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.ocf"
+targets:
+  - name: ocf_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      format: "ocf"
+      compression: "zstd"
+      name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.ocf"
 ```
 
 ### Windows
 
-Configuration for a Windows environment with a proper path structure:
+Configuration for a _Windows_ environment with a proper path structure:
 
 ```yaml
-name: windows_logs
-type: file
-properties:
-  location: "C:\\ProgramData\\VMetric\\Logs"
-  type: "json"
-  compression: "zstd"
-  name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
+targets:
+  - name: windows_logs
+    type: file
+    properties:
+      location: "C:\\ProgramData\\VMetric\\Logs"
+      format: "json"
+      compression: "zstd"
+      name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
 ```
-
-:::warning
-When `no_buffer` is enabled, each write operation will be immediately flushed to disk. This provides durability but may impact performance.
-:::

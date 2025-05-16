@@ -16,7 +16,7 @@ Parses a Uniform Resource Identifier (URI) string and extracts its components in
 ## Schema
 
 ```yaml {2}
-uri_parts:
+- uri_parts:
   field: <ident>
   description: <text>
   if: <script>
@@ -31,6 +31,8 @@ uri_parts:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -75,9 +77,10 @@ For security reasons, be cautious when processing URIs with authentication infor
     }
     ```
     ```yaml
-    uri_parts:
-      field: url
-      target_field: uri_parts
+    processors:
+      - uri_parts:
+        field: url
+        target_field: uri_parts
     ```
   </CodeCol>
   <CommentCol>
@@ -117,10 +120,11 @@ For security reasons, be cautious when processing URIs with authentication infor
     }
     ```
     ```yaml
-    uri_parts:
-      field: url
-      target_field: parsed
-      keep_original: false
+    processors:
+      - uri_parts:
+        field: url
+        target_field: parsed
+        keep_original: false
     ```
   </CodeCol>
   <CommentCol>
@@ -154,10 +158,11 @@ For security reasons, be cautious when processing URIs with authentication infor
     }
     ```
     ```yaml
-    uri_parts:
-      field: source_url
-      target_field: uri
-      remove_if_successful: true
+    processors:
+      - uri_parts:
+        field: source_url
+        target_field: uri
+        remove_if_successful: true
     ```
   </CodeCol>
   <CommentCol>

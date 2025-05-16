@@ -16,7 +16,7 @@ Parses user agent strings to extract information about the browser, operating sy
 ## Schema
 
 ```yaml {2}
-user_agent:
+- user_agent:
   field: <ident>
   description: <text>
   extract_device_type: <boolean>
@@ -31,6 +31,8 @@ user_agent:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -69,9 +71,10 @@ Some user agents may be spoofed or contain incorrect information. The informatio
     }
     ```
     ```yaml
-    user_agent:
-      field: agent
-      target_field: user_agent
+    processors:
+      - user_agent:
+        field: agent
+        target_field: user_agent
     ```
   </CodeCol>
   <CommentCol>
@@ -109,9 +112,10 @@ Some user agents may be spoofed or contain incorrect information. The informatio
     }
     ```
     ```yaml
-    user_agent:
-      field: agent
-      ignore_failure: true
+    processors:
+      - user_agent:
+        field: agent
+        ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>
@@ -141,10 +145,11 @@ Some user agents may be spoofed or contain incorrect information. The informatio
     }
     ```
     ```yaml
-    user_agent:
-      field: browser
-      target_field: browser_details
-      extract_device_type: true
+    processors:
+      - user_agent:
+        field: browser
+        target_field: browser_details
+        extract_device_type: true
     ```
   </CodeCol>
   <CommentCol>

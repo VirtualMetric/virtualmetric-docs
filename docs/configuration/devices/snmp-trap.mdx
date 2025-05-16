@@ -8,7 +8,7 @@ Creates a receiver that listens for SNMP trap messages. Supports SNMPv2c and SNM
 
 ## Schema
 
-```yaml
+```yaml {2,3,5}
 - id: <numeric>
   name: <string>
   description: <string>
@@ -35,7 +35,7 @@ Creates a receiver that listens for SNMP trap messages. Supports SNMPv2c and SNM
 
 ## Configuration
 
-The following are the minimum requirements to define the device.
+The following fields are used to define the device:
 
 ### Device
 
@@ -143,12 +143,13 @@ A basic trap requires a default listening address, a standard SNMP trap port, an
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_trap
-      type: snmptrap
-      properties:
-        port: 162
-        community: "public"
+    devices:
+      - id: 1
+        name: basic_trap
+        type: snmptrap
+        properties:
+          port: 162
+          community: "public"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -163,13 +164,14 @@ This requires standard SNMP trap listening, a custom MIB file integration, and b
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 5
-      name: mib_enabled_trap
-      type: snmptrap
-      description: "Trap receiver with custom MIB support"
-      properties:
-        port: 162
-        community: "public"
+    devices:
+      - id: 5
+        name: mib_enabled_trap
+        type: snmptrap
+        description: "Trap receiver with custom MIB support"
+        properties:
+          port: 162
+          community: "public"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -192,19 +194,20 @@ When using SNMPv3 with privacy, ensure that both the authentication and privacy 
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: secure_trap
-      type: snmptrap
-      properties:
-        port: 162
-        authentication:
-          status: true
-          protocol: 5
-          password: "${SNMP_AUTH_PASS}"
-        privacy:
-          protocol: 5
-          passphrase: "${SNMP_PRIV_PASS}"
-        username: "trapuser"
+    devices:
+      - id: 2
+        name: secure_trap
+        type: snmptrap
+        properties:
+          port: 162
+          authentication:
+            status: true
+            protocol: 5
+            password: "${SNMP_AUTH_PASS}"
+          privacy:
+            protocol: 5
+            passphrase: "${SNMP_PRIV_PASS}"
+          username: "trapuser"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -220,20 +223,21 @@ optimized queues, and basic SHA authentication.
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: performant_trap
-      type: snmptrap
-      properties:
-        port: 162
-        reuse: true
-        workers: 4
-        batch_size: 5000
-        queue:
-          interval: 2
-        authentication:
-          status: true
-          protocol: 3
-        username: "trapuser"
+    devices:
+      - id: 3
+        name: performant_trap
+        type: snmptrap
+        properties:
+          port: 162
+          reuse: true
+          workers: 4
+          batch_size: 5000
+          queue:
+            interval: 2
+          authentication:
+            status: true
+            protocol: 3
+          username: "trapuser"
     ```
   </CodeCol>
 </ExampleGrid>

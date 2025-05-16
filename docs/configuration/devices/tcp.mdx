@@ -8,7 +8,7 @@ Creates a server that accepts network messages over TCP connections. Supports bo
 
 ## Schema
 
-```yaml
+```yaml {2,3,5}
 - id: <numeric>
   name: <string>
   description: <string>
@@ -39,7 +39,7 @@ Creates a server that accepts network messages over TCP connections. Supports bo
 
 ## Configuration
 
-The following are the minimum requirements to define the device.
+The following fields are used to define the device:
 
 ### Device
 
@@ -118,11 +118,12 @@ A basic server can be easily created using `"tcp"` for `protocol`, `"0.0.0.0"` f
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_tcp
-      type: tcp
-      properties:
-        port: 514
+    devices:
+      - id: 1
+        name: basic_tcp
+        type: tcp
+        properties:
+          port: 514
     ```
   </CodeCol>
 </ExampleGrid>
@@ -137,18 +138,19 @@ Performance can be enhanced using multiple workers, a larger buffer size (e.g. *
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: performant_tcp
-      type: tcp
-      properties:
-        port: 514
-        reuse: true
-        workers: 4
-        buffer_size: 4194304
-        max_connections: 20000
-        batch_size: 5000
-        queue:
-          interval: 2
+    devices:
+      - id: 2
+        name: performant_tcp
+        type: tcp
+        properties:
+          port: 514
+          reuse: true
+          workers: 4
+          buffer_size: 4194304
+          max_connections: 20000
+          batch_size: 5000
+          queue:
+            interval: 2
     ```
   </CodeCol>
 </ExampleGrid>
@@ -167,15 +169,16 @@ A custom framing can be achieved using CRLF (i.e. `"\r\n"`) as the message delim
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: framed_tcp
-      type: tcp
-      properties:
-        port: 1514
-        framing: delimiter
-        line_delimiter: "\r\n"
-        max_message_size: 5242880
-        timeout: 60
+    devices:
+      - id: 3
+        name: framed_tcp
+        type: tcp
+        properties:
+          port: 1514
+          framing: delimiter
+          line_delimiter: "\r\n"
+          max_message_size: 5242880
+          timeout: 60
     ```
   </CodeCol>
 </ExampleGrid>
@@ -190,17 +193,18 @@ Security can be enhanced using TLS encryption, a custom certificate and key, con
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
-      name: secure_tcp
-      type: tcp
-      properties:
-        port: 6514
-        tls:
-          status: true
-          cert_name: cert.pem
-          key_name: key.pem
-        max_connections: 5000
-        timeout: 120
+    devices:
+      - id: 4
+        name: secure_tcp
+        type: tcp
+        properties:
+          port: 6514
+          tls:
+            status: true
+            cert_name: cert.pem
+            key_name: key.pem
+          max_connections: 5000
+          timeout: 120
     ```
   </CodeCol>
 </ExampleGrid>

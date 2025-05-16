@@ -20,7 +20,7 @@ See [Appendix](/appendix.mdx#cef)
 ## Schema
 
 ```yaml {2}
-cef:
+- cef:
   field: <ident>
   target_field: <ident>
   description: <text>
@@ -33,6 +33,8 @@ cef:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -94,8 +96,9 @@ The message must begin with "`CEF:`" and contain all seven header fields separat
     }
     ```
     ```yaml
-    cef:
-      field: message
+    processors:
+      - cef:
+        field: message
     ```
   </CodeCol>
   <CommentCol>
@@ -135,9 +138,10 @@ The message must begin with "`CEF:`" and contain all seven header fields separat
     }
     ```
     ```yaml
-    cef:
-      field: message
-      target_field: firewall_event
+    processors:
+      - cef:
+        field: message
+        target_field: firewall_event
     ```
   </CodeCol>
   <CommentCol>
@@ -183,13 +187,14 @@ The message must begin with "`CEF:`" and contain all seven header fields separat
     }
     ```
     ```yaml
-    cef:
-      field: message
-      ignore_failure: true
-      on_failure:
-        - append:
-          field: tags
-          value: cef_parse_error
+    processors:
+      - cef:
+        field: message
+        ignore_failure: true
+        on_failure:
+          - append:
+            field: tags
+            value: cef_parse_error
     ```
   </CodeCol>
   <CommentCol>

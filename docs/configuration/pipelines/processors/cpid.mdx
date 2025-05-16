@@ -10,7 +10,7 @@ Generates a Common Process ID (CPID) according to _RFC 9562_.
 
 ## Schema
 
-```yaml {2-5}
+```yaml {2-4}
 - cpid:
   hostname_field: <ident>
   process_id_field: <ident>
@@ -26,6 +26,8 @@ Generates a Common Process ID (CPID) according to _RFC 9562_.
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -76,10 +78,11 @@ The CPID algorithm uses SHA-256 hashing to generate consistent identifiers. For 
     }
     ```
     ```yaml
-    - cpid:
-      hostname_field: host.name
-      process_id_field: process.pid
-      time_field: process.created_at
+    processors:
+      - cpid:
+        hostname_field: host.name
+        process_id_field: process.pid
+        time_field: process.created_at
     ```
   </CodeCol>
   <CommentCol>
@@ -118,11 +121,12 @@ The CPID algorithm uses SHA-256 hashing to generate consistent identifiers. For 
     }
     ```
     ```yaml
-    - cpid:
-      hostname_field: system
-      process_id_field: proc_info.id
-      time_field: proc_info.start_time
-      target_field: proc_info.uuid
+    processors:
+      - cpid:
+        hostname_field: system
+        process_id_field: proc_info.id
+        time_field: proc_info.start_time
+        target_field: proc_info.uuid
     ```
   </CodeCol>
   <CommentCol>
@@ -158,11 +162,12 @@ The CPID algorithm uses SHA-256 hashing to generate consistent identifiers. For 
     }
     ```
     ```yaml
-    - cpid:
-      hostname_field: host
-      process_id_field: process.id
-      time_field: process.created
-      ignore_missing: true
+    processors:
+      - cpid:
+        hostname_field: host
+        process_id_field: process.id
+        time_field: process.created
+        ignore_missing: true
     ```
   </CodeCol>
   <CommentCol>

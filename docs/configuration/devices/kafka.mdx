@@ -8,7 +8,7 @@ Creates a collector that connects to Kafka brokers and consumes messages from sp
 
 ## Schema
 
-```yaml
+```yaml {2,3,5}
 - id: <numeric>
   name: <string>
   description: <string>
@@ -36,7 +36,7 @@ Creates a collector that connects to Kafka brokers and consumes messages from sp
 
 ## Configuration
 
-The following are the minimum requirements to define the device.
+The following fields are used to define the device:
 
 ### Device
 
@@ -107,13 +107,14 @@ The minimum required configuration creates the consumer:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_kafka
-      type: kafka
-      properties:
-        address: "kafka.example.com"
-        port: 9092
-        topic: "logs"
+    devices:
+      - id: 1
+        name: basic_kafka
+        type: kafka
+        properties:
+          address: "kafka.example.com"
+          port: 9092
+          topic: "logs"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -128,19 +129,20 @@ The consumer can connect to secure Kafka brokers:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: secure_kafka
-      type: kafka
-      properties:
-        address: "kafka.example.com"
-        port: 9093
-        username: "consumer"
-        password: "secret"
-        topic: "secure-logs"
-        tls:
-          status: true
-          cert_name: "kafka.crt"
-          key_name: "kafka.key"
+    devices:
+      - id: 2
+        name: secure_kafka
+        type: kafka
+        properties:
+          address: "kafka.example.com"
+          port: 9093
+          username: "consumer"
+          password: "secret"
+          topic: "secure-logs"
+          tls:
+            status: true
+            cert_name: "kafka.crt"
+            key_name: "kafka.key"
     ```
   </CodeCol>
 </ExampleGrid>
@@ -155,18 +157,19 @@ Performance can be enhanced for high message volumes:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: performant_kafka
-      type: kafka
-      properties:
-        address: "kafka.example.com"
-        port: 9092
-        topic: "high-volume-logs"
-        group: "high-perf-group"
-        reuse: true
-        workers: 4
-        buffer_size: 32768
-        stats_frequency: 60
+    devices:
+      - id: 3
+        name: performant_kafka
+        type: kafka
+        properties:
+          address: "kafka.example.com"
+          port: 9092
+          topic: "high-volume-logs"
+          group: "high-perf-group"
+          reuse: true
+          workers: 4
+          buffer_size: 32768
+          stats_frequency: 60
     ```
   </CodeCol>
 </ExampleGrid>
@@ -185,17 +188,18 @@ Message consumption can be coordinated:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
-      name: group_kafka
-      type: kafka
-      properties:
-        address: "kafka.example.com"
-        port: 9092
-        topic: "shared-logs"
-        group: "processing-group"
-        balancer: "roundrobin"
-        reuse: true
-        workers: 2
+    devices:
+      - id: 4
+        name: group_kafka
+        type: kafka
+        properties:
+          address: "kafka.example.com"
+          port: 9092
+          topic: "shared-logs"
+          group: "processing-group"
+          balancer: "roundrobin"
+          reuse: true
+          workers: 2
     ```
   </CodeCol>
 </ExampleGrid>
@@ -214,17 +218,18 @@ Messages can be pre-processed:
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 5
-      name: pipeline_kafka
-      type: kafka
-      pipelines:
-        - json_parser
-        - field_extractor
-      properties:
-        address: "kafka.example.com"
-        port: 9092
-        topic: "raw-logs"
-        group: "processing-group"
+    devices:
+      - id: 5
+        name: pipeline_kafka
+        type: kafka
+        pipelines:
+          - json_parser
+          - field_extractor
+        properties:
+          address: "kafka.example.com"
+          port: 9092
+          topic: "raw-logs"
+          group: "processing-group"
     ```
   </CodeCol>
 </ExampleGrid>

@@ -16,7 +16,7 @@ Filters out events based on regular expression matches.
 ## Schema
 
 ```yaml {2-3}
-regex_filter:
+- regex_filter:
   field: <ident>
   regex: <string>
   regexes: <string[]>
@@ -30,6 +30,8 @@ regex_filter:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -79,9 +81,10 @@ Invalid regex patterns and non-string field values will cause errors unless `ign
     }
     ```
     ```yaml
-    regex_filter:
-      field: message
-      regex: "error.*"
+    processors:
+      - regex_filter:
+        field: message
+        regex: "error.*"
     ```
   </CodeCol>
   <CommentCol>
@@ -107,11 +110,12 @@ Invalid regex patterns and non-string field values will cause errors unless `ign
     }
     ```
     ```yaml
-    regex_filter:
-      field: message
-      regexes: 
-        - "error.*"
-        - "warning.*"
+    processors:
+      - regex_filter:
+        field: message
+        regexes: 
+          - "error.*"
+          - "warning.*"
     ```
   </CodeCol>
   <CommentCol>
@@ -137,9 +141,10 @@ Invalid regex patterns and non-string field values will cause errors unless `ign
     }
     ```
     ```yaml
-    regex_filter:
-      field: message
-      regex: "error.*"
+    processors:
+      - regex_filter:
+        field: message
+        regex: "error.*"
     ```
   </CodeCol>
   <CommentCol>
@@ -168,10 +173,11 @@ Invalid regex patterns and non-string field values will cause errors unless `ign
     }
     ```
     ```yaml
-    regex_filter:
-      if: "ctx.level == 'error'"
-      field: message
-      regex: "error.*"
+    processors:
+      - regex_filter:
+        if: "ctx.level == 'error'"
+        field: message
+        regex: "error.*"
     ```
   </CodeCol>
   <CommentCol>
@@ -198,10 +204,11 @@ Invalid regex patterns and non-string field values will cause errors unless `ign
     {}
     ```
     ```yaml
-    regex_filter:
-      field: nonexistent
-      regex: "error.*"
-      ignore_missing: true
+    processors:
+      - regex_filter:
+        field: nonexistent
+        regex: "error.*"
+        ignore_missing: true
     ```
   </CodeCol>
   <CommentCol>
@@ -227,10 +234,11 @@ Invalid regex patterns and non-string field values will cause errors unless `ign
     }
     ```
     ```yaml
-    regex_filter:
-      field: message
-      regex: "error.*"
-      ignore_failure: true
+    processors:
+      - regex_filter:
+        field: message
+        regex: "error.*"
+        ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>

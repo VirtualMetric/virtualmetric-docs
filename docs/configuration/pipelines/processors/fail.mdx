@@ -16,7 +16,7 @@ Intentionally fails the pipeline with a custom error message on a certain condit
 ## Schema
 
 ```yaml {2}
-fail:
+- fail:
   message: <string>
   description: <text>
   if: <script>
@@ -27,6 +27,8 @@ fail:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -48,26 +50,29 @@ Typical uses:
 
 * **Validation with Context** 
 
-   ```yaml
-   fail:
-     message: "Invalid amount {{amount}} for currency {{currency}}"
-     if: "ctx.amount <= 0"
-   ```
+  ```yaml
+  processors:
+    - fail:
+      message: "Invalid amount {{amount}} for currency {{currency}}"
+      if: "ctx.amount <= 0"
+  ```
 
 * **Access Control**
 
-   ```yaml
-   fail:
-     message: "User {{user.name}} lacks required permission: {{required_permission}}"
-     if: "! ctx.user.permissions.contains(ctx.required_permission)"
-   ```
+  ```yaml
+  processors:
+    - fail:
+      message: "User {{user.name}} lacks required permission: {{required_permission}}"
+      if: "! ctx.user.permissions.contains(ctx.required_permission)"
+  ```
 
 * **Data Quality**
 
-   ```yaml
-   fail:
-     message: "Field {{field_name}} exceeds maximum length of {{max_length}}"
-     if: "ctx.field_name.length() > ctx.max_length"
+  ```yaml
+  processors:
+    - fail:
+      message: "Field {{field_name}} exceeds maximum length of {{max_length}}"
+      if: "ctx.field_name.length() > ctx.max_length"
    ```
 
 :::warning
@@ -97,9 +102,10 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     }
     ```
     ```yaml
-    fail:
-      message: "Intentional failure"
-      tag: "test"
+    processors:
+      - fail:
+        message: "Intentional failure"
+        tag: "test"
     ```
   </CodeCol>
   <CommentCol>
@@ -130,10 +136,11 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     }
     ```
     ```yaml
-    fail:
-      message: "Warning status detected"
-      ignore_failure: true
-      tag: "status_check"
+    processors:
+      - fail:
+        message: "Warning status detected"
+        ignore_failure: true
+        tag: "status_check"
     ```
   </CodeCol>
   <CommentCol>
@@ -169,10 +176,11 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     }
     ```
     ```yaml
-    fail:
-      message: "User {{user.id}} with role {{user.role}} cannot access {{resource}}"
-      if: "ctx.user.role != 'admin'"
-      tag: "access_control"
+    processors:
+      - fail:
+        message: "User {{user.id}} with role {{user.role}} cannot access {{resource}}"
+        if: "ctx.user.role != 'admin'"
+        tag: "access_control"
     ```
   </CodeCol>
   <CommentCol>
@@ -203,10 +211,11 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     }
     ```
     ```yaml
-    fail:
-      message: "Conditional failure triggered"
-      if: "ctx.condition == true"
-      description: "Fail when condition is true"
+    processors:
+      - fail:
+        message: "Conditional failure triggered"
+        if: "ctx.condition == true"
+        description: "Fail when condition is true"
     ```
   </CodeCol>
   <CommentCol>

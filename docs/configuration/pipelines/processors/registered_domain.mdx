@@ -16,7 +16,7 @@ Extracts domain components from URLs or Fully Qualified Domain Names (FQDNs) usi
 ## Schema
 
 ```yaml {2}
-registered_domain:
+- registered_domain:
   field: <ident>
   description: <text>
   if: <script>
@@ -29,6 +29,8 @@ registered_domain:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -70,9 +72,10 @@ Large numbers of domains may impact performance. Consider batching or limiting c
     }
     ```
     ```yaml
-    registered_domain:
-      field: domain
-      target_field: url_parts
+    processors:
+      - registered_domain:
+        field: domain
+        target_field: url_parts
     ```
   </CodeCol>
   <CommentCol>
@@ -106,8 +109,9 @@ Large numbers of domains may impact performance. Consider batching or limiting c
     }
     ```
     ```yaml
-    registered_domain:
-      field: url
+    processors:
+      - registered_domain:
+        field: url
     ```
   </CodeCol>
   <CommentCol>
@@ -139,9 +143,10 @@ Large numbers of domains may impact performance. Consider batching or limiting c
     }
     ```
     ```yaml
-    registered_domain:
-      field: host
-      target_field: domain_info
+    processors:
+      - registered_domain:
+        field: host
+        target_field: domain_info
     ```
   </CodeCol>
   <CommentCol>
@@ -175,11 +180,12 @@ Large numbers of domains may impact performance. Consider batching or limiting c
     }
     ```
     ```yaml
-    registered_domain:
-      field: url
-      ignore_failure: true
-      on_failure:
-        - append:
+    processors:
+      - registered_domain:
+        field: url
+        ignore_failure: true
+        on_failure:
+          - append:
             field: tags
             value: invalid_domain
     ```

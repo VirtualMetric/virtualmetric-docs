@@ -16,7 +16,7 @@ Moves fields from one location to another within the document structure.
 ## Schema
 
 ```yaml
-move:
+- move:
   target_field: <ident>
   fields: <string[]>
   exclude: <string[]>
@@ -32,6 +32,8 @@ move:
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -85,9 +87,10 @@ Also, when moving nested structures, field conflicts can occur. Consider using `
     }
     ```
     ```yaml
-    move:
-      target_field: metadata
-      fields: ["event*"]
+    processors:
+      - move:
+        target_field: metadata
+        fields: ["event*"]
     ```
   </CodeCol>
   <CommentCol>
@@ -126,9 +129,10 @@ Also, when moving nested structures, field conflicts can occur. Consider using `
     }
     ```
     ```yaml
-    move:
-      move_to_root: true
-      fields: ["event.category.*"]
+    processors:
+      - move:
+        move_to_root: true
+        fields: ["event.category.*"]
     ```
   </CodeCol>
   <CommentCol>
@@ -164,10 +168,11 @@ Also, when moving nested structures, field conflicts can occur. Consider using `
     }
     ```
     ```yaml
-    move:
-      target_field: metadata
-      fields: ["*"]
-      exclude: ["device*"]
+    processors:
+      - move:
+        target_field: metadata
+        fields: ["*"]
+        exclude: ["device*"]
     ```
   </CodeCol>
   <CommentCol>
@@ -209,9 +214,10 @@ Also, when moving nested structures, field conflicts can occur. Consider using `
     }
     ```
     ```yaml
-    move:
-      move_to_root: true
-      fields: ["event.*"]
+    processors:
+      - move:
+        move_to_root: true
+        fields: ["event.*"]
     ```
   </CodeCol>
   <CommentCol>
@@ -247,10 +253,11 @@ Also, when moving nested structures, field conflicts can occur. Consider using `
     }
     ```
     ```yaml
-    move:
-      target_field: metadata
-      fields: ["event*"]
-      override: true
+    processors:
+      - move:
+        target_field: metadata
+        fields: ["event*"]
+        override: true
     ```
   </CodeCol>
   <CommentCol>

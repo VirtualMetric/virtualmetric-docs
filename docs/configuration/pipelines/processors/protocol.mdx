@@ -10,7 +10,7 @@ Converts IANA protocol numbers to their corresponding protocol names.
 
 ## Schema
 
-```yaml {2-3}
+```yaml {2}
 - protocol:
   field: <ident>
   target_field: <ident>
@@ -24,6 +24,8 @@ Converts IANA protocol numbers to their corresponding protocol names.
 ```
 
 ## Configuration
+
+The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -68,7 +70,8 @@ The processor expects numeric values or strings that can be converted to integer
     }
     ```
     ```yaml
-    - protocol:
+    processors:
+      - protocol:
         field: network.protocol_number
         target_field: network.protocol_name
     ```
@@ -105,7 +108,8 @@ The processor expects numeric values or strings that can be converted to integer
     }
     ```
     ```yaml
-    - protocol:
+    processors:
+      - protocol:
         field: packet.ip.protocol
     ```
   </CodeCol>
@@ -142,13 +146,14 @@ The processor expects numeric values or strings that can be converted to integer
     }
     ```
     ```yaml
-    - protocol:
+    processors:
+      - protocol:
         field: network_data.proto1
         target_field: network_data.proto1_name
-    - protocol:
+      - protocol:
         field: network_data.proto2
         target_field: network_data.proto2_name
-    - protocol:
+      - protocol:
         field: network_data.proto3
         target_field: network_data.proto3_name
     ```
@@ -192,10 +197,11 @@ The processor expects numeric values or strings that can be converted to integer
     }
     ```
     ```yaml
-    - protocol:
+    processors:
+      - protocol:
         field: firewall.protocol
         target_field: firewall.protocol_name
-    - set:
+      - set:
         field: firewall.summary
         value: "{{firewall.action}} {{firewall.protocol_name}} from {{firewall.src_ip}}:{{firewall.src_port}} to {{firewall.dst_ip}}:{{firewall.dst_port}}"
     ```
@@ -236,7 +242,8 @@ The processor expects numeric values or strings that can be converted to integer
     }
     ```
     ```yaml
-    - protocol:
+    processors:
+      - protocol:
         field: packet.protocol
         target_field: packet.protocol_name
     ```

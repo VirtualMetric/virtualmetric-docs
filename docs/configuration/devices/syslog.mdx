@@ -10,7 +10,7 @@ See [Appendix](/appendix.mdx#syslog) for details.
 
 ## Schema
 
-```yaml
+```yaml {2,3,5}
 - id: <numeric>
   name: <string>
   description: <string>
@@ -46,7 +46,7 @@ See [Appendix](/appendix.mdx#syslog) for details.
 
 ## Configuration
 
-The following are the minimum requirements to define the device.
+The following fields are used to define the device:
 
 ### Device
 
@@ -136,11 +136,12 @@ A basic configuration can be created easily using "udp" for `protocol` and "0.0.
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 1
-      name: basic_syslog
-      type: syslog
-      properties:
-        port: 514
+    devices:
+      - id: 1
+        name: basic_syslog
+        type: syslog
+        properties:
+          port: 514
     ```
   </CodeCol>
 </ExampleGrid>
@@ -155,17 +156,18 @@ The basic UDP Server can be configured to use a `checkpoint` pre-processing pipe
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 2
-      name: basic_syslog
-      type: syslog
-      tags:
-        - "network_device"
-      pipelines:
-        - checkpoint
-      properties:
-        address: "10.0.0.1"
-        protocol: "udp"
-        port: 1514
+    devices:
+      - id: 2
+        name: basic_syslog
+        type: syslog
+        tags:
+          - "network_device"
+        pipelines:
+          - checkpoint
+        properties:
+          address: "10.0.0.1"
+          protocol: "udp"
+          port: 1514
     ```
   </CodeCol>
 </ExampleGrid>
@@ -184,19 +186,20 @@ Performance of a UDP server can be enhanced Volumes using multiple workers, a la
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 3
-      name: performant_syslog
-      type: syslog
-      properties:
-        protocol: udp
-        port: 514
-        reuse: true
-        workers: 4
-        buffer_size: 32768
-        batch_size: 5000
-        flush_interval: 5
-        queue:
-          interval: 2
+    devices:
+      - id: 3
+        name: performant_syslog
+        type: syslog
+        properties:
+          protocol: udp
+          port: 514
+          reuse: true
+          workers: 4
+          buffer_size: 32768
+          batch_size: 5000
+          flush_interval: 5
+          queue:
+            interval: 2
     ```
   </CodeCol>
 </ExampleGrid>
@@ -215,16 +218,17 @@ For a TCP server with custom message framing, use a custom frame delimiter, conn
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 4
-      name: tcp_syslog
-      type: syslog
-      properties:
-        protocol: tcp
-        port: 1514
-        framing: delimiter
-        line_delimiter: "\r\n"
-        max_connections: 5000
-        timeout: 60
+    devices:
+      - id: 4
+        name: tcp_syslog
+        type: syslog
+        properties:
+          protocol: tcp
+          port: 1514
+          framing: delimiter
+          line_delimiter: "\r\n"
+          max_connections: 5000
+          timeout: 60
     ```
   </CodeCol>
 </ExampleGrid>
@@ -243,23 +247,24 @@ Security can be enhanced using TLS encryption, multiple forward destinations, an
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 5
-      name: secure_syslog
-      type: syslog
-      properties:
-        protocol: tcp
-        port: 6514
-        tls:
-          status: true
-          cert_name: cert.pem
-          key_name: key.pem
-        forwarding:
-          - address: "10.0.0.1"
-            port: 514
-            type: udp
-          - address: "10.0.0.2"
-            port: 6514
-            type: tcp
+    devices:
+      - id: 5
+        name: secure_syslog
+        type: syslog
+        properties:
+          protocol: tcp
+          port: 6514
+          tls:
+            status: true
+            cert_name: cert.pem
+            key_name: key.pem
+          forwarding:
+            - address: "10.0.0.1"
+              port: 514
+              type: udp
+            - address: "10.0.0.2"
+              port: 6514
+              type: tcp
     ```
   </CodeCol>
 </ExampleGrid>
@@ -280,22 +285,23 @@ The messages are forwarded exactly as received to the UDP server on port `514`, 
   </CommentCol>
   <CodeCol>
     ```yaml
-    - id: 6
-      name: forwarder_syslog
-      type: syslog
-      properties:
-        protocol: udp
-        port: 514
-        forwarding:
-          - address: "10.0.0.50"
-            port: 514
-            type: udp
-          - address: "10.0.0.51"
-            port: 1514
-            type: tcp
-          - address: "syslog.example.com"
-            port: 6514
-            type: tcp
+    devices:
+      - id: 6
+        name: forwarder_syslog
+        type: syslog
+        properties:
+          protocol: udp
+          port: 514
+          forwarding:
+            - address: "10.0.0.50"
+              port: 514
+              type: udp
+            - address: "10.0.0.51"
+              port: 1514
+              type: tcp
+            - address: "syslog.example.com"
+              port: 6514
+              type: tcp
     ```
   </CodeCol>
 </ExampleGrid>
