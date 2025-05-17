@@ -8,15 +8,15 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
 
 ## Feature Comparison
 
-| Feature | Logstash | DataStream |
-|---------|----------|------------|
-| Configuration Format | Ruby-like DSL | YAML |
-| Components | Inputs, Filters, Outputs | Devices, Processors, Outputs |
-| Plugin System | Ruby Gems | Built-in Types |
-| Pipeline Structure | Inputs → Filters → Outputs | Devices → Pipelines → Outputs |
-| Runtime | JVM-based | Go-based |
-| Resource Usage | Higher memory footprint | Lower memory footprint |
-| Configuration Validation | Runtime | Pre-deployment |
+|Feature|Logstash|DataStream|
+|---|---|---|
+|Configuration Format|Ruby-like DSL|YAML|
+|Components|Inputs, Filters, Outputs|Devices, Processors, Outputs|
+|Plugin System|Ruby Gems|Built-in Types|
+|Pipeline Structure|Inputs → Filters → Outputs|Devices → Pipelines → Outputs|
+|Runtime|JVM-based|Go-based|
+|Resource Usage|Higher memory footprint|Lower memory footprint|
+|Configuration Validation|Runtime|Pre-deployment|
 
 ## Component Mapping
 
@@ -24,44 +24,44 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
 
 **Logstash** inputs map to **DataStream** devices:
 
-| Logstash Input | DataStream Device |
-|----------------|-------------------|
-| `http` | `http` |
-| `syslog` | `syslog` |
-| `tcp` | `tcp` |
-| `udp` | `udp` |
-| `beats` | `http` |
-| `file` | `file` |
-| `azure_event_hubs` | `azmon` |
-| `elasticsearch` | `elasticsearch` |
+|Logstash Input|DataStream Device|
+|---|---|
+|`http`|`http`|
+|`syslog`|`syslog`|
+|`tcp`|`tcp`|
+|`udp`|`udp`|
+|`beats`|`http`|
+|`file`|`file`|
+|`azure_event_hubs`|`azmon`|
+|`elasticsearch`|`elasticsearch`|
 
 ### Filters to Processors
 
 **Logstash** filters map to **DataStream** processors:
 
-| Logstash Filter | DataStream Processor |
-|-----------------|----------------------|
-| `grok` | `grok` |
-| `csv` | `csv` |
-| `json` | `json` |
-| `kv` | `kv` |
-| `mutate` (add_field) | `set` |
-| `mutate` (remove_field) | `remove` |
-| `mutate` (rename) | `rename` |
-| `ruby` | `script` |
-| `date` | `date` |
+|Logstash Filter|DataStream Processor|
+|---|---|
+|`grok`|`grok`|
+|`csv`|`csv`|
+|`json`|`json`|
+|`kv`|`kv`|
+|`mutate` (add_field)|`set`|
+|`mutate` (remove_field)|`remove`|
+|`mutate` (rename)|`rename`|
+|`ruby`|`script`|
+|`date`|`date`|
 
 ### Outputs to Outputs
 
 **Logstash** outputs map to **DataStream** targets:
 
-| Logstash Output | DataStream Target |
-|-----------------|-------------------|
-| `elasticsearch` | `elasticsearch` |
-| `s3` | `s3` |
-| `http` | `http` |
-| `kafka` | `kafka` |
-| `stdout` | `stdout` (for testing) |
+|Logstash Output|DataStream Target|
+|---|---|
+|`elasticsearch`|`elasticsearch`|
+|`s3`|`s3`|
+|`http`|`http`|
+|`kafka`|`kafka`|
+|`stdout`|`stdout` (for testing)|
 
 ## Migration Steps
 
@@ -203,7 +203,7 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
           processors:
             - script:
               lang: golang
-              source: |
+              source:|
                 package main
                   
                 func main() {
@@ -262,7 +262,7 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
       processors:
         - script:
           lang: golang
-          source: |
+          source:|
             package main
               
             func main() {
@@ -302,7 +302,7 @@ For **Logstash** date filter functionality, **DataStream** date handling:
 ```yaml title="YAML" 
 - script:
   lang: golang
-  source: |
+  source:|
     package main
       
     func main() {
@@ -326,12 +326,12 @@ After migrating, optimize **DataStream**'s performance:
 
 ## Logstash-Specific Feature Migration
 
-| Logstash Feature | DataStream Approach |
-|-----------------:|---------------------|
-| Persistent Queues | Use **DataStream**'s disk persistence |
-| Dead-Letter Queues | Implement error handling in processors |
-| Pipeline-to-Pipeline | Use **DataStream**'s pipeline routing |
-| Monitoring API | Use **DataStream**'s metrics endpoint |
+|Logstash Feature|DataStream Approach|
+|---:|---|
+|Persistent Queues|Use **DataStream**'s disk persistence|
+|Dead-Letter Queues|Implement error handling in processors|
+|Pipeline-to-Pipeline|Use **DataStream**'s pipeline routing|
+|Monitoring API|Use **DataStream**'s metrics endpoint|
 
 ## Additional Resources
 

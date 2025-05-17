@@ -8,14 +8,14 @@ This guide outlines the process for migrating from **Tenzir** platform to **Data
 
 ## Feature Comparison
 
-| Feature | Tenzir | DataStream |
-|---------|--------|------------|
-| Configuration Format | YAML | YAML |
-| Data Model | Event-based | Event-based |
-| Query Language | Tenzir Query Language (TQL) | Processing Pipelines |
-| Sources | Sources | Devices |
-| Connectors | Connectors | Targets |
-| Deployment | Containers/Kubernetes | Standalone/Distributed |
+|Feature|Tenzir|DataStream|
+|---|---|---|
+|Configuration Format|YAML|YAML|
+|Data Model|Event-based|Event-based|
+|Query Language|Tenzir Query Language (TQL)|Processing Pipelines|
+|Sources|Sources|Devices|
+|Connectors|Connectors|Targets|
+|Deployment|Containers/Kubernetes|Standalone/Distributed|
 
 ## Concept Mapping
 
@@ -23,25 +23,25 @@ This guide outlines the process for migrating from **Tenzir** platform to **Data
 
 **Tenzir** sources map to **DataStream** devices:
 
-| Tenzir Source | DataStream Device |
-|---------------|-------------------|
-| `HTTP` | `http` |
-| `Syslog` | `syslog` |
-| `TCP` | `tcp` |
-| `UDP` | `udp` |
-| `eStreamer` | `estreamer` |
+|Tenzir Source|DataStream Device|
+|---|---|
+|`HTTP`|`http`|
+|`Syslog`|`syslog`|
+|`TCP`|`tcp`|
+|`UDP`|`udp`|
+|`eStreamer`|`estreamer`|
 
 ### Operators to Processors
 
 **Tenzir** operators can be mapped to **DataStream** processors:
 
-| Tenzir Operator | DataStream Processor |
-|-----------------|----------------------|
-| `where` | `script` (conditional) |
-| `select` | `set`/`remove` |
-| `rename` | `rename` |
-| `parse` | `grok`/`kv`/`json` |
-| `compute` | `script` |
+|Tenzir Operator|DataStream Processor|
+|---|---|
+|`where`|`script` (conditional)|
+|`select`|`set`/`remove`|
+|`rename`|`rename`|
+|`parse`|`grok`/`kv`/`json`|
+|`compute`|`script`|
 
 ### Pipelines
 
@@ -129,9 +129,9 @@ In **Tenzir**, pipelines are defined with operators chained together. In **DataS
     <CodeCol>
       ``` title="?"
       from syslog
-        | where event_type == "login"
-        | select src_ip, dst_ip, username, status
-        | rename src_ip to source.ip, dst_ip to destination.ip
+      |where event_type == "login"
+      |select src_ip, dst_ip, username, status
+      |rename src_ip to source.ip, dst_ip to destination.ip
       ```
     </CodeCol>
     <CommentCol>
@@ -144,11 +144,11 @@ In **Tenzir**, pipelines are defined with operators chained together. In **DataS
           processors:
             - script:
               lang: golang
-              source: |
+              source:|
                 package main
                 func main() {
                   eventType, ok := logEntry["event_type"]
-                  if !ok || eventType != "login" {
+                  if !ok||eventType != "login" {
                     dropMessage()
                   }
                 }
@@ -176,7 +176,7 @@ For custom TQL expressions, use DataStream's Script processor with Go:
 ```yaml title="YAML"
 script:
   - lang: golang
-    source: |
+    source:|
       package main
       
       func main() {
