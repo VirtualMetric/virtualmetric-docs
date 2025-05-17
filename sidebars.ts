@@ -36,7 +36,6 @@ const sidebars: SidebarsConfig = {
         'getting-started/example-ingesting-data',
         'getting-started/example-forwarding-data',
         'getting-started/example-routing-data',
-        'getting-started/example-multi-event-routing',
         'getting-started/example-a-syslog-to-sentinel-pipeline',
       ],
     },
@@ -52,7 +51,6 @@ const sidebars: SidebarsConfig = {
         'deployment/azure-app-service',
         'deployment/azure-functions',
         'deployment/azure-arc-extension',
-        'deployment/virtual-ip-addresses',
       ],
     },
     {
