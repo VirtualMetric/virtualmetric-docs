@@ -32,14 +32,11 @@ const sidebars: SidebarsConfig = {
       link: {type: "doc", id: "getting-started/index"},
       collapsed: false,
       items: [
-        'getting-started/single-node-deployment',
-        'getting-started/cluster-deployment',
-        // 'getting-started/virtual-ip-address',
         'getting-started/configuration-basics',
         'getting-started/example-ingesting-data',
         'getting-started/example-forwarding-data',
         'getting-started/example-routing-data',
-        // 'getting-started/example-multi-event-routing',
+        'getting-started/example-multi-event-routing',
         'getting-started/example-a-syslog-to-sentinel-pipeline',
       ],
     },
@@ -48,11 +45,14 @@ const sidebars: SidebarsConfig = {
       label: "Deployment",
       link: {type: "doc", id: "deployment/index"},
       items: [
+        'deployment/single-node',
+        'deployment/cluster',
         'deployment/local',
         'deployment/azure-vm',
         'deployment/azure-app-service',
         'deployment/azure-functions',
         'deployment/azure-arc-extension',
+        'deployment/virtual-ip-addresses',
       ],
     },
     {
@@ -105,8 +105,7 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Configuration",
       link: {type: "doc", id: "configuration/index"},
-      items: [
-        "configuration/cli",
+      items: [        
         {
           type: "category",
           label: "Devices",
@@ -286,6 +285,7 @@ const sidebars: SidebarsConfig = {
     //     'architecture/zero-trust',
     //   ],
     // },
+    "cli",
     "appendix",
     "glossary"
   ],
