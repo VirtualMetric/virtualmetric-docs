@@ -32,14 +32,10 @@ const sidebars: SidebarsConfig = {
       link: {type: "doc", id: "getting-started/index"},
       collapsed: false,
       items: [
-        'getting-started/single-node-deployment',
-        'getting-started/cluster-deployment',
-        // 'getting-started/virtual-ip-address',
         'getting-started/configuration-basics',
         'getting-started/example-ingesting-data',
         'getting-started/example-forwarding-data',
         'getting-started/example-routing-data',
-        // 'getting-started/example-multi-event-routing',
         'getting-started/example-a-syslog-to-sentinel-pipeline',
       ],
     },
@@ -48,6 +44,8 @@ const sidebars: SidebarsConfig = {
       label: "Deployment",
       link: {type: "doc", id: "deployment/index"},
       items: [
+        'deployment/single-node',
+        'deployment/cluster',
         'deployment/local',
         'deployment/azure-vm',
         'deployment/azure-app-service',
@@ -63,6 +61,11 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Integration",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Integration",
+            description: "The following documents contain detailed information on this topic."
+          },
           items: [
             'microsoft-sentinel/integration/autodiscovery',
             'microsoft-sentinel/integration/manual',
@@ -71,6 +74,11 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Automation",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Automation",
+            description: "The following documents contain detailed information on this topic."
+          },
           items: [
             'microsoft-sentinel/automation/arm-templates',
             'microsoft-sentinel/automation/bicep-templates',
@@ -79,6 +87,11 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Content Hub",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Content Hub",
+            description: "The following documents contain detailed information on this topic."
+          },
           items: [
             'microsoft-sentinel/content-hub/checkpoint',
             'microsoft-sentinel/content-hub/fortigate',
@@ -90,8 +103,7 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Configuration",
       link: {type: "doc", id: "configuration/index"},
-      items: [
-        "configuration/cli",
+      items: [        
         {
           type: "category",
           label: "Devices",
@@ -271,14 +283,10 @@ const sidebars: SidebarsConfig = {
     //     'architecture/zero-trust',
     //   ],
     // },
+    "cli",
     "appendix",
     "glossary"
   ],
-  // tutorDocs: [
-  //   "tutorials/overview",
-  //   "tutorials/syslog-to-console",
-  //   "tutorials/syslog-to-parquet-file",
-  // ],
 };
 
 export default sidebars;
