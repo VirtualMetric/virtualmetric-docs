@@ -1,8 +1,11 @@
 import {themes, type PrismTheme} from 'prism-react-renderer';
 
-const baseTheme = themes.vsDark;
+const baseTheme = themes.dracula;
 const customTheme: PrismTheme = {
-  ...baseTheme,
+  plain: {
+    color: '#A4D4D4',
+    backgroundColor: '#303030'
+  },
   styles: [
     ...baseTheme.styles,
     {
@@ -13,63 +16,42 @@ const customTheme: PrismTheme = {
       },
     },
     {
-      // YAML keys
-      types: ['parameter', 'property'],
+      types: ['parameter', 'property', 'symbol'],
+      style: {
+        color: '#FF0099',
+      },
+    },
+    {
+      types: ['attr-value', 'boolean', 'number', 'constant'],
+      style: {
+        color: '#FFDE55',
+      },
+    },
+    {
+      types: ['tag', 'script'],
       style: {
         color: '#99F5F9',
       },
     },
     {
-      // Field identifiers like some_name, some_identifier
-      types: ['variable', 'attr-name'],
-      style: {
-        color: '#FFDE59',
-      },
-    },
-    {
-      // Numbers and booleans
-      types: ['boolean', 'number', 'constant'],
-      style: {
-        color: '#FF0000',
-      },
-    },
-    {
-      // Other types to keep blue
-      types: ['atrule', 'tag', 'script'],
-      style: {
-        color: '#99F5F9',
-      },
-    },
-    {
-      // Other types to keep blue
       types: ['operator', 'unit', 'rule'],
       style: {
         color: '#99F5F9',
       },
     },
     {
-      // Strings and multi-line content
-      types: ['front-matter', 'string', 'attr-value'],
+      types: ['front-matter', 'string'],
       style: {
         color: '#CAFDB5',
       },
     },
     {
-      // Other types to keep blue
-      types: ['class-name'],
+      types: ['function', 'selector', 'variable'],
       style: {
-        color: '#99F5F9',
+        color: '#FFDE55',
       },
     },
     {
-      // Identifiers
-      types: ['function', 'selector'],
-      style: {
-        color: '#FFDE59',
-      },
-    },
-    {
-      // The "component_type" token
       types: ['keyword'],
       style: {
         color: '#99F5F9',
