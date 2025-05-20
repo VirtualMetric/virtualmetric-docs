@@ -41,7 +41,7 @@ The examples provide the basic configurations required to run some of the most f
 
 ## The CLI
 
-You can run configured components by invoking **Director** from the terminal using specific switches.
+The configured components can be run by invoking **Director** from the terminal.
 
 :::tip
 For an extensive description of the command line functionality, see [**this section**](../cli.mdx).
@@ -51,7 +51,7 @@ Here are a few typical use cases:
 
 * Listening to _Syslog_:
 
-  <Tabs groupId="os-options">
+  <Tabs>
     <TabItem value="windows" label="Windows" default>
       ```powershell
       vmetric-director.exe -mode=generator -protocol=syslog -address=127.0.0.1:514
@@ -73,7 +73,7 @@ Here are a few typical use cases:
 
 * Viewing logs at a specific debug level:
 
-  <Tabs groupId="os-options">
+  <Tabs>
     <TabItem value="windows" label="Windows" default>
       ```powershell
       vmetric-director.exe -mode=console -debug-level=3
@@ -95,7 +95,7 @@ Here are a few typical use cases:
 
 * Validating a specific pipeline:
 
-  <Tabs groupId="os-options">
+  <Tabs>
     <TabItem value="windows" label="Windows" default>
       ```powershell
       vmetric-director.exe -mode=pipeline -name=<pipeline_name> -validate
@@ -117,9 +117,44 @@ Here are a few typical use cases:
 
 The examples provide the relevant commands required to run them.
 
+## Logging Setup
+
+Before proceeding to the examples, a simple configuration for logging is in order to check your results. Open the `vmetric.yml` file under `config` and add the following lines to it:
+
+```yaml
+debug:
+  log:
+    status: true
+  level: 4
+  console:
+    status: true
+```
+
+This will generate the logs of the operation, and place them under the following folder:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    C:\path\to\<vm_root>\storage\logs
+    ```
+  </TabItem>
+
+  <TabItem value="linux" label="Linux">
+    ```bash
+    ~/path/to/<vm_root>/storage/logs
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS">
+    ```bash
+    ~/path/to/<vm_root>/storage/logs
+    ```
+  </TabItem>
+</Tabs>
+
 ## The Examples
 
-You can see **Director** in action by trying the following introductory examples:
+Now you can see **Director** in action by trying the following introductory examples:
 
 - [Example: Ingesting Data](./example-ingesting-data.mdx)
 

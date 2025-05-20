@@ -4,7 +4,7 @@ const baseTheme = themes.dracula;
 const customTheme: PrismTheme = {
   plain: {
     color: '#A4D4D4',
-    backgroundColor: '#303030'
+    backgroundColor: '#030333'
   },
   styles: [
     ...baseTheme.styles,
@@ -18,13 +18,13 @@ const customTheme: PrismTheme = {
     {
       types: ['parameter', 'property', 'symbol'],
       style: {
-        color: '#FF0099',
+        color: '#FFDD77',
       },
     },
     {
       types: ['attr-value', 'boolean', 'number', 'constant'],
       style: {
-        color: '#FFDE55',
+        color: '#FFDD77',
       },
     },
     {
@@ -48,7 +48,7 @@ const customTheme: PrismTheme = {
     {
       types: ['function', 'selector', 'variable'],
       style: {
-        color: '#FFDE55',
+        color: '#FFDD77',
       },
     },
     {

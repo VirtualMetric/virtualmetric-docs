@@ -6,21 +6,6 @@ This section will help you get started with devices to ingest data with specific
 
 We will create a device that will listen on and receive data from _Syslog_.
 
-## Prerequisites
-
-Before proceeding with the example, a simple configuration for logging is in order to check our results. Open the `vmetric.yml` file under `config` and add the following lines to it:
-
-```yaml
-debug:
-  log:
-    status: true
-  level: 4
-  console:
-    status: true
-```
-
-This will generate the logs of the operation, and place them under the folder `<vm_root>/storage/logs`.
-
 ## Basic UDP Setup
 
 ### Step 1. Create Configuration
@@ -44,32 +29,36 @@ This YAML code specifies that this is a _Syslog_ device, and that you will use *
 
 You can now test this configuration using either **Director**'s cross-platform companion **Generator** or the traditional tools available:
 
-<Tabs groupId="os-options">
+<Tabs>
   <TabItem value="windows" label="Windows" default>
-    Using **Generator**
+    - Using **Generator**
 
     ```powershell
     vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
     ```
   </TabItem>
-
   <TabItem value="linux" label="Linux">
-    Using **Generator**
-
+    - Using **Generator**
+  
     ```bash
     vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
     ```
-
-    Using **System Logger**
+    
+    - Using **System Logger**
 
     ```bash
     logger -n 127.0.0.1 -P 514 "Test message"
     ```
   </TabItem>
-
   <TabItem value="macos" label="macOS">
-    Using **System Logger**
+    - Using **Generator**
 
+    ```bash
+    vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
+    ```
+  
+    - Using **System Logger**
+  
     ```bash
     logger -n 127.0.0.1 -P 514 "Test message"
     ```
@@ -80,20 +69,18 @@ You can now test this configuration using either **Director**'s cross-platform c
 
 Now that we have created our configuration, we can run it like so:
 
-<Tabs groupId="os-options">
+<Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
     vmetric-director
     ```
   </TabItem>
-  
-  <TabItem value="linux" label="Linux" default>
+  <TabItem value="linux" label="Linux">
     ```bash
     vmetric-director
     ```
   </TabItem>
-
-  <TabItem value="macos" label="macOS" default>
+  <TabItem value="macos" label="macOS">
     ```bash
     vmetric-director
     ```
@@ -110,38 +97,36 @@ We will now create a secure device that uses TLS.
 
 First, we have to prepare the TLS certificates. This can be done using either **Director** or **OpenSSL**.
 
-<Tabs groupId="os-options">
+<Tabs>
   <TabItem value="windows" label="Windows" default>
-    Using **Director**
+    - Using **Director**
 
     ```powershell
     vmetric-director -pfx2pem=./cert-file.pfx
     ```
   </TabItem>
-
   <TabItem value="linux" label="Linux">
-    Using **Director**
-
+    - Using **Director**
+    
     ```bash
     vmetric-director -pfx2pem=./cert-file.pfx
     ```
-
-    Using **OpenSSL**
-
+    
+    - Using **OpenSSL**
+    
     ```bash
     openssl genrsa -out server.key 2048
     openssl req -new -x509 -key server.key -out server.crt -days 365
     ```
   </TabItem>
-
   <TabItem value="macos" label="macOS">
-    Using **Director**
+    - Using **Director**
 
     ```bash
     vmetric-director -pfx2pem=./cert-file.pfx
     ```
-    
-    Using **OpenSSL**
+
+    - Using **OpenSSL**
 
     ```bash
     openssl genrsa -out server.key 2048
@@ -156,20 +141,18 @@ The above commands will generate the required `key.pem` and `cert.pem` files.
 
 Now that we have created these files, we must copy them to our installation root directory:
 
-<Tabs groupId="os-options">
+<Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
     Copy-Item cert.pem key.pem <vm_root>/
     ```
   </TabItem>
-  
-  <TabItem value="linux" label="Linux" default>
+  <TabItem value="linux" label="Linux">
     ```bash
     cp cert.pem key.pem <vm_root>/
     ```
   </TabItem>
-
-  <TabItem value="macos" label="macOS" default>
+  <TabItem value="macos" label="macOS">
     ```bash
     cp cert.pem key.pem <vm_root>/
     ```
@@ -204,20 +187,18 @@ Note that we specified the certificate files we have created in the previous ste
 
 We can run it in the background:
 
-<Tabs groupId="os-options">
+<Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
     vmetric-director -background
     ```
   </TabItem>
-  
-  <TabItem value="linux" label="Linux" default>
+  <TabItem value="linux" label="Linux">
     ```bash
     vmetric-director -background
     ```
   </TabItem>
-
-  <TabItem value="macos" label="macOS" default>
+  <TabItem value="macos" label="macOS">
     ```bash
     vmetric-director -background
     ```
@@ -228,20 +209,18 @@ We can run it in the background:
 
 Now we can test the connection:
 
-<Tabs groupId="os-options">
+<Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
     Write-Output "Test secure message" | openssl s_client -connect 127.0.0.1:6514
     ```
   </TabItem>
-  
-  <TabItem value="linux" label="Linux" default>
+  <TabItem value="linux" label="Linux">
     ```bash
     echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
     ```
   </TabItem>
-
-  <TabItem value="macos" label="macOS" default>
+  <TabItem value="macos" label="macOS">
     ```bash
     echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
     ```
@@ -254,20 +233,18 @@ Check **Director**'s logs for success messages on launching and initialization, 
 
 To monitor the logs in real time and filter for a specific debug level:
 
-<Tabs groupId="os-options">
+<Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
     vmetric-director -mode=console -debug-level=3
     ```
   </TabItem>
-  
-  <TabItem value="linux" label="Linux" default>
+  <TabItem value="linux" label="Linux">
     ```bash
     vmetric-director -mode=console -debug-level=3
     ```
   </TabItem>
-
-  <TabItem value="macos" label="macOS" default>
+  <TabItem value="macos" label="macOS">
     ```bash
     vmetric-director -mode=console -debug-level=3
     ```
