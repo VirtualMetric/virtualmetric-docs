@@ -32,6 +32,7 @@ const sidebars: SidebarsConfig = {
       link: {type: "doc", id: "getting-started/index"},
       collapsed: false,
       items: [
+        'getting-started/single-node',
         'getting-started/configuration-basics',
         'getting-started/example-ingesting-data',
         'getting-started/example-forwarding-data',
@@ -44,7 +45,6 @@ const sidebars: SidebarsConfig = {
       label: "Deployment",
       link: {type: "doc", id: "deployment/index"},
       items: [
-        'deployment/single-node',
         'deployment/cluster',
         'deployment/local',
         'deployment/azure-vm',
