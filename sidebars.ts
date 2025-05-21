@@ -38,19 +38,20 @@ const sidebars: SidebarsConfig = {
         'getting-started/example-forwarding-data',
         'getting-started/example-routing-data',
         'getting-started/example-a-syslog-to-sentinel-pipeline',
-      ],
-    },
-    {
-      type: "category",
-      label: "Deployment",
-      link: {type: "doc", id: "deployment/index"},
-      items: [
-        'deployment/cluster',
-        'deployment/local',
-        'deployment/azure-vm',
-        'deployment/azure-app-service',
-        'deployment/azure-functions',
-        'deployment/azure-arc-extension',
+        {
+          type: "category",
+          label: "Deployment",
+          link: {type: "doc", id: "getting-started/deployment/index"},
+          collapsed: false,
+          items: [
+            'getting-started/deployment/cluster',
+            'getting-started/deployment/local',
+            'getting-started/deployment/azure-vm',
+            'getting-started/deployment/azure-app-service',
+            'getting-started/deployment/azure-functions',
+            'getting-started/deployment/azure-arc-extension',
+          ],
+        },
       ],
     },
     {
@@ -283,7 +284,7 @@ const sidebars: SidebarsConfig = {
     //     'architecture/zero-trust',
     //   ],
     // },
-    "cli",
+    // "cli",
     "appendix",
     "glossary"
   ],
