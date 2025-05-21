@@ -284,7 +284,6 @@ const sidebars: SidebarsConfig = {
     //     'architecture/zero-trust',
     //   ],
     // },
-    // "cli",
     "appendix",
     "glossary"
   ],
