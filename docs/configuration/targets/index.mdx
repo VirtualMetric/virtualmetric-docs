@@ -9,6 +9,22 @@ pagination_next: null
 
 ## Definitions
 
+Targets serve as the endpoint destinations for processed data within the **Director** system. They operate on the following principles:
+
+1. **Output Configuration**: Targets define where and how data should be delivered after processing.
+2. **Format Adaptation**: They handle the conversion of internal data structures to destination-specific formats.
+3. **Delivery Management**: Targets manage connection pooling, batching, and retry mechanisms.
+4. **Destination Integration**: They provide authentication and protocol-specific features for various systems.
+
+:::note
+Targets enable:
+
+> **Persistence**: Local and remote storage with various retention options.\
+> **Integration**: Seamless connection to analytics platforms and messaging systems.
+
+They also support _data transformation_, and _delivery confirmation_.
+:::
+
 ## Configuration
 
 All targets share the following base configuration fields:
@@ -16,7 +32,6 @@ All targets share the following base configuration fields:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`name`|Y||Unique identifier for the target|
-|`type`|Y||Type of the target|
 |`description`|N||Optional explanation|
 |`status`|N|`true`|Enable/disable the target|
 |`batch`|N|`false`|Enable batch mode delivery|
@@ -48,15 +63,13 @@ The target listed here is of type `elasticsearch`. It specifies the _host_ that 
 You can use environment variables like `${PASSWORD}` for your credentials. This will improve security by removing the credentials from your configuration file.
 :::
 
-Multiple targets can be used for redundancy, [normalization](../pipelines/normalization.mdx) rules can be implemented, and alerts can be put in place for notification and error handling.
-
 ## Deployment
 
 The following deployment types can be used:
 
 * **One-to-many** - data from a single source is routed to one or more destinations:
 
-  > Syslog &map; Local Storage + Analysis Platform
+  > Syslog → Local Storage + Analysis Platform
 
 * **Many-to-one** - data from multiple sources is routed to one destination:
 
@@ -64,13 +77,31 @@ The following deployment types can be used:
 
 * **Many-to-many** - data from multiple sources is routed to multiple destinations:
 
-  > Syslog + Windows &map; Local Storage
+  > Syslog + Windows → Local Storage
   >
-  > Syslog + Elasticsearch &map; Cloud Upload + Analysis Platform
+  > Syslog + Elasticsearch → Cloud Upload + Analysis Platform
 
 * **Chained** - data is routed sequentially from one destination to the next:
 
-  > Syslog &map; Local Storage &map; Analysis Platform
+  > Syslog → Local Storage → Analysis Platform
+
+Multiple targets can be used for redundancy, [normalization](../pipelines/normalization.mdx) rules can be implemented, and alerts can be put in place for notification and error handling.
+
+## Target Types
+
+Targets can be categorized into several functional types that serve different data management needs:
+
+* **Analytical** - These targets integrate with platforms designed for searching, analyzing, and visualizing data:
+  * Elasticsearch, Splunk, and other search and analytics engines
+  
+* **Storage-Based** - These targets focus on data persistence with various retention strategies:
+  * Local files, S3 and other cloud storage services
+  
+* **Messaging** - These targets publish data to distributed messaging systems:
+  * Kafka, RabbitMQ, and other message brokers
+
+* **Integration** - These targets connect with external systems through APIs:
+  * Webhooks, REST endpoints, and custom integrations
 
 ## Use Cases
 
@@ -94,152 +125,11 @@ To serve these ends, the following _processing options_ are available:
 
 * **Security** - Authentication using API keys, service principals, and client certificates. Encryption with TLS/SSL, HTTPS, or custom algorithms. Also, access control and audit logging.
 
-## Target Types
+## Implementation Strategies
 
-The system supports the following target types:
+### Storage Types
 
-|Type|Description|
-|---|---|
-|[Elasticsearch](#elasticsearch)|Sends data to Elasticsearch clusters for search and analytics|
-|[Kafka](#kafka)|Publishes data to Kafka topics for distributed processing|
-|[S3](#s3)|Stores data in Amazon S3 buckets for long-term retention|
-|[Splunk](#splunk)|Forwards data to Splunk instances for security monitoring|
-|[Webhook](#webhook)|Delivers data to HTTP endpoints for custom integrations|
-
-### Elasticsearch
-
-Sends data to Elasticsearch clusters for indexing, search, and analytics.
-
-#### Basic Configuration
-
-```yaml
-targets:
-  - name: production_elasticsearch
-    description: "Production Elasticsearch cluster"
-    type: elasticsearch
-    properties:
-      addresses:
-        - https://es01.example.com:9200
-        - https://es02.example.com:9200
-      index: logs-%{+yyyy.MM.dd}
-      username: elastic
-      password: ${ES_PASSWORD}
-```
-
-#### Advanced Features
-
-- **Index Templates**: Uses dynamic index names with date formatting
-- **Authentication**: Supports basic auth, API keys, and cloud ID
-- **Routing Control**: Custom document routing with routing fields
-- **Bulk Processing**: Optimized bulk indexing with configurable batch sizes
-
-### Kafka
-
-Publishes data to Kafka topics for distributed stream processing.
-
-#### Basic Configuration
-
-```yaml
-targets:
-  - name: kafka_logs
-    description: "Kafka streaming target"
-    type: kafka
-    properties:
-      brokers:
-        - kafka1.example.com:9092
-        - kafka2.example.com:9092
-      topic: logs
-      compression: snappy
-```
-
-#### Advanced Features
-
-- **Compression**: Supports gzip, snappy, lz4, and zstd compression
-- **Authentication**: TLS, SASL, and Kerberos authentication methods
-- **Partitioning**: Custom partitioning strategies
-- **Reliability**: Configurable acks and retry mechanisms
-
-### S3
-
-Stores data in Amazon S3 buckets for long-term retention and analysis.
-
-#### Basic Configuration
-
-```yaml
-targets:
-  - name: s3_archive
-    description: "S3 archival storage"
-    type: s3
-    properties:
-      bucket: logs-archive
-      region: us-west-2
-      prefix: logs/%{+yyyy}/%{+MM}/%{+dd}/
-      compression: gzip
-      access_key: ${AWS_ACCESS_KEY}
-      secret_key: ${AWS_SECRET_KEY}
-```
-
-#### Advanced Features
-
-- **Path Templates**: Dynamic path generation with date formatting
-- **Compression**: gzip, zstd, and snappy compression options
-- **Authentication**: IAM role and access key authentication
-- **Rotation**: Time and size-based file rotation
-
-### Splunk
-
-Forwards data to Splunk instances for security monitoring and operational intelligence.
-
-#### Basic Configuration
-
-```yaml
-targets:
-  - name: splunk_security
-    description: "Splunk security monitoring"
-    type: splunk
-    properties:
-      url: https://splunk.example.com:8088
-      token: ${SPLUNK_HEC_TOKEN}
-      index: security
-      source_type: json
-```
-
-#### Advanced Features
-
-- **HEC Integration**: Native HTTP Event Collector support
-- **Indexing Control**: Custom index and source type mapping
-- **Batching**: Optimized event batching
-- **Reliability**: Automatic retry with backoff
-
-### Webhook
-
-Delivers data to HTTP endpoints for custom integrations and workflows.
-
-#### Basic Configuration
-
-```yaml
-targets:
-  - name: webhook_alerts
-    description: "Webhook for critical alerts"
-    type: webhook
-    properties:
-      url: https://alerts.example.com/endpoint
-      headers:
-        Content-Type: application/json
-        X-API-Key: ${API_KEY}
-      method: POST
-```
-
-#### Advanced Features
-
-- **Authentication**: Basic auth, custom headers, and JWT support
-- **Format Control**: JSON, form, and custom serialization formats
-- **Transport**: TLS configuration and proxy support
-- **Reliability**: Configurable retry policies and timeout handling
-
-## Storage Types
-
-### Local
+#### Local
 
 **Director** supports the following local data output methods:
 
@@ -247,7 +137,7 @@ targets:
 
 * **Files** - Multiple file formats like JSON (line-delimited), Avro (binary serialization), OCF (container), Parquet (columnar) are available. In addition, compression options like ZSTD (default), GZIP, Snappy, Brotli, and LZ4 are also supported. Also, dynamic file naming, size-based rotation, buffer management, and schema validation are among the features.
 
-### Cloud
+#### Cloud
 
 The integration options for the cloud are below:
 
@@ -255,41 +145,18 @@ The integration options for the cloud are below:
 
 * **Microsoft Sentinel** - Direct DCR integration and ASIM normalization are supported. In addition to standard tables, _WindowsEvent_, _SecurityEvent_, _CommonSecurityLog_, and _Syslog_ can be used. Various ASIM tables are also available. (See the [ASIM section](../../appendix.mdx#asim) for a complete list.)
 
-**Example**: Multi-Target Configuration
+### Redundant Delivery
 
-```yaml
-targets:
-  - name: realtime_es
-    type: elasticsearch
-    properties:
-      addresses: 
-        - https://es.example.com:9200
-      index: logs-%{+yyyy.MM.dd}
-  
-  - name: archive_s3
-    type: s3
-    batch: true
-    batch_size: 5000
-    properties:
-      bucket: logs-archive
-      region: us-west-2
-      prefix: logs/%{+yyyy}/%{+MM}/%{+dd}/
-      
-  - name: alerts_webhook
-    type: webhook
-    properties:
-      url: https://alerts.example.com/endpoint
-      method: POST
-```
+For critical data flows, implement redundant delivery patterns:
 
-## Best Practices
+* Primary and backup targets for important data
+* Multi-region storage for disaster recovery
+* Disk buffer with forward-on-recovery capability
 
-The following best practices are recommended for managing targets:
+### Routing Optimization
 
-- Store sensitive information in environment variables
-- Enable batching for high-volume targets
-- Compress data to save bandwidth and storage
-- Use retry mechanisms and error handling
-- Set up alerts for delivery failures
-- Configure multiple targets for critical data paths
-- Track delivery metrics to optimize throughput
+Configure intelligent routing based on data characteristics:
+
+* Route high-volume data to scalable storage targets
+* Send critical alerts to real-time notification endpoints
+* Direct compliance data to specialized archival systems
