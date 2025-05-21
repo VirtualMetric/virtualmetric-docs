@@ -1,11 +1,8 @@
 import {themes, type PrismTheme} from 'prism-react-renderer';
 
-const baseTheme = themes.dracula;
+const baseTheme = themes.vsDark;
 const customTheme: PrismTheme = {
-  plain: {
-    color: '#A4D4D4',
-    backgroundColor: '#030333'
-  },
+  ...baseTheme,
   styles: [
     ...baseTheme.styles,
     {
