@@ -12,7 +12,6 @@ const customTheme: PrismTheme = {
       types: ['title'],
       style: {
         color: '#99F5F9',
-        fontWeight: 'bold',
       },
     },
     {

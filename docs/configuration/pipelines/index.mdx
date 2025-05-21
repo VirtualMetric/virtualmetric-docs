@@ -27,7 +27,39 @@ where **Pipeline** (_transformation_) is
 
 In real life scenarios, the level of complexity of the configurations will vary based on the requirements of the consumers and the intended destinations.
 
-### Deployment
+## Configuration
+
+All pipelines share the following base configuration fields:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Unique identifier for the pipeline|
+|`description`|N||Optional explanation of the pipeline's purpose|
+|`processors`|Y||Ordered list of processors to execute|
+|`if`|N||Conditional expression to determine if pipeline should be applied|
+|`on_failure`|N||Processors to execute if the pipeline fails|
+|`ignore_failure`|N|`false`|Continue pipeline execution despite processor failures|
+
+Use the `name` of the pipeline to refer to it in your configurations.
+
+**Example**:
+
+```yaml
+pipelines:
+  - name: checkpoint
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{COMMONAPACHELOG}"
+      - set:
+          field: event.provider
+          value: "checkpoint"
+```
+
+This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
+
+## Deployment
 
 There are multiple ways to deploy pipelines, and they can be used in various configurations:
 
@@ -59,9 +91,7 @@ Pipelines are, once again, our primary tool for implementing these interim stage
 
 Routes are right in the middle of this arrangement.
 
----
-
-The purpose of the graphics provided above is to emphasize one thing: the primary purpose of pipelines is using _division of labor_ to simplify telemetry.
+The purpose of this formulation is to emphasize one thing: the primary purpose of pipelines is using _division of labor_ to simplify telemetry.
 
 ### Data Streams
 
@@ -137,40 +167,6 @@ After this, the remaining data may need to be converted into forms making them m
 Finally, the data may contain hints or fragments of information which, when correlated with other available information, may yield insights that may be prerequisite to analysis and use. Adding correlated information in order to render the data more relevant&mdash;or increase its relevance&mdash;is known as _enrichment_.
 
 It is through this type of seamless three-stage design that a pipeline truly shines and proves itself indispensible for telemetry.
-
----
-
-## Configuration
-
-All pipelines share the following base configuration fields:
-
-|Field|Required|Default|Description|
-|---|---|---|---|
-|`name`|Y||Unique identifier for the pipeline|
-|`description`|N||Optional explanation of the pipeline's purpose|
-|`processors`|Y||Ordered list of processors to execute|
-|`if`|N||Conditional expression to determine if pipeline should be applied|
-|`on_failure`|N||Processors to execute if the pipeline fails|
-|`ignore_failure`|N|`false`|Continue pipeline execution despite processor failures|
-
-Use the `name` of the pipeline to refer to it in your configurations.
-
-**Example**:
-
-```yaml
-pipelines:
-  - name: checkpoint
-    processors:
-      - grok:
-          field: message
-          patterns:
-            - "%{COMMONAPACHELOG}"
-      - set:
-          field: event.provider
-          value: "checkpoint"
-```
-
-This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
 
 ## Use Cases
 

@@ -31,19 +31,37 @@ Devices enable:
 They also provide _access control_, and _audit logging_.
 :::
 
-## Use Cases
+## Configuration
 
-Devices come in various categories, depending on their intended purpose of use. The main distinction, however, is OS monitoring versus protocol listening. They are commonly used for the following purposes:
+All devices share the following base configuration fields:
 
-- **Infrastructure monitoring**: Provides system performance metrics, event logs, resource utilization, and service availability information.
+|Field|Required|Description|
+|---|---|---|
+|`id`|Y|Unique numeric identifier|
+|`description`|-|Optional description of the device's purpose|
+|`type`|Y|Device type identifier (e.g. `http`, `syslog`, `tcp`)|
+|`tags`|-|Array of labels for categorization|
+|`pipelines`|-|Array of preprocessing pipeline references|
+|`status`|-|Boolean flag to enable/disable the device (default: `true`)|
 
-- **Security operations**: Enables security event monitoring, threat detection, compliance monitoring, and provides audit trails.
+:::tip
+Each device type provides specific options detailed in its respective section.
+:::
 
-- **Application telemetry**: Provides application logs and performance metrics, and enables error tracking and user activity monitoring.
+Use the `id` of the device to refer to it in your configurations.
 
-- **Network monitoring**: Provides network device logs and SNMP data, and enables traffic analysis and connection tracking
+**Example**:
 
-- **Performance**: Improves telemetry performance through the multi-worker architecture, dynamic scaling ability, socket reuse optimization, buffer management, and resource monitoring capability.
+```yaml
+devices:
+  - id: 1
+    type: http
+    properties:
+      port: 8080
+      content_type: "application/json"
+```
+
+This is an HTTP device listening on port `8080`, and it expects the incoming data to be in JSON format.
 
 ## Deployment
 
@@ -67,7 +85,7 @@ As stated above, devices offer various deployment options for different purposes
 
   > Sources &map; **Director** Cluster
 
-## Listening
+### Listening
 
 Data is received from listeners using various network protocols with two types of collection:
 
@@ -75,7 +93,7 @@ Data is received from listeners using various network protocols with two types o
 
 **Pull-based**: Data is fetched from _Kafka_ topics, _Microsoft Sentinel_, _REST_ APIs, database queries, and other custom integration types.
 
-## Monitoring
+### Monitoring
 
 For monitoring operating systems, **Director** uses a unified agent-based approach with two types of deployment:
 
@@ -85,38 +103,6 @@ For monitoring operating systems, **Director** uses a unified agent-based approa
 The agent is automatically deployed and managed, no manual installation is required. Auto-managed agents provide local data buffering, network resilience, and performance optimization. This deployment type is self-healing, since the agent is automatically redeployed if the process terminates. Also, it supports _remote credential management_. Deployment is done using **WinRM** for _Windows_, and **SSH** for _Linux_, _macOS_, _Solaris_, and _AIX_.
 
 Both approaches provide local data processing, store-and-forward capability against connectivity issues, real-time metrics and events, and native OS monitoring. The key difference is deployment and lifecycle management, not functionality.
-
-## Configuration
-
-All devices share the following base configuration fields:
-
-|Field|Required|Description|
-|---|---|---|
-|`id`|Y|Unique numeric identifier|
-|`description`|-|Optional description of the device's purpose|
-|`type`|Y|Device type identifier (e.g., `http`, `syslog`, `tcp`)|
-|`tags`|-|Array of labels for categorization|
-|`pipelines`|-|Array of preprocessing pipeline references|
-|`status`|-|Boolean flag to enable/disable the device (default: `true`)|
-
-:::tip
-Each device type provides specific options detailed in its respective section.
-:::
-
-Use the `id` of the device to refer to it in your configurations.
-
-**Example**:
-
-```yaml
-devices:
-  - id: 1
-    type: http
-    properties:
-      port: 8080
-      content_type: "application/json"
-```
-
-This is an HTTP device listening on port `8080`, and it expects the incoming data to be in JSON format.
 
 ## Device Types
 
@@ -170,9 +156,9 @@ Devices can be implemented in various ways depending on your requirements:
   * **Length-Prefixed**: Octet counting for binary protocols
   * **Custom Formats**: Protocol-specific message handling
 
-## Configuration Strategies
+## Implementation Strategies
 
-### Layered Collectors
+### Layered Collection
 
 Configure multiple devices to handle different aspects of data collection:
 
@@ -241,4 +227,3 @@ Adjust device configuration based on expected workload:
         - "SecurityEvent"
         - "AzureActivity"
   ```
-
