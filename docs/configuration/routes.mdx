@@ -45,16 +45,16 @@ Routes can include zero or more pipelines. Multiple pipelines will process data 
 
 All routes share the following base configuration fields:
 
-| Field | Required | Default | Description |
+|Field|Required|Default|Description|
 |---|---|---|---|
-| `name` | Y | | Unique identifier for the route |
-| `description` | N | | Optional explanation of the route's purpose |
-| `devices` | N | | List of source IDs to collect events from |
-| `condition` | N | | Expression determining if the route applies to an event |
-| `pipelines` | N | | Ordered list of pipelines to process matching events |
-| `targets` | N | | List of targets to deliver processed events to |
-| `status` | N | `true` | Enable/disable the route |
-| `order` | N | `0` | Processing priority (lower numbers processed first) |
+|`name`|Y||Unique identifier for the route|
+|`description`|N||Optional explanation of the route's purpose|
+|`devices`|N||List of source IDs to collect events from|
+|`condition`|N||Expression determining if the route applies to an event|
+|`pipelines`|N||Ordered list of pipelines to process matching events|
+|`targets`|N||List of targets to deliver processed events to|
+|`status`|N|`true`|Enable/disable the route|
+|`order`|N|`0`|Processing priority (lower numbers processed first)|
 
 :::warning
 Do _not_ confuse field names like `pipelines` or `targets` with the component entries at the first level. As the highest level of a telemetry configuration, routes orchestrate the stream by specifying the components that compose the traffic.
@@ -134,7 +134,7 @@ Selecting events involves evaluating boolean expressions such as:
 > `device.type == 'syslog'`  
 > `dataset.name == 'firewall_logs'`  
 > `log.severity > 4`  
-> `!(source.ip == '10.0.0.1' || source.ip == '10.0.0.2')`
+> `!(source.ip == '10.0.0.1'||source.ip == '10.0.0.2')`
 
 ### Evaluation
 
@@ -153,7 +153,7 @@ Examples of conditional routing:
 ```yaml
 routes:
   - name: critical_alerts
-    condition: "event.severity == 'critical' || event.severity == 'high'"
+    condition: "event.severity == 'critical'||event.severity == 'high'"
     pipelines:
       - name: alert_enrichment
     targets:
@@ -161,7 +161,7 @@ routes:
       - name: security_team_email
   
   - name: normal_logs
-    condition: "event.severity == 'low' || event.severity == 'medium'"
+    condition: "event.severity == 'low'||event.severity == 'medium'"
     pipelines:
       - name: standard_processing
     targets:
@@ -355,7 +355,7 @@ Some scenarios demonstrating the uses of routes:
             value: "{{ event.priority > 7 ? 'high_priority' : 'standard' }}"
       targets:      
         - script:
-          source: |
+          source:|
             if (ctx._route_target == 'high_priority') {
               return ['urgent_elasticsearch', 'notification_system'];
             } else {
@@ -368,9 +368,9 @@ Some scenarios demonstrating the uses of routes:
   ```yaml
   routes:
     - name: complex_routing
-      condition: |
+      condition:|
         (event.category == 'security' && 
-        (event.severity == 'high' || event.severity == 'critical')) ||
+        (event.severity == 'high'||event.severity == 'critical'))||
         (event.category == 'network' && event.action == 'blocked' && 
         source.ip != null && !source.ip.startsWith('10.'))
       pipelines:

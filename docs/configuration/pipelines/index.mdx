@@ -144,14 +144,14 @@ It is through this type of seamless three-stage design that a pipeline truly shi
 
 All pipelines share the following base configuration fields:
 
-| Field | Required | Default | Description |
+|Field|Required|Default|Description|
 |---|---|---|---|
-| `name` | Y | | Unique identifier for the pipeline |
-| `description` | N | | Optional explanation of the pipeline's purpose |
-| `processors` | Y | | Ordered list of processors to execute |
-| `if` | N | | Conditional expression to determine if pipeline should be applied |
-| `on_failure` | N | | Processors to execute if the pipeline fails |
-| `ignore_failure` | N | `false` | Continue pipeline execution despite processor failures |
+|`name`|Y||Unique identifier for the pipeline|
+|`description`|N||Optional explanation of the pipeline's purpose|
+|`processors`|Y||Ordered list of processors to execute|
+|`if`|N||Conditional expression to determine if pipeline should be applied|
+|`on_failure`|N||Processors to execute if the pipeline fails|
+|`ignore_failure`|N|`false`|Continue pipeline execution despite processor failures|
 
 Use the `name` of the pipeline to refer to it in your configurations.
 
@@ -176,13 +176,13 @@ This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log 
 
 Pipelines can be put to good use to implement some common patterns for data processing. The following table summarizes a few typical layouts and their recommended processors:
 
-| Use Case | Recommended Processors |
+|Use Case|Recommended Processors|
 |---|---|
-| Log Parsing | `grok` → `date` → `rename` → `remove` |
-| Security Events | `kv` → `geoip` → `set` → `script` |
-| API Data | `json` → `convert` → `rename` → `set` |
-| CSV Processing | `csv` → `convert` → `rename` |
-| Field Standardization | `rename` → `lowercase` → `set` |
+|Log Parsing|`grok` → `date` → `rename` → `remove`|
+|Security Events|`kv` → `geoip` → `set` → `script`|
+|API Data|`json` → `convert` → `rename` → `set`|
+|CSV Processing|`csv` → `convert` → `rename`|
+|Field Standardization|`rename` → `lowercase` → `set`|
 
 And here are some examples:
 
@@ -229,8 +229,8 @@ And here are some examples:
             value: security
         - script:
             lang: painless
-            source: |
-              if (ctx.source.ip.startsWith('10.') || 
+            source:|
+              if (ctx.source.ip.startsWith('10.')||
                   ctx.source.ip.startsWith('192.168.')) {
                 ctx.source.type = 'internal';
               } else {
@@ -272,7 +272,7 @@ And here are some examples:
         - set:
             field: event.category
             value: web
-            if: "ctx.source == 'apache' || ctx.source == 'nginx'"
+            if: "ctx.source == 'apache'||ctx.source == 'nginx'"
         - geoip:
             field: client.ip
             target_field: client.geo

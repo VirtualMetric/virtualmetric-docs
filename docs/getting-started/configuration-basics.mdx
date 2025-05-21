@@ -10,34 +10,88 @@ The purpose of this section is to introduce you to **VirtualMetric Director**'s 
 
 **Director** uses the following types of configurable components to collect data points, to process them, and to forward them to destinations:
 
+:::note
+See the [next heading](#the-yaml-files) to see where and how the configuration of these components are made.
+:::
+
 * **Devices** - Data sources that collect or receive data. To learn their configuration in detail, review [**this section**](../configuration/devices/index.mdx#configuration).
+
+  As devices ingest data from the specified source, and therefore expect them to have a pre-deteremined data layout. The type of the device specifies that layout.
 
 * **Targets** - Destinations where processed data is sent. To learn their configuration in detail, review [**this section**](../configuration/targets/index.mdx#configuration).
 
+  As targets forward the data ingested by the devices, they declare to which destinations the data is to be sent. As those destinations in turn expect the sent data to have a pre-determined layout, the targets also specify a format in which the data is to be sent.
+
 * **Pipelines** - String of processors that transform the data. To learn their configuration in detail, review [**this section**](../configuration/pipelines/index.mdx#configuration).
 
+  Pipelines use processors to transform the data. These processors are ordered sequentially, and perform their work in that order.
+
 * **Routes** - Predefined data flows from devices through pipelines to targets. To learn their configuration in detail, review [**this section**](../configuration/routes.mdx#configuration).
+
+  Routes configure the overall traffic. They specify which from which sources the data is ingested, which pipelines are used to transform them (if at all), and to which destinations the data is to be sent. In other words, they orchestrate the whole journey of the stream. 
 
 The examples cover the basic forms of each of these components.
 
 ## The YAML Files
 
-To configure the above-mentioned components used in **Director**'s telemetry processes, you have to use YAML files.
-
-To illustrate, a device configuration YAML for _Syslog_ should contain at least the following settings:
-
-```yaml
-devices:
-  - id: <some-numeric-value>
-    name: <some-name>
-    type: syslog
-```
+To configure the above-mentioned components used in **Director**'s telemetry processes, we have to use YAML files.
 
 :::tip
-To learn what basic settings these files contain, where they are placed, and how they can be arranged, review [**this section**](../configuration/index.mdx#files-and-directories).
+To learn where these files are placed and how they can be arranged, review [**this section**](../configuration/index.mdx#managing-yaml-files).
 :::
 
+To illustrate, to stream data in _Syslog_ format, a device configuration YAML&mdash;arbitrarily named `basic-syslog.yml` in the code sample below since _filenames are only for the user to manage them_&mdash;should contain at least these settings:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    ```yaml title="C:\Users\<your-username>\Documents\basic-syslog.yml"
+    devices:
+      - id: 1
+        name: basic_syslog
+        type: syslog
+    ```
+  </TabItem>    
+  <TabItem value="linux" label="Linux">
+    ```yaml title="<your-home-directory>/basic-syslog.yml"
+    devices:
+      - id: 1
+        name: basic_syslog
+        type: syslog
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```yaml title="/Documents/basic-syslog.yml"
+    devices:
+      - id: 1
+        name: basic_syslog
+        type: syslog
+    ```
+  </TabItem>
+</Tabs>
+
+The `name` value `basic_syslog`  is also arbitrary and for the user to choose.
+
 The examples provide the basic configurations required to run some of the most frequently used processes.
+
+For our purposes, we will be using _standalone_ files to keep things simple, and we will place them directly under a frequently use directory:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    C:\Users\<your-user-name>\Documents
+    ```
+  </TabItem>    
+  <TabItem value="linux" label="Linux">
+    ```bash
+    <your-home-directory>
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    /Documents
+    ```
+  </TabItem>
+</Tabs>
 
 ## The CLI
 
@@ -47,7 +101,7 @@ The configured components can be run by invoking **Director** from the terminal.
 For an extensive description of the command line functionality, see [**this section**](../cli.mdx).
 :::
 
-Here are a few typical use cases:
+Here are a few typical use cases. After invoking the following commands, press <kb-short>Ctrl+C</kb-short> to terminate the process:
 
 * Listening to _Syslog_:
 
@@ -113,18 +167,23 @@ The examples provide the relevant commands required to run them.
 
 ## Logging Setup
 
-Before proceeding to the examples, a simple configuration for logging is in order to check your results. Open the `vmetric.yml` file under `config` and add the following lines to it:
+Finally, a simple configuration for logging is in order for you to be able to check your results.
 
-```yaml
-debug:
-  log:
-    status: true
-  level: 4
-  console:
-    status: true
-```
+* Go to `<vm_root>` (i.e. the folder where you have deployed **VirtualMetric**)
+* Find the `config` directory, which is directly under `<vm_root>`
+* Open the file named `vmetric.yml`
+* Add the following lines to it:
 
-This will generate the logs of the operation, and place them under the following folder:
+  ```yaml
+  debug:
+    log:
+      status: true
+    level: 4
+    console:
+      status: true
+  ```
+
+This will generate the logs of the operations in the examples, and place them under the following folder:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
@@ -146,14 +205,4 @@ This will generate the logs of the operation, and place them under the following
   </TabItem>
 </Tabs>
 
-## The Examples
-
-Now you can see **Director** in action by trying the following introductory examples:
-
-- [Example: Ingesting Data](./example-ingesting-data.mdx)
-
-- [Example: Forwarding Data](./example-forwarding-data.mdx)
-
-- [Example: Routing Data](./example-routing-data.mdx)
-
-- [Example: A Syslog-To-Sentinel Pipeline](./example-a-syslog-to-sentinel-pipeline.mdx)
+Now you are ready to see **Director** in action.
