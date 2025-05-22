@@ -6,40 +6,25 @@ This section will help you get started with configuring and running a pipeline, 
 
 We will create a pipeline that ingests logs from a _Syslog_ source, selects certain items and categorizes them, and forwards them to **Microsoft Sentinel** in _Advanced Security Information Model_ (ASIM) format.
 
-We will implement the following scenario:
+For this, we will implement the following stages:
 
 |Step|Purpose|
 |---|---|
-|Create a device|Define the parameters of a `syslog` listener to receive messages. See the fields available in the [Syslog](../appendix.mdx#syslog) format|
-|Create a target|Define the format for sending the messages to `sentinel` as the destination. See the fields available in the [ASIM](../appendix.mdx#asim) format|
+|Create the device|Define the parameters of a `syslog` listener to receive messages. See the fields available in the [**Syslog**](../appendix.mdx#syslog) format|
+|Create the target|Define the format for sending the messages to `sentinel` as the destination. See the fields available in the [**ASIM**](../appendix.mdx#asim) format|
 |Speficy the processors|Using the `grok` processor, extract the `message` and `syslog.message` fields and map them to ASIM fields for routing|
-|Define a route|Specify the _source_, the _destination_, and the _pipeline_ to be used|
+|Define the route|Specify the source of data (i.e. the _devices_), the destination of the data (i.e. the _target_), and the _pipeline_ to be used to transform the data|
 
 ## Setup
 
 We must work in an environment that has access to _Syslog_ messages. We also need a **Microsoft Sentinel** workspace with proper permissions.
-
-:::note
-Before proceeding with the example, a simple configuration for logging is in order to check our results. Open the `vmetric.yml` file under `config` and add the following lines to it:
-
-```yaml
-debug:
-  log:
-    status: true
-  level: 4
-  console:
-    status: true
-```
-
-This will generate the logs of the operation, and place them under the folder `<vm_root>/storage/logs`.
-:::
 
 ## Configuration Files
 
 For convenience, we will place all our configurations in a single file name `pipeline.yml`  and place it directly under `config`.
 
 :::tip
-When configuring the pipeline, devices are referred to with the numbers in their `id` parameters, whereas targets, routes, and other pipelines are referred to with the identifiers in their `name` parameters.
+When configuring a pipeline, devices are referred to with the numbers in their `id` parameters, whereas targets, routes, and other pipelines are referred to with the identifiers in their `name` parameters.
 :::
 
 ## Step 1: Configure The Device
@@ -87,7 +72,7 @@ With this configuration, we are setting up the authentication with **Azure** usi
 
 ## Step 3: Create A Processing Pipeline
 
-We are now ready to configure our pipeline. Put the following in our configuration file:
+We are now ready to configure our pipeline. Put the following in the configuration file:
 
 ```yml
 pipelines:

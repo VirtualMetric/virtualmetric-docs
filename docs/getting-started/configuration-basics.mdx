@@ -14,21 +14,29 @@ The purpose of this section is to introduce you to **VirtualMetric Director**'s 
 See the [next heading](#the-yaml-files) to see where and how the configuration of these components are made.
 :::
 
-* **Devices** - Data sources that collect or receive data. To learn their configuration in detail, review [**this section**](../configuration/devices/index.mdx#configuration).
+* **Devices** - Data sources that collect or receive data.
 
   As devices ingest data from the specified source, and therefore expect them to have a pre-deteremined data layout. The type of the device specifies that layout.
 
-* **Targets** - Destinations where processed data is sent. To learn their configuration in detail, review [**this section**](../configuration/targets/index.mdx#configuration).
+  Review [**this section**](../configuration/devices/index.mdx#configuration) for details.
+
+* **Targets** - Destinations where processed data is sent.
 
   As targets forward the data ingested by the devices, they declare to which destinations the data is to be sent. As those destinations in turn expect the sent data to have a pre-determined layout, the targets also specify a format in which the data is to be sent.
 
-* **Pipelines** - String of processors that transform the data. To learn their configuration in detail, review [**this section**](../configuration/pipelines/index.mdx#configuration).
+  Review [**this section**](../configuration/targets/index.mdx#configuration) for details.
+
+* **Pipelines** - String of processors that transform the data.
 
   Pipelines use processors to transform the data. These processors are ordered sequentially, and perform their work in that order.
 
-* **Routes** - Predefined data flows from devices through pipelines to targets. To learn their configuration in detail, review [**this section**](../configuration/routes.mdx#configuration).
+  Review [**this section**](../configuration/pipelines/index.mdx#configuration) for details.
 
-  Routes configure the overall traffic. They specify which from which sources the data is ingested, which pipelines are used to transform them (if at all), and to which destinations the data is to be sent. In other words, they orchestrate the whole journey of the stream. 
+* **Routes** - Predefined data flows from devices through pipelines to targets.
+
+  Routes configure the overall traffic. They specify which from which sources the data is ingested, which pipelines are used to transform them (if at all), and to which destinations the data is to be sent. In other words, they orchestrate the whole journey of the stream.
+
+  Review [**this section**](../configuration/routes.mdx#configuration) for details.
 
 The examples cover the basic forms of each of these components.
 
@@ -78,13 +86,13 @@ For our purposes, and to keep things simple, we will be using the following fold
 The configured components can be run by invoking **Director** from the terminal.
 
 :::tip
-For an detailed description of the command line functionality, see [**Appendix**](../appendix.mdx#cli).
+For a detailed description of the command line functionality, see [**Appendix**](../appendix.mdx#cli).
 :::
 
 Here are a few typical use cases. After invoking the following commands, press <kb-short>Ctrl+C</kb-short> to terminate the process:
 
 :::warning[attention]
-Do not forget to add the path to the executable of **VirtualMetric Director** to your `PATH`.
+Do not forget to add **VirtualMetric**'s root folder to your `$PATH` environment variable.
 :::
 
 * Listening to _Syslog_:
@@ -153,7 +161,7 @@ The examples provide the relevant commands required to run them.
 
 Finally, a simple configuration for logging is in order for you to be able to check your results.
 
-* Go to `<vm_root>` (i.e. the folder where you have deployed **VirtualMetric**)
+* Go to `<vm_root>` (i.e. the folder where you have placed **VirtualMetric**)
 * Find the `config` directory, which is directly under `<vm_root>`
 * Open the file named `vmetric.yml`
 * Add the following lines to it:
@@ -167,7 +175,7 @@ Finally, a simple configuration for logging is in order for you to be able to ch
       status: true
   ```
 
-This will generate the logs of the operations in the examples, and place them under the following folder:
+This will generate the logs of the runs you will perform in the examples and place them under the following folder:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
