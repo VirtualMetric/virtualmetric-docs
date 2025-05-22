@@ -130,7 +130,6 @@ const config: Config = {
       copyright: `Copyright ©${new Date().getFullYear()} VirtualMetric B.V.`,
     },
     prism: {
-      // theme: prismThemes.vsDark
       theme: customTheme
     },
   } satisfies Preset.ThemeConfig,

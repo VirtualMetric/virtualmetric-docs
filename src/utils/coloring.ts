@@ -8,49 +8,41 @@ const customTheme: PrismTheme = {
     {
       types: ['title'],
       style: {
-        color: '#99F5F9',
+        color: '#FFFFFF',
+        fontWeight: 'normal'
       },
     },
     {
-      types: ['parameter', 'property', 'symbol'],
+      types: [
+        'parameter', 'property', 'attr-key',
+        'function', 'selector', 'variable', 'atrule',
+      ],
+      style: {
+        color: '#64FFC8'
+      },
+    },
+    {
+      types: [
+        'boolean', 'number', 'constant',
+      ],
       style: {
         color: '#FFDD77',
       },
     },
     {
-      types: ['attr-value', 'boolean', 'number', 'constant'],
-      style: {
-        color: '#FFDD77',
-      },
-    },
-    {
-      types: ['tag', 'script'],
+      types: [
+        'tag', 'script', 'operator', 'unit', 'rule', 'keyword',
+      ],
       style: {
         color: '#99F5F9',
       },
     },
     {
-      types: ['operator', 'unit', 'rule'],
-      style: {
-        color: '#99F5F9',
-      },
-    },
-    {
-      types: ['front-matter', 'string'],
+      types: [
+        'front-matter', 'string', 'attr-value',
+      ],
       style: {
         color: '#CAFDB5',
-      },
-    },
-    {
-      types: ['function', 'selector', 'variable'],
-      style: {
-        color: '#FFDD77',
-      },
-    },
-    {
-      types: ['keyword'],
-      style: {
-        color: '#99F5F9',
       },
     },
     {
