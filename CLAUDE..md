@@ -117,6 +117,10 @@ processors:
 
 ## YAML Configurations
 
-- We do NOT place a "-" at the beginning of field names of procesors. Only the first entry under "processors" has one because it is followed by the name of the processor and a colon.
+- IMPORTANT: We do NOT place a "-" at the beginning of field names of procesors. Only the first entry under "processors" has one because it is followed by the name of the processor and a colon.
 
-- Only devices have an "id" field. Other components (targets, pipelines, routes) **don't**.
+- IMPORTANT: Only devices have an "id" field. Other components (targets, pipelines, routes) **don't**.
+
+## Deployment
+
+- We do **not** have a Docker deployment. We only have Azure deployments.
