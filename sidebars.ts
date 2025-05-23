@@ -9,7 +9,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'about/applications',
-        'about/features',
+        'about/key-features',
         'about/benchmarks',
         // {
         //   type: "category",
@@ -32,25 +32,26 @@ const sidebars: SidebarsConfig = {
       link: {type: "doc", id: "getting-started/index"},
       collapsed: false,
       items: [
+        'getting-started/single-node-deployment',
         'getting-started/configuration-basics',
         'getting-started/example-ingesting-data',
         'getting-started/example-forwarding-data',
         'getting-started/example-routing-data',
-        'getting-started/example-a-syslog-to-sentinel-pipeline',
-      ],
-    },
-    {
-      type: "category",
-      label: "Deployment",
-      link: {type: "doc", id: "deployment/index"},
-      items: [
-        'deployment/single-node',
-        'deployment/cluster',
-        'deployment/local',
-        'deployment/azure-vm',
-        'deployment/azure-app-service',
-        'deployment/azure-functions',
-        'deployment/azure-arc-extension',
+        'getting-started/example-a-syslog-to-parquet-pipeline',
+        {
+          type: "category",
+          label: "Deployment",
+          link: {type: "doc", id: "getting-started/deployment/index"},
+          collapsed: false,
+          items: [
+            'getting-started/deployment/as-cluster',
+            'getting-started/deployment/on-local',
+            'getting-started/deployment/on-azure-vm',
+            'getting-started/deployment/on-azure-app-service',
+            'getting-started/deployment/on-azure-functions',
+            'getting-started/deployment/via-azure-arc-extension',
+          ],
+        },
       ],
     },
     {
@@ -283,7 +284,6 @@ const sidebars: SidebarsConfig = {
     //     'architecture/zero-trust',
     //   ],
     // },
-    "cli",
     "appendix",
     "glossary"
   ],

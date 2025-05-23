@@ -29,12 +29,12 @@ Before choosing **App Service** deployment, be aware of these limitations:
 
 Choose the appropriate **App Service** plan based on your workload:
 
-| Plan | CPU (cores) | Memory (GB) | Recommended For |
-|---|--:|--:|---|
-| _B1_ | **1** | **1.75** | Development and testing |
-| _P1V2_ | **1** | **3.5** | Light production workloads |
-| _P2V2_ | **2** | **7** | Medium production workloads |
-| _P3V2_ | **4** | **14** | High-volume processing |
+|Plan|CPU(cores)|Memory (GB)|Recommended For|
+|:-:|--:|--:|:--|
+|_B1_|**1**|**1.75**|Development and testing|
+|_P1V2_|**1**|**3.5**|Light production workloads|
+|_P2V2_|**2**|**7**|Medium production workloads|
+|_P3V2_|**4**|**14**|High-volume processing|
 
 For production environments, _Premium V2_ or _Premium V3_ plans are recommended to ensure consistent performance.
 
@@ -62,12 +62,12 @@ Set up the required environment variables in the **App Service Configuration**:
 
 1. Navigate to **Configuration > Application settings** and add the following:
   
-    |Parameter|Setting|
-    |--:|---|
-    |`DATASTREAM_CONFIG_MODE`| `azure_blob` (to load config from blob storage)|
-    |`DATASTREAM_STORAGE_CONNECTION`| Your **Azure Storage** connection string|
-    |`DATASTREAM_CONFIG_CONTAINER`| Blob container name (e.g. `datastream-config`)|
-    |`DATASTREAM_CONFIG_PATH`| Path to config files (e.g. `config/`)|
+   |Parameter|Setting|
+   |--:|:--|
+   |`DATASTREAM_CONFIG_MODE`|`azure_blob` (to load config from blob storage)|
+   |`DATASTREAM_STORAGE_CONNECTION`|Your **Azure Storage** connection string|
+   |`DATASTREAM_CONFIG_CONTAINER`|Blob container name (e.g. `datastream-config`)|
+   |`DATASTREAM_CONFIG_PATH`|Path to config files (e.g. `config/`)|
 
     Set also any additional _secret_ values referenced in your configuration
 
@@ -155,7 +155,7 @@ Set up the required environment variables in the **App Service Configuration**:
               type: azure_blob
               connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
               container: "datastream-logs"
-          "@ | Out-File -FilePath config\config.yaml -Encoding utf8
+          "@|Out-File -FilePath config\config.yaml -Encoding utf8
           ```
         
         - Upload to blob storage
@@ -288,7 +288,7 @@ Set up the required environment variables in the **App Service Configuration**:
         }
         $body = @{
           message = "test log message"
-        } | ConvertTo-Json
+        }|ConvertTo-Json
         
         Invoke-RestMethod -Uri "https://your-app-name.azurewebsites.net/api/logs" -Method Post -Headers $headers -Body $body
         ```

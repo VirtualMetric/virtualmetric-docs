@@ -1,0 +1,192 @@
+---
+pagination_next: null
+---
+
+# Example: A Syslog-To-Parquet Pipeline
+
+This section will help you get started with configuring and running a pipeline, walking you through a common use case.
+
+## Scenario
+
+We will create a pipeline that ingests logs from a _Syslog_ source, processes and categorizes them, and forwards them to a **Parquet file** for storage and analysis.
+
+We will implement the following scenario:
+
+|Step|Purpose|
+|---|---|
+|Create a device|Define the parameters of a `syslog` listener to receive messages. See the fields available in the [Syslog](../appendix.mdx#syslog) format|
+|Create a target|Define the format for sending the messages to a `parquet` file as the destination|
+|Specify the processors|Using the `grok` processor, extract the `message` and `syslog.message` fields and map them to structured fields|
+|Define a route|Specify the _source_, the _destination_, and the _pipeline_ to be used|
+
+## Setup
+
+We must work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where Parquet files will be stored.
+
+:::note
+Before proceeding with the example, a simple configuration for logging is in order to check our results. Open the `vmetric.yml` file under `config` and add the following lines to it:
+
+```yaml
+debug:
+  log:
+    status: true
+  level: 4
+  console:
+    status: true
+```
+
+This will generate the logs of the operation, and place them under the folder `<vm_root>/storage/logs`.
+:::
+
+## Configuration Files
+
+For convenience, we will place all our configurations in a single file name `pipeline.yml` and place it directly under `config`.
+
+:::tip
+When configuring the pipeline, devices are referred to with the numbers in their `id` parameters, whereas targets, routes, and other pipelines are referred to with the identifiers in their `name` parameters.
+:::
+
+## Step 1: Configure The Device
+
+First, we have to define a device that will receive the log data. We will use the configuration we have created in our [ingesting data example](./example-ingesting-data.mdx) as our starting point, modifying it as fits our needs:
+
+```yml
+devices:
+  - id: 1
+    name: syslog_tcp
+    type: syslog
+    properties:
+      protocol: tcp
+      port: 1514
+      framing: delimiter
+      line_delimiter: "\n"
+      buffer_size: 16384
+      batch_size: 1000
+```
+
+Put this device configuration in your file.
+
+This configuration will create a _TCP Syslog_ server listening on port `1514`. We have specified the line feed character as the delimiter for message framing. We also set the appropriate buffer and batch sizes.
+
+## Step 2: Configure The Target
+
+Next, we will define a target for **Parquet file** storage in our file:
+
+```yml
+targets:
+  - name: parquet_output
+    description: "Parquet file output target"
+    type: parquet
+    properties:
+      file_path: "storage/output/syslog_data.parquet"
+      batch_size: 1000
+      flush_interval: 300
+      compression: snappy
+```
+
+With this configuration, we are setting up a Parquet file target that will store processed syslog data. We have specified batching and flush intervals for optimal performance, and enabled Snappy compression for efficient storage.
+
+## Step 3: Create A Processing Pipeline
+
+We are now ready to configure our pipeline. Put the following in our configuration file:
+
+```yml
+pipelines:
+  - name: syslog_to_parquet
+    description: "Process Syslog data for Parquet storage"
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
+      - grok:
+          field: syslog.message
+          patterns:
+            - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
+          ignore_failure: true
+      - set:
+          field: event.kind
+          value: event
+      - set:
+          field: event.category
+          value: "syslog"
+      - rename:
+          fields:
+            - from: timestamp
+              to: event.created
+            - from: source.ip
+              to: src.ip
+            - from: user.name
+              to: user.name_orig
+      - remove:
+          field:
+            - syslog.message
+            - message
+          ignore_missing: true
+```
+
+This configuration will do the following:
+
+* Parse the _Syslog_ header information using the [`grok`](../configuration/pipelines/processors/grok.mdx) processor—reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`—and will extract authentication event details
+
+* Set the common event metadata `event.kind` and `event.category`
+
+* Rename fields to create a consistent schema structure
+
+* Clean up the temporary fields.
+
+:::note
+To avoid raising exceptions, we chose to ignore failures and missing fields.
+:::
+
+## Step 4: Configure the Route
+
+Finally, we have to create a route to connect our device to the pipeline and then to our target. Put the following definition in our configuration file:
+
+```yml
+routes:
+  - name: syslog_to_parquet_route
+    description: "Route Syslog data to Parquet file"
+    devices:
+      - name: syslog_tcp
+    pipelines:
+      - name: syslog_to_parquet
+    targets:
+      - name: parquet_output
+```
+
+This configuration will connect to the _Syslog_ server, apply the `syslog_to_parquet` pipeline to process the ingested data, and then send it to the **Parquet file** target specified.
+
+## Monitoring
+
+Let's put it all together: we have defined a device and a target, configured a pipeline to specify how the data will be processed, and specified a route that will use this pipeline. At this point we have everything ready.
+
+:::note
+We will use the `mode` parameter to tell **Director** that we will run a "pipeline", and then use the pipeline's `name` parameter to specify it on the CLI.
+:::
+
+We will first validate the pipeline:
+
+<Tabs groupId="os-options">
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    .\vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    ./vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    ./vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
+    ```
+  </TabItem>
+</Tabs>
+
+When **Director** is invoked with the specified configuration file, it starts receiving _Syslog_ messages on port `1514` and processing them through the pipeline.
+
+Press <kb-short>Ctrl+C</kb-short> to exit the process.
+
+Check the logs for any errors, and verify that the Parquet file is being created in the `storage/logs/` directory with the processed syslog data.

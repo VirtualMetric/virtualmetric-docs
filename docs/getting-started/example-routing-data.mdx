@@ -4,9 +4,9 @@ This section will help you get started with routes to forward data to specific d
 
 ## Scenario
 
-We will configure a route that receives data from a _Syslog_ device, processes the data points with a pre-configured pipeline, and forwards the results to a **Sentinel** target.
+We will configure a route that receives data from a _Syslog_ device, processes the data points with a pre-configured pipeline, and forwards the results to a **Parquet file** target.
 
-## Prerequisites
+## Setup
 
 Before configuring a route, verify that the devices, pipelines, and targets to be used in the route are already configured and accessible.
 
@@ -17,14 +17,14 @@ The simplest route only relays the data as is:
 ```yaml
 routes:
   - name: basic_forward
-    description: "Forward all logs to storage"
+    description: "Forward all logs to parquet storage"
     targets:
-      - name: storage
+      - name: parquet_storage
 ```
 
 As the syntax indicates, multiples routes can be specified. The same source data can be forwarded to multiple destinations, or a destination may receive data from multiple sources.
 
-In the above example, we are forwarding raw data to a previously configured target named `storage`.
+In the above example, we are forwarding raw data to a previously configured target named `parquet_storage`.
 
 ## Pipeline Use
 
@@ -35,30 +35,30 @@ We can have a single pipeline:
 ```yaml
 routes:
   - name: process_logs
-    description: "Process and store logs"
+    description: "Process and store logs in parquet format"
     pipelines:
       - name: normalize_logs
     targets:
-      - name: storage
+      - name: parquet_storage
 ```
 
-This configuration will [normalize](../configuration/pipelines/normalization.mdx) the data before sending it to the target named `storage`.
+This configuration will [normalize](../configuration/pipelines/normalization.mdx) the data before sending it to the target named `parquet_storage`.
 
 We can also use several pipelines consecutively:
 
 ```yaml
 routes:
   - name: complex_processing
-    description: "Multi-stage processing"
+    description: "Multi-stage processing for parquet output"
     pipelines:
       - name: normalize
       - name: enrich
       - name: aggregate
     targets:
-      - name: analytics
+      - name: parquet_analytics
 ```
 
-The specified 3 pipelines are used for purposes that should be obvious from their names: normalizing, enriching, and aggregating. The data will then be routed to a target used for analytics.
+The specified 3 pipelines are used for purposes that should be obvious from their names: normalizing, enriching, and aggregating. The data will then be routed to a Parquet file target used for analytics.
 
 ## Selection
 
@@ -73,17 +73,17 @@ routes:
     pipelines:
       - name: syslog_normalize
     targets:
-      - name: syslog_storage
+      - name: syslog_parquet
 
   - name: windows_route
     if: device.type == 'windows'
     pipelines:
       - name: windows_normalize
     targets:
-      - name: windows_storage
+      - name: windows_parquet
 ```
 
-This route will collect two streams of data, one from a _syslog_ and one from a _windows_ device, normalize them using the specific pipelines of each, and then direct them to their respective targets.
+This route will collect two streams of data, one from a _syslog_ and one from a _windows_ device, normalize them using the specific pipelines of each, and then direct them to their respective Parquet file targets.
 
 The selection can also be done using datasets:
 
@@ -94,17 +94,17 @@ routes:
     pipelines:
       - name: security_process
     targets:
-      - name: security_analytics
+      - name: security_parquet
 
   - name: performance_dataset
     if: dataset.name == 'performance_metrics'
     pipelines:
       - name: metrics_process
     targets:
-      - name: metrics_platform
+      - name: metrics_parquet
 ```
 
-The first route will collect data from a dataset used for security logs, whereas the second from another one used for performance metrics.
+The first route will collect data from a dataset used for security logs and store it in a security-focused Parquet file, whereas the second will handle performance metrics and store them in a separate metrics Parquet file.
 
 ## Forwarding
 
@@ -113,16 +113,16 @@ The same data can be sent to multiple targets, a technique known as _mirroring_:
 ```yaml
 routes:
   - name: mirror_logs
-    description: "Store logs in multiple locations"
+    description: "Store logs in multiple parquet files"
     pipelines:
       - name: normalize
     targets:
-      - name: primary_storage
-      - name: backup_storage
-      - name: analytics_platform
+      - name: primary_parquet
+      - name: backup_parquet
+      - name: analytics_parquet
 ```
 
-Here, the data will be received by 3 different targets: a primary storage, a backup storage, and an analytics platform.
+Here, the data will be received by 3 different Parquet file targets: a primary storage file, a backup storage file, and an analytics platform file.
 
 ## Monitoring
 
@@ -148,3 +148,8 @@ Once we configure our route, we can monitor the stream it generates using the co
   </TabItem>
 </Tabs>
 
+Press <kb-short>Ctrl+C</kb-short> to exit the process.
+
+---
+
+Up to now, we have seen how to configure and run all the elements of a telemetry data flow. In the next section, we will learn how to create an end-to-end pipeline.

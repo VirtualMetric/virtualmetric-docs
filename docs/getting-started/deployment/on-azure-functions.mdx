@@ -30,11 +30,11 @@ Deploying **DataStream** on **Azure Functions** provides distinct advantages:
 
 Select the appropriate hosting plan based on your needs:
 
-| Plan | Description | Best For |
+|Plan|Description|Best For|
 |--:|---|---|
-| _Consumption_ | Pay-per-execution with automatic scaling | Variable workloads, cost optimization |
-| _Premium_ | Enhanced performance, pre-warmed instances | Consistent workloads, no cold starts |
-| _App Service_ | Run on dedicated VMs | Predictable workloads, existing App Service plans |
+|_Consumption_|Pay-per-execution with automatic scaling|Variable workloads, cost optimization|
+|_Premium_|Enhanced performance, pre-warmed instances|Consistent workloads, no cold starts|
+|_App Service_|Run on dedicated VMs|Predictable workloads, existing App Service plans|
 
 For most **DataStream** deployments, the _Premium_ plan offers the best balance of performance and flexibility.
 
@@ -59,13 +59,13 @@ For most **DataStream** deployments, the _Premium_ plan offers the best balance 
 
 1. Add application settings in the **Function App Configuration**:
 
-    |Parameter|Setting|
-    |--:|---|
-    |`DATASTREAM_CONFIG_MODE`|`azure_blob`|
-    |`DATASTREAM_STORAGE_CONNECTION`|Your storage connection string|
-    |`DATASTREAM_CONFIG_CONTAINER`|`datastream-config`|
-    |`DATASTREAM_CONFIG_PATH`|`config/`|
-    |`DATASTREAM_PROCESSOR_MODE`|`functions`|
+   |Parameter|Setting|
+   |--:|---|
+   |`DATASTREAM_CONFIG_MODE`|`azure_blob`|
+   |`DATASTREAM_STORAGE_CONNECTION`|Your storage connection string|
+   |`DATASTREAM_CONFIG_CONTAINER`|`datastream-config`|
+   |`DATASTREAM_CONFIG_PATH`|`config/`|
+   |`DATASTREAM_PROCESSOR_MODE`|`functions`|
 
 2. Configure **Function**-specific settings:
 
@@ -154,7 +154,7 @@ For most **DataStream** deployments, the _Premium_ plan offers the best balance 
               connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
               container: datastream-logs
               path_format: "{date}/{hour}"
-          "@ | Out-File -FilePath config\functions.yaml -Encoding utf8
+          "@|Out-File -FilePath config\functions.yaml -Encoding utf8
           ```
       </TabItem>
       <TabItem value="bash" label="Bash (Linux/macOS)">
@@ -259,7 +259,7 @@ For optimal performance, configure appropriate bindings:
       }
       $body = @{
         message = "192.168.1.1 - user1 [10/Oct/2023:13:55:36 -0700] ""GET /index.html HTTP/1.0"" 200 2326"
-      } | ConvertTo-Json
+      }|ConvertTo-Json
       
       Invoke-RestMethod -Uri "https://your-function-app.azurewebsites.net/api/logs" -Method Post -Headers $headers -Body $body
       ```
@@ -277,7 +277,7 @@ For optimal performance, configure appropriate bindings:
 
 2. Check function logs:
    
-    - Navigate to your Function App > Functions > ProcessLogs > Monitor
+    - Navigate to your **Function App** > **Functions** > **ProcessLogs** > **Monitor**
     - View invocation logs and traces
 
 3. Monitor output storage - Verify that processed logs are being written to the configured storage location.

@@ -8,71 +8,41 @@ const customTheme: PrismTheme = {
     {
       types: ['title'],
       style: {
-        color: '#99F5F9',
-        fontWeight: 'bold',
+        color: '#FFFFFF',
+        fontWeight: 'normal'
       },
     },
     {
-      // YAML keys
-      types: ['parameter', 'property'],
+      types: [
+        'parameter', 'property', 'attr-key',
+        'function', 'selector', 'variable', 'atrule',
+      ],
+      style: {
+        color: '#64FFC8'
+      },
+    },
+    {
+      types: [
+        'boolean', 'number', 'constant',
+      ],
+      style: {
+        color: '#FFDD77',
+      },
+    },
+    {
+      types: [
+        'tag', 'script', 'operator', 'unit', 'rule', 'keyword',
+      ],
       style: {
         color: '#99F5F9',
       },
     },
     {
-      // Field identifiers like some_name, some_identifier
-      types: ['variable', 'attr-name'],
-      style: {
-        color: '#FFDE59',
-      },
-    },
-    {
-      // Numbers and booleans
-      types: ['boolean', 'number', 'constant'],
-      style: {
-        color: '#FF0000',
-      },
-    },
-    {
-      // Other types to keep blue
-      types: ['atrule', 'tag', 'script'],
-      style: {
-        color: '#99F5F9',
-      },
-    },
-    {
-      // Other types to keep blue
-      types: ['operator', 'unit', 'rule'],
-      style: {
-        color: '#99F5F9',
-      },
-    },
-    {
-      // Strings and multi-line content
-      types: ['front-matter', 'string', 'attr-value'],
+      types: [
+        'front-matter', 'string', 'attr-value',
+      ],
       style: {
         color: '#CAFDB5',
-      },
-    },
-    {
-      // Other types to keep blue
-      types: ['class-name'],
-      style: {
-        color: '#99F5F9',
-      },
-    },
-    {
-      // Identifiers
-      types: ['function', 'selector'],
-      style: {
-        color: '#FFDE59',
-      },
-    },
-    {
-      // The "component_type" token
-      types: ['keyword'],
-      style: {
-        color: '#99F5F9',
       },
     },
     {

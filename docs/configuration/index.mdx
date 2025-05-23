@@ -24,34 +24,35 @@ The various stages where these components are used and how they connect to each 
 
 * To forward processed data to _Destinations_ and to communicate with them, **DataStream** uses **Targets** which are senders. Each dedicated target type is conformant with the layout of a specific log data receiver.
 
-## Files and Directories
+By using these dedicated components, you can design powerful and efficient telemetry systems very elegantly. You only need to understand how they work, how they interact, and how they can be configured and combined to achieve your objectives.
 
-To help design the logic of the components that will define and run the processes of the above-mentioned stages, **DataStream** utilizes YAML-based configuration files. These can be found in some of the folders under its root directory, here indicated with `<vm_root>`:
+## Managing YAML Files
+
+The most fundamental tools you use to design your telemetry streams are YAML files.
+
+To implement the logic of the components that will define and run the processes of the above-mentioned stages, **DataStream** uses YAML-based configuration files.
+
+These can be found in some of the folders under its root directory, here indicated with `<vm_root>`:
 
 ```powershell
 <vm_root>
 │   vmetric.yml
-│
 ├───config
 │   ├───devices
 │   │       estreamer.yml
 │   │       syslog.yml
 │   │       tcp.yml
-│   │
 │   ├───routes
 │   │       default.yml
-│   │
 │   └───targets
 │           console.yml
 │           file.yml
-│
 ├───package
 │   └───definitions
 │       └───pipelines
 │               checkpoint.yml
 │               cisco.yml
 │               normalize.yml
-│
 └───user
     └───definitions
         └───pipelines
@@ -59,9 +60,9 @@ To help design the logic of the components that will define and run the processe
                 normalize.yml
 ```
 
-All tasks are carried out using these configuration files.
+All management tasks related to running the telemetry operation are carried out using these files.
 
-By default, these files are located based on their component types. They contain predefined fields that the components recognize, and **Director** uses the settings in these fields to spawn and run its processes.
+By default, these files are placed in folders according to their component types. They contain predefined fields that the components recognize, and **DataStream** uses the setting values in these fields to spawn and run its processes.
 
 * Two directories are of importance: `package` and `user`.
 
@@ -83,48 +84,59 @@ By default, these files are located based on their component types. They contain
 
   <Tabs>
     <TabItem value="windows" label="Windows" default>
-      > `C:\<vm_root>\config\target.yml`
+      ```powershell
+      C:\path\to\<vm_root>\config\target.yml
+      ```
 
       -or-
 
-      > `C:\<vm_root>\config\targets\outputs.yml`
+      ```powershell
+      C:\path\to\<vm_root>\config\targets\outputs.yml
+      ```
 
       -or-
 
-      > `C:\<vm_root>\config\targets\outputs\sentinel.yml`
-
+      ```powershell
+      C:\path\to\<vm_root>\config\targets\outputs\sentinel.yml
+      ```
     </TabItem>
     <TabItem value="linux" label="Linux" default>
-      > `/usr/bin/<vm_root>/config/target.yml`
+      ```bash
+      /usr/bin/path/to/<vm_root>/config/target.yml
+      ```
 
       -or-
 
-      > `/usr/bin/<vm_root>/config/targets/outputs.yml`
+      ```bash
+      /usr/bin/path/to/<vm_root>/config/targets/outputs.yml
+      ```
 
       -or-
 
-      > `/usr/bin/<vm_root>/config/targets/outputs/sentinel.yml`
-
+      ```bash
+      /usr/bin/path/to/<vm_root>/config/targets/outputs/sentinel.yml
+      ```
     </TabItem>
     <TabItem value="macos" label="macOS" default>
-      > `/Applications/<vm_root>/config/target.yml`
+      ```bash
+      /Applications/path/to/<vm_root>/config/target.yml
+      ```
 
       -or-
 
-      > `/Applications/<vm_root>/config/targets/outputs.yml`
+      ```bash
+      /Applications/path/to/<vm_root>/config/targets/outputs.yml
+      ```
 
       -or-
 
-      > `/Applications/<vm_root>/config/targets/outputs/sentinel.yml`
-
+      ```bash
+      /Applications/path/to/<vm_root>/config/targets/outputs/sentinel.yml
+      ```
     </TabItem>
   </Tabs>
 
-  As the nesting level increases, file names become more specific, offering additional context for classification.
-
-  :::note
-  It is also possible to use _standalone_ files placed in arbitrary directories. However, the full paths of these files must be supplied to **Director**.
-  :::
+  As the nesting level increases, the file names become more specific, offering additional context for classification.
 
   Select the organizational style that best suits your needs.
 
@@ -139,8 +151,6 @@ The **Overview** sections of the component types summarize their common fields u
 
 The **Schema** paragraphs of specific component sections provide their fields.
 :::
-
-### Properties
 
 All components have properties&mdash;i.e. YAML fields with parameters&mdash;that define their specific behavior. Some of these are mandatory and must be present in every component.
 
@@ -182,7 +192,7 @@ A few are worth mentioning since they are frequently used:
 
 ### Data Flow
 
-The **DataStream** system implements a modular architecture of components working together to create complete data flows. The following example illustrates a security monitoring flow:
+**DataStream** implements a modular architecture of components working together to create complete data flows. The following example illustrates a security monitoring flow:
 
 **Example**: Assume we have a route named `critical_security` defined like so:
 
@@ -300,32 +310,37 @@ Before deploying your configuration, check it using the available tools. The val
 
 ## Best Practices
 
-To maintain system integrity, robustness, and health, follow these key guidelines:
+To maintain system integrity, robustness, and health, try to follow these key guidelines:
 
 ### Design
 
 The following factors and recommendations should be considered in the design of configurations:
 
-|Factor|Recommendations|
-|--:|:--|
-|Modularization|<ul><li>Use multiple _smaller pipelines_ instead of monolithic ones</li><li>Create _focused devices_ for specific data sources</li><li>Implement targeted routes for distinct data types</li></ul>|
-|Maintainability|<ul><li>Add meaningful descriptions to all components</li><li>Use consistent naming conventions</li><li>Document complex logic with comments</li></ul>|
-|Reliability|<ul><li>Implement _redundant targets_ for critical data</li><li>Configure _error handling_ in pipelines</li><li>Use _disk buffering_ for unreliable network conditions</li></ul>|
-|Security|<ul><li>Store credentials in _environment variables_</li><li>Use appropriate authentication for all components</li><li>Implement _TLS_ for network communications</li></ul>|
-|Performance|<ul><li>Configure appropriate _batch sizes_ for high-volume flows</li><li>Use _conditionals_ to process only necessary data</li><li>Monitor resource usage across components</li><li>Optimize processing times for better efficiency</li></ul>|
+- **Modularization** - Use multiple _smaller pipelines_ instead of monolithic ones. Create _focused devices_ for specific data sources. Implement targeted routes for distinct data types
+
+- **Maintainability** - Add meaningful descriptions to all components. Use consistent naming conventions. Document complex logic with comments.
+
+- **Reliability** - Implement _redundant targets_ for critical data. Configure _error handling_ in pipelines. Use _disk buffering_ for unreliable network conditions.
+
+- **Security** - Store credentials in _environment variables_. Use appropriate authentication for all components. Implement _TLS_ for network communications.
+
+- **Performance** - Configure appropriate _batch sizes_ for high-volume flows. Use _conditionals_ to process only necessary data. Monitor resource usage across components. Optimize processing times for better efficiency.
 
 ### Administration
 
 This covers creating, modifying, managing, and maintaining the configuration files. The following table summarizes common tasks and suitable approaches to carry them out:
 
-| Task | Approach |
-|--:|:--|
-| Add a new data source | Create a new device with appropriate type and properties |
-| Customize data processing | Develop or modify pipelines with relevant processors |
-| Change data destination | Update route targets or create new target definitions |
-| Filter specific events | Add or modify route conditions |
-| Secure sensitive data | Use environment variables for credentials and keys |
-| Structure complex configurations | Split into multiple files with logical organization |
+- **Add new data sources** - Create a new device with the appropriate type and properties.
+
+- **Customize the data processing** - Develop or modify pipelines with relevant processors.
+
+- **Change data destinations** - Update route targets or create new target definitions.
+
+- **Filter specific events** - Add or modify route conditions.
+
+- **Secure sensitive data** - Use environment variables for credentials and keys.
+
+- **Structure complex configurations** - Split into multiple files with logical organization.
 
 :::tip
 Refer to specific component documentation for detailed options and best practices.
