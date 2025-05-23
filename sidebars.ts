@@ -9,7 +9,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'about/applications',
-        'about/features',
+        'about/key-features',
         'about/benchmarks',
         // {
         //   type: "category",
