@@ -1,8 +1,12 @@
 # Details to Always Keep In Mind When Generating Documents for DataStream
 
-## Directories
+## Documentation Repo
 
-VirtualMetric installation directory contains the following folders, in addition to others.
+- Our Dacusaurus documentation repo is [here(https://github.com/VirtualMetric/virtualmetric-docs. The documens you create go under (as I'm sure you know) the "docs" directory. Do **not** forget to check the latest versions of the previously-created documents before you embark on creating new ones since I proof and edit them. If you cannot access them, let me know so that I upload the relevant documents that I wont you to study before writing the currrent one I demand.
+
+## Installation Directories
+
+**VirtualMetric** installation directory contains the following folders, in addition to others.
 
 ```code
 <vm_root>
@@ -124,3 +128,7 @@ processors:
 ## Deployment
 
 - We do **not** have a Docker deployment. We only have Azure deployments.
+
+## Role Models
+
+- You can use Cribl, Tenzir, AutoMQ, and Vector as _role models_ for the pages you create. However, we should still strive to make our pages as original as we can.
