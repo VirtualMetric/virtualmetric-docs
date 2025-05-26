@@ -1,14 +1,17 @@
 # Example: Forwarding Data
 
-This section will help you get started with targets to write processed data to specific formats, walking you through a common use case.
+This section will help you get started with targets to write processed data to specific formats, walking you through common use cases.
 
-## Scenario
+## Scenarios
 
-We will create a device that will send data received from _Syslog_ to **Sentinel** in _ASIM_ format.
+We will send the data received from _Syslog_ to these destinations:
 
-## Console
+* **Console**: the data will be normalized to ECS
+* **Storage File**: the data will be normalized to a specific file storage format
 
-The most basic target we can direct our output to is a _console_. For this purpose, we have to create a simple `stdout` configuration:
+## Console Setup
+
+The most basic target we can direct our output to is a _console_. For this purpose, we have to create a simple configuration:
 
 ```yaml
 targets:
@@ -18,29 +21,53 @@ targets:
       format: "ecs"
 ```
 
-Here, we have named our target as `log-to-console`. Its type is `console`, and we intend to normalize the data to the [ECS](../appendix.mdx#ecs) format, although this is optional.
+Here, we named our target as `log_to_console`. Its type is `console`, and we intend to normalize the data to the [ECS](../appendix.mdx#ecs) format, although this is optional.
 
-Put this configuration in a file named `log-to-console.yml`, and place it under `config`.
+Put this in a file named `log-to-console.yml`, and place it in our working directory.
 
-## Storage File
+To see the data directed to the console, enter the following command line in your terminal:
 
-The next type of output we can use is a local file. (You can put any of the following configurations in a file named `file.yml`, and again place it under `config`.) Various formats are available:
+  <Tabs>
+    <TabItem value="windows" label="Windows">
+      ```PowerShell
+      .\vmetric-director.exe -console
+      ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+      ```bash
+      ./vmetric-director -console
+      ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+      ```bash
+      ./vmetric-director -console
+      ```
+    </TabItem>
+  </Tabs>
+
+Press <kb-short>Ctrl+C</kb-short> to exit the process.
+
+## Storage File Setup
+
+The next type of output we can use is a file. Various formats are available in *DataStream*:
 
 * The widely used **JSON** format:
 
   ```yaml
   targets:
-    - name: local_json_logs
+    - name: log_to_json
       type: file
       properties:
-        location: "/path/to/directory"
+        location: "<vm_root>/config/Examples"
         type: "json"
         name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.json"
   ```
 
-The first `name` parameter is the one we will use for our target configuration. The nested `name` parameter is for the file in which we will store our output data. We intend to create a storage file name based on the internal field values of `Year`, `Month`, and `Day`.
+  The nested `name` parameter is for the file in which we will store our output data. We intend to create a storage file name based on the internal field values of `Year`, `Month`, and `Day`.
 
-The `path` we have specified (i.e. `path/to/directory`) is where the data storage file will be created.
+  The `path` we have specified for `location` is where the JSON file will be created.
+
+  Put this configuration in a file named `log-to-json.yml` and place it our working directory.
 
 * The **Parquet** format:
 
@@ -49,7 +76,7 @@ The `path` we have specified (i.e. `path/to/directory`) is where the data storag
     - name: log_to_parquet
       type: file
       properties:
-        location: "path/to/parquet-file"
+        location: "<vm_root>/config/Examples"
         format: "parquet"
         compression: "zstd"
         schema: |
@@ -66,86 +93,40 @@ The `path` we have specified (i.e. `path/to/directory`) is where the data storag
           }
   ```
 
-This describes the `schema` of the parquet file we will create, i.e. the layout of the data to be stored. Also, we are using _ZSTD_ compression. Finally, the output file will be placed in a directory of our choice, here specified as `path/to/parquet-file`.
+  This describes the `schema` of the parquet file we will create, i.e. the layout of the data to be stored. Also, we are using _ZSTD_ compression. Finally, the output file will be placed in a directory of our choice, here specified with `location`.
+
+  Put this configuration in a file named `log-to-parquet.yml` and place it our working directory.
+
+To see the data directed to the storage file you have configured, enter the following command line in your terminal:
+
+  <Tabs>
+    <TabItem value="windows" label="Windows">
+      ```PowerShell
+      .\vmetric-director.exe
+      ```
+    </TabItem>
+    <TabItem value="linux" label="Linux">
+      ```bash
+      ./vmetric-director
+      ```
+    </TabItem>
+    <TabItem value="macos" label="macOS">
+      ```bash
+      ./vmetric-director
+      ```
+    </TabItem>
+  </Tabs>
+
+Press <kb-short>Ctrl+C</kb-short> to exit the process.
+
+## Monitoring
+
+To monitor the stream, check **Director**'s logs&mdash;those under the directory indicated [here](./configuration-basics.mdx#logging-setup)&mdash;for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
 
 :::tip
 File targets with no messages are automatically cleaned up when disposed.
 :::
 
-## Cloud
-
-If you choose to store the output in the cloud, there are again various formats available:
-
-* **Azure Blob**:
-
-  ```yaml
-  targets:
-    - name: azure_logs
-      type: azblob
-      properties:
-        account: "<storage-account>"
-        tenant_id: "${AZURE_TENANT_ID}"
-        client_id: "${AZURE_CLIENT_ID}"
-        client_secret: "${AZURE_CLIENT_SECRET}"
-        container: "logs"
-        format: "parquet"
-        compression: "zstd"
-        max_size: 536870912
-  ```
-
-Put this in a file named `azure-blob.yml` and place it under `config`.
-
-For this type of configuration, we have to specify an **Azure** account, which requires a _client id_ and a _client secret_ for security.
-
-The size we want for storage here is roughly **512MB**.
-
-* **Microsoft Sentinel** with ASIM normalization:
-
-  ```yaml
-  targets:
-    - name: sentinel_logs
-      type: sentinel
-      properties:
-        tenant_id: "${AZURE_TENANT_ID}"
-        client_id: "${AZURE_CLIENT_ID}"
-        client_secret: "${AZURE_CLIENT_SECRET}"
-        rule_id: "${DCR_RULE_ID}"
-        endpoint: "${DCR_ENDPOINT}"
-        stream:
-          - "Custom-ASimProcessEventLogs"
-          - "Custom-ASimNetworkSessionLogs"
-  ```
-
-Put this in a file named `sentinel-logs.yml` placed under `config`.
-
-This configuration uses the `sentinel` target type. Once again, we have to specify our **Azure** account information. For this target, we also need to specify the type of stream we are using. Since that is ASIM, we have entered two names for our custom ASIM-based storage tables.
-
-## Monitoring
-
-You can invoke your configurations from the command line like so:
-
-<Tabs>
-  <TabItem value="windows" label="Windows">
-    ```PowerShell
-    .\vmetric-director.exe -console
-    ```
-  </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    ./vmetric-director -console
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-    ```bash
-    ./vmetric-director -console
-    ```
-  </TabItem>
-</Tabs>
-
-To monitor the stream, check **Director**'s logs&mdash;those under the directory indicated [here](./configuration-basics.mdx#logging-setup)&mdash;for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
-
-Press <kb-short>Ctrl+C</kb-short> to exit the process.
-
 ---
 
-Now that we have seen how to create _devices_ and _targets_, in the next section we will learn how to combine them through routes.
+In the next section, we will learn how to combine _devices_ and _targets_ using routes.

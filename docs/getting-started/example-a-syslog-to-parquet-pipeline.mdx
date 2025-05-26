@@ -12,31 +12,17 @@ We will create a pipeline that ingests logs from a _Syslog_ source, processes an
 
 We will implement the following scenario:
 
-|Step|Purpose|
-|---|---|
-|Create a device|Define the parameters of a `syslog` listener to receive messages. See the fields available in the [Syslog](../appendix.mdx#syslog) format|
-|Create a target|Define the format for sending the messages to a `parquet` file as the destination|
-|Specify the processors|Using the `grok` processor, extract the `message` and `syslog.message` fields and map them to structured fields|
-|Define a route|Specify the _source_, the _destination_, and the _pipeline_ to be used|
+* **Create a device** - Define the parameters of a `syslog` listener to receive messages. See the fields available in the [Syslog](../appendix.mdx#syslog) format
+
+* **Create a target** - Define the format for sending the messages to a `parquet` file as the destination
+
+* **Specify processors** - Using the `grok` processor, extract the `message` and `syslog.message` fields and map them to structured fields
+
+To be able to use our pipeline, we will also define a route to specify the _source_ and the _destination_, along with the pipeline we have configured.
 
 ## Setup
 
 We must work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where Parquet files will be stored.
-
-:::note
-Before proceeding with the example, a simple configuration for logging is in order to check our results. Open the `vmetric.yml` file under `config` and add the following lines to it:
-
-```yaml
-debug:
-  log:
-    status: true
-  level: 4
-  console:
-    status: true
-```
-
-This will generate the logs of the operation, and place them under the folder `<vm_root>/storage/logs`.
-:::
 
 ## Configuration Files
 

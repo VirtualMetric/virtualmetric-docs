@@ -29,7 +29,7 @@ All routes share the following base configuration fields:
 |`name`|Y||Unique identifier for the route|
 |`description`|N||Optional explanation of the route's purpose|
 |`devices`|N||List of source IDs to collect events from|
-|`condition`|N||Expression determining if the route applies to an event|
+|`if`|N||Expression determining if the route applies to an event|
 |`pipelines`|N||Ordered list of pipelines to process matching events|
 |`targets`|N||List of targets to deliver processed events to|
 |`status`|N|`true`|Enable/disable the route|
@@ -106,7 +106,7 @@ Some scenarios demonstrating the uses of routes:
 routes:
   - name: security_critical
     order: 10
-    condition: "event.category == 'security' && event.severity == 'critical'"
+    if: "event.category == 'security' && event.severity == 'critical'"
     pipelines:
       - name: security_enrichment
       - name: threat_intelligence
@@ -116,7 +116,7 @@ routes:
   
   - name: security_standard
     order: 20
-    condition: "event.category == 'security'"
+    if: "event.category == 'security'"
     pipelines:
       - name: security_enrichment
     targets:
@@ -128,7 +128,7 @@ routes:
 ```yaml
 routes:
   - name: pci_data
-    condition: "tags.contains('pci')"
+    if: "tags.contains('pci')"
     pipelines:
       - name: pci_compliance
       - name: data_masking
@@ -136,7 +136,7 @@ routes:
       - name: pci_storage
   
   - name: hipaa_data
-    condition: "tags.contains('hipaa')"
+    if: "tags.contains('hipaa')"
     pipelines:
       - name: hipaa_compliance
       - name: phi_protection
@@ -149,14 +149,14 @@ routes:
 ```yaml
 routes:
   - name: production_logs
-    condition: "kubernetes.namespace == 'production'"
+    if: "kubernetes.namespace == 'production'"
     pipelines:
       - name: production_enrichment
     targets:
       - name: production_elasticsearch
   
   - name: development_logs
-    condition: "kubernetes.namespace == 'development'"
+    if: "kubernetes.namespace == 'development'"
     pipelines:
       - name: dev_enrichment
     targets:
@@ -184,7 +184,7 @@ Examples of conditional routing:
 ```yaml
 routes:
   - name: critical_alerts
-    condition: "event.severity == 'critical'||event.severity == 'high'"
+    if: "event.severity == 'critical'||event.severity == 'high'"
     pipelines:
       - name: alert_enrichment
     targets:
@@ -192,7 +192,7 @@ routes:
       - name: security_team_email
   
   - name: normal_logs
-    condition: "event.severity == 'low'||event.severity == 'medium'"
+    if: "event.severity == 'low'||event.severity == 'medium'"
     pipelines:
       - name: standard_processing
     targets:
@@ -207,13 +207,13 @@ Routes with lower `order` values are processed first:
 routes:
   - name: urgent_alerts
     order: 10  # Processed first
-    condition: "event.severity == 'critical'"
+    if: "event.severity == 'critical'"
     targets:
       - name: alerting_system
   
   - name: security_events
     order: 20  # Processed second
-    condition: "event.category == 'security'"
+    if: "event.category == 'security'"
     targets:
       - name: security_platform
   
@@ -249,7 +249,7 @@ routes:
   - name: web_security
     devices:
       - web_server_logs
-    condition: "event.category == 'web' && event.type == 'attack'"
+    if: "event.category == 'web' && event.type == 'attack'"
     pipelines:
       - common_enrichment  # Applied first
       - attack_detection   # Applied second
@@ -265,7 +265,7 @@ Routes can send processed data to multiple destinations:
 ```yaml
 routes:
   - name: compliance_events
-    condition: "tags.contains('compliance')"
+    if: "tags.contains('compliance')"
     pipelines:
       - name: compliance_formatting
     targets:
@@ -281,12 +281,12 @@ Routes without conditions act as catch-all handlers for unmatched events:
 ```yaml
 routes:
   - name: primary_security
-    condition: "event.category == 'security'"
+    if: "event.category == 'security'"
     targets:
       - name: security_elasticsearch
   
   - name: fallback_route
-    # No condition means this captures everything not matched above
+    # No if means this captures everything not matched above
     targets:
       - name: general_elasticsearch
 ```
@@ -298,7 +298,7 @@ routes:
   ```yaml
   routes:
     - name: dynamic_routing
-      condition: "${ROUTING_CONDITION}"
+      if: "${ROUTING_CONDITION}"
       pipelines:
         - ${PRIMARY_PIPELINE}
         - ${SECONDARY_PIPELINE}
