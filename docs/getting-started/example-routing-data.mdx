@@ -16,19 +16,23 @@ The simplest route only relays the data as is:
 
 ```yaml
 routes:
-  - name: basic_forward
+  - name: basic_relay
     description: "Forward all logs to parquet storage"
     targets:
-      - name: parquet_storage
+      - name: logs_to_parquet
 ```
+
+:::note
+We are using the Parquet storage we have configured in a [previous section](./example-forwarding-data.mdx#storage-file-setup) as our target.
+:::
 
 As the syntax indicates, multiples routes can be specified. The same source data can be forwarded to multiple destinations, or a destination may receive data from multiple sources.
 
-In the above example, we are forwarding raw data to a previously configured target named `parquet_storage`.
+Here we are sending the data to a single storage file.
 
 ## Pipeline Use
 
-A route can use pipelines as part of its operation. Multiple pipelines can be specified to be applied to various streams of data.
+A route can use pipelines as part of its operation. Multiple pipelines can be specified to apply to various streams of data.
 
 We can have a single pipeline:
 
@@ -39,10 +43,10 @@ routes:
     pipelines:
       - name: normalize_logs
     targets:
-      - name: parquet_storage
+      - name: logs_to_parquet
 ```
 
-This configuration will [normalize](../configuration/pipelines/normalization.mdx) the data before sending it to the target named `parquet_storage`.
+This configuration will [normalize](../configuration/pipelines/normalization.mdx) the data before sending it to our target.
 
 We can also use several pipelines consecutively:
 
@@ -55,10 +59,10 @@ routes:
       - name: enrich
       - name: aggregate
     targets:
-      - name: parquet_analytics
+      - name: logs_to_parquet
 ```
 
-The specified 3 pipelines are used for purposes that should be obvious from their names: normalizing, enriching, and aggregating. The data will then be routed to a Parquet file target used for analytics.
+The specified 3 pipelines are used for purposes that should be obvious from their names: normalizing, enriching, and aggregating. The data will then be routed to our Parquet file.
 
 ## Selection
 
@@ -73,17 +77,21 @@ routes:
     pipelines:
       - name: syslog_normalize
     targets:
-      - name: syslog_parquet
+      - name: syslog_to_parquet
 
   - name: windows_route
     if: device.type == 'windows'
     pipelines:
       - name: windows_normalize
     targets:
-      - name: windows_parquet
+      - name: windows_to_parquet
 ```
 
 These routes will collect two streams of data, one from a _syslog_ and one from a _windows_ device, normalize them using the specific pipelines of each, and then direct them to their respective Parquet file targets.
+
+:::note
+This time we have specified two different targets&mdash;`syslog_to_parquet` and `windows_to_parquet`&mdash;which have to configured in their own YAML files. We leave that as an exercise to the reader.
+:::
 
 The selection can also be done using datasets:
 
