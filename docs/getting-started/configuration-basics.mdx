@@ -33,22 +33,24 @@ To illustrate, in order to stream data in _Syslog_ format and send it to the con
 ```yaml
 devices:
   - id: 1
-    name: basic_syslog
+    name: from_syslog
     type: syslog
 
 targets:
-  - name: basic_console
+  - name: to_console
     type: console
 
 routes:
-  - name: basic_route
+  - name: simple_route
     devices:
-      - name: basic_syslog
+      - name: from_syslog
     targets:
-      - name: basic_console
+      - name: to_console
 ```
 
-The examples provide the basic configurations required to run some of the most frequently used processes.
+**Director** reads iterates the directory tree under `config`, scanning each `*.yml` file to spot the route you want to run&mdash;here `simple_route`.
+
+The examples provide the basic configurations required for some of the most frequently used processes.
 
 ## The CLI
 
@@ -122,7 +124,7 @@ For our purposes, and to keep things simple, we will be using the following fold
   </TabItem>
 </Tabs>
 
-In the examples, we will save all our configuration files and specify our output files to be created in this directory.
+We will be saving all our configuration files in this directory. We will also specify our output files to be created here.
 
 ---
 
