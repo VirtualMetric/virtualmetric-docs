@@ -30,7 +30,7 @@ To learn where these files are placed and how they can be arranged, review [**th
 
 To illustrate, in order to stream data in _Syslog_ format and send it to the console, the  configuration YAML&mdash;which should be placed somewhere under the `config` directory under `<vm_root>`&mdash;should contain at least these settings:
 
-```yaml
+```yaml title="simple-route.yml"
 devices:
   - id: 1
     name: from_syslog
@@ -56,51 +56,31 @@ The examples provide the basic configurations required for some of the most freq
 
 The configured components can be run by invoking **Director** from the terminal. For a detailed description of the command line functionality, see [**Appendix**](../appendix.mdx#cli).
 
-The examples provide the relevant commands required to run them.
-
 :::tip
 For convenience, you may want to add **VirtualMetric**'s root folder to your `$PATH` environment variable.
 :::
 
-## Logging Setup
-
-Finally, a simple configuration for logging is in order for you to be able to check your results.
-
-* Go to `<vm_root>` (i.e. the folder where you have placed **VirtualMetric**)
-* Find the `config` directory, which is directly under `<vm_root>`
-* Open the file named `vmetric.yml`
-* Add the following lines to it:
-
-  ```yaml
-  debug:
-    log:
-      status: true
-    level: 4
-    console:
-      status: true
-  ```
-
-This will generate the logs of the runs you will perform in the examples and place them under the following folder:
+Running configurations&mdash;for example the route named `simple_route` we have configured above&mdash;involves invoking VirtualMetric Director from the command line like so:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
-    C:\path\to\<vm_root>\storage\logs
+    vmetric-director -mode=route -name=simple_route
     ```
-  </TabItem>
-
+  </TabItem>    
   <TabItem value="linux" label="Linux">
     ```bash
-    /usr/bin/path/to/<vm_root>/storage/logs
+    vmetric-director -mode=route -name=simple_route
     ```
   </TabItem>
-
   <TabItem value="macos" label="macOS">
     ```bash
-    /Applications/path/to/<vm_root>/storage/logs
+    vmetric-director -mode=route -name=simple_route
     ```
   </TabItem>
 </Tabs>
+
+The examples provide the relevant commands required to run them.
 
 ## Working Directory
 
@@ -125,6 +105,46 @@ For our purposes, and to keep things simple, we will be using the following fold
 </Tabs>
 
 We will be saving all our configuration files in this directory. We will also specify our output files to be created here.
+
+## Logging Setup
+
+Finally, a simple configuration for logging is in order for you to be able to check your results.
+
+* Go to `<vm_root>` (i.e. the folder where you have placed **VirtualMetric**)
+* Find the `config` directory, which is directly under `<vm_root>`
+* Open the file named `vmetric.yml`
+* Add the following lines to it:
+
+  ```yaml
+  debug:
+    log:
+      status: true
+    level: 4
+    console:
+      status: true
+  ```
+
+**Director** will generate the logs of your runs and place them under the following folder:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    C:\path\to\<vm_root>\storage\logs
+    ```
+  </TabItem>
+
+  <TabItem value="linux" label="Linux">
+    ```bash
+    /usr/bin/path/to/<vm_root>/storage/logs
+    ```
+  </TabItem>
+
+  <TabItem value="macos" label="macOS">
+    ```bash
+    /Applications/path/to/<vm_root>/storage/logs
+    ```
+  </TabItem>
+</Tabs>
 
 ---
 
