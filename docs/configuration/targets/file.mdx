@@ -8,7 +8,7 @@ Creates a file target that writes log messages to files in various formats like 
 
 ## Schema
 
-```yaml {2,4}
+```yaml {1,3}
 - name: <string>
   description: <string>
   type: file
@@ -136,7 +136,7 @@ Files can use the following compression algorithms:
 
 ### JSON
 
-Configuration for a _JSON_ output:
+Configuration for a _JSON_ output&mdash; as "json" is the default format, no need to specify it:
 
 ```yaml
 targets:
@@ -144,13 +144,12 @@ targets:
     type: file
     properties:
       location: "/var/log/vmetric"
-      format: "json"
       compression: "zstd"
 ```
 
 ### Multiple Locations
 
-Configuration with multiple output locations:
+Configuration for multiple output locations; a different format is used for each location:
 
 ```yaml
 targets:
@@ -233,7 +232,6 @@ targets:
     type: file
     properties:
       location: "C:\\ProgramData\\VMetric\\Logs"
-      format: "json"
       compression: "zstd"
       name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
 ```

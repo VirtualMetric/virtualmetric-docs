@@ -29,18 +29,17 @@ All routes share the following base configuration fields:
 |`name`|Y||Unique identifier for the route|
 |`description`|N||Optional explanation of the route's purpose|
 |`devices`|N||List of source IDs to collect events from|
-|`condition`|N||Expression determining if the route applies to an event|
+|`if`|N||Expression determining if the route applies to an event|
 |`pipelines`|N||Ordered list of pipelines to process matching events|
 |`targets`|N||List of targets to deliver processed events to|
 |`status`|N|`true`|Enable/disable the route|
-|`order`|N|`0`|Processing priority (lower numbers processed first)|
 
 :::warning
-Do _not_ confuse field names like `pipelines` or `targets` with the component entries at the first level. As the highest level of a telemetry configuration, routes orchestrate the stream by specifying the components that compose the traffic.
+Do _not_ confuse field names like `pipelines` or `targets` with the component entries at the first level. As the highest level of a telemetry configuration, routes orchestrate the stream by specifying the components that constitute the traffic.
 :::
 
 :::note
-Enlisted devices, targets, and pipelines must be pre-configured to be usable by routes. Use their ids or names to refer to them.
+Enlisted devices, targets, and pipelines must be configured in advance to be usable by routes. Use their ids or names to refer to them.
 :::
 
 **Example**:
@@ -100,205 +99,206 @@ Routes can be categorized based on their function in the data flow:
 
 Some scenarios demonstrating the uses of routes:
 
-### Security Event Workflow
+* **Security Event Workflow**:
 
-```yaml
-routes:
-  - name: security_critical
-    order: 10
-    condition: "event.category == 'security' && event.severity == 'critical'"
-    pipelines:
-      - name: security_enrichment
-      - name: threat_intelligence
-    targets:
-      - name: siem_platform
-      - name: security_team_notification
-  
-  - name: security_standard
-    order: 20
-    condition: "event.category == 'security'"
-    pipelines:
-      - name: security_enrichment
-    targets:
-      - name: security_elasticsearch
-```
+  ```yaml
+  routes:
+    - name: security_critical
+      order: 10
+      if: "event.category == 'security' && event.severity == 'critical'"
+      pipelines:
+        - name: security_enrichment
+        - name: threat_intelligence
+      targets:
+        - name: siem_platform
+        - name: security_team_notification
+    
+    - name: security_standard
+      order: 20
+      if: "event.category == 'security'"
+      pipelines:
+        - name: security_enrichment
+      targets:
+        - name: security_elasticsearch
+  ```
 
-### Data Segregation
+* **Data Segregation**:
 
-```yaml
-routes:
-  - name: pci_data
-    condition: "tags.contains('pci')"
-    pipelines:
-      - name: pci_compliance
-      - name: data_masking
-    targets:
-      - name: pci_storage
-  
-  - name: hipaa_data
-    condition: "tags.contains('hipaa')"
-    pipelines:
-      - name: hipaa_compliance
-      - name: phi_protection
-    targets:
-      - name: hipaa_storage
-```
+  ```yaml
+  routes:
+    - name: pci_data
+      if: "tags.contains('pci')"
+      pipelines:
+        - name: pci_compliance
+        - name: data_masking
+      targets:
+        - name: pci_storage
+    
+    - name: hipaa_data
+      if: "tags.contains('hipaa')"
+      pipelines:
+        - name: hipaa_compliance
+        - name: phi_protection
+      targets:
+        - name: hipaa_storage
+  ```
 
-### Environment Separation
+* **Environment Separation**:
 
-```yaml
-routes:
-  - name: production_logs
-    condition: "kubernetes.namespace == 'production'"
-    pipelines:
-      - name: production_enrichment
-    targets:
-      - name: production_elasticsearch
-  
-  - name: development_logs
-    condition: "kubernetes.namespace == 'development'"
-    pipelines:
-      - name: dev_enrichment
-    targets:
-      - name: development_elasticsearch
-```
+  ```yaml
+  routes:
+    - name: production_logs
+      if: "kubernetes.namespace == 'production'"
+      pipelines:
+        - name: production_enrichment
+      targets:
+        - name: production_elasticsearch
+    
+    - name: development_logs
+      if: "kubernetes.namespace == 'development'"
+      pipelines:
+        - name: dev_enrichment
+      targets:
+        - name: development_elasticsearch
+  ```
 
 ## Implementation Strategies
 
-### Conditional Routing
+The following aspects of your telemetry stream must be considered im the implementation of routes:
 
-Selecting events involves evaluating boolean expressions such as:
-> `device.type == 'syslog'`  
-> `dataset.name == 'firewall_logs'`  
-> `log.severity > 4`  
-> `!(source.ip == '10.0.0.1'||source.ip == '10.0.0.2')`
+* **Conditional Routing**:
 
-Key points about route evaluation:
-* Route conditions are evaluated before pipelines begin their work
-* The first route that matches processes the event
-* Pipelines can modify the flow or direction of the data
-* Multiple targets receive identical copies of the same data
-
-Examples of conditional routing:
-
-```yaml
-routes:
-  - name: critical_alerts
-    condition: "event.severity == 'critical'||event.severity == 'high'"
-    pipelines:
-      - name: alert_enrichment
-    targets:
-      - name: alerts_webhook
-      - name: security_team_email
+  Selecting events involves evaluating boolean expressions such as:
   
-  - name: normal_logs
-    condition: "event.severity == 'low'||event.severity == 'medium'"
-    pipelines:
-      - name: standard_processing
-    targets:
-      - name: logs_elasticsearch
-```
+  > `device.type == 'syslog'`  
+  > `dataset.name == 'firewall_logs'`  
+  > `log.severity > 4`  
+  > `!(source.ip == '10.0.0.1'||source.ip == '10.0.0.2')`
 
-### Priority-Based Processing
+  Key points about route evaluation:
 
-Routes with lower `order` values are processed first:
+  * Route conditions are evaluated before pipelines begin their work
+  * The first route that matches processes the event
+  * Pipelines can modify the flow or direction of the data
+  * Multiple targets receive identical copies of the same data
 
-```yaml
-routes:
-  - name: urgent_alerts
-    order: 10  # Processed first
-    condition: "event.severity == 'critical'"
-    targets:
-      - name: alerting_system
-  
-  - name: security_events
-    order: 20  # Processed second
-    condition: "event.category == 'security'"
-    targets:
-      - name: security_platform
-  
-  - name: general_logs
-    order: 30  # Processed third
-    targets:
-      - name: log_storage
-```
+  Examples of conditional routing:
 
-### Devices Selection
+  ```yaml
+  routes:
+    - name: critical_alerts
+      if: "event.severity == 'critical'||event.severity == 'high'"
+      pipelines:
+        - name: alert_enrichment
+      targets:
+        - name: alerts_webhook
+        - name: security_team_email
+    
+    - name: normal_logs
+      if: "event.severity == 'low'||event.severity == 'medium'"
+      pipelines:
+        - name: standard_processing
+      targets:
+        - name: logs_elasticsearch
+  ```
 
-Routes can collect data from specific devices:
+* **Priority-Based Processing**:
 
-```yaml
-routes:
-  - name: network_traffic
-    devices:
-      - name: firewall_logs
-      - name: router_logs
-      - name: switch_logs
-    pipelines:
-      - name: network_enrichment
-    targets:
-      - name: network_monitoring
-```
+  Routes with higher priority&mdash;which is indicated by their relative position in the tree&mdash;are processed first:
 
-### Pipeline Chaining
+  ```yaml
+  routes:
+    - name: urgent_alerts
+      if: "event.severity == 'critical'"
+      targets:
+        - name: alerting_system
+    
+    - name: security_events
+      if: "event.category == 'security'"
+      targets:
+        - name: security_platform
+    
+    - name: general_logs
+      targets:
+        - name: log_storage
+  ```
 
-Routes can apply multiple pipelines in sequence:
+* **Device Selection**:
 
-```yaml
-routes:
-  - name: web_security
-    devices:
-      - web_server_logs
-    condition: "event.category == 'web' && event.type == 'attack'"
-    pipelines:
-      - common_enrichment  # Applied first
-      - attack_detection   # Applied second
-      - threat_scoring     # Applied third
-    targets:
-      - security_elasticsearch
-```
+  Routes can collect data from specific devices:
 
-### Multi-Target Delivery
+  ```yaml
+  routes:
+    - name: network_traffic
+      devices:
+        - name: firewall_logs
+        - name: router_logs
+        - name: switch_logs
+      pipelines:
+        - name: network_enrichment
+      targets:
+        - name: network_monitoring
+  ```
 
-Routes can send processed data to multiple destinations:
+* **Pipeline Chaining**:
 
-```yaml
-routes:
-  - name: compliance_events
-    condition: "tags.contains('compliance')"
-    pipelines:
-      - name: compliance_formatting
-    targets:
-      - name: compliance_elasticsearch  # For searching and analytics
-      - name: compliance_s3             # For long-term retention
-      - name: auditor_webhook           # For real-time notification
-```
+  Routes can apply multiple pipelines in sequence:
 
-### Fallback Routes
+  ```yaml
+  routes:
+    - name: web_security
+      devices:
+        - web_server_logs
+      if: "event.category == 'web' && event.type == 'attack'"
+      pipelines:
+        - common_enrichment  # Applied first
+        - attack_detection   # Applied second
+        - threat_scoring     # Applied third
+      targets:
+        - security_elasticsearch
+  ```
 
-Routes without conditions act as catch-all handlers for unmatched events:
+* **Multi-Target Delivery**:
 
-```yaml
-routes:
-  - name: primary_security
-    condition: "event.category == 'security'"
-    targets:
-      - name: security_elasticsearch
-  
-  - name: fallback_route
-    # No condition means this captures everything not matched above
-    targets:
-      - name: general_elasticsearch
-```
+  Routes can send processed data to multiple destinations:
 
-### Advanced Configuration Patterns
+  ```yaml
+  routes:
+    - name: compliance_events
+      if: "tags.contains('compliance')"
+      pipelines:
+        - name: compliance_formatting
+      targets:
+        - name: compliance_elasticsearch  # For searching and analytics
+        - name: compliance_s3             # For long-term retention
+        - name: auditor_webhook           # For real-time notification
+  ```
 
-* **Route Templates**: Use environment variables for flexible configurations:
+* **Fallback Routes**:
+
+  Routes without conditions act as catch-all handlers for unmatched events:
+
+  ```yaml
+  routes:
+    - name: primary_security
+      if: "event.category == 'security'"
+      targets:
+        - name: security_elasticsearch
+    
+    - name: fallback_route
+      # No if means this captures everything not matched above
+      targets:
+        - name: general_elasticsearch
+  ```
+
+* **Route Templates**:
+
+  Use environment variables for flexible configurations.
 
   ```yaml
   routes:
     - name: dynamic_routing
-      condition: "${ROUTING_CONDITION}"
+      if: "${ROUTING_CONDITION}"
       pipelines:
         - ${PRIMARY_PIPELINE}
         - ${SECONDARY_PIPELINE}
@@ -306,7 +306,9 @@ routes:
         - ${TARGET_SYSTEM}
   ```
 
-* **Conditional Targets**: Apply different targets based on event properties:
+* **Conditional Targets**:
+
+  Apply different targets based on event properties.
 
   ```yaml
   routes:

@@ -9,13 +9,13 @@ We will create a device that will receive data from _Syslog_. We will do this:
 - Using a **UDP** connection, which is not secure.
 - Using a **TCP** connection, which can be configured for secure access.
 
-### Basic UDP Setup
+## Basic UDP Setup
 
 Use UDP as the listening protocol.
 
 ### Step 1. Create Configuration
 
-Create a text file named `udp-syslog.yml` in your working directory, and then open it with a text editor to enter the following:
+Create a text file named `udp-syslog.yml` in our [working directory](./configuration-basics.mdx#working-directory), and then open it with a text editor to enter the following:
 
 ```yaml title="udp-syslog.yml"
 devices:
@@ -39,7 +39,7 @@ You can now test this configuration using either **Director**'s cross-platform c
     - Using **Generator**
 
     ```powershell
-    vmetric-generator.exe -mode=syslog -address=127.0.0.1:514 -message="Test Message"
+    vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
@@ -77,7 +77,7 @@ As we have created and tested our configuration, we can now run it like so:
 <Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
-    vmetric-director.exe
+    vmetric-director
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
@@ -96,7 +96,7 @@ You can observe the results on the command line as the device reads _Syslog_ dat
 
 Press <kb-short>Ctrl+C</kb-short> to exit the process.
 
-### Secure TCP Setup
+## Secure TCP Setup
 
 Create a TLS-enabled device to ingest data over TCP.
 
@@ -109,7 +109,7 @@ First, we have to prepare the TLS certificates. This can be done using either **
     - Using **Director**
 
     ```powershell
-    vmetric-director.exe -pfx2pem=./cert-file.pfx
+    vmetric-director -pfx2pem=./cert-file.pfx
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
@@ -197,7 +197,7 @@ We can run it in the background:
 <Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
-    vmetric-director.exe -background
+    vmetric-director -background
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
@@ -245,7 +245,7 @@ To monitor the logs in real time and filter for a specific debug level, you can 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
-    vmetric-director.exe -mode=console -debug-level=3
+    vmetric-director -mode=console -debug-level=3
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">

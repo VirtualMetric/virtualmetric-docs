@@ -44,8 +44,8 @@ const sidebars: SidebarsConfig = {
           link: {type: "doc", id: "getting-started/deployment/index"},
           collapsed: false,
           items: [
-            'getting-started/deployment/as-cluster',
             'getting-started/deployment/on-local',
+            'getting-started/deployment/as-cluster',
             'getting-started/deployment/on-azure-vm',
             'getting-started/deployment/on-azure-app-service',
             'getting-started/deployment/on-azure-functions',

@@ -10,58 +10,85 @@ The purpose of this section is to introduce you to **VirtualMetric Director**'s 
 
 **Director** uses the following types of configurable components to collect data points, to process them, and to forward them to destinations:
 
-:::note
-See the [next heading](#the-yaml-files) to see where and how the configuration of these components are made.
-:::
+* **Devices** - Data sources that collect or receive data. For a detailed discussion, see [Devices: Overview](../configuration/devices/index.mdx#configuration).
 
-* **Devices** - Data sources that collect or receive data.
+* **Targets** - Destinations where processed data is sent. For a detailed discussion, see [Targets: overview](../configuration/targets/index.mdx#configuration).
 
-  As devices ingest data from a given source, and therefore expect them to have a specific data format, we pick the device type that conforms to the layout of the data to be ingested.
+* **Pipelines** - String of processors that transform the data. For a detailed discussion, see [Pipelines: Overview](../configuration/pipelines/index.mdx#configuration).
 
-  Review [**this section**](../configuration/devices/index.mdx#configuration) for details.
-
-* **Targets** - Destinations where processed data is sent.
-
-  As targets forward the data ingested by the devices, they declare the destinations the data is to be sent. As those destinations in turn expect the sent data to have a pre-determined layout, the targets also specify a format the the data is to be sent in.
-
-  Review [**this section**](../configuration/targets/index.mdx#configuration) for details.
-
-* **Pipelines** - String of processors that transform the data.
-
-  Pipelines use processors to transform the data. These processors are ordered sequentially, and perform their work in that order. The processors can also be configured to carry out certain tasks in coordination.
-
-  Review [**this section**](../configuration/pipelines/index.mdx#configuration) for details.
-
-* **Routes** - Predefined data flows from devices through pipelines to targets.
-
-  Routes configure the overall traffic. They specify which from which sources the data is ingested, which pipelines are used to transform them (if at all), and to which destinations the data is to be sent. In other words, they orchestrate the whole journey of the stream.
-  
-  Review [**this section**](../configuration/routes.mdx#configuration) for details.
+* **Routes** - Predefined data flows from devices through pipelines to targets. For a detailed discussion, see [Routes: Overview](../configuration/routes.mdx#configuration).
 
 The examples cover the basic forms of each of these components.
 
-## The YAML Files
+## The Configuration Files
 
-To configure the above-mentioned components used in **Director**'s telemetry processes, we have to use YAML files.
+To configure the above-mentioned components for telemetry streams, we use YAML files.
 
 :::tip
 To learn where these files are placed and how they can be arranged, review [**this section**](../configuration/index.mdx#managing-yaml-files).
 :::
 
-To illustrate, to stream data in _Syslog_ format, a device configuration YAML&mdash;arbitrarily named `basic-syslog.yml` in the code sample below since _filenames are only for the user to manage them_&mdash;should contain at least these settings:
+To illustrate, in order to stream data in _Syslog_ format and send it to the console, the  configuration YAML&mdash;which should be placed somewhere under the `config` directory under `<vm_root>`&mdash;should contain at least these settings:
 
-```yaml title="basic-syslog.yml"
+```yaml title="simple-route.yml"
 devices:
   - id: 1
-    name: basic_syslog
+    name: from_syslog
     type: syslog
+
+targets:
+  - name: to_console
+    type: console
+
+routes:
+  - name: simple_route
+    devices:
+      - name: from_syslog
+    targets:
+      - name: to_console
 ```
 
-The `name` value `basic_syslog`  is also arbitrary and for the user to choose.
+**Director** reads iterates the directory tree under `config`, scanning each `*.yml` file to spot the route you want to run&mdash;here `simple_route`.
 
-The examples provide the basic configurations required to run some of the most frequently used processes.
+:::note
+**Director** does _not_ care about the filenames you use. That is only for your convenience, to organize your components as you site. It only cares about the identifiers you use for them, i.e. the `id` value for devices and the `name` value for the others.
+:::
 
-For our purposes, and to keep things simple, we will be using the following folder as our working directory, and we will place our files directly under it:
+The examples provide the basic configurations required for some of the most frequently used processes.
+
+## The CLI
+
+The configured components can be run by invoking **Director** from the terminal. For a detailed description of the command line functionality, see [**Appendix**](../appendix.mdx#cli).
+
+:::tip
+For convenience, you may want to add **VirtualMetric**'s root folder to your `$PATH` environment variable.
+:::
+
+Running configurations&mdash;for example the route named `simple_route` we have configured above&mdash;involves invoking VirtualMetric Director from the command line like so:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    vmetric-director -mode=route -name=simple_route
+    ```
+  </TabItem>    
+  <TabItem value="linux" label="Linux">
+    ```bash
+    vmetric-director -mode=route -name=simple_route
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    vmetric-director -mode=route -name=simple_route
+    ```
+  </TabItem>
+</Tabs>
+
+The examples provide the relevant commands required to run them.
+
+## Working Directory
+
+For our purposes, and to keep things simple, we will be using the following folder as our working directory, and we will place all our files directly under it:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
@@ -81,85 +108,7 @@ For our purposes, and to keep things simple, we will be using the following fold
   </TabItem>
 </Tabs>
 
-## The CLI
-
-The configured components can be run by invoking **Director** from the terminal.
-
-:::tip
-For a detailed description of the command line functionality, see [**Appendix**](../appendix.mdx#cli).
-:::
-
-Here are a few typical use cases. After invoking the following commands, press <kb-short>Ctrl+C</kb-short> to terminate the process:
-
-:::warning[attention]
-Do not forget to add **VirtualMetric**'s root folder to your `$PATH` environment variable.
-:::
-
-* Listening to _Syslog_:
-
-  <Tabs>
-    <TabItem value="windows" label="Windows" default>
-      ```powershell
-      vmetric-director.exe -mode=generator -protocol=syslog -address=127.0.0.1:514
-      ```
-    </TabItem>    
-    <TabItem value="linux" label="Linux">
-      ```bash
-      vmetric-director -mode=generator -protocol=syslog -address=127.0.0.1:514
-      ```
-    </TabItem>
-    <TabItem value="macos" label="macOS">
-      ```bash
-      vmetric-director -mode=generator -protocol=syslog -address=127.0.0.1:514
-      ```
-    </TabItem>
-  </Tabs>
-
-* Viewing logs at a specific debug level:
-
-  <Tabs>
-    <TabItem value="windows" label="Windows" default>
-      ```powershell
-      vmetric-director.exe -mode=console -debug-level=3
-      ```
-    </TabItem>
-    <TabItem value="linux" label="Linux">
-      ```bash
-      vmetric-director -mode=console -debug-level=3
-      ```
-    </TabItem>
-    <TabItem value="macos" label="macOS">
-      ```bash
-      vmetric-director -mode=console -debug-level=3
-      ```
-    </TabItem>
-  </Tabs>
-
-* Validating a specific pipeline:
-
-  <Tabs>
-    <TabItem value="windows" label="Windows" default>
-      ```powershell
-      vmetric-director.exe -mode=pipeline -name=<pipeline_name> -validate
-      ```
-    </TabItem>
-    <TabItem value="linux" label="Linux">
-      ```bash
-      vmetric-director -mode=pipeline -name=<pipeline_name> -validate
-      ```
-    </TabItem>
-    <TabItem value="macos" label="macOS">
-      ```bash
-      vmetric-director -mode=pipeline -name=<pipeline_name> -validate
-      ```
-    </TabItem>
-  </Tabs>
-
-:::tip
-After invoking each of these commands, you can exit the process by pressing <kb-short>Ctrl+C</kb-short>.
-:::
-
-The examples provide the relevant commands required to run them.
+We will be saving all our configuration files in this directory. We will also specify our output files to be created here.
 
 ## Logging Setup
 
@@ -179,7 +128,7 @@ Finally, a simple configuration for logging is in order for you to be able to ch
       status: true
   ```
 
-This will generate the logs of the runs you will perform in the examples and place them under the following folder:
+**Director** will generate the logs of your runs and place them under the following folder:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
