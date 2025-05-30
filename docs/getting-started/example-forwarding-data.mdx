@@ -4,7 +4,7 @@ This section will help you get started with targets to write processed data to s
 
 ## Scenarios
 
-We will send the data received from _Syslog_ to these destinations:
+In this section, we will send the data we receive from _Syslog_ to these destinations:
 
 * **Console**: the data will be normalized to ECS
 * **Storage File**: the data will be normalized to a specific file storage format
@@ -15,15 +15,15 @@ The most basic target we can direct our output to is a _console_. For this purpo
 
 ```yaml
 targets:
-  - name: log_to_console
+  - name: to_console
     type: console
     properties:
       format: "ecs"
 ```
 
-Here, we named our target as `log_to_console`. Its type is `console`, and we intend to normalize the data to the [ECS](../appendix.mdx#ecs) format, although this is optional.
+Here, we named our target as `to_console`. Its type is `console`, and we intend to normalize the data to the [ECS](../appendix.mdx#ecs) format, although this is optional.
 
-Put this in a file named `log-to-console.yml`, and place it in our [working directory](./configuration-basics.mdx#working-directory).
+Put this in a file named `to-console.yml`, and place it in our [working directory](./configuration-basics.mdx#working-directory).
 
 To see the data directed to the console, enter the following command line in your terminal:
 
@@ -55,7 +55,7 @@ The next type of output we can use is a file. Various formats are available in *
 
   ```yaml
   targets:
-    - name: logs_to_json
+    - name: to_json
       type: file
       properties:
         location: "<vm_root>/config/Examples"
@@ -67,13 +67,13 @@ The next type of output we can use is a file. Various formats are available in *
 
   The `path` we have specified for `location` is where the JSON file will be created.
 
-  Put this configuration in a file named `log-to-json.yml` and place it our working directory.
+  Put this configuration in a file named `to-json.yml` and place it our working directory.
 
 * The **Parquet** format:
 
   ```yaml
   targets:
-    - name: logs_to_parquet
+    - name: to_parquet
       type: file
       properties:
         location: "<vm_root>/config/Examples"
@@ -93,26 +93,43 @@ The next type of output we can use is a file. Various formats are available in *
           }
   ```
 
-  This describes the `schema` of the parquet file we will create, i.e. the layout of the data to be stored. Also, we are using _ZSTD_ compression. Finally, the output file will be placed in a directory of our choice, here specified with `location`.
+  This describes the `schema` of the parquet file we will create, i.e. the layout of the data to be stored, which we have specified in JSON syntax. Also, we are using _ZSTD_ compression, although this is optional. Finally, the output file will be placed in our working directory which we have specified with `location`.
 
-  Put this configuration in a file named `log-to-parquet.yml` and place it our working directory.
+  Put this configuration in a file named `to-parquet.yml` and place it our working directory.
 
-To see the data directed to the storage file you have configured, enter the following command line in your terminal:
+Now we have to configure a route:
+
+```yaml
+routes:
+  - name: syslog_to_file
+    devices:
+      - id: 1
+        name: from_syslog
+        type: syslog
+    targets:
+      - name: to_json
+```
+
+Note that we configured a simple device named `from_syslog`. We have also opted for the JSON file configuration.
+
+Put this in a file named `syslog-to-file.yml` and place in our working directory. 
+
+To have the _syslog_ data directed to the storage file we have configured, enter the following command line in your terminal:
 
   <Tabs>
     <TabItem value="windows" label="Windows">
       ```PowerShell
-      .\vmetric-director
+      .\vmetric-director -mode=route -name=syslog_to_file
       ```
     </TabItem>
     <TabItem value="linux" label="Linux">
       ```bash
-      ./vmetric-director
+      ./vmetric-director -mode=route -name=syslog_to_file
       ```
     </TabItem>
     <TabItem value="macos" label="macOS">
       ```bash
-      ./vmetric-director
+      ./vmetric-director -mode=route -name=syslog_to_file
       ```
     </TabItem>
   </Tabs>
