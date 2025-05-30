@@ -6,12 +6,53 @@ This section will help you get started with targets to write processed data to s
 
 In this section, we will send the data we receive from _Syslog_ to these destinations:
 
-* **Console**: the data will be normalized to ECS
-* **Storage File**: the data will be normalized to a specific file storage format
+* **Console**: the data will be sent to the console first raw, then normalized to ECS
+* **Storage File**: the data will be converted to the JSON storage format
 
 ## Console Setup
 
-The most basic target we can direct our output to is a _console_. For this purpose, we have to create a simple configuration:
+The most basic target we can direct our output to is a _console_. To have the _syslog_ data we will ingest&mdash;using the device we have configured in the previous section&mdash;directed to the console, we have to create a route like so:
+
+```yaml
+routes:
+  - name: syslog_to_console
+    if: device.name == "from_syslog"
+    targets:
+      - name: to_console
+        type: console
+```
+
+:::note
+Since **Director** runs all the components configured in YAML files that it spots under the `config` directory, we have to specify in our route that we want to direct the data coming from our device named `from_syslog` to the console using a condition i.e. an `if` field.
+
+Also, we have defined our target here locally, in the route.
+:::
+
+Put this in a file named `syslog-to-console-route.yml`, and place it in our [working directory](./configuration-basics.mdx#working-directory).
+
+To see this in action, enter the following command in the terminal:
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    .\vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    ./vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    ./vmetric-director
+    ```
+  </TabItem>
+</Tabs>
+
+Exit the process by pressing <kb-short>Ctrl+C</kb-short>.
+
+Assume, however, that we want to customize the stream directed to the console. In that case, we may create a specific target configuration like so:
 
 ```yaml
 targets:
@@ -21,115 +62,83 @@ targets:
       format: "ecs"
 ```
 
-Here, we named our target as `to_console`. Its type is `console`, and we intend to normalize the data to the [ECS](../appendix.mdx#ecs) format, although this is optional.
+With our target named as `to_console` (which is of type `console`), we will normalize our data to the [ECS](../appendix.mdx#ecs) format.
 
 Put this in a file named `to-console.yml`, and place it in our [working directory](./configuration-basics.mdx#working-directory).
 
-To see the data directed to the console, enter the following command line in your terminal:
+Now that we have an independently defined target, edit the route file (i.e. the `syslog-to-console-route.yml`) and leave only the `name` of our target, omitting the type field.
 
-  <Tabs>
-    <TabItem value="windows" label="Windows">
-      ```PowerShell
-      .\vmetric-director -console
-      ```
-    </TabItem>
-    <TabItem value="linux" label="Linux">
-      ```bash
-      ./vmetric-director -console
-      ```
-    </TabItem>
-    <TabItem value="macos" label="macOS">
-      ```bash
-      ./vmetric-director -console
-      ```
-    </TabItem>
-  </Tabs>
+To see the data directed to the console in ECS format, enter the following command line in your terminal:
 
-Press <kb-short>Ctrl+C</kb-short> to exit the process.
+<Tabs>
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    .\vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    ./vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    ./vmetric-director
+    ```
+  </TabItem>
+</Tabs>
+
+Again, exit the process.
 
 ## Storage File Setup
 
-The next type of output we can use is a file. Various formats are available in **DataStream**:
+The next type of output we can use is a file. Various formats are available in **DataStream**, but for the sake of simplicity, we will pick the widely used _JSON_ format which is the default format for the `file` target type:
 
-* The widely used **JSON** format:
+```yaml
+targets:
+  - name: to_json
+    type: file
+    properties:
+      location: "<vm_root>/config/Examples"
+      name: "from_syslog_{{.Year}}_{{.Month}}_{{.Day}}.json"
+```
 
-  ```yaml
-  targets:
-    - name: to_json
-      type: file
-      properties:
-        location: "<vm_root>/config/Examples"
-        type: "json"
-        name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.json"
-  ```
+The path we have specified for `location` is where the JSON file will be created. The nested `name` parameter is for the file in which we will store our output data. The file's name will have a `from_syslog_` prefix with the internal field values of `Year`, `Month`, and `Day` appended.
 
-  The nested `name` parameter is for the file in which we will store our output data. We intend to create a storage file name based on the internal field values of `Year`, `Month`, and `Day`.
+:::note
+Under `properties`, we did not specify any `format` since JSON is the default for the file target type.
+:::
 
-  The `path` we have specified for `location` is where the JSON file will be created.
+Put this configuration in a file named `to-json.yml` and place it our working directory.
 
-  Put this configuration in a file named `to-json.yml` and place it our working directory.
-
-* The **Parquet** format:
-
-  ```yaml
-  targets:
-    - name: to_parquet
-      type: file
-      properties:
-        location: "<vm_root>/config/Examples"
-        format: "parquet"
-        compression: "zstd"
-        schema: |
-          {
-            "timestamp": {
-              "type": "INT",
-              "bitWidth": 64,
-              "signed": true
-            },
-            "message": {
-              "type": "STRING",
-              "compression": "ZSTD"
-            }
-          }
-  ```
-
-  This describes the `schema` of the parquet file we will create, i.e. the layout of the data to be stored, which we have specified in JSON syntax. Also, we are using _ZSTD_ compression, although this is optional. Finally, the output file will be placed in our working directory which we have specified with `location`.
-
-  Put this configuration in a file named `to-parquet.yml` and place it our working directory.
-
-Now we have to configure a route:
+To use this target, Now we have to configure another route:
 
 ```yaml
 routes:
-  - name: syslog_to_file
-    devices:
-      - id: 1
-        name: from_syslog
-        type: syslog
+  - name: syslog_to_json
+    if: device.id == "from_syslog"
     targets:
       - name: to_json
 ```
 
-Note that we configured a simple device named `from_syslog`. We have also opted for the JSON file configuration.
-
-Put this in a file named `syslog-to-file.yml` and place in our working directory. 
+Put this in a file named `syslog-to-json.yml` and place in our working directory. 
 
 To have the _syslog_ data directed to the storage file we have configured, enter the following command line in your terminal:
 
   <Tabs>
     <TabItem value="windows" label="Windows">
       ```PowerShell
-      .\vmetric-director -mode=route -name=syslog_to_file
+      .\vmetric-director
       ```
     </TabItem>
     <TabItem value="linux" label="Linux">
       ```bash
-      ./vmetric-director -mode=route -name=syslog_to_file
+      ./vmetric-director
       ```
     </TabItem>
     <TabItem value="macos" label="macOS">
       ```bash
-      ./vmetric-director -mode=route -name=syslog_to_file
+      ./vmetric-director
       ```
     </TabItem>
   </Tabs>
@@ -140,8 +149,8 @@ Press <kb-short>Ctrl+C</kb-short> to exit the process.
 
 To monitor the stream, check **Director**'s logs&mdash;those under the directory indicated [here](./configuration-basics.mdx#logging-setup)&mdash;for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
 
-:::tip
-File targets with no messages are automatically cleaned up when disposed.
+:::note
+Files containing no messages are automatically cleaned up when disposed.
 :::
 
 ---
