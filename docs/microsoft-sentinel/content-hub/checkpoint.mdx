@@ -175,7 +175,7 @@ targets:
           rule_id: "dcr-checkpoint-logs"
 ```
 
-### Multi-Site Deployment
+### Multi-Site Deployment 
 
 For organizations with multiple Check Point deployments:
 
@@ -204,48 +204,54 @@ devices:
 
 ## Troubleshooting
 
-### Common Issues
+### Common issues
 
-**Log Format Recognition**
+#### Log Format Recognition
+
 - Ensure Check Point devices are configured for standard syslog format
 - Verify syslog facility and severity settings match Director configuration
 - Check for custom log templates that might affect parsing
 
-**Performance Optimization**
+#### Performance Optimization
+
 - Increase worker processes for high-volume environments
 - Adjust batch sizes based on log velocity
 - Monitor memory usage during peak traffic periods
 
-**Field Mapping Issues**
-- Review pipeline configuration for custom Check Point fields
-- Validate ASIM compliance using sample data
-- Test field extraction with representative log samples
+#### Field Mapping Issues
+
+  - Review pipeline configuration for custom Check Point fields
+  - Validate ASIM compliance using sample data
+  - Test field extraction with representative log samples
 
 ### Validation Steps
 
 1. **Verify Log Reception**
-```bash
-# Check if logs are being received
-tail -f /var/log/director/checkpoint.log
-```
+
+    ```bash
+    # Check if logs are being received
+    tail -f /var/log/director/checkpoint.log
+    ```
 
 2. **Test Pipeline Processing**
-```yaml
-# Enable debug mode for detailed processing logs  
-debug:
-  enabled: true
-  level: "trace"
-  pipelines: ["checkpoint"]
-```
+
+    ```yaml
+    # Enable debug mode for detailed processing logs  
+    debug:
+      enabled: true
+      level: "trace"
+      pipelines: ["checkpoint"]
+    ```
 
 3. **Validate Sentinel Integration**
-```kql
-// Query Sentinel to verify data ingestion
-CommonSecurityLog
-| where DeviceVendor == "Check Point"
-| where TimeGenerated > ago(5m)
-| limit 10
-```
+
+    ```kql
+    // Query Sentinel to verify data ingestion
+    CommonSecurityLog
+    | where DeviceVendor == "Check Point"
+    | where TimeGenerated > ago(5m)
+    | limit 10
+    ```
 
 ## Best Practices
 
