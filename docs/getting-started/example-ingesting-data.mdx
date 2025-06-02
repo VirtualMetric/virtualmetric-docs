@@ -15,12 +15,12 @@ Use UDP as the listening protocol.
 
 ### Step 1. Create Configuration
 
-Create a text file named `udp-syslog.yml` in our [working directory](./configuration-basics.mdx#working-directory), and then open it with a text editor to enter the following:
+Create a text file named `syslog-to-console.yml` in our [working directory](./configuration-basics.mdx#working-directory), and then open it with a text editor to enter the following:
 
-```yaml title="udp-syslog.yml"
+```yaml title="syslog-to-console.yml"
 devices:
   - id: 1
-    name: udp_syslog
+    name: from_syslog
     type: syslog
     properties:
       protocol: udp
@@ -30,71 +30,114 @@ devices:
 
 This YAML code specifies that this is a _Syslog_ device, that it will use UDP as its protocol, and that it will be listening on port `514`. You can enter any integer as the `id` value.
 
-### Step 2. Test Configuration
+### Step 2. Run the UDP Device
 
-You can now test this configuration using either **Director**'s cross-platform companion **Generator** or the traditional tools available on your platform:
+Open a terminal and enter the following in the command line to start **Director**:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    ```powershell
+    vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    vmetric-director
+    ```
+  </TabItem>
+</Tabs>
+
+After you press <kb-short>Enter</kb-short>, you will see a stream of initialization messages and our device will be spawned off, waiting to receive _syslog_ messages.
+
+### Step 3. Test Configuration
+
+We can now test this using either **Director**'s cross-platform companion **Generator** or the traditional tools available on your platform. Open a new terminal and enter the following in the command line:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
     - Using **Generator**
 
     ```powershell
-    vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
+    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     - Using **Generator**
   
     ```bash
-    vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
+    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
 
     ```bash
-    logger -n 127.0.0.1 -P 514 "Test message"
+    logger -n 127.0.0.1 -P 514 "Hello world"
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     - Using **Generator**
 
     ```bash
-    vmetric-generator -mode=syslog -address=127.0.0.1:514 -message="Test Message"
+    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
     ```
   
     - Using **System Logger**
   
     ```bash
-    logger -n 127.0.0.1 -P 514 "Test message"
+    logger -n 127.0.0.1 -P 514 "Hello world"
     ```
   </TabItem>
 </Tabs>
 
-### Step 3. Run the UDP Device
-
-As we have created and tested our configuration, we can now run it like so:
+After you press <kb-short>Enter</kb-short>, Generator will pause for a number of seconds, and then it will start sending our message to _Syslog_. It will signal that it started sending messages with a prompt like this:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
-    ```powershell
-    vmetric-director
+    ```PowerShell
+    1000 messages sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
+    2000 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    vmetric-director
+    1000 messages sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
+    2000 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    vmetric-director
+    1000 messages sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
+    2000 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
     ```
   </TabItem>
 </Tabs>
 
-You can observe the results on the command line as the device reads _Syslog_ data.
+If you now switch back to **Director**'s terminal, you will see the message sent (i.e. "Hello world") on the console:
 
-Press <kb-short>Ctrl+C</kb-short> to exit the process.
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    ```PowerShell
+    <3> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    <3> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    <3> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
+    ```
+  </TabItem>
+</Tabs>
+
+If you want to exit both of the processes, press <kb-short>Ctrl+C</kb-short> on either terminal.
 
 ## Secure TCP Setup
 
@@ -259,8 +302,6 @@ To monitor the logs in real time and filter for a specific debug level, you can 
     ```
   </TabItem>
 </Tabs>
-
-Press <kb-short>Ctrl+C</kb-short> to exit the process.
 
 ---
 
