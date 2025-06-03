@@ -11,50 +11,20 @@ In this section, we will send the data we receive from _Syslog_ to these destina
 
 ## Console Setup
 
-The most basic target we can direct our output to is a _console_. To have the _syslog_ data we will ingest&mdash;using the device we have configured in the previous section&mdash;directed to the console, we have to create a route like so:
+The most basic target to which we can direct our output is a _console_. In the previous section, to have the _syslog_ data we have ingested&mdash;using the device we have configured there&mdash;directed to the console, we created a route like so:
 
 ```yaml
 routes:
   - name: syslog_to_console
-    if: device.name == "from_syslog"
+    devices:
+      - name: from_syslog
     targets:
       - name: to_console
-        type: console
 ```
 
-:::note
-Since **Director** runs all the components configured in YAML files that it spots under the `config` directory, we have to specify in our route that we want to direct the data coming from our device named `from_syslog` to the console using a condition i.e. an `if` field.
+Assume, however, that we want to customize the stream directed to the console. For that purpose, we will modify the target configuration in our `to-console.yml` file (placed in our [working directory](./configuration-basics.mdx#working-directory)) as:
 
-Also, we have defined our target here locally, in the route.
-:::
-
-Put this in a file named `syslog-to-console-route.yml`, and place it in our [working directory](./configuration-basics.mdx#working-directory).
-
-To see this in action, enter the following command in the terminal:
-
-<Tabs>
-  <TabItem value="windows" label="Windows">
-    ```PowerShell
-    .\vmetric-director
-    ```
-  </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    ./vmetric-director
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-    ```bash
-    ./vmetric-director
-    ```
-  </TabItem>
-</Tabs>
-
-Exit the process by pressing <kb-short>Ctrl+C</kb-short>.
-
-Assume, however, that we want to customize the stream directed to the console. In that case, we may create a specific target configuration like so:
-
-```yaml
+```yaml title="to-console.yml"
 targets:
   - name: to_console
     type: console
@@ -62,13 +32,9 @@ targets:
       format: "ecs"
 ```
 
-With our target named as `to_console` (which is of type `console`), we will normalize our data to the [ECS](../appendix.mdx#ecs) format.
+With this setting, we will normalize our data to the [ECS](../appendix.mdx#ecs) format.
 
-Put this in a file named `to-console.yml`, and place it in our [working directory](./configuration-basics.mdx#working-directory).
-
-Now that we have an independently defined target, edit the route file (i.e. the `syslog-to-console-route.yml`) and leave only the `name` of our target, omitting the type field.
-
-To see the data directed to the console in ECS format, enter the following command line in your terminal:
+To see the results on the console, once again go to the terminal you are using for **Director** invoke it it by entering:
 
 <Tabs>
   <TabItem value="windows" label="Windows">
@@ -88,11 +54,69 @@ To see the data directed to the console in ECS format, enter the following comma
   </TabItem>
 </Tabs>
 
-Again, exit the process.
+Then, once again, go to the other terminal you are using for **Generator** (or other traditional message sending OS tool), and start sending our familiar message:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    - Using **Generator**
+
+    ```powershell
+    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    - Using **Generator**
+  
+    ```bash
+    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    ```
+    
+    - Using **System Logger**
+
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Hello world"
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    - Using **Generator**
+
+    ```bash
+    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    ```
+  
+    - Using **System Logger**
+  
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Hello world"
+    ```
+  </TabItem>
+</Tabs>
+
+This time, you will see that our message is printed to the console in ECS format we have specified:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    ```PowerShell
+    {"message":"<3> 2025-06-02T10:38:02+03:00 VirtualMetric Test[7916]: Hello world","@timestamp":"2025-06-02T10:38:02+03:00"}
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    {"message":"<3> 2025-06-02T10:38:02+03:00 VirtualMetric Test[7916]: Hello world","@timestamp":"2025-06-02T10:38:02+03:00"}
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    {"message":"<3> 2025-06-02T10:38:02+03:00 VirtualMetric Test[7916]: Hello world","@timestamp":"2025-06-02T10:38:02+03:00"}
+    ```
+  </TabItem>
+</Tabs>
+
+Once again, you can exit either process by pressing <kb-short>Ctrl+C</kb-short>.
 
 ## Storage File Setup
 
-The next type of output we can use is a file. Various formats are available in **DataStream**, but for the sake of simplicity, we will pick the widely used _JSON_ format which is the default format for the `file` target type:
+The next type of output we can use is a file. Various formats are available in **DataStream**, but for the sake of simplicity, we will pick the widely used _JSON_ format which is the default for the `file` target type:
 
 ```yaml
 targets:
@@ -103,55 +127,127 @@ targets:
       name: "from_syslog_{{.Year}}_{{.Month}}_{{.Day}}.json"
 ```
 
-The path we have specified for `location` is where the JSON file will be created. The nested `name` parameter is for the file in which we will store our output data. The file's name will have a `from_syslog_` prefix with the internal field values of `Year`, `Month`, and `Day` appended.
+Create a file named `to-json.yml` in our working directory and save this code in it.
+
+The path we have specified for `location` is where the JSON file will be created. (Do not forget to replace `<vm_root>` with the actual path of your **VirtualMetric** installation.) The nested `name` parameter is for the file: it will have a `from_syslog_` prefix to which the internal field values of `Year`, `Month`, and `Day` will be appended.
 
 :::note
 Under `properties`, we did not specify any `format` since JSON is the default for the file target type.
 :::
 
-Put this configuration in a file named `to-json.yml` and place it our working directory.
+To be able to use this target, we have to configure another route. But, to keep things simple, first open the `syslog-to-console.yml` and comment out the route definition in it, and save:
 
-To use this target, Now we have to configure another route:
+```yaml title="syslog-to-console.yml"
+# routes:
+#   - name: syslog_to_console
+#     devices:
+#       - name: from_syslog
+#     targets:
+#       - name: to_console
+```
 
-```yaml
+:::note
+**VirtualMetric Director** runs all the defined routes it has spotted under the `config` directory simultaneously.
+:::
+
+Now create a file named `syslog-to-json.yml` and place this new route definition in it:
+
+```yaml title="syslog-to-json.yml"
 routes:
   - name: syslog_to_json
-    if: device.name == "from_syslog"
+    devices:
+      - name: from_syslog
     targets:
       - name: to_json
 ```
 
-Put this in a file named `syslog-to-json.yml` and place in our working directory. 
+Once again, run *Generator* or equivalent to send messages to syslog:
 
-To have the _syslog_ data directed to the storage file we have configured, enter the following command line in your terminal:
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    - Using **Generator**
 
-  <Tabs>
-    <TabItem value="windows" label="Windows">
-      ```PowerShell
-      .\vmetric-director
-      ```
-    </TabItem>
-    <TabItem value="linux" label="Linux">
-      ```bash
-      ./vmetric-director
-      ```
-    </TabItem>
-    <TabItem value="macos" label="macOS">
-      ```bash
-      ./vmetric-director
-      ```
-    </TabItem>
-  </Tabs>
+    ```powershell
+    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    - Using **Generator**
+  
+    ```bash
+    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    ```
+    
+    - Using **System Logger**
 
-Press <kb-short>Ctrl+C</kb-short> to exit the process.
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Hello world"
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    - Using **Generator**
 
-## Monitoring
+    ```bash
+    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    ```
+  
+    - Using **System Logger**
+  
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Hello world"
+    ```
+  </TabItem>
+</Tabs>
 
-To monitor the stream, check **Director**'s logs&mdash;those under the directory indicated [here](./configuration-basics.mdx#logging-setup)&mdash;for initialization messages, upload/ingestion status, buffer sizes, and number of retries.
+To have this _syslog_ message directed to the storage file we have configured, invoke **Director** from your terminal:
 
-:::note
-Files containing no messages are automatically cleaned up when disposed.
-:::
+<Tabs>
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    vmetric-director
+    ```
+  </TabItem>
+</Tabs>
+
+**Director** will issue prompts like the following while it is writing the ingested data to our JSON file:
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    [2025-06-02 11:15:58] [Information] [vmetric-director] Completed processing of to_json target logs. Number of processed logs: 1000
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    [2025-06-02 11:15:58] [Information] [vmetric-director] Completed processing of to_json target logs. Number of processed logs: 1000
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    [2025-06-02 11:15:58] [Information] [vmetric-director] Completed processing of to_json target logs. Number of processed logs: 1000
+    ```
+  </TabItem>
+</Tabs>
+
+Press <kb-short>Ctrl+C</kb-short> in both terminals to exit the processes.
+
+Now we can check our ouput. In our working directory, you will find a file with a name like `from_syslog_2025_06_02.json`. Open it with a text editor. You will find that the ingested data has been stored in it in a format like this:
+
+```json
+{"epoch":1748852145,"message":"<3> 2025-06-02T11:15:45+03:00 VirtualMetric Test[5832]: Hello world"}
+```
+
+Since we have only sent the same message multiple times, there will be multiple copies of it in the file.
 
 ---
 

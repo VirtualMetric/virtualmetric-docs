@@ -15,9 +15,9 @@ Use UDP as the listening protocol.
 
 ### Step 1. Create Configuration
 
-Create a text file named `syslog-to-console.yml` in our [working directory](./configuration-basics.mdx#working-directory), and then open it with a text editor to enter the following:
+Create a file named `from-syslog-udp.yml` in our [working directory](./configuration-basics.mdx#working-directory), and then open it with a text editor to enter the following:
 
-```yaml title="syslog-to-console.yml"
+```yaml title="from-syslog-udp.yml"
 devices:
   - id: 1
     name: from_syslog
@@ -29,6 +29,27 @@ devices:
 ```
 
 This YAML code specifies that this is a _Syslog_ device, that it will use UDP as its protocol, and that it will be listening on port `514`. You can enter any integer as the `id` value.
+
+However, we also need to define a target that the ingested data willl be directed to, and a route combining the device and the target. Create a file named `to-console.yml` and add the following to it:
+
+```yaml title="to-console.yml"
+targets:
+  - name: to_console
+    type: console
+```
+
+Finally, create a file named `syslog-to-console.yml` and add the following route definition to it.
+
+```yaml title="syslog-to-console.yml"
+routes:
+  - name: syslog_to_console
+    devices:
+      - name: from_syslog
+    targets:
+      - name: to_console
+```
+
+We are now ready to try our configuration.
 
 ### Step 2. Run the UDP Device
 
@@ -94,7 +115,7 @@ We can now test this using either **Director**'s cross-platform companion **Gene
   </TabItem>
 </Tabs>
 
-After you press <kb-short>Enter</kb-short>, Generator will pause for a number of seconds, and then it will start sending our message to _Syslog_. It will signal that it started sending messages with a prompt like this:
+If you are using **Generator**, after you press <kb-short>Enter</kb-short> the program will pause for a few seconds, and then it will start sending our message to _Syslog_. It will signal that it started sending messages with a prompt like this:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
@@ -216,9 +237,9 @@ Now that we have created these files, we must copy them to our installation root
 
 ### Step 3. Create Secure Configuration
 
-We will now prepare a secure configuration by creating another file named `tcp-syslog.yml` in our working directory:
+We will now prepare a secure configuration by creating another file named `from-syslog-tcp.yml` in our working directory:
 
-```yaml title="tcp-syslog.yml"
+```yaml title="from-syslog-tcp.yml"
 devices:
   - id: 2
     name: secure_syslog
@@ -279,29 +300,7 @@ Now we can test the connection. Open a new terminal, and enter the following com
 
 Our test message is sent to the port **Director** is listening via TCP.
 
-## Monitoring
-
 Check **Director**'s logs&mdash;those under the directory indicated [here](./configuration-basics.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
-
-To monitor the logs in real time and filter for a specific debug level, you can start the process as:
-
-<Tabs>
-  <TabItem value="windows" label="Windows" default>
-    ```powershell
-    vmetric-director -mode=console -debug-level=3
-    ```
-  </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    vmetric-director -mode=console -debug-level=3
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-    ```bash
-    vmetric-director -mode=console -debug-level=3
-    ```
-  </TabItem>
-</Tabs>
 
 ---
 
