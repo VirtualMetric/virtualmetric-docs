@@ -1,7 +1,3 @@
----
-pagination_next: null
----
-
 # Example: A Syslog-To-Parquet Pipeline
 
 This section will help you get started with configuring and running a pipeline, walking you through a common use case.
@@ -22,28 +18,125 @@ To be able to use our pipeline, we will also define a route to specify the _sour
 
 ## Setup
 
-We must work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where Parquet files will be stored.
+We must work in an environment that has access to _Syslog_ messages, and since we have privileges for that, that is taken care of. We also need write permissions to the directory where Parquet files will be stored, and since we will be using our [working directory](./configuration-basics.mdx#working-directory) that also is taken care of.
 
-## Configuration Files
-
-For convenience, we will place all our configurations in a single file name `pipeline.yml` and place it directly under `config`.
-
-:::tip
-When configuring the pipeline, devices are referred to with the numbers in their `id` parameters, whereas targets, routes, and other pipelines are referred to with the identifiers in their `name` parameters.
+:::note
+For this section, nagivate to `<vm_root>` and continue working there since any paths given will be relative.
 :::
+
+However, we must first understand the logic of a pipeline.
+
+## Pipeline Logic
+
+To understand how a pipeline works at the very basic level, we will create a very simple input file in JSON format and a very simple pipeline that does only one transformation, and using **Director**'s pipeline validation and testing facilities, we will see the pipeline in action.
+
+### Test Case
+
+First, create a JSON file named `sample-data.json` in our working directory, and put the following sample data in it:
+
+```json
+{
+  "names": ["john", "june", "mark", "mary"]
+}
+```
+
+Then, create a YAML file in our working directory named `convert-names.yml`, and put the following pipeline definition in it:
+
+```yaml
+pipelines:
+  - name: convert_names
+    processors:
+      - uppercase:
+        field: names
+        target_field: convertedNames
+```
+
+This pipeline will look for the field named `names` in the JSON file we will direct to it, and then, using the [`uppercase`](../configuration/pipelines/processors/uppercase.mdx) processors, convert the names to&mdash;you guessed it&mdash;uppercase.
+
+### Validation
+
+To see whether our pipeline is valid, enter the following command in your terminal:
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    vmetric-director -mode=pipeline -name=convert_names -validate
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    vmetric-director -mode=pipeline -name=convert_names -validate
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    vmetric-director -mode=pipeline -name=convert_names -validate
+    ```
+  </TabItem>
+</Tabs>
+
+If our pipeline setup is valid, this should return `true` to the command line. If that is the case, we can now run our test.
+
+### Test Run
+
+Enter the following in the command line:
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    vmetric-director -mode pipeline -name convert_names -input ".\config\Examples\sample-data.json" -output ".\config\Examples\processed-sample-data.json"
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    vmetric-director -mode pipeline -name convert_names -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    vmetric-director -mode pipeline -name convert_names -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
+    ```
+  </TabItem>
+</Tabs>
+
+Here is what this test will do:
+
+* Consume the data in the input file named `sample-data.json` in our working directory
+* Using the pipeline named `convert_names`, convert the names in the `names` field to `uppercase`
+* Write the converted names to a new field named `convertedNames`
+* Save the results to the output file named `processed-sample-data.json` in our working directory.
+
+:::note
+The output file should be created when the test is run.
+:::
+
+Now open the file named `processed-sample-data.json` to see the results. It should appear as this:
+
+```json
+{
+  "names": ["john", "june", "mark", "mary"],
+  "convertedNames": ["JOHN", "JUNE", "MARK", "MARY"]
+}
+```
+
+Now that we have seen a pipeline works, we can proceed to creating our end-to-end data flow with a device, a pipeline, and a target for storage.
+
+## Design
+
+For convenience, we will place all our configurations in a single file named `syslog-to-parquet.yml` and place it again in our working directory. In order to avoid any confusion, delete all the YAML files we have previously created so that nothing other than our current configuration is run.
 
 ## Step 1: Configure The Device
 
 First, we have to define a device that will receive the log data. We will use the configuration we have created in our [ingesting data example](./example-ingesting-data.mdx) as our starting point, modifying it as fits our needs:
 
-```yml
+```yml title="syslog-to-parquet.yml"
 devices:
   - id: 1
-    name: syslog_tcp
+    name: from_syslog
     type: syslog
     properties:
-      protocol: tcp
-      port: 1514
+      protocol: udp
+      port: 514
       framing: delimiter
       line_delimiter: "\n"
       buffer_size: 16384
@@ -52,19 +145,20 @@ devices:
 
 Put this device configuration in your file.
 
-This configuration will create a _TCP Syslog_ server listening on port `1514`. We have specified the line feed character as the delimiter for message framing. We also set the appropriate buffer and batch sizes.
+This configuration will create a UDP _Syslog_ server listening on port `514`. We have specified the line feed character as the delimiter for message framing. We also set appropriate buffer and batch sizes.
 
 ## Step 2: Configure The Target
 
 Next, we will define a target for **Parquet file** storage in our file:
 
-```yml
+```yml title="syslog-to-parquet.yml"
 targets:
-  - name: parquet_output
+  - name: to_parquet
     description: "Parquet file output target"
     type: parquet
     properties:
-      file_path: "<vm_root>/config/Examples/syslog_data.parquet"
+      location: "<vm_root>/config/Examples"
+      name: "from-syslog.parquet"
       batch_size: 1000
       flush_interval: 300
       compression: snappy
@@ -76,9 +170,9 @@ With this configuration, we are setting up a Parquet file target that will store
 
 We are now ready to configure our pipeline. Put the following in our configuration file:
 
-```yml
+```yml title="syslog-to-parquet.yml"
 pipelines:
-  - name: syslog_to_parquet
+  - name: parse_syslog
     description: "Process Syslog data for Parquet storage"
     processors:
       - grok:
@@ -129,19 +223,19 @@ To avoid raising exceptions, we chose to ignore failures and missing fields.
 
 Finally, we have to create a route to connect our device to the pipeline and then to our target. Put the following definition in our configuration file:
 
-```yml
+```yml title="syslog-to-parquet.yml"
 routes:
-  - name: syslog_to_parquet_route
+  - name: syslog_to_parquet
     description: "Route Syslog data to Parquet file"
     devices:
-      - name: syslog_tcp
+      - name: from_syslog
     pipelines:
-      - name: syslog_to_parquet
+      - name: parse_syslog
     targets:
-      - name: parquet_output
+      - name: to_parquet
 ```
 
-This configuration will connect to the _Syslog_ server, apply the `syslog_to_parquet` pipeline to process the ingested data, and then send it to the **Parquet file** target specified.
+This configuration will connect to the _Syslog_ server, apply the `parse_syslog` pipeline to process the ingested data, and then write it to the **Parquet file** specified.
 
 ## Monitoring
 
@@ -153,20 +247,20 @@ We will use the `mode` parameter to tell **Director** that we will run a "pipeli
 
 We will first validate the pipeline:
 
-<Tabs groupId="os-options">
+<Tabs>
   <TabItem value="windows" label="Windows">
     ```PowerShell
-    .\vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
+    vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    ./vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
+    vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    ./vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
+    vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
     ```
   </TabItem>
 </Tabs>

@@ -30,7 +30,9 @@ devices:
 
 This YAML code specifies that this is a _Syslog_ device, that it will use UDP as its protocol, and that it will be listening on port `514`. You can enter any integer as the `id` value.
 
-However, we also need to define a target that the ingested data willl be directed to, and a route combining the device and the target. Create a file named `to-console.yml` and add the following to it:
+However, we also need to define a target that the ingested data willl be directed to, and a route combining the device and the target.
+
+Create a file named `to-console.yml` and add the following target definition to it:
 
 ```yaml title="to-console.yml"
 targets:
@@ -38,7 +40,7 @@ targets:
     type: console
 ```
 
-Finally, create a file named `syslog-to-console.yml` and add the following route definition to it.
+Now create a file named `syslog-to-console.yml` and add the following route definition to it.
 
 ```yaml title="syslog-to-console.yml"
 routes:
@@ -77,21 +79,21 @@ After you press <kb-short>Enter</kb-short>, you will see a stream of initializat
 
 ### Step 3. Test Configuration
 
-We can now test this using either **Director**'s cross-platform companion **Generator** or the traditional tools available on your platform. Open a new terminal and enter the following in the command line:
+We can now test the reception using either **Director**'s cross-platform companion **Generator** or the traditional tools available on your platform. Open a new terminal and enter the following in the command line:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
     - Using **Generator**
 
     ```powershell
-    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     - Using **Generator**
   
     ```bash
-    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
@@ -104,7 +106,7 @@ We can now test this using either **Director**'s cross-platform companion **Gene
     - Using **Generator**
 
     ```bash
-    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   
     - Using **System Logger**
@@ -115,45 +117,48 @@ We can now test this using either **Director**'s cross-platform companion **Gene
   </TabItem>
 </Tabs>
 
-If you are using **Generator**, after you press <kb-short>Enter</kb-short> the program will pause for a few seconds, and then it will start sending our message to _Syslog_. It will signal that it started sending messages with a prompt like this:
+If you are using **Generator**, after you press <kb-short>Enter</kb-short> the program will start sending our message, one at a time, to _Syslog_. It will signal that it sent the message with a prompt like this:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
     ```PowerShell
-    1000 messages sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
-    2000 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
+    1 message sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
+    2 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
+    ...
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    1000 messages sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
-    2000 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
+    1 message sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
+    2 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
+    ...
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    1000 messages sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
-    2000 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
+    1 message sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
+    2 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
+    ...
     ```
   </TabItem>
 </Tabs>
 
-If you now switch back to **Director**'s terminal, you will see the message sent (i.e. "Hello world") on the console:
+If you now switch back to **Director**'s terminal, you will see each sent message (i.e. "Hello world") on the console:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
     ```PowerShell
-    <3> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
+    <1> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    <3> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
+    <1> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    <3> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
+    <1> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
     ```
   </TabItem>
 </Tabs>
@@ -162,7 +167,7 @@ If you want to exit both of the processes, press <kb-short>Ctrl+C</kb-short> on 
 
 ## Secure TCP Setup
 
-Create a TLS-enabled device to ingest data over TCP.
+Now we will create a TLS-enabled device to ingest data over TCP.
 
 ### Step 1. Prepare Certificates
 
@@ -210,7 +215,7 @@ The above commands will generate the required `key.pem` and `cert.pem` files.
 
 ### Step 2. Place Certificates
 
-Now that we have created these files, we must copy them to our installation root directory:
+Now that we have created the files needed for a secure connection, we must copy them to our root directory:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
@@ -256,7 +261,7 @@ devices:
 
 Note that we specified the certificate files we have created in the previous step. That is because we have set the `status` of the `tls` field to `true`.
 
-We can run it in the background:
+We can run our device in the background:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
@@ -278,22 +283,22 @@ We can run it in the background:
 
 ### Step 4. Test Configuration
 
-Now we can test the connection. Open a new terminal, and enter the following command:
+Time to test the secure connection. In the terminal where you have previously sent **Generator** messages, and enter the following command:
 
 <Tabs>
   <TabItem value="windows" label="Windows" default>
     ```powershell
-    Write-Output "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+    Write-Output "Hello secure world" | openssl s_client -connect 127.0.0.1:6514
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+    echo "Hello secure world" | openssl s_client -connect 127.0.0.1:6514
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    echo "Test secure message" | openssl s_client -connect 127.0.0.1:6514
+    echo "Hello secure world" | openssl s_client -connect 127.0.0.1:6514
     ```
   </TabItem>
 </Tabs>
@@ -302,6 +307,8 @@ Our test message is sent to the port **Director** is listening via TCP.
 
 Check **Director**'s logs&mdash;those under the directory indicated [here](./configuration-basics.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
 
+You can now exit the processes on both terminals by pressing <kb-short>Ctrl+C</kb-short>.
+
 ---
 
-In the next section, we will create a _target_ to forward the data we have ingested through the device we have defined here.
+In the next section, we will create a different type of target _target_ to forward the data ingested through the UDP device we have defined here.
