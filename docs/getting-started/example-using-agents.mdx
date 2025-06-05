@@ -4,6 +4,8 @@ pagination_next: null
 
 # Example: Using Agents
 
+This section shows how a typical **Agent** is configured.
+
 ## Director Configuration
 
 Add a device configuration for **Director**:
@@ -11,7 +13,7 @@ Add a device configuration for **Director**:
 ```yaml
 devices:
   - id: 1
-    name: agent1
+    name: sample_agent
     type: windows
     status: true
     properties:
@@ -21,9 +23,9 @@ devices:
       - id: 486227243115741541
 ```
 
-Definitions are predefined Windows log channel configurations.
+Definitions are predefined Windows log channel configurations:
 
-- `491591344758837249` is base definition id
+- `491591344758837249` is the base definition id
 - `486227243115741541` is for security
 
 There are 3 different security definitons that can be used under the `<vm_root>\package\definitions\module\windows\host\event` directory.
@@ -50,7 +52,9 @@ There are 3 different security definitons that can be used under the `<vm_root>\
 
     [`1102`, `4624`, `4625`, `4657`, `4663`, `4688`, `4700`, `4702`, `4719`, `4720`, `4722`, `4723`, `4724`, `4727`, `4728`, `4732`, `4735`, `4737`, `4739`, `4740`, `4754`, `4755`, `4756`, `4767`, `4799`, `4825`, `4946`, `4948`, `4956`, `5024`, `5033`]
 
-You need to use only one of these YAML files. Delete the example you do not want to use.
+:::tip
+You need to use only one of these YAML files. You can delete the examples you do not want to use.
+:::
 
 - Microsoft-Windows-AppLocker/EXE and DLL-related event ids:
 
@@ -62,9 +66,7 @@ You need to use only one of these YAML files. Delete the example you do not want
 
 ## Agent Configuration
 
-Download `vmetric-agent.exe` to a folder. Then create a `vmetric.yml` in the same folder, and add the following basic configuration information.
-
-id will be the same that is configured in director devices section. director address is the ip address for director service server.
+Download `vmetric-agent.exe` to a folder. Then, create a `vmetric.yml` file in the same folder, and add the following configuration to it:
 
 ```yaml
 device:
@@ -73,4 +75,8 @@ director:
   address: 192.168.1.200:8080
 ```
 
-Replace the IP with your server's.
+Here
+
+- the `device.id` value will be the same as that is configured in **Director**'s `devices` section.
+- the `director.address` value is the IP address for **Director**'s service server; replace with your server's
+- the listening port is `8080`
