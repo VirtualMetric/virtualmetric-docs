@@ -36,8 +36,8 @@ const sidebars: SidebarsConfig = {
         'getting-started/configuration-basics',
         'getting-started/example-ingesting-data',
         'getting-started/example-forwarding-data',
-        'getting-started/example-routing-data',
         'getting-started/example-a-syslog-to-parquet-pipeline',
+        'getting-started/example-using-agents',
         {
           type: "category",
           label: "Deployment",

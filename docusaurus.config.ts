@@ -3,7 +3,7 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
 import customTheme from "./src/utils/coloring";
-import packageJson from "./package.json";
+import package_json from "./package.json";
 
 const config: Config = {
   title: "VirtualMetric",
@@ -54,7 +54,7 @@ const config: Config = {
           includeCurrentVersion: true,
           versions: {
             current: {
-              label: packageJson.version,
+              label: package_json.version,
             }
           },
         },
