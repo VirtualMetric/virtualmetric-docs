@@ -8,21 +8,17 @@ We will create a pipeline that ingests logs from a _Syslog_ source, processes an
 
 We will implement the following scenario:
 
-* **Create a device** - Define the parameters of a `syslog` listener to receive messages. See the fields available in the [Syslog](../appendix.mdx#syslog) format
+1. **Create a device** - Define the parameters of a _Syslog_ listener to receive messages.
 
-* **Create a target** - Define the format for sending the messages to a `parquet` file as the destination
+2. **Create a target** - Define the parameters for sending the messages to a _Parquet_ file as the destination.
 
-* **Specify processors** - Using the `grok` processor, extract the `message` and `syslog.message` fields and map them to structured fields
+3. **Create a pipeline** - Define the parameters to extract some _Syslog_ data and map them to fields to be stored in the _Parquet_ file.
 
-To be able to use our pipeline, we will also define a route to specify the _source_ and the _destination_, along with the pipeline we have configured.
+4. **Create a route** - Define the parameters that will relate the _source_ to the _pipeline_ that will process the ingested data and the _destination_ that will receive the processed result.
 
 ## Setup
 
-We must work in an environment that has access to _Syslog_ messages, and since we have privileges for that, that is taken care of. We also need write permissions to the directory where Parquet files will be stored, and since we will be using our [working directory](./configuration-basics.mdx#working-directory) that also is taken care of.
-
-:::note
-For this section, nagivate to `<vm_root>` and continue working there since any paths given will be relative.
-:::
+We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the Parquet file will be stored, although since we will be using our [working directory](./configuration-basics.mdx#working-directory) that is taken care of.
 
 However, we must first understand the logic of a pipeline.
 
@@ -30,71 +26,86 @@ However, we must first understand the logic of a pipeline.
 
 To understand how a pipeline works at the very basic level, we will create a very simple input file in JSON format and a very simple pipeline that does only one transformation, and using **Director**'s pipeline validation and testing facilities, we will see the pipeline in action.
 
-### Test Case
+:::tip
+For the following, nagivate to `<vm_root>` in your terminal, and continue working there since any paths given will be relative.
+:::
+
+### Create Test Case
 
 First, create a JSON file named `sample-data.json` in our working directory, and put the following sample data in it:
 
 ```json
 {
-  "names": ["john", "june", "mark", "mary"]
+  "words": ["hello", "world"]
 }
 ```
 
-Then, create a YAML file in our working directory named `convert-names.yml`, and put the following pipeline definition in it:
+Then, create a YAML file in our working directory named `convert-words.yml`, and put the following pipeline definition in it:
 
 ```yaml
 pipelines:
-  - name: convert_names
+  - name: convert_words
     processors:
-      - uppercase:
-        field: names
-        target_field: convertedNames
+      - json:
+        field: words
+        add_to_root: true
+      - foreach:
+        field: words
+        processor:
+          - uppercase:
+            field: "_ingest._value"
+            target_field: convertedWords
+
 ```
 
-This pipeline will look for the field named `names` in the JSON file we will direct to it, and then, using the [`uppercase`](../configuration/pipelines/processors/uppercase.mdx) processors, convert the names to&mdash;you guessed it&mdash;uppercase.
+Here is what this pipeline will do:
 
-### Validation
+- Look for the field named `words` in the JSON file we will feed it.
+- Copy the values it has spotted in that field to the root of the output document using the `json` processor's `add_to_root` flag.
+- Using the [`foreach`](../configuration/pipelines/processors/foreach.mdx) processor&mdash;which applies the specified processor (i.e. [`uppercase`](../configuration/pipelines/processors/uppercase.mdx)) to each element in the list returned by the meta field `"_ingest._value"`&mdash;convert each item to uppercase.
 
-To see whether our pipeline is valid, enter the following command in your terminal:
+### Validate Pipeline
+
+To see whether our pipeline is valid, we will enter the following command in the terminal:
 
 <Tabs>
   <TabItem value="windows" label="Windows">
     ```PowerShell
-    vmetric-director -mode=pipeline -name=convert_names -validate
+    vmetric-director -mode=pipeline -name=convert_words -validate
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    vmetric-director -mode=pipeline -name=convert_names -validate
+    vmetric-director -mode=pipeline -name=convert_words -validate
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    vmetric-director -mode=pipeline -name=convert_names -validate
+    vmetric-director -mode=pipeline -name=convert_words -validate
     ```
   </TabItem>
 </Tabs>
 
-If our pipeline setup is valid, this should return `true` to the command line. If that is the case, we can now run our test.
+If our pipeline setup is valid, this command should return `true`. If that is indeed the case, we can now run our test.
 
-### Test Run
+### Run Test
 
 Enter the following in the command line:
 
 <Tabs>
   <TabItem value="windows" label="Windows">
     ```PowerShell
-    vmetric-director -mode pipeline -name convert_names -input ".\config\Examples\sample-data.json" -output ".\config\Examples\processed-sample-data.json"
+    vmetric-director -mode pipeline -name convert_words -input ".\config\Examples\sample-data.json" -output ".\config\Examples\processed-sample-data.json"
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    vmetric-director -mode pipeline -name convert_names -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
+    vmetric-director -mode pipeline -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    vmetric-director -mode pipeline -name convert_names -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
+    vmetric-director -mode pipeline -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
     ```
   </TabItem>
 </Tabs>
@@ -102,26 +113,26 @@ Enter the following in the command line:
 Here is what this test will do:
 
 * Consume the data in the input file named `sample-data.json` in our working directory
-* Using the pipeline named `convert_names`, convert the names in the `names` field to `uppercase`
-* Write the converted names to a new field named `convertedNames`
+* Using the pipeline named `convert_words`, convert the names in the `words` field to `uppercase`
+* Write the converted names to a new field named `convertedWords`
 * Save the results to the output file named `processed-sample-data.json` in our working directory.
 
 :::note
 The output file should be created when the test is run.
 :::
 
-Now open the file named `processed-sample-data.json` to see the results. It should appear as this:
+Now open the file named `processed-sample-data.json` to see the results. It should appear like this:
 
 ```json
 {
-  "names": ["john", "june", "mark", "mary"],
-  "convertedNames": ["JOHN", "JUNE", "MARK", "MARY"]
+  "names": ["hello", "world"],
+  "convertedNames": ["HELLO", "WORLD"]
 }
 ```
 
-Now that we have seen a pipeline works, we can proceed to creating our end-to-end data flow with a device, a pipeline, and a target for storage.
+Now we can proceed to creating our end-to-end data flow with a device, a pipeline, and a target for storage.
 
-## Design
+## End-to-End Design
 
 For convenience, we will place all our configurations in a single file named `syslog-to-parquet.yml` and place it again in our working directory. In order to avoid any confusion, delete all the YAML files we have previously created so that nothing other than our current configuration is run.
 
@@ -143,18 +154,19 @@ devices:
       batch_size: 1000
 ```
 
+See the [Syslog](../appendix.mdx#syslog) format for available fields.
+
 Put this device configuration in your file.
 
 This configuration will create a UDP _Syslog_ server listening on port `514`. We have specified the line feed character as the delimiter for message framing. We also set appropriate buffer and batch sizes.
 
 ## Step 2: Configure The Target
 
-Next, we will define a target for **Parquet file** storage in our file:
+Next, we will define a target for _Parquet_ file storage in our configuration:
 
 ```yml title="syslog-to-parquet.yml"
 targets:
   - name: to_parquet
-    description: "Parquet file output target"
     type: parquet
     properties:
       location: "<vm_root>/config/Examples"
@@ -163,6 +175,8 @@ targets:
       flush_interval: 300
       compression: snappy
 ```
+
+See the [Parquet](../appendix.mdx#parquet-files) format for the file layout.
 
 With this configuration, we are setting up a Parquet file target that will store processed syslog data. We have specified batching and flush intervals for optimal performance, and enabled Snappy compression for efficient storage.
 
@@ -173,7 +187,6 @@ We are now ready to configure our pipeline. Put the following in our configurati
 ```yml title="syslog-to-parquet.yml"
 pipelines:
   - name: parse_syslog
-    description: "Process Syslog data for Parquet storage"
     processors:
       - grok:
           field: message
@@ -184,36 +197,30 @@ pipelines:
           patterns:
             - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
           ignore_failure: true
+
       - set:
-          field: event.kind
-          value: event
+          field: event
+          value: event.action
       - set:
-          field: event.category
-          value: "syslog"
-      - rename:
-          fields:
-            - from: timestamp
-              to: event.created
-            - from: source.ip
-              to: src.ip
-            - from: user.name
-              to: user.name_orig
+          field: user
+          value: user.name
+      - set:
+          field: message
+          value: syslog.message
+
       - remove:
           field:
             - syslog.message
-            - message
           ignore_missing: true
 ```
 
 This configuration will do the following:
 
-* Parse the _Syslog_ header information using the [`grok`](../configuration/pipelines/processors/grok.mdx) processor—reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`—and will extract authentication event details
+* Parse the _Syslog_ header information using the [`grok`](../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`&mdash;and will extract authentication event details
 
-* Set the common event metadata `event.kind` and `event.category`
+* Set the fields `event`, `user`, and `message` with the data extracted from _Syslog_
 
-* Rename fields to create a consistent schema structure
-
-* Clean up the temporary fields.
+* Clean up the temporary field `syslog.message`.
 
 :::note
 To avoid raising exceptions, we chose to ignore failures and missing fields.
@@ -226,7 +233,6 @@ Finally, we have to create a route to connect our device to the pipeline and the
 ```yml title="syslog-to-parquet.yml"
 routes:
   - name: syslog_to_parquet
-    description: "Route Syslog data to Parquet file"
     devices:
       - name: from_syslog
     pipelines:
@@ -235,17 +241,17 @@ routes:
       - name: to_parquet
 ```
 
-This configuration will connect to the _Syslog_ server, apply the `parse_syslog` pipeline to process the ingested data, and then write it to the **Parquet file** specified.
+This configuration will connect to the _Syslog_ server, apply the `parse_syslog` pipeline to the ingested data, and then write it to the _Parquet_ file specified.
 
 ## Monitoring
 
-Let's put it all together: we have defined a device and a target, configured a pipeline to specify how the data will be processed, and specified a route that will use this pipeline. At this point we have everything ready.
+Let's put it all together: we have defined a device, a target, and a pipeline, and specified a route that will link the device to the pipeline and the target. At this point we have everything ready.
 
 :::note
 We will use the `mode` parameter to tell **Director** that we will run a "pipeline", and then use the pipeline's `name` parameter to specify it on the CLI.
 :::
 
-We will first validate the pipeline:
+As we did aboveü, we will first validate the pipeline:
 
 <Tabs>
   <TabItem value="windows" label="Windows">
@@ -265,8 +271,66 @@ We will first validate the pipeline:
   </TabItem>
 </Tabs>
 
-When **Director** is invoked with our configuration file, it starts receiving _Syslog_ messages on port `1514` and processing them through the pipeline and sending them to our specified Parquet file.
+Once our pipeline is validated, we can start running our configuration:
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    vmetric-director
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    vmetric-director
+    ```
+  </TabItem>
+</Tabs>
+
+We will once again use **Generator** or a traditional platform tool to send our "`Hello world`" messages to _Syslog_:
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
+    - Using **Generator**
+
+    ```powershell
+    vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    - Using **Generator**
+  
+    ```bash
+    vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    ```
+    
+    - Using **System Logger**
+
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Hello world"
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    - Using **Generator**
+
+    ```bash
+    vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    ```
+  
+    - Using **System Logger**
+  
+    ```bash
+    logger -n 127.0.0.1 -P 514 "Hello world"
+    ```
+  </TabItem>
+</Tabs>
+
+Now **Director** should be receiving _Syslog_ messages, processing them through our pipeline, and sending them to our Parquet file.
 
 Press <kb-short>Ctrl+C</kb-short> to exit the process.
 
-Check the logs for any errors, and verify that the Parquet file is being created with the processed syslog data.
+Check the logs for any errors, and verify that the _Parquet_ file was created with the processed _Syslog_ data.
