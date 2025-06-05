@@ -287,6 +287,10 @@ const sidebars: SidebarsConfig = {
     "appendix",
     "glossary"
   ],
+  tutorDocs: [
+    "tutorials/index",
+    // "tutorials/using-agents",
+  ],  
 };
 
 export default sidebars;
