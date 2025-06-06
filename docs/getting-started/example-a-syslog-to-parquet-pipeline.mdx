@@ -8,29 +8,29 @@ We will create a pipeline that ingests logs from a _Syslog_ source, processes an
 
 We will implement the following scenario:
 
-1. **Create a device** - Define the parameters of a _Syslog_ listener to receive messages.
+- **Ingest Syslog data** - Define the parameters of a _Syslog_ listener to receive messages.
 
-2. **Create a target** - Define the parameters for sending the messages to a _Parquet_ file as the destination.
+- **Extract user related information** - Define the parameters to extract specific information from _Syslog_ data and map them to fields that will be stored in a _Parquet_ file.
 
-3. **Create a pipeline** - Define the parameters to extract some _Syslog_ data and map them to fields to be stored in the _Parquet_ file.
+- **Route the data flow** - Define the parameters that will relate the _source_ to the _pipeline_ that will process the ingested data and the _destination_ that will receive the processed result.
 
-4. **Create a route** - Define the parameters that will relate the _source_ to the _pipeline_ that will process the ingested data and the _destination_ that will receive the processed result.
-
-## Setup
+- **Write the data to a Parquet file** - Define the parameters for sending the messages to a _Parquet_ file as the destination.
 
 We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the Parquet file will be stored, although since we will be using our [working directory](./configuration-basics.mdx#working-directory) that is taken care of.
 
-However, we must first understand the logic of a pipeline.
+However, we must first understand the underlying logic of a pipeline.
 
-## Pipeline Logic
+### Preliminary Test
 
 To understand how a pipeline works at the very basic level, we will create a very simple input file in JSON format and a very simple pipeline that does only one transformation, and using **Director**'s pipeline validation and testing facilities, we will see the pipeline in action.
+
+### Sample Case
 
 :::tip
 For the following, nagivate to `<vm_root>` in your terminal, and continue working there since any paths given will be relative.
 :::
 
-### Create Test Case
+#### Create Test Data
 
 First, create a JSON file named `sample-data.json` in our working directory, and put the following sample data in it:
 
@@ -39,6 +39,8 @@ First, create a JSON file named `sample-data.json` in our working directory, and
   "words": ["hello", "world"]
 }
 ```
+
+#### Define Pipeline Logic
 
 Then, create a YAML file in our working directory named `convert-words.yml`, and put the following pipeline definition in it:
 
@@ -61,12 +63,12 @@ pipelines:
 Here is what this pipeline will do:
 
 - Look for the field named `words` in the JSON file we will feed it.
-- Copy the values it has spotted in that field to the root of the output document using the `json` processor's `add_to_root` flag.
-- Using the [`foreach`](../configuration/pipelines/processors/foreach.mdx) processor&mdash;which applies the specified processor (i.e. [`uppercase`](../configuration/pipelines/processors/uppercase.mdx)) to each element in the list returned by the meta field `"_ingest._value"`&mdash;convert each item to uppercase.
+- Using the `json` processor's `add_to_root` flag, copy the values it has spotted in that field to the root of the output document.
+- Using the [`foreach`](../configuration/pipelines/processors/foreach.mdx) processor&mdash;which applies its specified `processor` (here, [`uppercase`](../configuration/pipelines/processors/uppercase.mdx)) to each element in the list returned by the meta field `"_ingest._value"`&mdash;convert each item to uppercase.
 
-### Validate Pipeline
+#### Validate Pipeline
 
-To see whether our pipeline is valid, we will enter the following command in the terminal:
+To see whether our pipeline is valid, we enter the following command in the terminal:
 
 <Tabs>
   <TabItem value="windows" label="Windows">
@@ -86,11 +88,11 @@ To see whether our pipeline is valid, we will enter the following command in the
   </TabItem>
 </Tabs>
 
-If our pipeline setup is valid, this command should return `true`. If that is indeed the case, we can now run our test.
+If our pipeline is valid, this command returns `true`. Since that is indeed the case, we can now run our test.
 
-### Run Test
+#### Run Test
 
-Enter the following in the command line:
+To see our pipeline in action, enter the following in the terminal:
 
 <Tabs>
   <TabItem value="windows" label="Windows">
@@ -110,16 +112,18 @@ Enter the following in the command line:
   </TabItem>
 </Tabs>
 
-Here is what this test will do:
+Here is what this test should do:
 
-* Consume the data in the input file named `sample-data.json` in our working directory
+* Consume the data in the input file named `sample-data.json` we put in our working directory
 * Using the pipeline named `convert_words`, convert the names in the `words` field to `uppercase`
 * Write the converted names to a new field named `convertedWords`
-* Save the results to the output file named `processed-sample-data.json` in our working directory.
+* Save the results to an output file named `processed-sample-data.json` in our working directory.
 
 :::note
 The output file should be created when the test is run.
 :::
+
+#### Check Processed Data
 
 Now open the file named `processed-sample-data.json` to see the results. It should appear like this:
 
@@ -130,13 +134,17 @@ Now open the file named `processed-sample-data.json` to see the results. It shou
 }
 ```
 
-Now we can proceed to creating our end-to-end data flow with a device, a pipeline, and a target for storage.
+Now we can proceed to creating our data flow design.
 
-## End-to-End Design
+## Setup
 
-For convenience, we will place all our configurations in a single file named `syslog-to-parquet.yml` and place it again in our working directory. In order to avoid any confusion, delete all the YAML files we have previously created so that nothing other than our current configuration is run.
+For convenience, we will place all our configurations in a single file named `syslog-to-parquet.yml` which we will again place in our working directory.
 
-## Step 1: Configure The Device
+:::note
+To avoid any confusion, delete all the other YAML files we have previously created so that nothing other than our current configuration is run.
+:::
+
+### Step 1: Configure The Device
 
 First, we have to define a device that will receive the log data. We will use the configuration we have created in our [ingesting data example](./example-ingesting-data.mdx) as our starting point, modifying it as fits our needs:
 
@@ -154,13 +162,13 @@ devices:
       batch_size: 1000
 ```
 
-See the [Syslog](../appendix.mdx#syslog) format for available fields.
+For details of the available fields, see the [Syslog](../appendix.mdx#syslog) format.
 
 Put this device configuration in your file.
 
-This configuration will create a UDP _Syslog_ server listening on port `514`. We have specified the line feed character as the delimiter for message framing. We also set appropriate buffer and batch sizes.
+This configuration will create a UDP _Syslog_ server listening on port `514`. We specified the line feed character as the delimiter for message framing. We also set appropriate buffer and batch sizes to consume enough data in one pass.
 
-## Step 2: Configure The Target
+### Step 2: Configure The Target
 
 Next, we will define a target for _Parquet_ file storage in our configuration:
 
@@ -176,17 +184,17 @@ targets:
       compression: snappy
 ```
 
-See the [Parquet](../appendix.mdx#parquet-files) format for the file layout.
+For details of the file layout, see the [Parquet](../appendix.mdx#parquet-files) format.
 
 With this configuration, we are setting up a Parquet file target that will store processed syslog data. We have specified batching and flush intervals for optimal performance, and enabled Snappy compression for efficient storage.
 
-## Step 3: Create A Processing Pipeline
+### Step 3: Create A Processing Pipeline
 
 We are now ready to configure our pipeline. Put the following in our configuration file:
 
 ```yml title="syslog-to-parquet.yml"
 pipelines:
-  - name: parse_syslog
+  - name: extract_user_event
     processors:
       - grok:
           field: message
@@ -199,17 +207,17 @@ pipelines:
           ignore_failure: true
 
       - set:
-          field: event
-          value: event.action
-      - set:
           field: user
           value: user.name
+      - set:
+          field: event
+          value: event.action
       - set:
           field: message
           value: syslog.message
 
       - remove:
-          field:
+          field:          
             - syslog.message
           ignore_missing: true
 ```
@@ -226,7 +234,7 @@ This configuration will do the following:
 To avoid raising exceptions, we chose to ignore failures and missing fields.
 :::
 
-## Step 4: Configure the Route
+### Step 4: Configure the Route
 
 Finally, we have to create a route to connect our device to the pipeline and then to our target. Put the following definition in our configuration file:
 
@@ -236,7 +244,7 @@ routes:
     devices:
       - name: from_syslog
     pipelines:
-      - name: parse_syslog
+      - name: extract_user_event
     targets:
       - name: to_parquet
 ```
