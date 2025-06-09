@@ -1,0 +1,564 @@
+---
+description: Command-line options
+---
+
+# Director
+
+The following lists all available switches through the **VirtualMetric Director** command-line binary and their various uses.
+
+|Switch|Description|Default Value|Possible Values|
+|--:|:--|:--|:--|
+|`-address`|**Generator** target address|`127.0.0.1:514`|IP:port|
+|`-agentless`|Run without service installation|`false`|`true`, `false`|
+|`-autodiscovery`|Enable auto-discovery (sentinel mode)|`false`|`true`, `false`|
+|`-background`|Run in background|`false`|`true`, `false`|
+|`-clear`|Clear statistics (stats mode)|`false`|`true`, `false`|
+|`-compare-version`|Compare version with current||Version string|
+|`-config`|Path to configuration file||File path|
+|`-console`|Run in _console_ mode|`false`|`true`, `false`|
+|`-count`|**Generator** message count|`1000`|Integer|
+|`-debug-level`|Debug level (console mode)||Integer|
+|`-definition-id`|Pipeline definition ID||String|
+|`-diff`|Show diff in pipeline output|`false`|`true`, `false`|
+|`-director`|Run in **Director** mode|`true`|`true`, `false`|
+|`-duration`|**Generator** duration in seconds|`300`|Integer|
+|`-example`|Show example configuration|`false`|`true`, `false`|
+|`-expected`|Pipeline expected output path||File path|
+|`-export-json`|Export pipeline as JSON|`false`|`true`, `false`|
+|`-extended`|Extended pipeline output|`false`|`true`, `false`|
+|`-file-path`|**Generator** input file path||File path|
+|`-filter`|Filter log output (console mode)||String|
+|`-generator`|Run in **Generator** mode|`false`|`true`, `false`|
+|`-info`|Show service information|`false`|`true`, `false`|
+|`-input`|Pipeline input path||File path|
+|`-interval`|**Generator** interval in seconds|`1`|Integer|
+|`-message`|**Generator** message|`VirtualMetric Test Message`|String|
+|`-mode`|Specifies the operation mode|`director`|`director`, `supervisor`, `update`, `console`, `pipeline`, `sentinel`, `snmpwalk`, `generator`, `stats`|
+|`-name`|Pipeline name||String|
+|`-now`|Generate message immediately|`false`|`true`, `false`|
+|`-output`|Pipeline output path||File path|
+|`-path`|Installation path||Directory path|
+|`-pfx2pem`|Convert _PFX_ certificate to PEM format||File path|
+|`-pipeline`|Run in _pipeline_ mode|`false`|`true`, `false`|
+|`-protocol`|**Generator** protocol|`syslog`|`syslog`, `tcp`, `http`, `netflow`, `vmf`|
+|`-sentinel`|Run in _Sentinel_ mode|`false`|`true`, `false`|
+|`-service`|Service control operation||`install`, `uninstall`, `start`, `stop`, `restart`|
+|`-service-name`|Custom service name||String|
+|`-severity`|**Generator** message severity|`Error`|Severity level|
+|`-snmp-community`|_SNMP_ community string||String|
+|`-snmp-device-id`|_SNMP_ device ID||String|
+|`-snmp-host`|_SNMP_ host address||IP/hostname|
+|`-snmp-oid`|_SNMP_ OID|`.1.3`|OID string|
+|`-snmp-port`|_SNMP_ port|`161`|Port number|
+|`-snmp-version`|_SNMP_ version|`2c`|`1`, `2c`, `3`|
+|`-snmpwalk`|Run in _SNMPWalk_ mode|`false`|`true`, `false`|
+|`-stats`|Show statistics|`false`|`true`, `false`|
+|`-stop`|Stop running process|`false`|`true`, `false`|
+|`-supervisor`|Run in _supervisor_ mode|`false`|`true`, `false`|
+|`-update`|Run in _update_ mode|`false`|`true`, `false`|
+|`-validate`|Validate configuration|`false`|`true`, `false`|
+|`-version`|Display _version_ information|`false`|`true`, `false`|
+|`-visualize`|Visualize pipeline|`false`|`true`, `false`|
+|`-vpc`|Show _product code_|`false`|`true`, `false`|
+
+## Common Combinations
+
+The following are the valid switch combinations for the indicated tasks:
+
+### General Tasks
+
+- Display _version_ information:
+
+  ```
+  vmetric-director -version
+  ```
+
+- Show _example_ configuration:
+
+  ```
+  vmetric-director -example
+  ```
+
+- Run configuration tool:
+
+  ```
+  vmetric-director -config [config_file_path]
+  ```
+
+- Compare _version_:
+
+  ```
+  vmetric-director -compare-version [version_string]
+  ```
+
+- Convert _PFX_ certificate to _PEM_:
+
+  ```
+  vmetric-director -pfx2pem [certificate_path]
+  ```
+
+- Validate configuration:
+
+  ```
+  vmetric-director -validate
+  ```
+  
+  -or-
+
+  ```
+  vmetric-director -mode validate
+  ```
+
+### Service Management
+
+- Install service:
+
+  ```
+  vmetric-director -service install [-service-name custom_name] [-path installation_path]
+  ```
+
+- Uninstall service:
+
+  ```
+  vmetric-director -service uninstall [-service-name custom_name]
+  ```
+
+- Start service:
+
+  ```
+  vmetric-director -service start [-service-name custom_name]
+  ```
+
+- Stop service:
+
+  ```
+  vmetric-director -service stop [-service-name custom_name]
+  ```
+
+- Restart service:
+
+  ```
+  vmetric-director -service restart [-service-name custom_name]
+  ```
+
+- Run in background (without service):
+
+  ```
+  vmetric-director -background [-mode director|supervisor]
+  ```
+
+- Run in _agentless_ mode:
+
+  ```
+  vmetric-director -agentless [-mode director|supervisor]
+  ```
+
+- Show service information:
+
+  ```
+  vmetric-director -info [-mode director|supervisor]
+  ```
+
+- Show _product code_:
+
+  ```
+  vmetric-director -vpc [-mode director|supervisor]
+  ```
+
+- Stop running process:
+
+  ```
+  vmetric-director -stop [-mode director|supervisor]
+  ```
+
+### Operational Modes
+
+- Console mode:
+
+  ```
+  vmetric-director -mode console [-filter filter_string] [-debug-level level]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -console [-filter filter_string] [-debug-level level]
+  ```
+
+- Pipeline mode:
+
+  ```
+  vmetric-director -mode pipeline -name [pipeline_name] [-path path] [-definition-id id] [-input input_file] [-output output_file] [-expected expected_file] [-filter filter] [-diff] [-validate] [-visualize] [-extended] [-export-json]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -pipeline -name [pipeline_name] [-path path] [-definition-id id] [-input input_file] [-output output_file] [-expected expected_file] [-filter filter] [-diff] [-validate] [-visualize] [-extended] [-export-json]
+  ```
+
+- Generator mode:
+  ```
+  vmetric-director -mode generator [-protocol syslog|tcp|http|netflow|vmf] [-address target_address] [-severity level] [-message message_text] [-count message_count] [-interval seconds] [-duration seconds] [-now] [-file-path file_path]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -generator [-protocol syslog|tcp|http|netflow|vmf] [-address target_address] [-severity level] [-message message_text] [-count message_count] [-interval seconds] [-duration seconds] [-now] [-file-path file_path]
+  ```
+
+- Sentinel mode:
+
+  ```
+  vmetric-director -mode sentinel [-autodiscovery]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -sentinel [-autodiscovery]
+  ```
+
+- SNMPWalk mode:
+
+  ```
+  vmetric-director -mode snmpwalk -snmp-device-id [device_id] -snmp-host [host] [-snmp-port port] [-snmp-version 1|2c|3] [-snmp-community community_string] [-snmp-oid oid]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -snmpwalk -snmp-device-id [device_id] -snmp-host [host] [-snmp-port port] [-snmp-version 1|2c|3] [-snmp-community community_string] [-snmp-oid oid]
+  ```
+
+- Update mode:
+
+  ```
+  vmetric-director -mode update
+  ```
+
+  -or-
+  
+  ```
+  vmetric-director -update
+  ```
+
+- Supervisor mode:
+
+  ```
+  vmetric-director -mode supervisor
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -supervisor
+  ```
+
+- Statistics mode:
+
+  ```
+  vmetric-director -mode stats [-clear]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -stats [-clear]
+  ```
+
+- **Director** mode (default):
+
+  ```
+  vmetric-director
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -mode director
+  ```
+  
+  -or-
+
+  ```
+  vmetric-director -director
+  ```
+
+## Protocol-Specific Generator Tasks
+
+The following can be used to simulate various log streaming protocols:
+
+- _Syslog_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol syslog -address 127.0.0.1:514 -severity Error -message "Test Message" -count 1000 -interval 1 -duration 300
+  ```
+
+- _TCP_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol tcp -address 127.0.0.1:9000 -message "Test Message" -count 1000 -interval 1 -duration 300
+  ```
+
+- _HTTP_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol http -address http://127.0.0.1:8080/logs -message "Test Message" -count 1000 -interval 1 -duration 300
+  ```
+
+- _Netflow_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol netflow -address 127.0.0.1:2055 -count 1000 -interval 1 -duration 300
+  ```
+
+- _VMF_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol vmf -file-path input.json -message "Test Message" -count 1000 -interval 1 -duration 300
+  ```
+
+---
+
+{/*
+
+## Overview
+
+**VirtualMetric Director** is the core orchestration and data processing engine of the DataStream platform, designed to manage high-volume log ingestion, processing, and routing with enterprise-grade performance and reliability. It serves as the central command center that coordinates devices, pipelines, routes, and targets to create comprehensive data processing workflows.
+
+**Director** handles everything from simple syslog collection to complex multi-protocol data ingestion scenarios, providing real-time processing capabilities, advanced routing logic, and seamless integration with various storage and analysis systems. Its architecture supports both standalone deployments and distributed enterprise environments with built-in scalability and fault tolerance.
+
+## Synopsis
+
+```bash
+vmetric-director [OPTIONS]
+```
+
+## Key Capabilities
+
+### **Multi-Protocol Data Ingestion**
+- **Syslog Collection** - RFC3164/RFC5424 compliant with UDP/TCP support
+- **HTTP API Endpoints** - RESTful data ingestion with authentication
+- **Azure Monitor Integration** - Native cloud log collection
+- **eStreamer Support** - Cisco security event processing
+- **Windows Event Collection** - WMI-based system monitoring
+- **Network Flow Analysis** - TCP/UDP traffic processing
+
+### **Advanced Processing Pipeline**
+- **Real-time Processing** - Stream processing with configurable batch sizes
+- **Pattern Matching** - Grok-based field extraction and parsing
+- **Data Enrichment** - Field transformation and value enhancement
+- **Filtering and Routing** - Conditional logic and multi-destination routing
+- **Custom Scripting** - Flexible data manipulation with multiple language support
+
+### **Enterprise Features**
+- **Service Integration** - Native Windows/Linux service support
+- **High Availability** - Clustered deployments with failover
+- **Performance Optimization** - Multi-worker processing and memory efficiency
+- **Security Controls** - TLS encryption, authentication, and access control
+- **Monitoring and Alerting** - Real-time status monitoring and debugging
+
+### **Flexible Deployment Options**
+- **Standalone Mode** - Single-instance deployments for smaller environments
+- **Service Mode** - Production-ready service installation
+- **Background Processing** - Daemon-style operation
+- **Agentless Operation** - Direct execution without service installation
+- **Distributed Architecture** - Multi-node deployments with supervisor coordination
+
+## Command-Line Options
+
+### General Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-version` | - | Display version information |
+| `-example` | - | Show configuration examples |
+| `-config` | - | Run configuration wizard |
+| `-path` | - | Specify configuration file or directory path |
+| `-validate` | - | Validate configuration files |
+| `-compareVersion` | - | Compare with specified version |
+
+### Operating Modes
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-mode` | `director` | Operating mode (`director`, `supervisor`, `console`, `pipeline`, `generator`, `update`) |
+| `-supervisor` | - | Run in supervisor mode |
+| `-console` | - | Run in console monitoring mode |
+| `-pipeline` | - | Execute pipeline processing mode |
+| `-sentinel` | - | Run network discovery and monitoring |
+| `-snmpwalk` | - | Perform SNMP device discovery |
+| `-generator` | - | Generate test data |
+| `-stats` | - | Display performance statistics |
+| `-update` | - | Run update process |
+
+### Service Management
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-service` | - | Service operation (`install`, `uninstall`, `start`, `stop`, `restart`) |
+| `-serviceName` | - | Custom service name for installation |
+| `-agentless` | - | Run without installing as a service |
+| `-background` | - | Run in background mode |
+| `-info` | - | Display service information |
+| `-vpc` | - | Display product code |
+
+### Pipeline Operations
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-name` | - | Pipeline name for processing |
+| `-definitionID` | - | Pipeline definition identifier |
+| `-input` | - | Input data file or JSON string |
+| `-output` | - | Output file for processed data |
+| `-expected` | - | Expected output file for validation |
+| `-diff` | - | Show differences between actual and expected output |
+| `-visualize` | - | Display pipeline processing visualization |
+| `-extended` | - | Show extended processing information |
+| `-exportJSON` | - | Export pipeline results as JSON |
+
+### Console Monitoring
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-filter` | - | Filter console output by keywords |
+| `-debugLevel` | - | Set debug verbosity level (1-5) |
+
+### Network Discovery
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-snmpDeviceID` | - | SNMP device identifier |
+| `-snmpHost` | - | Target SNMP host address |
+| `-snmpPort` | `161` | SNMP port number |
+| `-snmpVersion` | `2c` | SNMP version (1, 2c, 3) |
+| `-snmpCommunity` | - | SNMP community string |
+| `-snmpOID` | `.1.3` | Starting OID for SNMP walk |
+| `-autodiscovery` | - | Enable automatic network discovery |
+
+### Data Generation
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-protocol` | `syslog` | Protocol for data generation |
+| `-address` | `127.0.0.1:514` | Target address for generated data |
+| `-severity` | `Error` | Syslog severity level |
+| `-message` | `VirtualMetric Test Message` | Message content |
+| `-count` | `1000` | Number of messages to generate |
+| `-interval` | `1` | Interval between messages (seconds) |
+| `-duration` | `300` | Total generation duration (seconds) |
+| `-now` | - | Generate messages immediately |
+| `-filePath` | - | File path for file-based operations |
+
+### Utility Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-pfx2pem` | - | Convert PFX certificate to PEM format |
+| `-stats` | - | Display performance statistics |
+| `-clear` | - | Clear statistics (used with -stats) |
+
+## Architecture Overview
+
+### **Core Components**
+
+**Device Layer**: Handles data ingestion from various sources including syslog servers, HTTP endpoints, cloud services, and network devices. Each device type is optimized for its specific protocol and data format.
+
+**Processing Layer**: Implements real-time data transformation using configurable pipelines with support for pattern matching, field extraction, data enrichment, and custom scripting logic.
+
+**Routing Layer**: Manages intelligent data distribution based on content, source, or custom rules, enabling complex workflows and multi-destination scenarios.
+
+**Target Layer**: Provides output connectors for various storage systems, analysis platforms, and external services with support for multiple formats and protocols.
+
+### **Performance Architecture**
+
+- **Multi-Worker Processing**: Automatic worker scaling based on system resources
+- **Memory Management**: Efficient buffering and batch processing
+- **Connection Pooling**: Optimized network resource utilization
+- **Asynchronous I/O**: Non-blocking operations for maximum throughput
+- **Compression**: Advanced data compression for storage efficiency
+
+### **Security Framework**
+
+- **Transport Security**: TLS/SSL encryption for all network communications
+- **Authentication**: Multiple authentication methods (basic, API key, HMAC)
+- **Access Control**: Role-based permissions and IP restrictions
+- **Data Integrity**: Built-in checksums and validation
+- **Audit Logging**: Comprehensive security event tracking
+
+## Getting Started
+
+### Quick Start
+
+**1. Basic Installation:**
+```bash
+vmetric-director -service=install
+vmetric-director -service=start
+```
+
+**2. Configuration Validation:**
+```bash
+vmetric-director -validate -path=./config/
+```
+
+**3. Console Monitoring:**
+```bash
+vmetric-director -mode=console
+```
+
+### Common Workflows
+
+**Data Ingestion Setup:**
+```bash
+# Validate syslog configuration
+vmetric-director -validate -path=./syslog-config.yml
+
+# Start syslog collection
+vmetric-director -path=./syslog-config.yml -agentless
+```
+
+**Pipeline Testing:**
+```bash
+# Test pipeline with sample data
+vmetric-director -mode=pipeline -name=log_parser -input='{"message":"test log"}' -visualize
+
+# Validate pipeline configuration
+vmetric-director -mode=pipeline -name=log_parser -validate
+```
+
+**Performance Monitoring:**
+```bash
+# View real-time statistics
+vmetric-director -stats
+
+# Monitor with filtering
+vmetric-director -mode=console -filter="performance" -debugLevel=3
+```
+
+## Integration Ecosystem
+
+### **Cloud Platforms**
+- Azure Monitor and Log Analytics integration
+- AWS CloudWatch compatibility
+- Google Cloud Logging support
+
+### **Security Tools**
+- SIEM platform integration
+- Cisco security event processing
+- Network flow analysis tools
+
+### **Storage Systems**
+- Parquet and columnar format support
+- Time-series database integration
+- Object storage connectivity
+
+### **Monitoring Platforms**
+- Real-time dashboard integration
+- Alerting system connectivity
+- Performance metrics export
+
+The **VirtualMetric Director** provides enterprise-grade log management capabilities with the flexibility to handle diverse data sources, complex processing requirements, and scalable deployment scenarios. Its comprehensive feature set makes it suitable for everything from simple log collection to sophisticated data processing workflows in large-scale environments.
+
+*/}
