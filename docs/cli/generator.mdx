@@ -14,7 +14,7 @@ description: Command-line options
 vmetric-generator [OPTIONS]
 ```
 
-## Command-Line Options
+## Options
 
 The following command line options are available.
 
@@ -22,15 +22,15 @@ The following command line options are available.
 
 |Option|Default|Description|
 |--:|:--|---|
-|`-version`|-|Display version information|
 |`-example`|-|Show usage examples|
+|`-version`|-|Display version information|
 
 ### Protocol Configuration
 
 |Option|Default|Description|
 |--:|:--|---|
-|`-protocol`|`syslog`|Protocol to use (`syslog`, `tcp`, `udp`, `http`, `netflow`, `vmf`)|
 |`-address`|`127.0.0.1:514`|Target address and port|
+|`-protocol`|`syslog`|Protocol to use (`syslog`, `tcp`, `udp`, `http`, `netflow`, `vmf`)|
 |`-severity`|`Error`|Syslog severity level|
 
 ### Message Configuration
@@ -38,15 +38,15 @@ The following command line options are available.
 |Option|Default|Description|
 |--:|:--|---|
 |`-message`|`VirtualMetric Test Message`|Message content to send|
-|`-filePath`|-|Path to file containing messages|
 |`-count`|`1000`|Number of messages to generate|
+|`-file-path`|-|Path to file containing messages|
 
 ### Timing Configuration
 
 |Option|Default|Description|
 |--:|:--|---|
-|`-interval`|`1`|Interval between messages (seconds)|
 |`-duration`|`300`|Total duration to generate messages (seconds)|
+|`-interval`|`1`|Interval between messages (seconds)|
 |`-now`|`false`|Generate messages immediately without timing delays|
 
 ## Protocol-Specific Usage
@@ -91,7 +91,7 @@ Generates raw TCP messages for testing TCP-based log collectors.
 * With File Input:
 
   ```bash
-  vmetric-generator -protocol=tcp -address=127.0.0.1:1514 -filePath=./test-messages.txt -count=100
+  vmetric-generator -protocol=tcp -address=127.0.0.1:1514 -file-path=./test-messages.txt -count=100
   ```
 
 ### UDP Generator
@@ -149,13 +149,13 @@ Generates VirtualMetric Format (VMF) messages for internal testing.
 * Basic Usage:
 
   ```bash
-  vmetric-generator -protocol=vmf -filePath=./output.vmf
+  vmetric-generator -protocol=vmf -file-path=./output.vmf
   ```
 
 * With Custom Content:
 
   ```bash
-  vmetric-generator -protocol=vmf -filePath=./metrics.vmf -message="Custom VMF data" -count=1000
+  vmetric-generator -protocol=vmf -file-path=./metrics.vmf -message="Custom VMF data" -count=1000
   ```
 
 ## Common Usage Patterns
@@ -199,7 +199,7 @@ Generates VirtualMetric Format (VMF) messages for internal testing.
 * Using Message Files:
 
   ```bash
-  vmetric-generator -protocol=tcp -address=127.0.0.1:1514 -filePath=./sample-logs.txt -count=100
+  vmetric-generator -protocol=tcp -address=127.0.0.1:1514 -file-path=./sample-logs.txt -count=100
   ```
 
   Create a file `sample-logs.txt` with different message formats:
