@@ -284,6 +284,20 @@ const sidebars: SidebarsConfig = {
     //     'architecture/zero-trust',
     //   ],
     // },
+    {
+      type: "category",
+      label: "CLI",
+      link: {
+        type: "generated-index",
+        title: "Command-Line Interface",
+        description: "Chapters providing detailed information on the CLI options."
+      },
+      items: [
+        'cli/director',
+        'cli/generator',
+        'cli/agent',
+      ]
+    },
     "appendix",
     "glossary"
   ],
