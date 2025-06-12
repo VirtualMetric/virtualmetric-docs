@@ -68,8 +68,8 @@ const sidebars: SidebarsConfig = {
             description: "The following documents contain detailed information on this topic."
           },
           items: [
-            'microsoft-sentinel/integration/autodiscovery',
             'microsoft-sentinel/integration/manual',
+            'microsoft-sentinel/integration/via-autodiscovery',
           ],
         },
         {
@@ -262,28 +262,6 @@ const sidebars: SidebarsConfig = {
         'configuration/routes',
       ],
     },
-    // {
-    //   type: "category",
-    //   label: "Migration",
-    //   link: {type: "doc", id: "migration/index"},
-    //   items: [
-    //     'migration/cribl',
-    //     'migration/logstash',
-    //     'migration/tenzir',
-    //     'migration/vector',
-    //   ],
-    // },
-    // {
-    //   type: "category",
-    //   label: "Architecture",
-    //   link: {type: "doc", id: "architecture/index"},
-    //   items: [
-    //     'architecture/clustering',
-    //     'architecture/file-system',
-    //     'architecture/persistency',
-    //     'architecture/zero-trust',
-    //   ],
-    // },
     {
       type: "category",
       label: "CLI",
@@ -298,6 +276,28 @@ const sidebars: SidebarsConfig = {
         'cli/agent',
       ]
     },
+    // {
+    //   type: "category",
+    //   label: "Architecture",
+    //   link: {type: "doc", id: "architecture/index"},
+    //   items: [
+    //     'architecture/clustering',
+    //     'architecture/file-system',
+    //     'architecture/persistency',
+    //     'architecture/zero-trust',
+    //   ],
+    // },
+    // {
+    //   type: "category",
+    //   label: "Migration",
+    //   link: {type: "doc", id: "migration/index"},
+    //   items: [
+    //     'migration/cribl',
+    //     'migration/logstash',
+    //     'migration/tenzir',
+    //     'migration/vector',
+    //   ],
+    // },
     "appendix",
     "glossary"
   ],

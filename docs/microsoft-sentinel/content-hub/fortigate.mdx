@@ -1,14 +1,14 @@
 ---
-pagination_next: null
+sidebar_label: Fortigate
 ---
 
-# Fortigate
+# Microsoft Sentinel Content Hub: Fortigate
 
 **VirtualMetric Director** provides comprehensive integration with **Fortinet FortiGate** firewalls and security appliances through specialized content packs for **Microsoft Sentinel**. These content packs enable seamless ingestion, normalization, and analysis of FortiGate security logs within your Sentinel environment.
 
 ## Overview
 
-FortiGate integration delivers advanced security monitoring capabilities by transforming Fortinet's proprietary log formats into Microsoft Sentinel-compatible schemas. The integration supports both syslog and FortiAnalyzer log formats, providing flexible deployment options for various network architectures.
+**FortiGate** integration delivers advanced security monitoring capabilities by transforming **Fortinet**'s proprietary log formats into **Microsoft Sentinel**-compatible schemas. The integration supports both syslog and _FortiAnalyzer_ log formats, providing flexible deployment options for various network architectures.
 
 ## Supported Fortinet Products
 
@@ -24,7 +24,7 @@ The integration supports the following Fortinet products:
 
 ### Syslog Integration
 
-FortiGate devices can send logs directly to **Director** via syslog:
+**FortiGate** devices can send logs directly to **Director** via syslog:
 
 ```yaml
 devices:
@@ -67,7 +67,7 @@ devices:
 
 ### High-Performance Deployment
 
-For high-throughput FortiGate deployments:
+For high-throughput **FortiGate** deployments:
 
 ```yaml
 devices:
@@ -93,7 +93,7 @@ devices:
 
 ### Security Event Categories
 
-The FortiGate content pack processes multiple log types:
+The **FortiGate** content pack processes multiple log types:
 
 - **Traffic Logs** - Network sessions, bandwidth utilization, and connection tracking
 - **Threat Logs** - IPS events, malware detection, and vulnerability exploits
@@ -104,7 +104,7 @@ The FortiGate content pack processes multiple log types:
 
 ### FortiGate Log Format Processing
 
-FortiGate uses a structured key-value format that the pipeline intelligently parses:
+**FortiGate** uses a structured key-value format that the pipeline intelligently parses:
 
 ```
 date=2024-01-15 time=10:30:45 devname="FGT-HQ-01" devid="FG100E3Q17002999" logid="0000000013" type="traffic" subtype="forward" level="notice" vd="root" eventtime=1705315845123456789 srcip=192.168.1.100 srcport=1234 srcintf="internal" dstip=8.8.8.8 dstport=53 dstintf="wan1" policyid=1 policytype="policy" service="DNS" proto=17 action="accept" policyname="Allow_DNS" duration=0 sentbyte=64 rcvdbyte=128
@@ -112,7 +112,7 @@ date=2024-01-15 time=10:30:45 devname="FGT-HQ-01" devid="FG100E3Q17002999" logid
 
 ### ASIM Normalization
 
-All FortiGate data is normalized to **Advanced Security Information Model** (ASIM) standards:
+All **FortiGate** data is normalized to _Advanced Security Information Model_ ([ASIM](../../appendix.mdx#asim)) standards:
 
 ```yaml
 # Example ASIM-compliant output
@@ -137,7 +137,7 @@ All FortiGate data is normalized to **Advanced Security Information Model** (ASI
 
 ### Advanced Field Mapping
 
-The integration includes comprehensive field mapping for FortiGate-specific attributes:
+The integration includes comprehensive field mapping for **FortiGate**-specific attributes:
 
 - **Policy Information** - Policy ID, name, and enforcement actions
 - **Interface Details** - Source and destination interface mapping
@@ -150,7 +150,7 @@ The integration includes comprehensive field mapping for FortiGate-specific attr
 
 ### Analytics Rules
 
-Pre-configured analytics rules for FortiGate security scenarios:
+Pre-configured analytics rules for **FortiGate** security scenarios:
 
 - **High-Volume Blocked Connections** - Detects potential DDoS or scanning activities
 - **Suspicious Outbound Traffic** - Identifies data exfiltration patterns
@@ -161,7 +161,7 @@ Pre-configured analytics rules for FortiGate security scenarios:
 
 ### Workbooks
 
-Interactive dashboards for FortiGate security monitoring:
+Interactive dashboards for **FortiGate** security monitoring:
 
 - **Network Traffic Overview** - Real-time traffic analysis and trends
 - **Threat Landscape Dashboard** - IPS and malware detection metrics
@@ -172,7 +172,7 @@ Interactive dashboards for FortiGate security monitoring:
 
 ### Hunting Queries
 
-Advanced KQL queries for proactive threat hunting:
+Advanced _KQL_ queries for proactive threat hunting:
 
 ```kql
 // Example: Detect FortiGate IPS events with high severity
@@ -217,7 +217,7 @@ targets:
 
 ### Multi-Device Environment
 
-For organizations with multiple FortiGate devices:
+For organizations with multiple **FortiGate** devices:
 
 ```yaml
 devices:
@@ -291,7 +291,7 @@ pipelines:
 
 ### Syslog Configuration
 
-Configure FortiGate to send logs to Director:
+Configure **FortiGate** to send logs to **Director**:
 
 ```bash
 # CLI Configuration
@@ -333,103 +333,112 @@ end
 
 ### Common Issues
 
-**Log Format Recognition**
-- Verify FortiGate syslog format matches expected key-value structure
-- Check for firmware version compatibility and log format changes
-- Ensure UTC timestamp configuration for accurate correlation
+* Log Format Recognition:
 
-**Performance Issues**
-- Monitor CPU and memory usage during high traffic periods
-- Adjust buffer sizes and worker processes for throughput optimization
-- Consider log filtering at FortiGate level to reduce volume
+  - Verify FortiGate syslog format matches expected key-value structure
+  - Check for firmware version compatibility and log format changes
+  - Ensure UTC timestamp configuration for accurate correlation
 
-**Field Extraction Problems**
-- Review pipeline configuration for custom FortiGate fields
-- Test with sample logs to validate field mapping accuracy
-- Check for firmware-specific field name variations
+* Performance Issues:
+
+  - Monitor CPU and memory usage during high traffic periods
+  - Adjust buffer sizes and worker processes for throughput optimization
+  - Consider log filtering at FortiGate level to reduce volume
+
+* Field Extraction Problems:
+
+  - Review pipeline configuration for custom FortiGate fields
+  - Test with sample logs to validate field mapping accuracy
+  - Check for firmware-specific field name variations
 
 ### Diagnostic Commands
 
-**Verify Log Reception**
-```bash
-# Check if logs are being received
-tail -f /var/log/director/fortigate.log | grep "type=traffic"
-```
+* Verify Log Reception
 
-**Test Pipeline Processing**
-```yaml
-# Enable verbose logging for troubleshooting
-debug:
-  enabled: true
-  level: "debug"
-  pipelines: ["fortigate"]
-  include_processing_time: true
-```
+  ```bash
+  # Check if logs are being received
+  tail -f /var/log/director/fortigate.log | grep "type=traffic"
+  ```
 
-**Validate Sentinel Integration**
-```kql
-// Query Sentinel to verify FortiGate data ingestion
-CommonSecurityLog
-| where DeviceVendor == "Fortinet"
-| where DeviceProduct == "FortiGate"
-| where TimeGenerated > ago(5m)
-| project TimeGenerated, SourceIP, DestinationIP, DeviceAction, Message
-| limit 10
-```
+* Test Pipeline Processing
+
+  ```yaml
+  # Enable verbose logging for troubleshooting
+  debug:
+    enabled: true
+    level: "debug"
+    pipelines: ["fortigate"]
+    include_processing_time: true
+  ```
+
+* Validate Sentinel Integration
+
+  ```kql
+  // Query Sentinel to verify FortiGate data ingestion
+  CommonSecurityLog
+  | where DeviceVendor == "Fortinet"
+  | where DeviceProduct == "FortiGate"
+  | where TimeGenerated > ago(5m)
+  | project TimeGenerated, SourceIP, DestinationIP, DeviceAction, Message
+  | limit 10
+  ```
 
 ## Performance Optimization
 
 ### High-Volume Best Practices
 
-**Network Configuration**
-- Use dedicated network interfaces for log collection
-- Implement load balancing across multiple Director instances
-- Configure appropriate MTU sizes for log packet optimization
+* Network Configuration:
 
-**FortiGate Tuning**
-```bash
-# Optimize logging performance
-config system global
-    set log-ssl-connection disable
-    set log-uuid-policy disable
-end
+  - Use dedicated network interfaces for log collection
+  - Implement load balancing across multiple Director instances
+  - Configure appropriate MTU sizes for log packet optimization
 
-# Configure log buffering
-config log memory setting
-    set diskfull overwrite
-end
-```
+* **FortiGate** Tuning:
 
-**Director Optimization**
-```yaml
-# High-performance configuration
-devices:
-  - id: 1
-    name: fortigate_optimized
-    type: udp
-    pipelines:
-      - fortigate
-    properties:
-      port: 514
-      workers: 8
-      buffer_size: 131072
-      batch_size: 15000
-      queue:
-        interval: 1
-```
+  ```bash
+  # Optimize logging performance
+  config system global
+      set log-ssl-connection disable
+      set log-uuid-policy disable
+  end
+
+  # Configure log buffering
+  config log memory setting
+      set diskfull overwrite
+  end
+  ```
+
+* **Director** Optimization
+
+  ```yaml
+  # High-performance configuration
+  devices:
+    - id: 1
+      name: fortigate_optimized
+      type: udp
+      pipelines:
+        - fortigate
+      properties:
+        port: 514
+        workers: 8
+        buffer_size: 131072
+        batch_size: 15000
+        queue:
+          interval: 1
+  ```
 
 ## Security Considerations
 
 ### Access Control
 
-- Restrict Director access to authorized network segments
+- Restrict **Director** access to authorized network segments
 - Implement firewall rules for log source validation
 - Use dedicated service accounts for Sentinel integration
 
 ### Data Protection
 
 - Enable TLS encryption for sensitive log transmission
-- Implement log anonymization for privacy compliance  
+- Implement log anonymization for privacy compliance
 - Configure appropriate data retention policies
 
 ### Monitoring and Alerting
@@ -440,7 +449,7 @@ devices:
 
 ## Support Resources
 
-For additional assistance with FortiGate integration:
+For additional assistance with **FortiGate** integration:
 
 - **VirtualMetric Support** - Technical support for Director and pipeline configuration
 - **Fortinet Documentation** - Vendor-specific logging configuration guides
