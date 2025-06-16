@@ -48,15 +48,9 @@ Then, create a YAML file in our working directory named `convert-words.yml`, and
 pipelines:
   - name: convert_words
     processors:
-      - json:
-        field: words
-        add_to_root: true
-      - foreach:
-        field: words
-        processor:
-          - uppercase:
-            field: "_ingest._value"
-            target_field: convertedWords
+      - uppercase:
+          field: words
+          target_field: convertedWords
 
 ```
 
@@ -73,22 +67,42 @@ To see whether our pipeline is valid, we enter the following command in the term
 <Tabs>
   <TabItem value="windows" label="Windows">
     ```PowerShell
-    vmetric-director -mode=pipeline -name=convert_words -validate
+    vmetric-director -validate -path=".\config\Examples\convert-words.yml"
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    vmetric-director -mode=pipeline -name=convert_words -validate
+    vmetric-director -validate -path=".\config\Examples\convert-words.yml
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    vmetric-director -mode=pipeline -name=convert_words -validate
+    vmetric-director -validate -path=".\config\Examples\convert-words.yml
     ```
   </TabItem>
 </Tabs>
 
-If our pipeline is valid, this command returns `true`. Since that is indeed the case, we can now run our test.
+If our pipeline is valid, this command will return:
+
+<Tabs>
+  <TabItem value="windows" label="Windows">
+    ```PowerShell
+    [OK] No issues found.
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+    ```bash
+    [OK] No issues found.
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">
+    ```bash
+    [OK] No issues found.
+    ```
+  </TabItem>
+</Tabs>
+
+Since that is indeed the case, we can now run our test.
 
 #### Run Test
 
@@ -97,25 +111,25 @@ To see our pipeline in action, enter the following in the terminal:
 <Tabs>
   <TabItem value="windows" label="Windows">
     ```PowerShell
-    vmetric-director -mode pipeline -name convert_words -input ".\config\Examples\sample-data.json" -output ".\config\Examples\processed-sample-data.json"
+    vmetric-director -mode pipeline -path=".\config\Examples\convert-words.yml" -name convert_words -input ".\config\Examples\sample-data.json" -output ".\config\Examples\processed-sample-data.json"
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">
     ```bash
-    vmetric-director -mode pipeline -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
+    vmetric-director -mode pipeline -path="./config/Examples/convert-words.yml" -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
     ```
   </TabItem>
   <TabItem value="macos" label="macOS">
     ```bash
-    vmetric-director -mode pipeline -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
+    vmetric-director -mode pipeline -path="./config/Examples/convert-words.yml" -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
     ```
   </TabItem>
 </Tabs>
 
-Here is what this test should do:
+Here is what this test will do:
 
-* Consume the data in the input file named `sample-data.json` we put in our working directory
-* Using the pipeline named `convert_words`, convert the names in the `words` field to `uppercase`
+* Consume the data in the input file named `sample-data.json` that we put in our working directory
+* Using the pipeline we named `convert_words`, convert the names in the `words` field to `uppercase`
 * Write the converted names to a new field named `convertedWords`
 * Save the results to an output file named `processed-sample-data.json` in our working directory.
 
@@ -129,7 +143,6 @@ Now open the file named `processed-sample-data.json` to see the results. It shou
 
 ```json
 {
-  "words": ["hello", "world"],
   "convertedWords": ["HELLO", "WORLD"]
 }
 ```
