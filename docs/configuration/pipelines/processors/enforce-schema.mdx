@@ -1,0 +1,454 @@
+---
+description: Validates and enforces data schemas on log entries
+sidebar_custom_props: 
+  customIcon: 📋
+  customCategory: Validate
+---
+
+# Enforce Schema
+
+<span className="theme-doc-version-badge badge badge--primary">Validate</span><span className="theme-doc-version-badge badge badge--secondary">Enterprise</span>
+
+## Synopsis
+
+Validates log entries against predefined schemas and enforces data structure compliance using Avro or Parquet schema definitions.
+
+## Schema
+
+```yaml {1}
+- enforce_schema:
+  description: <text>
+  schema: <string>
+  schema_type: <string>
+  if: <script>
+  ignore_failure: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`schema`|Y||Schema definition string or reference|
+|`schema_type`|N|`"parquet"`|Schema format type (`"avro"` or `"parquet"`)|
+|`description`|N|-|Explanatory notes|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See [Handling Failures](../handling-failures.mdx)|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor validates log entries against schema definitions to ensure data structure compliance. It supports two schema formats:
+
+- **Avro schemas**: JSON-based schema definitions that provide rich data type validation and evolution support
+- **Parquet schemas**: Column-oriented schema definitions optimized for analytics and big data processing
+
+The processor caches compiled schemas using content hashing for performance optimization. When validation occurs, the log entry is automatically transformed to match the schema requirements, including:
+
+- **Type coercion**: Converting compatible types to match schema expectations
+- **Field validation**: Ensuring required fields are present
+- **Structure enforcement**: Organizing nested data according to schema hierarchy
+- **Default value assignment**: Adding missing fields with default values where defined
+
+:::info
+Schema enforcement is particularly useful in data pipelines where downstream systems require strict data contracts and consistent field types.
+:::
+
+:::warning
+Schema validation can modify the original log entry structure. Fields that don't match the schema may be transformed, removed, or have their types changed to ensure compliance.
+:::
+
+:::tip
+Use schema caching effectively by keeping schema definitions consistent. The processor uses content hashing to cache compiled schemas, so identical schema strings will reuse cached versions.
+:::
+
+## Examples
+
+### Basic Parquet Schema
+
+<ExampleGrid>
+  <CommentCol>
+    Enforce a simple Parquet schema...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": "12345",
+      "timestamp": "2024-01-15T10:30:00Z",
+      "action": "login"
+    }
+    ```
+    ```yaml
+    processors:
+      - enforce_schema:
+        schema: |
+          message user_event {
+            required int64 user_id;
+            required int64 timestamp;
+            optional binary action (UTF8);
+          }
+    ```
+  </CodeCol>
+  <CommentCol>
+    with automatic type conversion:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": 12345,
+      "timestamp": 1705316200000,
+      "action": "login"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Avro Schema Validation
+
+<ExampleGrid>
+  <CommentCol>
+    Use an Avro schema for rich validation...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "name": "John Doe",
+      "age": "30",
+      "email": "john@example.com"
+    }
+    ```
+    ```yaml
+    processors:
+      - enforce_schema:
+        schema_type: avro
+        schema: |
+          {
+            "type": "record",
+            "name": "User",
+            "fields": [
+              {"name": "name", "type": "string"},
+              {"name": "age", "type": "int"},
+              {"name": "email", "type": "string"}
+            ]
+          }
+    ```
+  </CodeCol>
+  <CommentCol>
+    ensuring proper data types:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "name": "John Doe",
+      "age": 30,
+      "email": "john@example.com"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Nested Structure Validation
+
+<ExampleGrid>
+  <CommentCol>
+    Validate complex nested structures...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "id": "123",
+        "profile": {
+          "name": "Jane",
+          "settings": {"theme": "dark"}
+        }
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - enforce_schema:
+        schema_type: avro
+        schema: |
+          {
+            "type": "record",
+            "name": "UserEvent",
+            "fields": [
+              {
+                "name": "user",
+                "type": {
+                  "type": "record",
+                  "name": "User",
+                  "fields": [
+                    {"name": "id", "type": "int"},
+                    {
+                      "name": "profile",
+                      "type": {
+                        "type": "record",
+                        "name": "Profile",
+                        "fields": [
+                          {"name": "name", "type": "string"},
+                          {"name": "settings", "type": {"type": "map", "values": "string"}}
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+    ```
+  </CodeCol>
+  <CommentCol>
+    with proper type enforcement:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "id": 123,
+        "profile": {
+          "name": "Jane",
+          "settings": {"theme": "dark"}
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Default Values
+
+<ExampleGrid>
+  <CommentCol>
+    Schema with default values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "page_view",
+      "user_id": 456
+    }
+    ```
+    ```yaml
+    processors:
+      - enforce_schema:
+        schema_type: avro
+        schema: |
+          {
+            "type": "record",
+            "name": "Event",
+            "fields": [
+              {"name": "event_type", "type": "string"},
+              {"name": "user_id", "type": "int"},
+              {"name": "timestamp", "type": "long", "default": 0},
+              {"name": "properties", "type": {"type": "map", "values": "string"}, "default": {}}
+            ]
+          }
+    ```
+  </CodeCol>
+  <CommentCol>
+    automatically adds missing fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "page_view",
+      "user_id": 456,
+      "timestamp": 0,
+      "properties": {}
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array Validation
+
+<ExampleGrid>
+  <CommentCol>
+    Validate arrays with typed elements...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["urgent", "customer", "billing"],
+      "scores": ["95", "87", "92"]
+    }
+    ```
+    ```yaml
+    processors:
+      - enforce_schema:
+        schema_type: avro
+        schema: |
+          {
+            "type": "record",
+            "name": "Document",
+            "fields": [
+              {"name": "tags", "type": {"type": "array", "items": "string"}},
+              {"name": "scores", "type": {"type": "array", "items": "int"}}
+            ]
+          }
+    ```
+  </CodeCol>
+  <CommentCol>
+    with automatic type conversion:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["urgent", "customer", "billing"],
+      "scores": [95, 87, 92]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Union Types
+
+<ExampleGrid>
+  <CommentCol>
+    Handle union types for flexible fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "id": "USER123",
+      "value": "42.5"
+    }
+    ```
+    ```yaml
+    processors:
+      - enforce_schema:
+        schema_type: avro
+        schema: |
+          {
+            "type": "record",
+            "name": "FlexibleRecord",
+            "fields": [
+              {"name": "id", "type": ["int", "string"]},
+              {"name": "value", "type": ["null", "int", "double", "string"]}
+            ]
+          }
+    ```
+  </CodeCol>
+  <CommentCol>
+    choosing the best matching type:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "id": "USER123",
+      "value": 42.5
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle validation errors gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "invalid_field": "not_in_schema",
+      "required_field": null
+    }
+    ```
+    ```yaml
+    processors:
+      - enforce_schema:
+        schema_type: avro
+        schema: |
+          {
+            "type": "record",
+            "name": "StrictRecord",
+            "fields": [
+              {"name": "required_field", "type": "string"}
+            ]
+          }
+        on_failure:
+          - set:
+            field: validation_error
+            value: "Schema validation failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    by adding error information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "invalid_field": "not_in_schema",
+      "required_field": null,
+      "validation_error": "Schema validation failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Schema Enforcement
+
+<ExampleGrid>
+  <CommentCol>
+    Apply schemas conditionally...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "user_action",
+      "data": {
+        "action": "click",
+        "element": "button"
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - enforce_schema:
+        if: "event_type == 'user_action'"
+        schema_type: avro
+        schema: |
+          {
+            "type": "record",
+            "name": "UserAction",
+            "fields": [
+              {"name": "event_type", "type": "string"},
+              {
+                "name": "data",
+                "type": {
+                  "type": "record",
+                  "name": "ActionData",
+                  "fields": [
+                    {"name": "action", "type": "string"},
+                    {"name": "element", "type": "string"}
+                  ]
+                }
+              }
+            ]
+          }
+    ```
+  </CodeCol>
+  <CommentCol>
+    based on event characteristics:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "user_action",
+      "data": {
+        "action": "click",
+        "element": "button"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
