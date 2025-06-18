@@ -1,1 +1,313 @@
+---
+description: Classifies Windows user accounts based on username and SID patterns according to ASIM standards
+sidebar_custom_props: 
+  customIcon: 🪟
+  customCategory: Security
+---
+
 # Windows User Type
+
+<span className="theme-doc-version-badge badge badge--primary">Windows Security</span><span className="theme-doc-version-badge badge badge--secondary">User Classification</span><span className="theme-doc-version-badge badge badge--secondary">ASIM Compliance</span>
+
+## Synopsis
+
+A Windows security processor that classifies user accounts based on username patterns and Security Identifier (SID) analysis following ASIM standards, distinguishing between regular users, administrators, services, machine accounts, and system accounts for enhanced security analysis.
+
+## Schema
+
+```yaml {1-3}
+- windows_user_type:
+  username_field: <ident>
+  sid_field: <ident>
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`username_field`|Y|-|Field containing the Windows username|
+|`sid_field`|Y|-|Field containing the Windows SID|
+|`target_field`|N|`username_field`|Field to store the user type classification|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if classification fails|
+|`ignore_missing`|N|`false`|Continue if source fields don't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor analyzes Windows user accounts using both username patterns and SID structures to provide accurate user type classification. SID analysis takes priority over username patterns for more reliable identification.
+
+:::note
+The processor follows ASIM standards for Windows user type classification, ensuring compatibility with Azure Sentinel and Windows security monitoring systems.
+:::
+
+SID-based classification uses well-known SID patterns and prefixes to identify system accounts, services, and domain accounts. Username pattern analysis provides additional context for accounts that don't match specific SID patterns.
+
+User type classification includes Regular users, Admin accounts, Service accounts, Machine accounts, System accounts, Guest accounts, and Anonymous accounts for comprehensive Windows security analysis.
+
+:::warning
+Both username and SID fields are required for accurate classification. Missing SID information may result in less precise user type detection.
+:::
+
+## Examples
+
+### Domain Administrator Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Identifying built-in administrator accounts...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "Administrator",
+      "user_sid": "S-1-5-21-1234567890-1234567890-1234567890-500"
+    }
+    ```
+    ```yaml
+    processors:
+      - windows_user_type:
+        username_field: username
+        sid_field: user_sid
+        target_field: user_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    classifies as administrator:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "Administrator",
+      "user_sid": "S-1-5-21-1234567890-1234567890-1234567890-500",
+      "user_type": "Admin"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Service Account Classification
+
+<ExampleGrid>
+  <CommentCol>
+    Detecting service accounts by SID...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service_name": "NETWORK SERVICE",
+      "service_sid": "S-1-5-20",
+      "local_service": "LOCAL SERVICE",
+      "local_sid": "S-1-5-19"
+    }
+    ```
+    ```yaml
+    processors:
+      - windows_user_type:
+        username_field: service_name
+        sid_field: service_sid
+        target_field: service_type
+      - windows_user_type:
+        username_field: local_service
+        sid_field: local_sid
+        target_field: local_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    identifies service accounts:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service_name": "NETWORK SERVICE",
+      "service_sid": "S-1-5-20",
+      "local_service": "LOCAL SERVICE",
+      "local_sid": "S-1-5-19",
+      "service_type": "Service",
+      "local_type": "Service"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Machine Account Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Identifying computer accounts...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "computer_name": "WORKSTATION01$",
+      "computer_sid": "S-1-5-21-1234567890-1234567890-1234567890-1001"
+    }
+    ```
+    ```yaml
+    processors:
+      - windows_user_type:
+        username_field: computer_name
+        sid_field: computer_sid
+        target_field: account_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    classifies as machine account:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "computer_name": "WORKSTATION01$",
+      "computer_sid": "S-1-5-21-1234567890-1234567890-1234567890-1001",
+      "account_type": "Machine"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### System Account Classification
+
+<ExampleGrid>
+  <CommentCol>
+    Detecting system-level accounts...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "system_account": "SYSTEM",
+      "system_sid": "S-1-5-18"
+    }
+    ```
+    ```yaml
+    processors:
+      - windows_user_type:
+        username_field: system_account
+        sid_field: system_sid
+        target_field: account_classification
+    ```
+  </CodeCol>
+  <CommentCol>
+    identifies system account:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "system_account": "SYSTEM",
+      "system_sid": "S-1-5-18",
+      "account_classification": "System"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Regular Domain User
+
+<ExampleGrid>
+  <CommentCol>
+    Classifying regular domain users...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain_user": "DOMAIN\\jsmith",
+      "user_sid": "S-1-5-21-1234567890-1234567890-1234567890-1003"
+    }
+    ```
+    ```yaml
+    processors:
+      - windows_user_type:
+        username_field: domain_user
+        sid_field: user_sid
+        target_field: user_classification
+    ```
+  </CodeCol>
+  <CommentCol>
+    classifies as regular user:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain_user": "DOMAIN\\jsmith",
+      "user_sid": "S-1-5-21-1234567890-1234567890-1234567890-1003",
+      "user_classification": "Regular"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Batch User Analysis
+
+<ExampleGrid>
+  <CommentCol>
+    Processing multiple Windows accounts...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "logon_events": [
+        {
+          "user": "Administrator",
+          "sid": "S-1-5-21-1234567890-1234567890-1234567890-500"
+        },
+        {
+          "user": "SERVER01$",
+          "sid": "S-1-5-21-1234567890-1234567890-1234567890-1001"
+        },
+        {
+          "user": "Guest",
+          "sid": "S-1-5-21-1234567890-1234567890-1234567890-501"
+        }
+      ]
+    }
+    ```
+    ```yaml
+    processors:
+      - foreach:
+        field: logon_events
+        processor:
+          windows_user_type:
+            username_field: _ingest._value.user
+            sid_field: _ingest._value.sid
+            target_field: _ingest._value.user_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds classification to each event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "logon_events": [
+        {
+          "user": "Administrator",
+          "sid": "S-1-5-21-1234567890-1234567890-1234567890-500",
+          "user_type": "Admin"
+        },
+        {
+          "user": "SERVER01$",
+          "sid": "S-1-5-21-1234567890-1234567890-1234567890-1001",
+          "user_type": "Machine"
+        },
+        {
+          "user": "Guest",
+          "sid": "S-1-5-21-1234567890-1234567890-1234567890-501",
+          "user_type": "Guest"
+        }
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

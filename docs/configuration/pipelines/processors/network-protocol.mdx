@@ -1,1 +1,290 @@
+---
+description: Converts network protocol numbers to human-readable protocol names
+sidebar_custom_props: 
+  customIcon: 🌐
+  customCategory: Networking
+---
+
 # Network Protocol
+
+<span className="theme-doc-version-badge badge badge--primary">Network Analysis</span><span className="theme-doc-version-badge badge badge--secondary">Protocol Identification</span><span className="theme-doc-version-badge badge badge--secondary">Data Enrichment</span>
+
+## Synopsis
+
+A network analysis processor that converts IP protocol numbers to their corresponding human-readable protocol names using the IANA protocol number registry, enhancing network traffic analysis and security monitoring.
+
+## Schema
+
+```yaml {1,2}
+- network_protocol:
+  field: <ident>
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the protocol number to convert|
+|`target_field`|N|`field`|Field to store the protocol name|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if conversion fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor maintains a comprehensive mapping of IANA protocol numbers to their standard names, supporting all registered protocols including TCP, UDP, ICMP, and many specialized protocols used in modern networking.
+
+:::note
+The processor supports multiple input formats including integers, floats, and string representations of protocol numbers.
+:::
+
+Protocol number resolution follows the official IANA registry for Internet Protocol Numbers. Unknown or unassigned protocol numbers are handled gracefully by returning a formatted "UNKNOWN(number)" string for debugging purposes.
+
+The processor automatically handles type conversion from various numeric types and string representations. Floating-point values are truncated to integers during conversion.
+
+:::warning
+Ensure protocol number fields contain valid numeric values to avoid conversion errors.
+:::
+
+## Examples
+
+### Basic Protocol Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Converting common protocol numbers...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "protocol": 6,
+      "alt_protocol": "17"
+    }
+    ```
+    ```yaml
+    processors:
+      - network_protocol:
+        field: protocol
+        target_field: protocol_name
+      - network_protocol:
+        field: alt_protocol
+        target_field: alt_protocol_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces readable protocol names:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "protocol": 6,
+      "alt_protocol": "17",
+      "protocol_name": "TCP",
+      "alt_protocol_name": "UDP"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### In-Place Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Converting protocol number in place...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "protocol": 1
+      }
+    }
+    ```
+    ```yaml
+    processors:
+      - network_protocol:
+        field: network.protocol
+    ```
+  </CodeCol>
+  <CommentCol>
+    replaces the original field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "protocol": "ICMP"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Protocol Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Processing multiple protocol fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "src_protocol": 6,
+      "dst_protocol": 17,
+      "tunnel_protocol": 47
+    }
+    ```
+    ```yaml
+    processors:
+      - network_protocol:
+        field: src_protocol
+        target_field: src_protocol_name
+      - network_protocol:
+        field: dst_protocol
+        target_field: dst_protocol_name
+      - network_protocol:
+        field: tunnel_protocol
+        target_field: tunnel_protocol_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    identifies all protocols:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "src_protocol": 6,
+      "dst_protocol": 17,
+      "tunnel_protocol": 47,
+      "src_protocol_name": "TCP",
+      "dst_protocol_name": "UDP",
+      "tunnel_protocol_name": "GRE"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Unknown Protocol Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling unknown protocol numbers...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "custom_protocol": 200,
+      "reserved_protocol": 254
+    }
+    ```
+    ```yaml
+    processors:
+      - network_protocol:
+        field: custom_protocol
+        target_field: custom_name
+      - network_protocol:
+        field: reserved_protocol
+        target_field: reserved_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    provides fallback identification:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "custom_protocol": 200,
+      "reserved_protocol": 254,
+      "custom_name": "UNKNOWN(200)",
+      "reserved_name": ""
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### IPv6 Protocol Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Converting IPv6-specific protocols...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ipv6_next_header": 58,
+      "mobility_header": 135
+    }
+    ```
+    ```yaml
+    processors:
+      - network_protocol:
+        field: ipv6_next_header
+        target_field: ipv6_protocol
+      - network_protocol:
+        field: mobility_header
+        target_field: mobility_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    identifies IPv6 protocols:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ipv6_next_header": 58,
+      "mobility_header": 135,
+      "ipv6_protocol": "IPv6-ICMP",
+      "mobility_name": "Mobility Header"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Protocol Analysis
+
+<ExampleGrid>
+  <CommentCol>
+    Converting protocols based on conditions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "protocol_number": 132,
+      "packet_type": "data"
+    }
+    ```
+    ```yaml
+    processors:
+      - network_protocol:
+        field: protocol_number
+        target_field: transport_protocol
+        if: "packet_type == 'data'"
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies conversion when conditions match:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "protocol_number": 132,
+      "packet_type": "data",
+      "transport_protocol": "SCTP"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
