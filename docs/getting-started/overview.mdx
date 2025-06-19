@@ -1,0 +1,142 @@
+---
+pagination_prev: null
+sidebar_label: Overview
+---
+
+# Getting Started: Overview
+
+Welcome to **VirtualMetric DataStream**. This section will help you deploy your product and get started using it.
+
+Here are the steps to get started:
+
+1. Before you proceed, please review our [**Deployment Models**](./deployment/overview.mdx#models) to see your options.
+
+    To deploy **locally**, see the [**On Local**](./deployment/on-local.mdx) section of the chapter.
+
+    To deploy **on cloud**, see the relevant sections for **Azure** in the same chapter.
+
+    Here, we will deploy **on premises** as server&mdash;for **Windows**, **Linux**, **macOS**, and **Copilot+** (ARM64).
+
+3. Once you have decided on your deployment model and chosen the location that suits you, use the relevant sections to install the binaries and make the required settings.
+
+    To deploy as clusters, see the [**As Cluster**](./deployment/as-cluster.mdx) section in the same chapter.
+
+    Here, we will use [**Single Node Deployment**](./director-single-node-deployment.mdx)&mdash;i.e. we will deploy on a single machine as this is simplest and most straightforward.
+
+4. After completing your deployment, consider the following tip:
+
+    :::tip
+    For convenience, you may want to add **VirtualMetric**'s installation folder to your `$PATH` environment variable. Otherwise, to invoke the binaries from the CLI, you must navigate to that folder and use the platform-specific syntax (i.e. "`.\`" for Windows, "`./`" for Unix-based systems).
+    :::
+
+5. To configure telemetry streams, **DataStream** uses YAML files.
+
+    {/* TODO: Add content */}
+
+    :::tip
+    To learn where these files are placed and how they can be arranged, review [**this section**](../configuration/overview.mdx#managing-yaml-files).
+    :::
+
+    **Director** iterates the tree under `config`, scanning each `*.yml` file to spot the route you want to run.
+
+    :::note[info]
+    **Director** does _not_ care about the filenames you use. That is only for your convenience, to organize your components as you see fit. It only cares about the identifiers you use for the components, i.e. the `id` value for devices and the `name` value for the others.
+    :::
+
+    **Director** parses all the YAML files under `config` and runs them. The examples provide the required switches if a specific one needs to be used.
+
+6. To simulate some sample data streams, we provide **Director**'s companion utility: **Generator**. A typical use of it will be sending messages to a specific logging service, although other traditional tools can also be used for this on some Unix-based platforms:
+
+    <Tabs>
+    <TabItem value="powershell" label="PowerShell" default>
+        ```powershell
+        vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Text message"
+        ```
+    </TabItem>    
+    <TabItem value="bash" label="Bash">
+        ```bash
+        logger -n 127.0.0.1 -P 514 "Text message"
+        ```
+    </TabItem>
+    </Tabs>
+
+    Press <kb-short>Ctrl+C</kb-short> to terminate either program and exit the process.
+
+7. For our purposes, and to keep things simple, we will be using the following folder as our working directory:
+
+    <Tabs>
+    <TabItem value="powershell" label="PowerShell" default>
+        ```powershell
+        C:\Path\To\<vm_root>\config\Examples
+        ```
+    </TabItem>    
+    <TabItem value="bash" label="Bash">
+        For **Linux**:
+
+        ```bash
+        /usr/bin/path/to/<vm_root>/config/Examples
+        ```
+        For **macOS**:
+
+        ```bash
+        /Applications/Path/To/<vm_root>/config/Examples
+        ```
+    </TabItem>
+    </Tabs>
+
+    We will be saving all our configuration files in this folder. We will also specify our output files to be created here.
+
+8. Finally, a simple configuration for logging is in order for you to be able to check the status of your runs.
+
+    * Go to `<vm_root>` (i.e. the folder where you have placed **VirtualMetric**)
+    * Find the `config` directory, which is directly under `<vm_root>`
+    * Open the file named `vmetric.yml`, -or- create it if it doesn't exist
+    * Make sure the settings match the following, -or- add them to the newly created file:
+
+        ```yaml
+        debug:
+        log:
+            status: true
+        level: 4
+        console:
+            status: true
+        ```
+
+    **Director** will generate the log of your runs and place it in the following file:
+
+    <Tabs>
+    <TabItem value="powershell" label="PowerShell" default>
+        ```powershell
+        C:\Path\To\<vm_root>\storage\logs\debug.log
+        ```
+    </TabItem>
+    <TabItem value="bash" label="Bash">
+        For **Linux**:
+
+        ```bash
+        /usr/bin/path/to/<vm_root>/storage/logs/debug.log
+        ```
+        For **macOS**:
+
+        ```bash
+        /Applications/Path/To/<vm_root>/storage/logs/debug.log
+        ```
+    </TabItem>
+    </Tabs>
+
+    You can delete this file if you want to. So long as the above debugging setting remains, it will be re-created with each run.
+
+
+7. As soon as you learn how to configure YAML files as **Director** expects them and to invoke the processes these files spawn from the **CLI**, you can proceed to the following **Examples** to exercise what you have learned and see **Director** in action.
+
+    {/* FIXME: Modify content */}
+
+    - [**Example: Ingesting Data**](./example-ingesting-data.mdx) - Configure your first device to receive streaming data
+
+    - [**Example: Forwarding Data**](./example-forwarding-data.mdx) - Configure your first target to send streaming data
+
+    - [**Example: A Syslog-To-Parquet Pipeline**](./example-a-syslog-to-parquet-pipeline.mdx) - A full, end-to-end pipeline in action
+
+    - [**Example: Using Agents**](./example-using-agents.mdx) - Configure your first **Agent** for unattended execution
+
+    {/* FIXME: Change Title and content */}

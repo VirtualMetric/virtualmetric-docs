@@ -5,51 +5,51 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "About",
-      link: {type: "doc", id: "about/index"},
       collapsed: false,
       items: [
-        'about/applications',
-        'about/key-features',
-        'about/benchmarks',
+        "about/introduction",
+        "about/applications",
+        "about/key-features",
+        "about/benchmarks",
         // {
         //   type: "category",
         //   label: "Comparisons",
-        //   link: {type: "doc", id: "about/comparisons/index"},
         //   items: [
-        //     'about/comparisons/cribl',
-        //     'about/comparisons/logstash',
-        //     'about/comparisons/tenzir',
-        //     'about/comparisons/vector',
+        //     "about/comparisons/overview",
+        //     "about/comparisons/cribl",
+        //     "about/comparisons/logstash",
+        //     "about/comparisons/tenzir",
+        //     "about/comparisons/vector",
         //   ]
         // },
-        'about/licensing',
+        "about/licensing",
         // 'about/release-notes',
       ],
     },
     {
       type: "category",
       label: "Getting Started",
-      link: {type: "doc", id: "getting-started/index"},
       collapsed: false,
       items: [
-        'getting-started/single-node-deployment',
-        'getting-started/configuration-basics',
-        'getting-started/example-ingesting-data',
-        'getting-started/example-forwarding-data',
-        'getting-started/example-a-syslog-to-parquet-pipeline',
-        'getting-started/example-using-agents',
+        "getting-started/overview",
+        "getting-started/director-single-node-deployment",
+        "getting-started/example-ingesting-data",
+        "getting-started/example-forwarding-data",
+        "getting-started/example-a-syslog-to-parquet-pipeline",
+        "getting-started/agent-single-node-deployment",
+        "getting-started/example-using-agents",
         {
           type: "category",
           label: "Deployment",
-          link: {type: "doc", id: "getting-started/deployment/index"},
           collapsed: false,
           items: [
-            'getting-started/deployment/on-local',
-            'getting-started/deployment/as-cluster',
-            'getting-started/deployment/on-azure-vm',
-            'getting-started/deployment/on-azure-app-service',
-            'getting-started/deployment/on-azure-functions',
-            'getting-started/deployment/via-azure-arc-extension',
+            "getting-started/deployment/overview",
+            "getting-started/deployment/on-local",
+            "getting-started/deployment/as-cluster",
+            "getting-started/deployment/on-azure-vm",
+            "getting-started/deployment/on-azure-app-service",
+            "getting-started/deployment/on-azure-functions",
+            "getting-started/deployment/via-azure-arc-extension",
           ],
         },
       ],
@@ -57,8 +57,8 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Microsoft Sentinel",
-      link: {type: "doc", id: "microsoft-sentinel/index"},
       items: [
+        "microsoft-sentinel/overview",
         {
           type: "category",
           label: "Integration",
@@ -68,8 +68,8 @@ const sidebars: SidebarsConfig = {
             description: "The following documents contain detailed information on this topic."
           },
           items: [
-            'microsoft-sentinel/integration/manual',
-            'microsoft-sentinel/integration/via-autodiscovery',
+            "microsoft-sentinel/integration/manual",
+            "microsoft-sentinel/integration/via-autodiscovery",
           ],
         },
         {
@@ -81,8 +81,8 @@ const sidebars: SidebarsConfig = {
             description: "The following documents contain detailed information on this topic."
           },
           items: [
-            'microsoft-sentinel/automation/arm-templates',
-            'microsoft-sentinel/automation/bicep-templates',
+            "microsoft-sentinel/automation/arm-templates",
+            "microsoft-sentinel/automation/bicep-templates",
           ],
         },
         {
@@ -94,8 +94,8 @@ const sidebars: SidebarsConfig = {
             description: "The following documents contain detailed information on this topic."
           },
           items: [
-            'microsoft-sentinel/content-hub/checkpoint',
-            'microsoft-sentinel/content-hub/fortigate',
+            "microsoft-sentinel/content-hub/checkpoint",
+            "microsoft-sentinel/content-hub/fortigate",
           ],
         },
       ],
@@ -103,13 +103,13 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Configuration",
-      link: {type: "doc", id: "configuration/index"},
       items: [        
+        "configuration/overview",
         {
           type: "category",
           label: "Devices",
-          link: {type: "doc", id: "configuration/devices/index"},
           items: [
+            "configuration/devices/overview",
             "configuration/devices/azure-monitor",
             "configuration/devices/estreamer",
             "configuration/devices/http",
@@ -134,8 +134,8 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Targets",
-          link: {type: "doc", id: "configuration/targets/index"},
           items: [
+            "configuration/targets/overview",
             "configuration/targets/azure-blob-storage",
             "configuration/targets/azure-data-explorer",
             "configuration/targets/clickhouse",
@@ -151,8 +151,8 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Pipelines",
-          link: {type: "doc", id: "configuration/pipelines/index"},
           items: [
+            "configuration/pipelines/overview",
             "configuration/pipelines/pre-processing",
             "configuration/pipelines/normalization",
             "configuration/pipelines/post-processing",
@@ -162,8 +162,8 @@ const sidebars: SidebarsConfig = {
             {
               type: "category",
               label: "Processors",
-              link: {type: "doc", id: "configuration/pipelines/processors/index"},
               items: [
+                "configuration/pipelines/processors/overview",
                 "configuration/pipelines/processors/aad-errcode",
                 "configuration/pipelines/processors/abs",
                 "configuration/pipelines/processors/add",
@@ -290,20 +290,20 @@ const sidebars: SidebarsConfig = {
         description: "Chapters providing detailed information on the CLI options."
       },
       items: [
-        'cli/director',
-        'cli/generator',
-        'cli/agent',
+        "cli/director",
+        "cli/generator",
+        "cli/agent",
       ]
     },
     // {
     //   type: "category",
     //   label: "Architecture",
-    //   link: {type: "doc", id: "architecture/index"},
     //   items: [
-    //     'architecture/clustering',
-    //     'architecture/file-system',
-    //     'architecture/persistency',
-    //     'architecture/zero-trust',
+    //     "architecture/overview",
+    //     "architecture/clustering",
+    //     "architecture/file-system",
+    //     "architecture/persistency",
+    //     "architecture/zero-trust",
     //   ],
     // },
     // {
@@ -311,19 +311,18 @@ const sidebars: SidebarsConfig = {
     //   label: "Migration",
     //   link: {type: "doc", id: "migration/index"},
     //   items: [
-    //     'migration/cribl',
-    //     'migration/logstash',
-    //     'migration/tenzir',
-    //     'migration/vector',
+    //     "migration/cribl",
+    //     "migration/logstash",
+    //     "migration/tenzir",
+    //     "migration/vector",
     //   ],
     // },
     "appendix",
     "glossary"
   ],
-  tutorDocs: [
-    "tutorials/index",
-    // "tutorials/using-agents",
-  ],  
+  // tutorDocs: [
+  //   "tutorials/index",
+  // ],  
 };
 
 export default sidebars;
