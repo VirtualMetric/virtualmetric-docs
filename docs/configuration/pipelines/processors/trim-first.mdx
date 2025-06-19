@@ -1,0 +1,301 @@
+---
+description: Removes characters or keywords from the beginning of strings
+sidebar_custom_props: 
+  customIcon: ✂️
+  customCategory: Filter
+---
+
+# Trim First
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">String Manipulation</span><span className="theme-doc-version-badge badge badge--secondary">Data Cleaning</span>
+
+## Synopsis
+
+A text processing processor that removes a specified number of characters or predefined keywords from the beginning of strings, providing precise control over prefix removal for data cleaning and normalization tasks.
+
+## Schema
+
+```yaml {2}
+- trim_first:
+  field: <ident>
+  count: <integer>
+  keywords: <string[]>
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the string(s) to process|
+|`count`|N|-|Number of characters to remove from beginning|
+|`keywords`|N|-|Keywords to remove from beginning|
+|`target_field`|N|`field`|Field to store the trimmed result|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if trimming fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor supports two trimming modes: character count-based trimming and keyword-based trimming. Both modes can be used together, with character trimming applied first followed by keyword trimming.
+
+:::note
+The processor supports both single strings and string arrays, applying the trimming operation to each string element.
+:::
+
+Character count trimming removes the specified number of characters from the start of each string. If the count exceeds the string length, the entire string is removed, resulting in an empty string.
+
+Keyword trimming removes matching prefixes from the beginning of strings. Multiple keywords can be specified, and each is checked sequentially for prefix matches.
+
+:::warning
+Ensure the count parameter contains valid numeric values to avoid processing errors.
+:::
+
+## Examples
+
+### Character Count Trimming
+
+<ExampleGrid>
+  <CommentCol>
+    Removing first characters from strings...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_line": "2024-01-15 ERROR: Database connection failed",
+      "code": "ABC123456789"
+    }
+    ```
+    ```yaml
+    processors:
+      - trim_first:
+        field: log_line
+        count: "11"
+        target_field: message_only
+      - trim_first:
+        field: code
+        count: "3"
+        target_field: numeric_part
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes the prefixes:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_line": "2024-01-15 ERROR: Database connection failed",
+      "code": "ABC123456789",
+      "message_only": "ERROR: Database connection failed",
+      "numeric_part": "123456789"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keyword Trimming
+
+<ExampleGrid>
+  <CommentCol>
+    Removing specific keywords from beginning...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_msg": "ERROR: Failed to connect to server",
+      "warning_msg": "WARNING: Low disk space detected"
+    }
+    ```
+    ```yaml
+    processors:
+      - trim_first:
+        field: error_msg
+        keywords: ["ERROR: "]
+        target_field: clean_error
+      - trim_first:
+        field: warning_msg
+        keywords: ["WARNING: "]
+        target_field: clean_warning
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes the log level prefixes:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_msg": "ERROR: Failed to connect to server",
+      "warning_msg": "WARNING: Low disk space detected",
+      "clean_error": "Failed to connect to server",
+      "clean_warning": "Low disk space detected"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Processing string arrays...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_paths": [
+        "/var/log/application.log",
+        "/var/log/system.log",
+        "/var/log/error.log"
+      ]
+    }
+    ```
+    ```yaml
+    processors:
+      - trim_first:
+        field: file_paths
+        keywords: ["/var/log/"]
+        target_field: file_names
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts just the filenames:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_paths": [
+        "/var/log/application.log",
+        "/var/log/system.log",
+        "/var/log/error.log"
+      ],
+      "file_names": [
+        "application.log",
+        "system.log",
+        "error.log"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Keywords
+
+<ExampleGrid>
+  <CommentCol>
+    Removing various prefixes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "messages": [
+        "INFO: System startup complete",
+        "DEBUG: Loading configuration",
+        "TRACE: Memory allocation successful"
+      ]
+    }
+    ```
+    ```yaml
+    processors:
+      - trim_first:
+        field: messages
+        keywords: ["INFO: ", "DEBUG: ", "TRACE: "]
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes all log level prefixes:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "messages": [
+        "System startup complete",
+        "Loading configuration",
+        "Memory allocation successful"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Combined Trimming
+
+<ExampleGrid>
+  <CommentCol>
+    Using both character count and keywords...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_data": "00012345ERROR: Processing failed"
+    }
+    ```
+    ```yaml
+    processors:
+      - trim_first:
+        field: raw_data
+        count: "8"
+        keywords: ["ERROR: "]
+        target_field: clean_message
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies both trimming methods:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_data": "00012345ERROR: Processing failed",
+      "clean_message": "Processing failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Trimming
+
+<ExampleGrid>
+  <CommentCol>
+    Trimming based on conditions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_entry": "AUDIT: User login successful",
+      "log_level": "AUDIT"
+    }
+    ```
+    ```yaml
+    processors:
+      - trim_first:
+        field: log_entry
+        keywords: ["AUDIT: "]
+        if: "log_level == 'AUDIT'"
+        target_field: audit_message
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies trimming when condition matches:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_entry": "AUDIT: User login successful",
+      "log_level": "AUDIT",
+      "audit_message": "User login successful"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

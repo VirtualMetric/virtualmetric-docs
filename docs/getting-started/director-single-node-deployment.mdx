@@ -1,8 +1,4 @@
----
-sidebar_label: Single Node Deployment
----
-
-# Getting Started: Single Node Deployment
+# Director: Single Node Deployment
 
 To download, install, and run **VirtualMetric Director**, follow the instructions below.
 
@@ -10,7 +6,7 @@ To download, install, and run **VirtualMetric Director**, follow the instruction
 
 **Director** supports the `amd64` and `arm64` versions of **Windows**, **Linux**, and **macOS**. Its minimum requirements are:
 
-- **CPU**: **1 core** - We recommend using a machine with at least **2 CPU cores**. As our system uses a _vectorized pipeline_ and can utilize all available cores, having multiples cores will improve performance
+- **CPU**: **1 core** - We recommend using a machine with at least **2 CPU cores**. As our system uses a _vectorized pipeline_ and can utilize all available cores, having multiple cores will improve performance
 - **Memory**: **150MB** - Depending on the volumes you need to handle, more memory will improve performance
 - **Disk**: **250MB** - Depending on the amount of temporary data you need storage, more disk space will improve performance
 
@@ -96,44 +92,42 @@ For systems without internet access, you can download and install **Director** m
 Once you have downloaded the binary, open a terminal with admin privileges&mdash;i.e. as _Administrator_ on **Windows**, as _sudo_ on **Linux**, or as _root_ on **macOS**. Create the directory where you want to run **Director** (we will refer to that directory as `<vm_root>`), and copy the downloaded binary to it. Then, navigate to that directory.
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
-  ```PowerShell
-  mkdir "C:\Program Files\VirtualMetric"
-  cp C:\Users\<admin-user>\Downloads\virtualmetric-director.exe "C:\Program Files\VirtualMetric"
-  cd "C:\Program Files\VirtualMetric"
-  ```
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    mkdir "C:\Program Files\VirtualMetric"
+    cp C:\Users\<admin-user>\Downloads\virtualmetric-director.exe "C:\Program Files\VirtualMetric"
+    cd "C:\Program Files\VirtualMetric"
+    ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-  ```bash
-  mkdir /opt/virtualmetric
-  cp ./virtualmetric-director /opt/virtualmetric
-  cd /opt/virtualmetric
-  ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-  ```bash
-  mkdir /Applications/VirtualMetric
-  cp ./virtualmetric-director /Applications/VirtualMetric
-  cd /Applications/VirtualMetric
-  ```
+
+  <TabItem value="bash" label="Bash">
+    On **Linux**:
+
+    ```bash
+    mkdir /opt/virtualmetric
+    cp ./virtualmetric-director /opt/virtualmetric
+    cd /opt/virtualmetric
+    ```
+
+    On **macOS**:
+
+    ```bash
+    mkdir /Applications/VirtualMetric
+    cp ./virtualmetric-director /Applications/VirtualMetric
+    cd /Applications/VirtualMetric
+    ```
   </TabItem>
 </Tabs>
 
-<br />
-If you don't have enough priviliges to start the service, you can run **Director** as a background process:
+If you don't have enough privileges to start the service, you can run **Director** as a background process:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     .\vmetric-director -background
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    ./vmetric-director -background
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     ./vmetric-director -background
     ```
@@ -143,19 +137,13 @@ If you don't have enough priviliges to start the service, you can run **Director
 If you _do_ have the required privileges, you can start **Director** as a service by running the following commands:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     .\vmetric-director -service install
     .\vmetric-director -service start
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    ./vmetric-director -service install
-    ./vmetric-director -service start
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     ./vmetric-director -service install
     ./vmetric-director -service start
@@ -168,19 +156,14 @@ If you _do_ have the required privileges, you can start **Director** as a servic
 After completing the above steps, if you have installed **Director** as a service, you can verify its status by using the following command:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     Get-Service vmetric-director
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
+  <TabItem value="bash" label="Bash">
     ```bash
     systemctl status vmetric-director
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-    ```bash
-    launchctl list | grep virtualmetric
     ```
   </TabItem>
 </Tabs>
