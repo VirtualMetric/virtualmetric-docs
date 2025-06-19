@@ -3,7 +3,7 @@
 This section will help you get started with devices to ingest data with specific protocols, walking you through a common use case.
 
 :::tip
-For a detailed discussion, see [Devices: Overview](../configuration/devices/index.mdx#configuration).
+For a detailed discussion, see [Devices: Overview](../configuration/devices/overview.mdx#configuration).
 :::
 
 ## Scenarios
@@ -19,7 +19,7 @@ Use UDP as the listening protocol.
 
 ### Step 1. Create Configuration
 
-Create a file named `from-syslog-udp.yml` in our [working directory](./configuration-basics.mdx#working-directory), and then open it with a text editor to enter the following:
+Create a file named `from-syslog-udp.yml` in our [working directory](./introduction.mdx#working-directory), and then open it with a text editor to enter the following:
 
 ```yaml title="from-syslog-udp.yml"
 devices:
@@ -68,17 +68,12 @@ We are now ready to try our configuration.
 Open a terminal and enter the following in the command line to start **Director**:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     ```powershell
     vmetric-director
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    vmetric-director
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     vmetric-director
     ```
@@ -92,14 +87,14 @@ After you press <kb-short>Enter</kb-short>, you will see a stream of initializat
 We can now test the reception using either **Director**'s cross-platform companion **Generator** or the traditional tools available on your platform. Open a new terminal and enter the following in the command line:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     - Using **Generator**
 
     ```powershell
     vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
+  <TabItem value="bash" label="Bash">
     - Using **Generator**
   
     ```bash
@@ -112,43 +107,21 @@ We can now test the reception using either **Director**'s cross-platform compani
     logger -n 127.0.0.1 -P 514 "Hello world"
     ```
   </TabItem>
-  <TabItem value="macos" label="macOS">
-    - Using **Generator**
-
-    ```bash
-    vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
-    ```
-  
-    - Using **System Logger**
-  
-    ```bash
-    logger -n 127.0.0.1 -P 514 "Hello world"
-    ```
-  </TabItem>
 </Tabs>
 
 If you are using **Generator**, after you press <kb-short>Enter</kb-short> the program will start sending our message, one at a time, to _Syslog_. It will signal that it sent the message with a prompt like this:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     ```PowerShell
     1 message sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
     2 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
-    ...
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
+  <TabItem value="bash" label="Bash">
     ```bash
     1 message sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
     2 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
-    ...
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-    ```bash
-    1 message sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
-    2 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
-    ...
     ```
   </TabItem>
 </Tabs>
@@ -156,17 +129,12 @@ If you are using **Generator**, after you press <kb-short>Enter</kb-short> the p
 If you now switch back to **Director**'s terminal, you will see each sent message (i.e. "Hello world") on the console:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     ```PowerShell
     <1> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    <1> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     <1> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
     ```
@@ -184,14 +152,14 @@ Now we will create a TLS-enabled device to ingest data over TCP.
 First, we have to prepare the TLS certificates. This can be done using either **Director** or **OpenSSL**.
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     - Using **Director**
 
     ```powershell
     vmetric-director -pfx2pem=./cert-file.pfx
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
+  <TabItem value="bash" label="Bash">
     - Using **Director**
     
     ```bash
@@ -200,20 +168,6 @@ First, we have to prepare the TLS certificates. This can be done using either **
     
     - Using **OpenSSL**
     
-    ```bash
-    openssl genrsa -out server.key 2048
-    openssl req -new -x509 -key server.key -out server.crt -days 365
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-    - Using **Director**
-
-    ```bash
-    vmetric-director -pfx2pem=./cert-file.pfx
-    ```
-
-    - Using **OpenSSL**
-
     ```bash
     openssl genrsa -out server.key 2048
     openssl req -new -x509 -key server.key -out server.crt -days 365
@@ -228,17 +182,12 @@ The above commands will generate the required `key.pem` and `cert.pem` files.
 Now that we have created the files needed for a secure connection, we must copy them to our root directory:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     ```powershell
     Copy-Item cert.pem key.pem <vm_root>/
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    cp cert.pem key.pem <vm_root>/
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     cp cert.pem key.pem <vm_root>/
     ```
@@ -274,17 +223,12 @@ Note that we specified the certificate files we have created in the previous ste
 We can run our device in the background:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     ```powershell
     vmetric-director -background
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    vmetric-director -background
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     vmetric-director -background
     ```
@@ -296,17 +240,12 @@ We can run our device in the background:
 Time to test the secure connection. In the terminal where you have previously sent **Generator** messages, and enter the following command:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     ```powershell
     Write-Output "Hello secure world" | openssl s_client -connect 127.0.0.1:6514
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    echo "Hello secure world" | openssl s_client -connect 127.0.0.1:6514
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     echo "Hello secure world" | openssl s_client -connect 127.0.0.1:6514
     ```
@@ -315,7 +254,7 @@ Time to test the secure connection. In the terminal where you have previously se
 
 Our test message is sent to the port **Director** is listening via TCP.
 
-Check **Director**'s logs&mdash;those under the directory indicated [here](./configuration-basics.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
+Check **Director**'s logs&mdash;those under the directory indicated [here](./introduction.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
 
 You can now exit the processes on both terminals by pressing <kb-short>Ctrl+C</kb-short>.
 

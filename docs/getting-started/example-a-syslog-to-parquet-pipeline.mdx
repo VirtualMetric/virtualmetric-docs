@@ -3,7 +3,7 @@
 This section will help you get started with configuring and running a pipeline, walking you through a common use case.
 
 :::tip
-For a detailed discussion, see [Pipelines: Overview](../configuration/pipelines/index.mdx#configuration).
+For a detailed discussion, see [Pipelines: Overview](../configuration/pipelines/overview.mdx#configuration).
 :::
 
 ## Scenario
@@ -20,7 +20,7 @@ We will implement the following scenario:
 
 - **Write the data to a Parquet file** - Define the parameters for sending the messages to a _Parquet_ file as the destination.
 
-We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the Parquet file will be stored, although since we will be using our [working directory](./configuration-basics.mdx#working-directory) that is taken care of.
+We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the Parquet file will be stored, although since we will be using our [working directory](./introduction.mdx#working-directory) that is taken care of.
 
 However, we must first understand the underlying logic of a pipeline.
 
@@ -51,15 +51,18 @@ Then, create a YAML file in our working directory named `convert-words.yml`, and
 ```yaml
 pipelines:
   - name: convert_words
-    processors:
-      - uppercase:
+      processors:
+        - uppercase:
           field: words
           target_field: convertedWords
-
 ```
 
 :::tip
 When configuring a pipeline, we use the identifiers in the `name` fields of the components.
+:::
+
+:::warning
+The YAML formatting of pipelines requires that all entries after `- name:` is indented one tab.
 :::
 
 Here is what this pipeline will do:
@@ -73,19 +76,14 @@ Here is what this pipeline will do:
 To see whether our pipeline is valid, we enter the following command in the terminal:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     vmetric-director -validate -path=".\config\Examples\convert-words.yml"
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
+  <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-director -validate -path=".\config\Examples\convert-words.yml
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-    ```bash
-    vmetric-director -validate -path=".\config\Examples\convert-words.yml
+    vmetric-director -validate -path="./config/Examples/convert-words.yml
     ```
   </TabItem>
 </Tabs>
@@ -93,17 +91,12 @@ To see whether our pipeline is valid, we enter the following command in the term
 If our pipeline is valid, this command will return:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     [OK] No issues found.
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    [OK] No issues found.
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     [OK] No issues found.
     ```
@@ -117,17 +110,12 @@ Since that is indeed the case, we can now run our test.
 To see our pipeline in action, enter the following in the terminal:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     vmetric-director -mode pipeline -path=".\config\Examples\convert-words.yml" -name convert_words -input ".\config\Examples\sample-data.json" -output ".\config\Examples\processed-sample-data.json"
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    vmetric-director -mode pipeline -path="./config/Examples/convert-words.yml" -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     vmetric-director -mode pipeline -path="./config/Examples/convert-words.yml" -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
     ```
@@ -216,28 +204,28 @@ We are now ready to configure our pipeline. Put the following in our configurati
 ```yml title="syslog-to-parquet.yml"
 pipelines:
   - name: extract_user_event
-    processors:
-      - grok:
+      processors:
+        - grok:
           field: message
           patterns:
             - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
-      - grok:
+        - grok:
           field: syslog.message
           patterns:
             - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
           ignore_failure: true
 
-      - set:
+        - set:
           field: user
           value: user.name
-      - set:
+        - set:
           field: event
           value: event.action
-      - set:
+        - set:
           field: message
           value: syslog.message
 
-      - remove:
+        - remove:
           field:          
             - syslog.message
           ignore_missing: true
@@ -283,17 +271,12 @@ We will use the `mode` parameter to tell **Director** that we will run a "pipeli
 As we did aboveü, we will first validate the pipeline:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
     ```
@@ -303,17 +286,12 @@ As we did aboveü, we will first validate the pipeline:
 Once our pipeline is validated, we can start running our configuration:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     vmetric-director
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    vmetric-director
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     vmetric-director
     ```
@@ -323,14 +301,14 @@ Once our pipeline is validated, we can start running our configuration:
 We will once again use **Generator** or a traditional platform tool to send our "`Hello world`" messages to _Syslog_:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     - Using **Generator**
 
     ```powershell
     vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
+  <TabItem value="bash" label="Bash">
     - Using **Generator**
   
     ```bash
@@ -339,19 +317,6 @@ We will once again use **Generator** or a traditional platform tool to send our 
     
     - Using **System Logger**
 
-    ```bash
-    logger -n 127.0.0.1 -P 514 "Hello world"
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-    - Using **Generator**
-
-    ```bash
-    vmetric-generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
-    ```
-  
-    - Using **System Logger**
-  
     ```bash
     logger -n 127.0.0.1 -P 514 "Hello world"
     ```

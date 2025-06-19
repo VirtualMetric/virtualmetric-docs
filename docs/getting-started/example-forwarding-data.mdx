@@ -3,7 +3,7 @@
 This section will help you get started with targets to write processed data to specific formats, walking you through common use cases.
 
 :::tip
-For a detailed discussion, see [Targets: overview](../configuration/targets/index.mdx#configuration).
+For a detailed discussion, see [Targets: overview](../configuration/targets/overview.mdx#configuration).
 :::
 
 ## Scenarios
@@ -26,7 +26,7 @@ routes:
       - name: to_console
 ```
 
-Assume, however, that we want to customize the stream directed to the console. For that purpose, we will modify the target configuration in our `to-console.yml` file (placed in our [working directory](./configuration-basics.mdx#working-directory)) as:
+Assume, however, that we want to customize the stream directed to the console. For that purpose, we will modify the target configuration in our `to-console.yml` file (placed in our [working directory](./introduction.mdx#working-directory)) as:
 
 ```yaml title="to-console.yml"
 targets:
@@ -41,19 +41,14 @@ With this setting, we will normalize our data to the [ECS](../appendix.mdx#ecs) 
 To see the results on the console, once again go to the terminal you are using for **Director** invoke it by entering:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     vmetric-director
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
+  <TabItem value="bash" label="Bash">
     ```bash
     metric-director
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
-    ```bash
-    vmetric-director
     ```
   </TabItem>
 </Tabs>
@@ -61,14 +56,14 @@ To see the results on the console, once again go to the terminal you are using f
 Then, once again, go to the other terminal you are using for **Generator** (or other traditional message sending OS tool), and start sending our familiar message:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     - Using **Generator**
 
     ```powershell
     vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
+  <TabItem value="bash" label="Bash">
     - Using **Generator**
   
     ```bash
@@ -81,35 +76,17 @@ Then, once again, go to the other terminal you are using for **Generator** (or o
     logger -n 127.0.0.1 -P 514 "Hello world"
     ```
   </TabItem>
-  <TabItem value="macos" label="macOS">
-    - Using **Generator**
-
-    ```bash
-    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
-    ```
-  
-    - Using **System Logger**
-  
-    ```bash
-    logger -n 127.0.0.1 -P 514 "Hello world"
-    ```
-  </TabItem>
 </Tabs>
 
 This time, you will see that our message is printed to the console in ECS format we have specified:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     ```PowerShell
     {"message":"<3> 2025-06-02T10:38:02+03:00 VirtualMetric Test[7916]: Hello world","@timestamp":"2025-06-02T10:38:02+03:00"}
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    {"message":"<3> 2025-06-02T10:38:02+03:00 VirtualMetric Test[7916]: Hello world","@timestamp":"2025-06-02T10:38:02+03:00"}
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     {"message":"<3> 2025-06-02T10:38:02+03:00 VirtualMetric Test[7916]: Hello world","@timestamp":"2025-06-02T10:38:02+03:00"}
     ```
@@ -168,14 +145,14 @@ routes:
 Once again, run **Generator** or equivalent to send messages to syslog:
 
 <Tabs>
-  <TabItem value="windows" label="Windows" default>
+  <TabItem value="powershell" label="PowerShell" default>
     - Using **Generator**
 
     ```powershell
     vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
+  <TabItem value="bash" label="Bash">
     - Using **Generator**
   
     ```bash
@@ -188,35 +165,17 @@ Once again, run **Generator** or equivalent to send messages to syslog:
     logger -n 127.0.0.1 -P 514 "Hello world"
     ```
   </TabItem>
-  <TabItem value="macos" label="macOS">
-    - Using **Generator**
-
-    ```bash
-    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
-    ```
-  
-    - Using **System Logger**
-  
-    ```bash
-    logger -n 127.0.0.1 -P 514 "Hello world"
-    ```
-  </TabItem>
 </Tabs>
 
 To have this _syslog_ message directed to the storage file we have configured, invoke **Director** from your terminal:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     vmetric-director
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    vmetric-director
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     vmetric-director
     ```
@@ -226,17 +185,12 @@ To have this _syslog_ message directed to the storage file we have configured, i
 **Director** will issue prompts like the following while it is writing the ingested data to our JSON file:
 
 <Tabs>
-  <TabItem value="windows" label="Windows">
+  <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     [2025-06-02 11:15:58] [Information] [vmetric-director] Completed processing of to_json target logs. Number of processed logs: 1000
     ```
   </TabItem>
-  <TabItem value="linux" label="Linux">
-    ```bash
-    [2025-06-02 11:15:58] [Information] [vmetric-director] Completed processing of to_json target logs. Number of processed logs: 1000
-    ```
-  </TabItem>
-  <TabItem value="macos" label="macOS">
+  <TabItem value="bash" label="Bash">
     ```bash
     [2025-06-02 11:15:58] [Information] [vmetric-director] Completed processing of to_json target logs. Number of processed logs: 1000
     ```

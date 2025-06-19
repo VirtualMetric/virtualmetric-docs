@@ -31,7 +31,7 @@ const sidebars: SidebarsConfig = {
       label: "Getting Started",
       collapsed: false,
       items: [
-        "getting-started/overview",
+        "getting-started/introduction",
         "getting-started/director-single-node-deployment",
         "getting-started/example-ingesting-data",
         "getting-started/example-forwarding-data",
