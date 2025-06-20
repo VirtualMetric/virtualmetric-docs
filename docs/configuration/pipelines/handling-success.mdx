@@ -65,14 +65,14 @@ The `on_success` handlers can trigger processors in other pipelines, enabling co
 ```yaml
 pipelines:
   - name: parse_apache
-    processors:
-      - grok:
-        field: message
-        patterns: ["%{COMBINEDAPACHELOG}"]
-        on_success:
-          - pipeline: enrich_apache
+      processors:
+        - grok:
+          field: message
+          patterns: ["%{COMBINEDAPACHELOG}"]
+          on_success:
+            - pipeline: enrich_apache
 
-    - name: enrich_apache
+  - name: enrich_apache
       processors:
       - geoip:
         field: clientip

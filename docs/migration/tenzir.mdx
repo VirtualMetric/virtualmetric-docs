@@ -141,28 +141,28 @@ In **Tenzir**, pipelines are defined with operators chained together. In **DataS
       ```yaml title="YAML"
       pipelines:
         - name: login_events
-          processors:
-            - script:
-              lang: golang
-              source:|
-                package main
-                func main() {
-                  eventType, ok := logEntry["event_type"]
-                  if !ok||eventType != "login" {
-                    dropMessage()
+            processors:
+              - script:
+                lang: golang
+                source: |
+                  package main
+                  func main() {
+                    eventType, ok := logEntry["event_type"]
+                    if !ok||eventType != "login" {
+                      dropMessage()
+                    }
                   }
-                }
-            - rename:
-                fields:
-                  - from: src_ip
-                    to: source.ip
-                  - from: dst_ip
-                    to: destination.ip
-            - remove:
-                field:
-                  - event_type
-                  - timestamp
-                  - raw_message
+              - rename:
+                  fields:
+                    - from: src_ip
+                      to: source.ip
+                    - from: dst_ip
+                      to: destination.ip
+              - remove:
+                  field:
+                    - event_type
+                    - timestamp
+                    - raw_message
       ```
     </CodeCol>
   </ExampleGrid>

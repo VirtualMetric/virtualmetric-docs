@@ -86,14 +86,14 @@ The Reroute processor is particularly useful to achieve the following:
   <CodeCol>
     ```yaml
     pipelines:
-      name: security_pipeline
-      processors:
-        - grok:
-          field: message
-          pattern: '%{IPADDR:source_ip}'
-        - reroute:
-          if: 'source_ip matches "10.0.0.*"'
-          destination: auto_sentinel
+      - name: security_pipeline
+          processors:
+            - grok:
+              field: message
+              pattern: '%{IPADDR:source_ip}'
+            - reroute:
+              if: 'source_ip matches "10.0.0.*"'
+              destination: auto_sentinel
     ```
   </CodeCol>
 </ExampleGrid>
@@ -107,15 +107,15 @@ The Reroute processor is particularly useful to achieve the following:
   <CodeCol>
     ```yaml
     pipelines:
-      name: firewall_logs
-      processors:
-        - checkpoint:
-          field: message
-        - reroute:
-          if: 'checkpoint.action == "Drop" && checkpoint.severity >= 3'
-          destination: high_priority_sentinel
-        - reroute:
-          destination: standard_sentinel
+      - name: firewall_logs
+          processors:
+            - checkpoint:
+              field: message
+            - reroute:
+              if: 'checkpoint.action == "Drop" && checkpoint.severity >= 3'
+              destination: high_priority_sentinel
+            - reroute:
+              destination: standard_sentinel
     ```
   </CodeCol>
   <CommentCol>
@@ -147,22 +147,22 @@ The Reroute processor is particularly useful to achieve the following:
   <CodeCol>
     ```yaml
     pipelines:
-      name: complex_processing
-      processors:
-        - json:
-          field: message
-        - grok:
-          field: parsed_message
-          pattern: '%{DATA:app_name}'
-        - user_agent:
-          field: user_agent
-        - geoip:
-          field: ip_address
-        - reroute:
-          if: 'geoip.country_code not in ["US", "CA"] && app_name == "core_banking"'
-          destination: security_analytics
-        - reroute:
-          destination: standard_logs
+      - name: complex_processing
+          processors:
+            - json:
+              field: message
+            - grok:
+              field: parsed_message
+              pattern: '%{DATA:app_name}'
+            - user_agent:
+              field: user_agent
+            - geoip:
+              field: ip_address
+            - reroute:
+              if: 'geoip.country_code not in ["US", "CA"] && app_name == "core_banking"'
+              destination: security_analytics
+            - reroute:
+              destination: standard_logs
     ```
   </CodeCol>
 </ExampleGrid>

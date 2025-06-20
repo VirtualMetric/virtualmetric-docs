@@ -200,36 +200,36 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
       ```yaml title="YAML"
       pipelines:
         - name: router
-          processors:
-            - script:
-              lang: golang
-              source:|
-                package main
-                  
-                func main() {
-                  logType, ok := logEntry["type"].(string)
-                  if ok {
-                    if logType == "apache" {
-                      setPipeline("apache_pipeline")
-                    } else if logType == "syslog" {
-                      setPipeline("syslog_pipeline")
+            processors:
+              - script:
+                lang: golang
+                source:|
+                  package main
+                    
+                  func main() {
+                    logType, ok := logEntry["type"].(string)
+                    if ok {
+                      if logType == "apache" {
+                        setPipeline("apache_pipeline")
+                      } else if logType == "syslog" {
+                        setPipeline("syslog_pipeline")
+                      }
                     }
                   }
-                }
 
         - name: apache_pipeline
-          processors:
-            - grok:
-              field: message
-              patterns:
-                - "%{COMBINEDAPACHELOG}"
+            processors:
+              - grok:
+                field: message
+                patterns:
+                  - "%{COMBINEDAPACHELOG}"
 
         - name: syslog_pipeline
-          processors:
-            - grok:
-              field: message
-              patterns:
-                - "%{SYSLOGLINE}"
+            processors:
+              - grok:
+                field: message
+                patterns:
+                  - "%{SYSLOGLINE}"
       ```
     </CodeCol>
   </ExampleGrid>
