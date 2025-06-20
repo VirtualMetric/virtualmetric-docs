@@ -17,17 +17,17 @@ Executes custom scripts and optimized built-in functions to transform and manipu
 
 ```yaml {2-4}
 - script:
-  source: <string>
-  lang: <string>
-  params: <map[string]any>
-  function: <string>
-  description: <text>
-  if: <script>
-  id: <ident>
-  ignore_failure: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    source: <string>
+    lang: <string>
+    params: <map[string]any>
+    function: <string>
+    description: <text>
+    if: <script>
+    id: <ident>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -56,8 +56,7 @@ The processor supports three scripting modes:
 Go scripts provide full access to all of Go's features, and therefore is the recommended language for complex scenarios.
 
 ```yaml
-processors:
-  - script:
+- script:
     lang: golang
     source: |
         package main
@@ -78,8 +77,7 @@ Scripts are cached using **xxHash** for performance, reusing compiled versions. 
 While there is support for Elasticsearch Painless for convenience, this may not cover all the features, and has an overhead.
 
 ```yaml
-processors:
-  - script:
+- script:
     lang: painless
     source: |
         ctx.normalized = ctx.field.toLowerCase()
@@ -106,8 +104,7 @@ Optimized implementations of common VirtualMetric functions that bypass script i
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - script:
+    - script:
         lang: golang
         source: |
             package main
@@ -134,8 +131,7 @@ Optimized implementations of common VirtualMetric functions that bypass script i
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - script:
+    - script:
         lang: vmetric
         function: processTimeFields("log.time", "log.timestamp", "log.times")
     ```
@@ -150,11 +146,10 @@ Optimized implementations of common VirtualMetric functions that bypass script i
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - script:
+    - script:
         lang: vmetric
         function: getNetworkTransport()
-      - script:
+    - script:
         lang: golang
         source: |
           package main

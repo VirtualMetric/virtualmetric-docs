@@ -16,13 +16,13 @@ Introduces a time delay in the processing pipeline.
 
 ```yaml {2}
 - wait:
-  timeout: <numeric>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    timeout: <numeric>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -63,8 +63,7 @@ Using long timeouts can impact performance by keeping threads and resources allo
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - wait:
+    - wait:
         timeout: 5
     ```
   </CodeCol>
@@ -81,8 +80,7 @@ Using long timeouts can impact performance by keeping threads and resources allo
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - wait:
+    - wait:
         timeout: 10
         if: "logEntry.api.rate_limited == true"
     ```
@@ -100,17 +98,16 @@ Using long timeouts can impact performance by keeping threads and resources allo
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - set:
+    - set:
         field: request.timestamp
         value: "{{@timestamp}}"
-      - http_request:
+    - http_request:
         url: "https://api.example.com/data"
         method: "GET"
         target_field: response
-      - wait:
+    - wait:
         timeout: 2
-      - http_request:
+    - http_request:
         url: "https://api.example.com/status"
         method: "GET"
         target_field: status
@@ -129,8 +126,7 @@ Using long timeouts can impact performance by keeping threads and resources allo
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - wait:
+    - wait:
         timeout: 3
         if: "logEntry.environment == 'testing' && logEntry.simulate_latency == true"
         tag: "latency_simulation"
@@ -149,30 +145,29 @@ Using long timeouts can impact performance by keeping threads and resources allo
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - set:
+    - set:
         field: retry.count
         value: 0
         if: "!hasField(logEntry, 'retry.count')"
-      - set:
+    - set:
         field: retry.delay
         value: 1
         if: "!hasField(logEntry, 'retry.delay')"
-      - http_request:
+    - http_request:
         url: "https://api.example.com/data"
         method: "POST"
         target_field: response
         on_failure:
           - set:
-            field: retry.count
-            value: "{{retry.count + 1}}"
+              field: retry.count
+              value: "{{retry.count + 1}}"
           - set:
-            field: retry.delay
-            value: "{{math.pow(2, retry.count)}}"
+              field: retry.delay
+              value: "{{math.pow(2, retry.count)}}"
           - wait:
-            timeout: "{{retry.delay}}"
+              timeout: "{{retry.delay}}"
           - drop:
-            if: "retry.count > 5"
+              if: "retry.count > 5"
     ```
   </CodeCol>
 </ExampleGrid>

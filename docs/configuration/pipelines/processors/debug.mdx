@@ -16,15 +16,15 @@ Logs debugging information for monitoring and troubleshooting pipelines.
 
 ```yaml
 - debug:
-  level: <string>
-  message: <string>
-  keyword: <string>
-  tag: <string>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
+    level: <string>
+    message: <string>
+    keyword: <string>
+    tag: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
 ```
 
 ## Configuration
@@ -67,8 +67,7 @@ Extensive use of debug processors in production pipelines may impact performance
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - debug:
+    - debug:
         level: "Info"
         message: "Processing started"
     ```
@@ -86,8 +85,7 @@ Extensive use of debug processors in production pipelines may impact performance
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - debug:
+    - debug:
         level: "Debug"
         message: "Processing user {{user.id}} with role {{user.role}}"
         keyword: "user_processing"
@@ -106,8 +104,7 @@ Extensive use of debug processors in production pipelines may impact performance
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - debug:
+    - debug:
         level: "Warning"
         message: "High value transaction: {{transaction.amount}}"
         if: "getNumericValue(logEntry, 'transaction.amount') > 10000"
@@ -123,37 +120,33 @@ Extensive use of debug processors in production pipelines may impact performance
 
 <ExampleGrid>
   <CommentCol>
-    Tracking progress at multiple stages...
+    Tracking progress at multiple stages creates a trace.
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - set:
+    - set:
         field: event.stage
         value: "start"
-      - debug:
+    - debug:
         level: "Info"
         message: "Initial state"
         tag: "checkpoint_1"
       # Other processors...
-      - set:
+    - set:
         field: event.stage
         value: "middle"
-      - debug:
+    - debug:
         level: "Info"
         message: "Intermediate state"
         tag: "checkpoint_2"
       # More processors...
-      - set:
+    - set:
         field: event.stage
         value: "end"
-      - debug:
+    - debug:
         level: "Info"
         message: "Final state"
         tag: "checkpoint_3"
     ```
   </CodeCol>
-  <CommentCol>
-    creates a trace of processing stages
-  </CommentCol>
 </ExampleGrid>

@@ -17,18 +17,18 @@ Enriches events by retrieving intelligence information from **Cloudflare**'s API
 
 ```yaml {3,4}
 - cloudflare:
-  field: <ident>
-  api_token: <string>
-  account_id: <string>
-  query_type: <enum>
-  target_field: <ident>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    field: <ident>
+    api_token: <string>
+    account_id: <string>
+    query_type: <enum>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -94,8 +94,7 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    processors:
-      - cloudflare:
+    - cloudflare:
         field: domain
         api_token: "${CLOUDFLARE_API_TOKEN}"
         account_id: "${CLOUDFLARE_ACCOUNT_ID}"
@@ -164,8 +163,7 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    processors:
-      - cloudflare:
+    - cloudflare:
         field: source_ip
         target_field: ip_intel
         api_token: "${CLOUDFLARE_API_TOKEN}"
@@ -218,8 +216,7 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    processors:
-      - cloudflare:
+    - cloudflare:
         field: asn
         target_field: asn_intel
         api_token: "${CLOUDFLARE_API_TOKEN}"
@@ -259,8 +256,7 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    processors:
-      - cloudflare:
+    - cloudflare:
         field: domain
         if: "ctx.threat_level == 'high'"
         target_field: domain_threat_intel
@@ -319,8 +315,7 @@ API tokens must be managed securely. Also, ensure proper account access and perm
     }
     ```
     ```yaml
-    processors:
-      - cloudflare:
+    - cloudflare:
         field: investigate_ip
         ignore_missing: true
         ignore_failure: true

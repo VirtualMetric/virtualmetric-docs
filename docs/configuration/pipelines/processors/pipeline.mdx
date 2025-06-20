@@ -17,14 +17,14 @@ Executes another pipeline by name, allowing for pipeline reuse and modular confi
 
 ```yaml {2}
 - pipeline:
-  name: <string>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing_pipeline: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    name: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing_pipeline: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -94,11 +94,10 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
       - pipeline:
-        name: '{{ IngestPipeline "enrich-data" }}'
-        if: 'ctx.level == "ERROR"'
-        ignore_failure: true
+          name: '{{ IngestPipeline "enrich-data" }}'
+          if: 'ctx.level == "ERROR"'
+          ignore_failure: true
     ```
   </CodeCol>
   <CommentCol>
@@ -124,8 +123,7 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - pipeline:
+    - pipeline:
         name: '{{ IngestPipeline "optional-pipeline" }}'
         ignore_missing_pipeline: true
         on_failure:

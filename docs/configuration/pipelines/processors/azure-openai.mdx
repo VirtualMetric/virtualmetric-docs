@@ -17,22 +17,22 @@ Enriches events by sending field content to Azure OpenAI API for analysis and st
 
 ```yaml {2-5}
 - azureai:
-  field: <ident>
-  api_key: <string>
-  resource_name: <string>
-  deployment_name: <string>
-  target_field: <ident>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  temperature: <number>
-  max_tokens: <number>
-  api_version: <string>
-  developer_msg: <string>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    field: <ident>
+    api_key: <string>
+    resource_name: <string>
+    deployment_name: <string>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    temperature: <number>
+    max_tokens: <number>
+    api_version: <string>
+    developer_msg: <string>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -99,8 +99,7 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    processors:
-      - azureai:
+    - azureai:
         field: message
         target_field: analysis
         api_key: "${AZURE_OPENAI_API_KEY}"
@@ -135,8 +134,7 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    processors:
-      - azureai:
+    - azureai:
         field: error_msg
         target_field: security_analysis
         api_key: "${AZURE_OPENAI_API_KEY}"
@@ -174,8 +172,7 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    processors:
-      - azureai:
+    - azureai:
         if: "ctx.level == 'critical'"
         field: message
         target_field: ai_insight
@@ -211,9 +208,7 @@ API keys must be securely stored and accessed.
     }
     ```
     ```yaml
-    processors:
-    processors:
-      - azureai:
+    - azureai:
           field: message
           target_field: analysis
           api_key: "${AZURE_OPENAI_API_KEY}"

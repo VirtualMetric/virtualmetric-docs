@@ -17,16 +17,16 @@ A Windows security processor that classifies user accounts based on username pat
 
 ```yaml {2,3}
 - windows_user_type:
-  username_field: <ident>
-  sid_field: <ident>
-  target_field: <ident>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    username_field: <ident>
+    sid_field: <ident>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -78,8 +78,7 @@ Both username and SID fields are required for accurate classification. Missing S
     }
     ```
     ```yaml
-    processors:
-      - windows_user_type:
+    - windows_user_type:
         username_field: username
         sid_field: user_sid
         target_field: user_type
@@ -115,12 +114,11 @@ Both username and SID fields are required for accurate classification. Missing S
     }
     ```
     ```yaml
-    processors:
-      - windows_user_type:
+    - windows_user_type:
         username_field: service_name
         sid_field: service_sid
         target_field: service_type
-      - windows_user_type:
+    - windows_user_type:
         username_field: local_service
         sid_field: local_sid
         target_field: local_type
@@ -157,8 +155,7 @@ Both username and SID fields are required for accurate classification. Missing S
     }
     ```
     ```yaml
-    processors:
-      - windows_user_type:
+    - windows_user_type:
         username_field: computer_name
         sid_field: computer_sid
         target_field: account_type
@@ -192,8 +189,7 @@ Both username and SID fields are required for accurate classification. Missing S
     }
     ```
     ```yaml
-    processors:
-      - windows_user_type:
+    - windows_user_type:
         username_field: system_account
         sid_field: system_sid
         target_field: account_classification
@@ -227,8 +223,7 @@ Both username and SID fields are required for accurate classification. Missing S
     }
     ```
     ```yaml
-    processors:
-      - windows_user_type:
+    - windows_user_type:
         username_field: domain_user
         sid_field: user_sid
         target_field: user_classification
@@ -274,8 +269,7 @@ Both username and SID fields are required for accurate classification. Missing S
     }
     ```
     ```yaml
-    processors:
-      - foreach:
+    - foreach:
         field: logon_events
         processor:
           windows_user_type:

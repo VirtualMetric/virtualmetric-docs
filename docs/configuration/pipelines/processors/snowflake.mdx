@@ -12,14 +12,14 @@ Generates a unique Snowflake ID and stores it in a target field.
 
 ```yaml {2}
 - snowflake:
-  target_field: <ident>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -68,8 +68,7 @@ While Snowflake IDs are designed to be unique across distributed systems, they s
     }
     ```
     ```yaml
-    processors:
-      - snowflake:
+    - snowflake:
         target_field: event.id
     ```
   </CodeCol>
@@ -104,8 +103,7 @@ While Snowflake IDs are designed to be unique across distributed systems, they s
     }
     ```
     ```yaml
-    processors:
-      - snowflake:
+    - snowflake:
         target_field: transaction.metadata.id
     ```
   </CodeCol>
@@ -146,8 +144,7 @@ While Snowflake IDs are designed to be unique across distributed systems, they s
     }
     ```
     ```yaml
-    processors:
-      - snowflake:
+    - snowflake:
         target_field: trace.id
         if: "!hasField(logEntry, 'trace.id')"
     ```
@@ -189,12 +186,11 @@ While Snowflake IDs are designed to be unique across distributed systems, they s
     }
     ```
     ```yaml
-    processors:
-      - snowflake:
+    - snowflake:
         target_field: session.id
-      - snowflake:
+    - snowflake:
         target_field: transaction.id
-      - set:
+    - set:
         field: event.metadata.generated_at
         value: "{{@timestamp}}"
     ```

@@ -17,17 +17,17 @@ A text processing processor that removes a specified number of characters or pre
 
 ```yaml {2}
 - trim_first:
-  field: <ident>
-  count: <numeric>
-  keywords: <string[]>
-  target_field: <ident>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    field: <ident>
+    count: <numeric>
+    keywords: <string[]>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -80,12 +80,11 @@ Ensure the count parameter contains valid numeric values to avoid processing err
     }
     ```
     ```yaml
-    processors:
-      - trim_first:
+    - trim_first:
         field: log_line
         count: 11
         target_field: message_only
-      - trim_first:
+    - trim_first:
         field: code
         count: 3
         target_field: numeric_part
@@ -120,12 +119,11 @@ Ensure the count parameter contains valid numeric values to avoid processing err
     }
     ```
     ```yaml
-    processors:
-      - trim_first:
+    - trim_first:
         field: error_msg
         keywords: ["ERROR: "]
         target_field: clean_error
-      - trim_first:
+    - trim_first:
         field: warning_msg
         keywords: ["WARNING: "]
         target_field: clean_warning
@@ -163,8 +161,7 @@ Ensure the count parameter contains valid numeric values to avoid processing err
     }
     ```
     ```yaml
-    processors:
-      - trim_first:
+    - trim_first:
         field: file_paths
         keywords: ["/var/log/"]
         target_field: file_names
@@ -208,8 +205,7 @@ Ensure the count parameter contains valid numeric values to avoid processing err
     }
     ```
     ```yaml
-    processors:
-      - trim_first:
+    - trim_first:
         field: messages
         keywords: ["INFO: ", "DEBUG: ", "TRACE: "]
     ```
@@ -243,8 +239,7 @@ Ensure the count parameter contains valid numeric values to avoid processing err
     }
     ```
     ```yaml
-    processors:
-      - trim_first:
+    - trim_first:
         field: raw_data
         count: 8
         keywords: ["ERROR: "]
@@ -278,8 +273,7 @@ Ensure the count parameter contains valid numeric values to avoid processing err
     }
     ```
     ```yaml
-    processors:
-      - trim_first:
+    - trim_first:
         field: log_entry
         keywords: ["AUDIT: "]
         if: "log_level == 'AUDIT'"

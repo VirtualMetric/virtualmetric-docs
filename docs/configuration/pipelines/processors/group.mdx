@@ -17,16 +17,16 @@ Groups multiple processors together into a named unit that can be executed condi
 
 ```yaml {3,5}
 - group:
-  description: <text>
-  name: <string>
-  parent_group: <string>
-  processors: <processor[]>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    description: <text>
+    name: <string>
+    parent_group: <string>
+    processors: <processor[]>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -86,8 +86,7 @@ Use meaningful group names and organize related processors together. This makes 
     }
     ```
     ```yaml
-    processors:
-      - group:
+    - group:
         name: user_processing
         processors:
           - set:
@@ -131,8 +130,7 @@ Use meaningful group names and organize related processors together. This makes 
     }
     ```
     ```yaml
-    processors:
-      - group:
+    - group:
         name: error_processing
         if: "event_type == 'error'"
         processors:
@@ -177,15 +175,14 @@ Use meaningful group names and organize related processors together. This makes 
     }
     ```
     ```yaml
-    processors:
-      - group:
+    - group:
         name: data_parsing
         processors:
           - kv:
             field: raw_data
             field_split: ","
             value_split: ":"
-      - group:
+    - group:
         name: data_enrichment
         parent_group: data_parsing
         processors:
@@ -227,8 +224,7 @@ Use meaningful group names and organize related processors together. This makes 
     }
     ```
     ```yaml
-    processors:
-      - group:
+    - group:
         name: validation
         processors:
           # Example processor that might fail
@@ -273,8 +269,7 @@ Use meaningful group names and organize related processors together. This makes 
     }
     ```
     ```yaml
-    processors:
-      - group:
+    - group:
         name: threat_detection
         if: "request_path contains '/admin'"
         processors:
@@ -324,15 +319,14 @@ Use meaningful group names and organize related processors together. This makes 
     }
     ```
     ```yaml
-    processors:
-      - group:
+    - group:
         name: log_parsing
         processors:
           - grok:
             field: log_line
             patterns:
               - "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}"
-      - group:
+    - group:
         name: log_enrichment
         parent_group: log_parsing
         processors:
@@ -342,7 +336,7 @@ Use meaningful group names and organize related processors together. This makes 
           - convert:
             field: level
             type: string
-      - group:
+    - group:
         name: log_classification
         parent_group: log_enrichment
         if: "level == 'ERROR'"
@@ -388,8 +382,7 @@ Use meaningful group names and organize related processors together. This makes 
     }
     ```
     ```yaml
-    processors:
-      - group:
+    - group:
         name: web_server_processing
         if: "event_source == 'web_server'"
         processors:
@@ -398,7 +391,7 @@ Use meaningful group names and organize related processors together. This makes 
           - append:
             field: tags
             value: web_traffic
-      - group:
+    - group:
         name: database_processing
         if: "event_source == 'database'"
         processors:
@@ -441,8 +434,7 @@ Use meaningful group names and organize related processors together. This makes 
     }
     ```
     ```yaml
-    processors:
-      - group:
+    - group:
         name: base_processing
         processors:
           - convert:
@@ -450,7 +442,7 @@ Use meaningful group names and organize related processors together. This makes 
             type: integer
           - lowercase:
             field: action
-      - group:
+    - group:
         name: security_analysis
         parent_group: base_processing
         if: "file_path contains '/sensitive'"
@@ -461,7 +453,7 @@ Use meaningful group names and organize related processors together. This makes 
           - append:
             field: alerts
             value: sensitive_file_access
-      - group:
+    - group:
         name: compliance_logging
         parent_group: security_analysis
         processors:
