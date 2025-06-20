@@ -65,10 +65,10 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
   <CodeCol>
     ```yaml
     pipelines:
-      name: main
-      processors:
-        - pipeline:
-            name: '{{ IngestPipeline "parse-logs" }}'
+      - name: main
+          processors:
+            - pipeline:
+                name: '{{ IngestPipeline "parse-logs" }}'
     ```
   </CodeCol>
   <CommentCol>
@@ -77,11 +77,11 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
   <CodeCol>
     ```yaml
     pipelines:
-      name: parse-logs
-      processors:
-        - grok:
-          field: message 
-          pattern: '%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level}'
+      - name: parse-logs
+          processors:
+            - grok:
+              field: message 
+              pattern: '%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level}'
     ```
   </CodeCol>
 </ExampleGrid>
@@ -107,11 +107,11 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
   <CodeCol>
     ```yaml
     pipelines:
-      name: enrich-data
-      processors:
-        - append:
-          field: tags
-          value: needs-review
+      - name: enrich-data
+          processors:
+            - append:
+              field: tags
+              value: needs-review
     ```
   </CodeCol>
 </ExampleGrid>
@@ -140,11 +140,11 @@ Be careful with recursive pipeline references to avoid infinite loops. Currently
   <CodeCol>
     ```yaml
     pipelines:
-      name: main
-      processors:
-        - append:
-          field: status
-          value: processed
+      - name: main
+          processors:
+            - append:
+              field: status
+              value: processed
     ```
   </CodeCol>
 </ExampleGrid>

@@ -47,14 +47,14 @@ Use the `name` of the pipeline to refer to it in your configurations.
 ```yaml
 pipelines:
   - name: checkpoint
-    processors:
-      - grok:
-          field: message
-          patterns:
-            - "%{COMMONAPACHELOG}"
-      - set:
-          field: event.provider
-          value: "checkpoint"
+      processors:
+        - grok:
+            field: message
+            patterns:
+              - "%{COMMONAPACHELOG}"
+        - set:
+            field: event.provider
+            value: "checkpoint"
 ```
 
 This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
@@ -117,27 +117,27 @@ And here are some examples:
   ```yaml
   pipelines:
     - name: syslog_parser
-      description: "Parse and normalize syslog messages"
-      processors:
-        - grok:
-            field: message
-            patterns:
-              - "%{SYSLOGLINE}"
-        - date:
-            field: timestamp
-            target_field: "@timestamp"
-            formats:
-              - "MMM dd HH:mm:ss"
-              - "MMM  d HH:mm:ss"
-        - set:
-            field: event.kind
-            value: event
-        - rename:
-            fields:
-              - from: program
-                to: process.name
-              - from: logsource
-                to: host.hostname
+        description: "Parse and normalize syslog messages"
+        processors:
+          - grok:
+              field: message
+              patterns:
+                - "%{SYSLOGLINE}"
+          - date:
+              field: timestamp
+              target_field: "@timestamp"
+              formats:
+                - "MMM dd HH:mm:ss"
+                - "MMM  d HH:mm:ss"
+          - set:
+              field: event.kind
+              value: event
+          - rename:
+              fields:
+                - from: program
+                  to: process.name
+                - from: logsource
+                  to: host.hostname
   ```
 
 - **Field Enrichment**: A pipeline can be used to enrich security events with additional context, such as geolocation data or threat intelligence:

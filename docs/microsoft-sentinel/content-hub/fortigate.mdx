@@ -269,22 +269,22 @@ devices:
 
 pipelines:
   - name: filter_security_logs
-    processors:
-      - remove:
-          field: ["admin", "system"]
-          ignore_missing: true
-      - script:
-          lang: golang
-          source: |
-            package main
-            func main() {
-              if logType, ok := logEntry["type"].(string); ok {
-                if logType != "traffic" && logType != "utm" && logType != "anomaly" {
-                  // Skip non-security logs
-                  logEntry = nil
+      processors:
+        - remove:
+            field: ["admin", "system"]
+            ignore_missing: true
+        - script:
+            lang: golang
+            source: |
+              package main
+              func main() {
+                if logType, ok := logEntry["type"].(string); ok {
+                  if logType != "traffic" && logType != "utm" && logType != "anomaly" {
+                    // Skip non-security logs
+                    logEntry = nil
+                  }
                 }
               }
-            }
 ```
 
 ## FortiGate Configuration
