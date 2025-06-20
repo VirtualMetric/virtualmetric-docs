@@ -208,29 +208,27 @@ pipelines:
   - name: extract_user_event
       processors:
         - grok:
-          field: message
-          patterns:
-            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
+            field: message
+            patterns:
+              - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
         - grok:
-          field: syslog.message
-          patterns:
-            - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
-          ignore_failure: true
-
+            field: syslog.message
+            patterns:
+              - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
+            ignore_failure: true
         - set:
-          field: user
-          value: user.name
+            field: user
+            value: user.name
         - set:
-          field: event
-          value: event.action
+            field: event
+            value: event.action
         - set:
-          field: message
-          value: syslog.message
-
+            field: message
+            value: syslog.message
         - remove:
-          field:          
-            - syslog.message
-          ignore_missing: true
+            field:          
+              - syslog.message
+            ignore_missing: true
 ```
 
 This configuration will do the following:

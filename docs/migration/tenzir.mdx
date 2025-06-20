@@ -105,9 +105,9 @@ In **Tenzir**, pipelines are defined with operators chained together. In **DataS
         ```yaml title="YAML"
         processors:
           - kv:
-            field: message
-            field_split: " "
-            value_split: "="
+              field: message
+              field_split: " "
+              value_split: "="
         ```
       </CodeCol>
     </ExampleGrid>
@@ -143,15 +143,15 @@ In **Tenzir**, pipelines are defined with operators chained together. In **DataS
         - name: login_events
             processors:
               - script:
-                lang: golang
-                source: |
-                  package main
-                  func main() {
-                    eventType, ok := logEntry["event_type"]
-                    if !ok||eventType != "login" {
-                      dropMessage()
+                  lang: golang
+                  source: |
+                    package main
+                    func main() {
+                      eventType, ok := logEntry["event_type"]
+                      if !ok||eventType != "login" {
+                        dropMessage()
+                      }
                     }
-                  }
               - rename:
                   fields:
                     - from: src_ip

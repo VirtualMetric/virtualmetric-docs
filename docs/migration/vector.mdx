@@ -119,19 +119,19 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
         ```yaml title="YAML"
         processors:
           - script:
-            lang: golang
-            source:|
-              package main
-                
-              func main() {
-                logEntry["source"] = "vector"
-                if msg, ok := logEntry["message"].(string); ok {
-                  parsed, err := parseJSON(msg)
-                  if err == nil {
-                    logEntry["parsed"] = parsed
+              lang: golang
+              source: |
+                package main
+                  
+                func main() {
+                  logEntry["source"] = "vector"
+                  if msg, ok := logEntry["message"].(string); ok {
+                    parsed, err := parseJSON(msg)
+                    if err == nil {
+                      logEntry["parsed"] = parsed
+                    }
                   }
                 }
-              }
         ```
       </CodeCol>
     </ExampleGrid>
@@ -172,30 +172,30 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
       ```yaml title="YAML"
       processors:
         - kv:
-          field: message
-          field_split: " "
-          value_split: "="
+            field: message
+            field_split: " "
+            value_split: "="
 
         - script:
-          lang: golang
-          source:|
-            package main
-              
-            func main() {
-              if ts, ok := logEntry["timestamp"].(string); ok {
-                parsedTime, err := time.Parse(time.RFC3339, ts)
-                if err == nil {
-                  logEntry["timestamp"] = parsedTime
-                }
-              }
+            lang: golang
+            source: |
+              package main
                 
-              if sc, ok := logEntry["status_code"].(string); ok {
-                statusCode, err := strconv.Atoi(sc)
-                if err == nil && statusCode >= 400 {
-                  logEntry["is_error"] = true
+              func main() {
+                if ts, ok := logEntry["timestamp"].(string); ok {
+                  parsedTime, err := time.Parse(time.RFC3339, ts)
+                  if err == nil {
+                    logEntry["timestamp"] = parsedTime
+                  }
+                }
+                  
+                if sc, ok := logEntry["status_code"].(string); ok {
+                  statusCode, err := strconv.Atoi(sc)
+                  if err == nil && statusCode >= 400 {
+                    logEntry["is_error"] = true
+                  }
                 }
               }
-            }
       ```
     </CodeCol>
   </ExampleGrid>
@@ -254,39 +254,39 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
         - name: router
             processors:
               - script:
-                lang: golang
-                source:|
-                  package main
-                    
-                  func main() {
-                    service, ok := logEntry["service"].(string)
-                    if ok {
-                      if service == "app" {
-                        setPipeline("app_pipeline")
-                      } else if service == "web" {
-                        setPipeline("web_pipeline")
+                  lang: golang
+                  source: |
+                    package main
+                      
+                    func main() {
+                      service, ok := logEntry["service"].(string)
+                      if ok {
+                        if service == "app" {
+                          setPipeline("app_pipeline")
+                        } else if service == "web" {
+                          setPipeline("web_pipeline")
+                        }
                       }
                     }
-                  }
 
           - name: app_pipeline
-            targets:
-              - s3_app
+              targets:
+                - s3_app
 
           - name: web_pipeline
-            targets:
-              - s3_web
+              targets:
+                - s3_web
 
       targets:
         - name: s3_app
-          type: s3
-          properties:
-            bucket: "app-logs"
-            
+            type: s3
+            properties:
+              bucket: "app-logs"
+              
         - name: s3_web
-          type: s3
-          properties:
-            bucket: "web-logs"
+            type: s3
+            properties:
+              bucket: "web-logs"
       ```
     </CodeCol>
   </ExampleGrid>

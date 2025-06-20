@@ -9,8 +9,7 @@ The `on_failure` processor can be used to specify a list of processors to run im
 To ignore a failure and keep running the remaining processors in the pipeline, `ignore_failure` must be set to `true`.
 
 ```yaml
-processors:
-  - rename:
+- rename:
     field: provider
     target_field: cloud.provider
     ignore_failure: true
@@ -21,15 +20,14 @@ processors:
 To configure a processor so that in the event of a failure another processor runs, the `on_failure` parameter can be used.
 
 ```yaml
-processors:
-  - rename:
+- rename:
     field: foo
     target_field: bar
     on_failure: 
       - set:
-        field: error.message
-        value: "Field 'foo' could not be renamed as 'bar'"
-        override: false
+          field: error.message
+          value: "Field 'foo' could not be renamed as 'bar'"
+          override: false
 ```
 
 ## Nesting
@@ -37,20 +35,19 @@ processors:
 For cascading errors, multiple `on_failure` processors can be nested.
 
 ```yaml
-processors:
-  - rename:
+- rename:
     field: foo
     target_field: bar
     on_failure:
       - set:
-        field: error.message
-        value: "Field 'foo' could not be renamed as 'bar'"
-        override: false
-        on_failure:
-          - set:
-            field: error.message.cascade
-            value: "Multiple errors encountered"
-            override: true
+          field: error.message
+          value: "Field 'foo' could not be renamed as 'bar'"
+          override: false
+          on_failure:
+            - set:
+                field: error.message.cascade
+                value: "Multiple errors encountered"
+                override: true
 ```
 
 ## Pipelines
@@ -62,9 +59,9 @@ pipelines:
   - name: routine_process
       on_failure:
         - set:
-          field: _index
-          value: failed-{{{ _ingest.on_failure_processor_tag }}}
-          message: "Processor failed"
+            field: _index
+            value: failed-{{{ _ingest.on_failure_processor_tag }}}
+            message: "Processor failed"
 ```
 
 ## Metadata
@@ -76,6 +73,6 @@ pipelines:
   - name: routine_process
       on_failure:
         - set:
-          field: error_info
-          value: "{{ _ingest.on_failure_processor_type }} in {{ _ingest.on_failure_pipeline }} failed; error message: {{ _ingest.on_failure_message }}"
+            field: error_info
+            value: "{{ _ingest.on_failure_processor_type }} in {{ _ingest.on_failure_pipeline }} failed; error message: {{ _ingest.on_failure_message }}"
 ```

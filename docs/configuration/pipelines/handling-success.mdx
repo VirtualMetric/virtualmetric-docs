@@ -1,7 +1,3 @@
----
-pagination_next: null
----
-
 # Handling Success
 
 The processors in a pipeline run sequentially, and when one of them completes successfully, **Director** provides options to control what happens next through the `on_success` field.
@@ -11,14 +7,13 @@ The processors in a pipeline run sequentially, and when one of them completes su
 The simplest use of `on_success` is to log a message or set a field when a processor completes successfully.
 
 ```yaml
-processors:
-  - rename:
+- rename:
     field: message
     target_field: event.message
     on_success:
       - set:
-        field: status
-        value: "Field renamed successfully"
+          field: status
+          value: "Field renamed successfully"
 ```
 
 ## Chaining
@@ -26,17 +21,16 @@ processors:
 To run additional processors after a successful execution, list them in the `on_success` field.
 
 ```yaml
-processors:
-  - grok:
+- grok:
     field: message
     patterns: ["%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}"]
     on_success:
       - date:
-        field: timestamp
-        target_field: "@timestamp"
-        formats: ["ISO8601"]
+          field: timestamp
+          target_field: "@timestamp"
+          formats: ["ISO8601"]
       - remove:
-        field: timestamp
+          field: timestamp
 ```
 
 ## Nesting
@@ -44,18 +38,17 @@ processors:
 For complex processing flows, multiple `on_success` processors can be nested.
 
 ```yaml
-processors:
-  - grok:
+- grok:
     field: message
     patterns: ["%{IP:client.ip} %{WORD:http.method} %{URIPATHPARAM:http.url}"]
     on_success:
       - geoip:
-        field: client.ip
-        target_field: client.geo
-        on_success:
-          - set:
-            field: enrichment_status
-            value: "IP and Geo information extracted"
+          field: client.ip
+          target_field: client.geo
+          on_success:
+            - set:
+                field: enrichment_status
+                value: "IP and Geo information extracted"
 ```
 
 ## Pipeline Branching
@@ -67,16 +60,16 @@ pipelines:
   - name: parse_apache
       processors:
         - grok:
-          field: message
-          patterns: ["%{COMBINEDAPACHELOG}"]
-          on_success:
-            - pipeline: enrich_apache
+            field: message
+            patterns: ["%{COMBINEDAPACHELOG}"]
+            on_success:
+              - pipeline: enrich_apache
 
   - name: enrich_apache
       processors:
-      - geoip:
-        field: clientip
-        target_field: geoip
+        - geoip:
+            field: clientip
+            target_field: geoip
 ```
 
 ## Metadata
@@ -84,14 +77,13 @@ pipelines:
 Success context information is available in metadata fields that can be accessed within an `on_success` block.
 
 ```yaml
-processors:
-  - grok:
+- grok:
     field: message
     patterns: ["%{DATA:event.type}"]
     on_success:
       - set:
-        field: processor_info
-        value: "Successfully processed by {{ _pipeline.name }} pipeline"
+          field: processor_info
+          value: "Successfully processed by {{ _pipeline.name }} pipeline"
 ```
 
 :::note
