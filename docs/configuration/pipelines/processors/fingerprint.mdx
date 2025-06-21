@@ -17,17 +17,17 @@ Generates a cryptographic hash of specified document fields to create a unique f
 
 ```yaml {2}
 - fingerprint:
-  fields: <ident[]>
-  method: <string>
-  target_field: <ident>
-  salt: <string>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    fields: <ident[]>
+    method: <string>
+    target_field: <ident>
+    salt: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -88,8 +88,7 @@ Common use cases:
 * **Document Deduplication**
  
   ```yaml
-  processors:
-    - fingerprint:
+  - fingerprint:
       fields: ["content", "metadata"]
       method: SHA-256
       target_field: content_hash
@@ -98,8 +97,7 @@ Common use cases:
 * **Change Detection**
    
   ```yaml
-  processors:
-    - fingerprint:
+  - fingerprint:
       fields: ["user.profile", "user.settings"]
       method: SHA-1
       target_field: profile_hash
@@ -108,8 +106,7 @@ Common use cases:
 * **Data Integrity**
  
   ```yaml
-  processors:
-    - fingerprint:
+  - fingerprint:
       fields: ["payload"]
       method: SHA-512
       salt: "verification-key"
@@ -131,8 +128,7 @@ Common use cases:
     }
     ```
     ```yaml
-    processors:
-      - fingerprint:
+    - fingerprint:
         fields: ["field1", "field2"]
         method: SHA-256
         target_field: doc_hash
@@ -169,8 +165,7 @@ Common use cases:
     }
     ```
     ```yaml
-    processors:
-      - fingerprint:
+    - fingerprint:
         fields: ["user"]
         method: SHA-1
         target_field: user_hash
@@ -207,8 +202,7 @@ Common use cases:
     }
     ```
     ```yaml
-    processors:
-      - fingerprint:
+    - fingerprint:
         fields: ["email", "timestamp"]
         method: SHA-512
         salt: "my-secret-salt"
@@ -241,8 +235,7 @@ Common use cases:
     }
     ```
     ```yaml
-    processors:
-      - fingerprint:
+    - fingerprint:
         fields: ["field1", "field2"]
         ignore_missing: true
         method: SHA-256

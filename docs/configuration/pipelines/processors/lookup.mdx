@@ -17,19 +17,19 @@ Enriches log events by looking up values in a CSV file and adding corresponding 
 
 ```yaml {2-7}
 - lookup:
-  lookup_file: <string>
-  match_mode: <enum>
-  match_type: <enum>
-  lookup_fields: <LookupField[]>
-  output_fields: <OutputField[]>
-  ignore_case: <boolean>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    lookup_file: <string>
+    match_mode: <enum>
+    match_type: <enum>
+    lookup_fields: <LookupField[]>
+    output_fields: <OutputField[]>
+    ignore_case: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -106,8 +106,7 @@ The processor reads the lookup data from a CSV file where the first row contains
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - lookup:
+    - lookup:
         lookup_file: "ip_locations.csv"
         match_mode: cidr
         match_type: most_specific
@@ -141,8 +140,7 @@ The processor reads the lookup data from a CSV file where the first row contains
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - lookup:
+    - lookup:
         lookup_file: "network_zones.csv"
         match_mode: cidr
         match_type: most_specific
@@ -179,8 +177,7 @@ An IP address like "10.1.1.50" will match all three networks but return the most
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - lookup:
+    - lookup:
         lookup_file: "status_map.csv"
         match_mode: exact
         match_type: first
@@ -215,8 +212,7 @@ With `ignore_case: true`, an event with state="ACTIVE" will match the "Active" e
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - lookup:
+    - lookup:
         lookup_file: "access_rules.csv"
         match_mode: regex
         match_type: all
@@ -253,8 +249,7 @@ When `match_type: all` is used with multiple matches, the output field becomes a
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - lookup:
+    - lookup:
         lookup_file: "roles.csv"
         match_mode: exact
         match_type: first
@@ -262,8 +257,8 @@ When `match_type: all` is used with multiple matches, the output field becomes a
           - event_field: username
             lookup_field: user
         output_fields:
-          - lookup_field: role
-            event_field: user_role
+          - event_field: user_role
+            lookup_field: role
             default_value: guest
     ```
   </CodeCol>
@@ -289,8 +284,7 @@ When looking up a username not in the CSV (like "carol"), the `default_value` wi
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - lookup:
+    - lookup:
         lookup_file: "error_patterns.csv"
         match_mode: regex
         match_type: first
@@ -298,10 +292,10 @@ When looking up a username not in the CSV (like "carol"), the `default_value` wi
           - event_field: message
             lookup_field: pattern
         output_fields:
-          - lookup_field: severity
-            event_field: alert_level
-          - lookup_field: action
-            event_field: response
+          - event_field: alert_level
+            lookup_field: severity
+          - event_field: response
+            lookup_field: action
     ```
   </CodeCol>
   <CommentCol>

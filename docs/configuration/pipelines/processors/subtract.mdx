@@ -16,16 +16,16 @@ Subtracts one numeric value from another.
 
 ```yaml {2-4}
 - subtract:
-  field: <ident>
-  left_operand: <string>
-  right_operand: <string>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    field: <ident>
+    left_operand: <string>
+    right_operand: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -74,8 +74,7 @@ When `ignore_missing` is set to `true`, the processor will replace any missing f
     }
     ```
     ```yaml
-    processors:
-      - subtract:
+    - subtract:
         field: calculation.result
         left_operand: "100"
         right_operand: "42"
@@ -111,8 +110,7 @@ When `ignore_missing` is set to `true`, the processor will replace any missing f
     }
     ```
     ```yaml
-    processors:
-      - subtract:
+    - subtract:
         field: timestamps.duration
         left_operand: "timestamps.end"
         right_operand: "timestamps.start"
@@ -154,8 +152,7 @@ When `ignore_missing` is set to `true`, the processor will replace any missing f
     }
     ```
     ```yaml
-    processors:
-      - subtract:
+    - subtract:
         field: metrics.cpu_usage_delta
         left_operand: "metrics.current.cpu_usage"
         right_operand: "metrics.previous.cpu_usage"
@@ -197,8 +194,7 @@ When `ignore_missing` is set to `true`, the processor will replace any missing f
     }
     ```
     ```yaml
-    processors:
-      - subtract:
+    - subtract:
         field: balance.remaining
         left_operand: "balance.total"
         right_operand: "balance.charges"
@@ -235,8 +231,7 @@ When `ignore_missing` is set to `true`, the processor will replace any missing f
     }
     ```
     ```yaml
-    processors:
-      - subtract:
+    - subtract:
         field: accounting.balance
         left_operand: "accounting.credits"
         right_operand: "accounting.debits"
@@ -275,16 +270,15 @@ When `ignore_missing` is set to `true`, the processor will replace any missing f
     }
     ```
     ```yaml
-    processors:
-      - multiply:
+    - multiply:
         field: shopping.tax_amount
         left_operand: "shopping.subtotal"
         right_operand: "shopping.tax_rate"
-      - add:
+    - add:
         field: shopping.total_with_tax
         left_operand: "shopping.subtotal"
         right_operand: "shopping.tax_amount"
-      - subtract:
+    - subtract:
         field: shopping.final_price
         left_operand: "shopping.total_with_tax"
         right_operand: "shopping.discount"

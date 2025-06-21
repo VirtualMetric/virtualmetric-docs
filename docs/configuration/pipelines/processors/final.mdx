@@ -17,12 +17,12 @@ Terminates the processing of a pipeline gracefully without raising errors.
 
 ```yaml
 - final:
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -47,33 +47,30 @@ Typical uses:
 * **Early Exit on Success**
 
   ```yaml
-  processors:
-    - append:
+  - append:
       field: tags
       value: processed
-    - final:
+  - final:
       if: "ctx.tags.contains('processed')"
    ```
 
 * **Prevent Duplicate Processing**
 
   ```yaml
-  processors:
-    - set:
+  - set:
       field: processed_by
       value: pipeline_a
-    - final:
+  - final:
       description: "Prevent other pipelines from processing"
    ```
 
 * **Conditional Pipeline Branch**
  
   ```yaml
-  processors:
-    - final:
+  - final:
       if: "ctx.environment == 'production'"
       description: "Skip test processors in production"
-    - set:
+  - set:
       field: test_field
       value: test_value
    ```
@@ -94,13 +91,12 @@ Once `final` is used, no further processors in any pipeline will execute. Use wi
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - set:
+    - set:
         field: status
         value: completed
-      - final:
+    - final:
         description: "Stop after status update"
-      - set:  # This processor won't run
+    - set:  # This processor won't run
         field: other_field
         value: skipped
     ```
@@ -132,8 +128,7 @@ Once `final` is used, no further processors in any pipeline will execute. Use wi
     }
     ```
     ```yaml
-    processors:
-      - final:
+    - final:
         if: "ctx.source.packets == 10"
         description: "Stop processing for 10-packet sources"
     ```
@@ -156,15 +151,14 @@ Once `final` is used, no further processors in any pipeline will execute. Use wi
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - final:
+    - final:
         description: "Clean finalization"
         on_success:
           - set:
-            field: processing_status
-            value: completed
+              field: processing_status
+              value: completed
           - remove:
-            field: temporary_data
+              field: temporary_data
     ```
   </CodeCol>
   <CommentCol>

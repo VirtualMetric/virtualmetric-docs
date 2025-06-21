@@ -17,13 +17,13 @@ Intentionally fails the pipeline with a custom error message on a certain condit
 
 ```yaml {2}
 - fail:
-  message: <string>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    message: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -51,8 +51,7 @@ Typical uses:
 * **Validation with Context** 
 
   ```yaml
-  processors:
-    - fail:
+  - fail:
       message: "Invalid amount {{amount}} for currency {{currency}}"
       if: "ctx.amount <= 0"
   ```
@@ -60,8 +59,7 @@ Typical uses:
 * **Access Control**
 
   ```yaml
-  processors:
-    - fail:
+  - fail:
       message: "User {{user.name}} lacks required permission: {{required_permission}}"
       if: "! ctx.user.permissions.contains(ctx.required_permission)"
   ```
@@ -69,8 +67,7 @@ Typical uses:
 * **Data Quality**
 
   ```yaml
-  processors:
-    - fail:
+  - fail:
       message: "Field {{field_name}} exceeds maximum length of {{max_length}}"
       if: "ctx.field_name.length() > ctx.max_length"
    ```
@@ -102,8 +99,7 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     }
     ```
     ```yaml
-    processors:
-      - fail:
+    - fail:
         message: "Intentional failure"
         tag: "test"
     ```
@@ -136,8 +132,7 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     }
     ```
     ```yaml
-    processors:
-      - fail:
+    - fail:
         message: "Warning status detected"
         ignore_failure: true
         tag: "status_check"
@@ -176,8 +171,7 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     }
     ```
     ```yaml
-    processors:
-      - fail:
+    - fail:
         message: "User {{user.id}} with role {{user.role}} cannot access {{resource}}"
         if: "ctx.user.role != 'admin'"
         tag: "access_control"
@@ -211,8 +205,7 @@ When `ignore_failure` is set to `true`, errors are still logged, but they don't 
     }
     ```
     ```yaml
-    processors:
-      - fail:
+    - fail:
         message: "Conditional failure triggered"
         if: "ctx.condition == true"
         description: "Fail when condition is true"

@@ -23,59 +23,66 @@ Here are the steps to get started:
 
     Here, we will use [**Single Node Deployment**](./director-single-node-deployment.mdx)&mdash;i.e. we will deploy on a single machine as this is simplest and most straightforward.
 
-    After completing your deployment, consider the following:
+    - First, download and install **Director**.
 
-    :::tip
-    For convenience, you may want to add **VirtualMetric**'s installation folder to your `$PATH` environment variable in order to be able to invoke the executable from any directory.
-    
-    However, throughout this documentation, we will use the platform-specific syntax for running apps not on the `$PATH`, i.e. we will prepend "`.\`" for Windows, "`./`" for Unix-based systems to the binary's name.
-    :::
+    - To simulate streaming data, we provide **Director**'s companion utility **Generator**. It can be used to send messages to specific logging services, although other traditional tools&mdash;such as `logger`&mdash;can also be used for this purpose on some **Unix**-based platforms.
+
+        :::tip
+        Make sure to download and install **Generator** since will be using it in our introductory examples.
+        :::
+
+    - Finally, download and install **Agent**.
+
+    We recommend that you keep all three executables in the same directory, preferably named `VirtualMetric`.
 
     :::note
-    To simulate streaming data, we provide **Director**'s companion utility **Generator**. A typical use of it will be sending messages to a specific logging service, although other traditional tools&mdash;such as `logger`&mdash;can also be used for this purpose on some **Unix**-based platforms.
+    For convenience, you may want to add **VirtualMetric**'s installation folder to your `$PATH` environment variable in order to be able to invoke the executable from any directory.
 
-    Make sure you download and install **Generator** as well since will be using it in our introductory examples.
+    However, throughout this documentation, we will use the platform-specific syntax for running apps not on the `$PATH`, i.e. we will prepend "`.\`" for Windows, and "`./`" for Unix-based systems to the binary's name.    
     :::
 
 3. To configure telemetry streams, **DataStream** uses YAML files.
 
-    {/* TODO: Add content */}
+    **Director** parses all the YAML files found under the `<vm_root>/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: to organize your components as you see fit.
 
     :::warning
-    On **Windows**, make sure you have made file extensions visible by going to **File Explorer** and selecting **View > Show > File name extensions** in order to avoid surprises like the system adding another extension after your YAML file's extension, e.g. `file.yml.txt`.
+    On **Windows**, make sure file extensions are visible. To check this, go to **File Explorer** and select **View > Show > File name extensions**. This is to avoid surprises like the system adding another extension to your YAML file's extension, e.g. `file.yml.txt` in which **VirtualMetric** executables will not be able to recognize them.
     :::
 
-    **Director** parses all the YAML files found under the `<vm_root>/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: to organize your components as you see fit.
-    
     However, if your files are _not_ placed under `<vm_root>/config` or in one of the subfolders created under it by default during the installation (e.g. `<vm_root>/config/devices` or `<vm_root>/config/pipelines`) , then these are considered _standalone_ files and you _do_ have to specify their paths and filenames on the command line.
 
     :::tip
-    For more details, review [**this section**](../configuration/overview.mdx#managing-yaml-files).
+    For more details on the management of files, review [**this section**](../configuration/overview.mdx#managing-yaml-files).
     :::
 
-4. For our purposes, and to keep things simple, we will be using the following folder as our working directory:
+    <a id="working-directory"/>
+    For our purposes, and to keep things simple, we will be using the following folder as our working directory:
 
-    <Tabs>
-    <TabItem value="powershell" label="PowerShell" default>
-        ```powershell
-        C:\Path\To\<vm_root>\config\Examples
-        ```
-    </TabItem>    
-    <TabItem value="bash" label="Bash">
-        On **Linux**:
+        <Tabs>
+        <TabItem value="powershell" label="PowerShell" default>
+            ```powershell
+            C:\Path\To\<vm_root>\config\Examples
+            ```
+        </TabItem>    
+        <TabItem value="bash" label="Bash">
+            On **Linux**:
 
-        ```bash
-        /usr/bin/path/to/<vm_root>/config/Examples
-        ```
-        On **macOS**:
+            ```bash
+            /usr/bin/path/to/<vm_root>/config/Examples
+            ```
+            On **macOS**:
 
-        ```bash
-        /Applications/Path/To/<vm_root>/config/Examples
-        ```
-    </TabItem>
-    </Tabs>
+            ```bash
+            /Applications/Path/To/<vm_root>/config/Examples
+            ```
+        </TabItem>
+        </Tabs>
 
     We will be saving all our configuration files in this folder. We will also specify our output files to be created here.
+
+    :::warning
+    As we will place all our files in this directory, they will be considered _standalone_ files and we will have to provide their path and names on the command line.
+    :::
 
 5. Finally, a simple configuration for logging is in order for you to be able to check the status of your runs.
 

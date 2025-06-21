@@ -16,16 +16,16 @@ Raises a numeric value to a specified power and returns the result.
 
 ```yaml {2-4}
 - power:
-  field: <ident>
-  left_operand: <string>
-  right_operand: <string>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    field: <ident>
+    left_operand: <string>
+    right_operand: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -80,8 +80,7 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - power:
+    - power:
         field: math.result
         left_operand: "2"
         right_operand: "8"
@@ -115,12 +114,11 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - power:
+    - power:
         field: calculation.square
         left_operand: "value"
         right_operand: "2"
-      - power:
+    - power:
         field: calculation.cube
         left_operand: "value"
         right_operand: "3"
@@ -158,12 +156,11 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - power:
+    - power:
         field: scientific.value
         left_operand: "10"
         right_operand: "scientific.exponent"
-      - multiply:
+    - multiply:
         field: scientific.result
         left_operand: "scientific.coefficient"
         right_operand: "scientific.value"
@@ -201,12 +198,11 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - power:
+    - power:
         field: cube.face_area
         left_operand: "cube.side"
         right_operand: "2"
-      - power:
+    - power:
         field: cube.volume
         left_operand: "cube.side"
         right_operand: "3"
@@ -245,15 +241,14 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - set:
+    - set:
         field: finance.rate_factor
         value: "{{finance.rate + 1}}"
-      - power:
+    - power:
         field: finance.growth_factor
         left_operand: "finance.rate_factor"
         right_operand: "finance.years"
-      - multiply:
+    - multiply:
         field: finance.final_amount
         left_operand: "finance.principal"
         right_operand: "finance.growth_factor"

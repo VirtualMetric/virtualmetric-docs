@@ -17,17 +17,17 @@ Extracts structured fields from unstructured log messages using predefined patte
 
 ```yaml {2-3}
 - grok:
-  field: <ident>
-  patterns: <string[]>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  pattern_definitions: <map>
-  tag: <string>
-  trace_match: <boolean>
+    field: <ident>
+    patterns: <string[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    pattern_definitions: <map>
+    tag: <string>
+    trace_match: <boolean>
 ```
 
 ## Configuration
@@ -85,8 +85,7 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    processors:
-      - grok:
+    - grok:
         field: message
         patterns:
           - "%{COMMONAPACHELOG}"
@@ -123,8 +122,7 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    processors:
-      - grok:
+    - grok:
         field: log_entry
         pattern_definitions:
           USER_ID: "User\\[(?<user_id>\\d+)\\]"
@@ -161,8 +159,7 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    processors:
-      - grok:
+    - grok:
         field: message
         patterns:
           - "Error: %{GREEDYDATA:error_message}"
@@ -195,8 +192,7 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    processors:
-      - grok:
+    - grok:
         field: metric
         patterns:
           - "cpu_usage=%{NUMBER:cpu:int} memory=%{NUMBER:memory:long}"
@@ -228,8 +224,7 @@ Complex patterns may impact performance. Monitor matching time, and consider opt
     }
     ```
     ```yaml
-    processors:
-      - grok:
+    - grok:
         field: message
         patterns:
           - "%{SYSLOG5424PRI}%{NONNEGINT:ver} +(?:%{TIMESTAMP_ISO8601:ts}|-) +(?:%{IPORHOST:host}|-) +(?:%{SYSLOG5424PRINTASCII:app}) +(?:%{NONNEGINT:pid}|-) +(?:%{SYSLOG5424PRINTASCII:msgid}|-) +\\[%{GREEDYDATA:structured_data}\\]"

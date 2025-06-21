@@ -16,16 +16,16 @@ Runs a processor on each element of an array or object when the number of elemen
 ## Schema
 
 ```yaml {2-3}
-foreach:
-  - field: <ident>
-  - processor: <processor>
-  - description: <text>
-  - if: <script>
-  - ignore_failure: <boolean>
-  - ignore_missing: <boolean>
-  - on_failure: <processor[]>
-  - on_success: <processor[]>
-  - tag: <string>
+- foreach:
+    field: <ident>
+    processor: <processor>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -96,8 +96,8 @@ If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was speci
       - field: messages
       - processor:
           set:
-            - field: "_ingest._value.read"
-            - value: true
+            field: "_ingest._value.read"
+            value: true
     ```
   </CodeCol>
   <CommentCol>
@@ -136,8 +136,8 @@ If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was speci
       - field: counts
       - processor:
           convert:
-            - field: "_ingest._value"
-            - type: integer
+            field: "_ingest._value"
+            type: integer
     ```
   </CodeCol>
   <CommentCol>
@@ -177,10 +177,10 @@ If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was speci
       - processor:
           pipeline:
             - uppercase:
-                - field: "_ingest._value.name"
+                field: "_ingest._value.name"
             - set:
-                - field: "_ingest._value.processed"
-                - value: true
+                field: "_ingest._value.processed"
+                value: true
     ```
   </CodeCol>
   <CommentCol>
@@ -219,13 +219,13 @@ If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was speci
       - field: values
       - processor:
           convert:
-            - field: "_ingest._value.num"
-            - type: integer
+            field: "_ingest._value.num"
+            type: integer
       - ignore_failure: true
       - on_failure:
           - set:
-              - field: "_ingest._value.error"
-              - value: "Conversion failed"
+              field: "_ingest._value.error"
+              value: "Conversion failed"
     ```
   </CodeCol>
   <CommentCol>

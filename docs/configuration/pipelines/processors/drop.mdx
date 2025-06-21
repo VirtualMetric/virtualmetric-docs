@@ -17,12 +17,12 @@ Conditionally stops processing of a document by dropping it from the pipeline.
 
 ```yaml {2}
 - drop:
-  if: <script>
-  description: <text>
-  ignore_failure: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    if: <script>
+    description: <text>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -65,8 +65,7 @@ Once dropped, a document cannot be recovered by the subsequent processors. Use c
     }
     ```
     ```yaml
-    processors:
-      - drop:
+    - drop:
         if: ctx.source.packets == 10
     ```
   </CodeCol>
@@ -96,8 +95,7 @@ Once dropped, a document cannot be recovered by the subsequent processors. Use c
     }
     ```
     ```yaml
-    processors:
-      - drop:
+    - drop:
         if: ctx.user.role == 'guest' && ctx.user.access_level < 2
         description: "Drop low-privilege guest access"
     ```
@@ -131,8 +129,7 @@ Once dropped, a document cannot be recovered by the subsequent processors. Use c
     }
     ```
     ```yaml
-    processors:
-      - drop:
+    - drop:
         if: >
             ctx.http?.request?.method == 'GET' &&
             ctx.http.request.path == '/health' &&
@@ -163,8 +160,7 @@ Once dropped, a document cannot be recovered by the subsequent processors. Use c
     }
     ```
     ```yaml
-    processors:
-      - drop:
+    - drop:
         if: ctx.nonexistent.field == true
         ignore_failure: true
     ```

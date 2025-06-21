@@ -16,18 +16,18 @@ Performs mathematical operations on numeric values.
 
 ```yaml {2-4}
 - math:
-  field: <ident>
-  operation: <string>
-  left_operand: <string>
-  right_operand: <string>
-  precision: <numeric>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
+    field: <ident>
+    operation: <string>
+    left_operand: <string>
+    right_operand: <string>
+    precision: <numeric>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
 ```
 
 ## Configuration
@@ -110,8 +110,7 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - math:
+    - math:
         field: metrics.total
         operation: add
         left_operand: "100"
@@ -148,8 +147,7 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - math:
+    - math:
         field: disk.usage_percent
         operation: multiply
         left_operand: "disk.used / disk.total"
@@ -188,8 +186,7 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - math:
+    - math:
         field: temperature.absolute
         operation: abs
         left_operand: "temperature.celsius"
@@ -225,8 +222,7 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - math:
+    - math:
         field: stats.rounded
         operation: round
         left_operand: "stats.raw_value"
@@ -263,13 +259,12 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - math:
+    - math:
         field: circle.radius_squared
         operation: pow
         left_operand: "circle.radius"
         right_operand: "2"
-      - math:
+    - math:
         field: circle.area
         operation: multiply
         left_operand: "circle.radius_squared"
@@ -309,8 +304,7 @@ Always provide appropriate error handling for operations that might encounter th
     }
     ```
     ```yaml
-    processors:
-      - math:
+    - math:
         field: stats.result
         operation: divide
         left_operand: "stats.numerator"
@@ -318,11 +312,11 @@ Always provide appropriate error handling for operations that might encounter th
         ignore_failure: true
         on_failure:
           - set:
-            field: stats.error
-            value: "Division by zero error"
+              field: stats.error
+              value: "Division by zero error"
           - set:
-            field: stats.result
-            value: 0
+              field: stats.result
+              value: 0
     ```
   </CodeCol>
   <CommentCol>

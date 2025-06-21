@@ -130,8 +130,8 @@ This guide provides step-by-step instructions for migrating your existing Cribl 
       ```yaml title="YAML"
       processors:
         - set:
-          field: source
-          value: "cribl_http"
+            field: source
+            value: "cribl_http"
       ```
     </CodeCol>
     </ExampleGrid>
@@ -193,12 +193,12 @@ A Complex pipeline conversion:
       - name: main
           processors:
             - set:
-              field: meta_source
-              value: "cribl"
+                field: meta_source
+                value: "cribl"
             - kv:
-              field: message
-              field_split: " "
-              value_split: "="
+                field: message
+                field_split: " "
+                value_split: "="
     ```
   </CodeCol>
 </ExampleGrid>
@@ -212,21 +212,21 @@ For custom JavaScript functions in **Cribl**, use **DataStream**'s Script proces
 ```yaml title="YAML"
 processors:
   - script:
-    lang: golang
-    source:|
-      package main
-        
-      func main() {
-        // Your conversion of the JavaScript logic
-        if val, ok := logEntry["field"].(string); ok {
-          logEntry["processed"] = processField(val)
+      lang: golang
+      source: |
+        package main
+          
+        func main() {
+          // Your conversion of the JavaScript logic
+          if val, ok := logEntry["field"].(string); ok {
+            logEntry["processed"] = processField(val)
+          }
         }
-      }
-        
-      func processField(input string) string {
-        // Processing logic here
-        return input
-      }
+          
+        func processField(input string) string {
+          // Processing logic here
+          return input
+        }
 ```
 
 ### Lookup Tables

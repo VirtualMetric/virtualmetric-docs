@@ -12,19 +12,19 @@ Dynamically adjusts sampling rates based on event volume.
 
 ```yaml
 - dynamic_sample:
-  sample_mode: <string>
-  sample_group_key: <string>
-  sample_period_sec: <numeric>
-  minimum_events: <numeric>
-  max_sampling_rate: <numeric>
-  exclude_filters: <string[]>
-  tag: <string>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
+    sample_mode: <string>
+    sample_group_key: <string>
+    sample_period_sec: <numeric>
+    minimum_events: <numeric>
+    max_sampling_rate: <numeric>
+    exclude_filters: <string[]>
+    tag: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
 ```
 
 ## Configuration
@@ -90,8 +90,7 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - dynamic_sample:
+    - dynamic_sample:
         sample_mode: logarithmic
         sample_period_sec: 60
         minimum_events: 50
@@ -110,8 +109,7 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - dynamic_sample:
+    - dynamic_sample:
         sample_group_key: "{{service.name}}"
         sample_mode: square_root
         sample_period_sec: 120
@@ -135,16 +133,15 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - dynamic_sample:
+    - dynamic_sample:
         sample_group_key: "{{host.name}}:{{container.name}}"
         sample_mode: logarithmic
         sample_period_sec: 30
         minimum_events: 20
         on_success:
           - set:
-            field: event.sample_info
-            value: "Sampled at {{_vmetric.sampled}}"
+              field: event.sample_info
+              value: "Sampled at {{_vmetric.sampled}}"
     ```
   </CodeCol>
   <CommentCol>
@@ -160,18 +157,17 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - dynamic_sample:
+    - dynamic_sample:
         sample_group_key: "{{source.type}}"
         sample_mode: square_root
         sample_period_sec: 60
         minimum_events: 100
         max_sampling_rate: 20
-      - set:
+    - set:
         field: meta.sampling_applied
         value: true
         if: "hasField(logEntry, '_vmetric.sampled')"
-      - set:
+    - set:
         field: meta.sampling_rate
         value: "{{_vmetric.sampled}}"
         if: "hasField(logEntry, '_vmetric.sampled')"

@@ -17,18 +17,18 @@ Parses JSON strings from a specified field into structured objects.
 
 ```yaml {2}
 - json:
-  field: <ident>
-  add_to_root: <boolean>
-  add_to_root_conflict_strategy: <enum>
-  allow_duplicate_keys: <boolean>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
-  target_field: <ident>
+    field: <ident>
+    add_to_root: <boolean>
+    add_to_root_conflict_strategy: <enum>
+    allow_duplicate_keys: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+    target_field: <ident>
 ```
 
 ## Configuration
@@ -82,8 +82,7 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    processors:
-      - json:
+    - json:
         field: raw_data
         target_field: parsed_data
     ```
@@ -118,8 +117,7 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    processors:
-      - json:
+    - json:
         field: json_data
         add_to_root: true
         add_to_root_conflict_strategy: replace
@@ -156,8 +154,7 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    processors:
-      - json:
+    - json:
         field: json_update
         add_to_root: true
         add_to_root_conflict_strategy: merge
@@ -193,8 +190,7 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    processors:
-      - json:
+    - json:
         field: data
         allow_duplicate_keys: true
         target_field: result
@@ -228,14 +224,13 @@ Setting `allow_duplicate_keys` to `true` may lead to unpredictable results as on
     }
     ```
     ```yaml
-    processors:
-      - json:
+    - json:
         field: data
         ignore_failure: true
         on_failure:
           - set:
-            field: error
-            value: "Invalid JSON format"
+              field: error
+              value: "Invalid JSON format"
     ```
   </CodeCol>
   <CommentCol>

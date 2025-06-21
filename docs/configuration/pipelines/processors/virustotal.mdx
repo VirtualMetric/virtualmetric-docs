@@ -17,19 +17,19 @@ Enriches events by querying the **VirusTotal** API for threat intelligence about
 
 ```yaml {2,3}
 - virustotal:
-  field: <ident>
-  api_key: <string>
-  query_type: <enum>
-  interval: <numeric>
-  timeout: <numeric>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
-  tag: <string>
-  target_field: <ident>
+    field: <ident>
+    api_key: <string>
+    query_type: <enum>
+    interval: <numeric>
+    timeout: <numeric>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+    target_field: <ident>
 ```
 
 ## Configuration
@@ -89,8 +89,7 @@ Error handling and success/failure options are supported as well.
     }
     ```
     ```yaml
-    processors:
-      - virustotal:
+    - virustotal:
         field: hash
         query_type: hash
         api_key: "${VIRUSTOTAL_API_KEY}"
@@ -216,8 +215,7 @@ Error handling and success/failure options are supported as well.
     }
     ```
     ```yaml
-    processors:
-      - virustotal:
+    - virustotal:
         field: url
         query_type: url
         interval: 2
@@ -293,8 +291,7 @@ Error handling and success/failure options are supported as well.
     }
     ```
     ```yaml
-    processors:
-      - virustotal:
+    - virustotal:
         field: domain
         query_type: domain
         target_field: domain_info
@@ -358,16 +355,15 @@ Error handling and success/failure options are supported as well.
     }
     ```
     ```yaml
-    processors:
-      - virustotal:
+    - virustotal:
         field: ip
         query_type: ip
         api_key: "invalid-key"
         ignore_failure: true
         on_failure:
           - set:
-            field: lookup_status
-            value: "failed"
+              field: lookup_status
+              value: "failed"
     ```
   </CodeCol>
   <CommentCol>

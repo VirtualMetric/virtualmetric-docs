@@ -12,15 +12,15 @@ Reduces data volume by sampling log entries based on configurable rules.
 
 ```yaml
 - sample:
-  rules: <rule[]>
-  exclude_filters: <string[]>
-  tag: <string>
-  description: <text>
-  if: <script>
-  ignore_failure: <boolean>
-  ignore_missing: <boolean>
-  on_failure: <processor[]>
-  on_success: <processor[]>
+    rules: <rule[]>
+    exclude_filters: <string[]>
+    tag: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
 ```
 
 ## Configuration
@@ -72,8 +72,7 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - sample:
+    - sample:
         rules:
           - filter: "true"
             sampling_rate: 10
@@ -92,8 +91,7 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - sample:
+    - sample:
         rules:
           - filter: "logEntry.log.level == 'debug'"
             sampling_rate: 100
@@ -119,8 +117,7 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - sample:
+    - sample:
         rules:
           - filter: "hasField(logEntry, 'http.response.status_code')"
             sampling_rate: "{{config.sampling_rates.http}}"
@@ -141,8 +138,7 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - sample:
+    - sample:
         rules:
           - filter: "logEntry.service.name == 'frontend'"
             sampling_rate: 5
@@ -168,8 +164,7 @@ Sampling inherently discards data, so use with caution for critical events. Alwa
   </CommentCol>
   <CodeCol>
     ```yaml
-    processors:
-      - sample:
+    - sample:
         if: "logEntry.environment == 'production'"
         rules:
           - filter: "logEntry.http.request.method == 'GET' && logEntry.http.response.status_code >= 200 && logEntry.http.response.status_code < 300"
