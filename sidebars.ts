@@ -32,11 +32,13 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         "getting-started/introduction",
-        "getting-started/director-single-node-deployment",
+        "getting-started/single-node-deployment-director",
+        "getting-started/single-node-deployment-generator",
+        "getting-started/single-node-deployment-agent",
         "getting-started/example-ingesting-data",
         "getting-started/example-forwarding-data",
-        "getting-started/example-a-syslog-to-parquet-pipeline",
-        "getting-started/agent-single-node-deployment",
+        "getting-started/example-reading-json-with-a-pipeline",
+        "getting-started/example-a-syslog-to-parquet-data-stream",
         "getting-started/example-using-agents",
         {
           type: "category",

@@ -1,14 +1,24 @@
-### Preliminary Test
+import Link from '@docusaurus/Link';
+
+# Example: A Syslog-To-Parquet Pipeline
+
+This section will help you get started with configuring and running a very simple pipeline, walking you through a common use case.
+
+:::tip
+For a detailed discussion, see [this section](../configuration/pipelines/overview.mdx#configuration).
+:::
+
+## Scenario
 
 To understand how a pipeline works at the very basic level, we will create a very simple input file in JSON format and a very simple pipeline that does only one transformation, and using **Director**'s pipeline validation and testing facilities, we will see the pipeline in action.
 
-### Sample Case
+## Sample Case
 
 :::tip
 For the following, nagivate to `<vm_root>` in your terminal, and continue working there since any paths given will be relative.
 :::
 
-#### Create Test Data
+## Step 1: Create Test Data
 
 First, create a JSON file named `sample-data.json` in our working directory, and put the following sample data in it:
 
@@ -18,7 +28,7 @@ First, create a JSON file named `sample-data.json` in our working directory, and
 }
 ```
 
-#### Define Pipeline Logic
+## Step 2: Define Pipeline Logic
 
 Then, create a YAML file in our working directory named `convert-words.yml`, and put the following pipeline definition in it:
 
@@ -47,7 +57,7 @@ Here is what this pipeline will do:
 - Using the `json` processor's `add_to_root` flag, copy the values it has spotted in that field to the root of the output document.
 - Using the [`foreach`](../configuration/pipelines/processors/foreach.mdx) processor&mdash;which applies its specified `processor` (here, [`uppercase`](../configuration/pipelines/processors/uppercase.mdx)) to each element in the list returned by the meta field `"_ingest._value"`&mdash;convert each item to uppercase.
 
-#### Validate Pipeline
+## Step 3: Validate The Pipeline
 
 To see whether our pipeline is valid, we enter the following command in the terminal:
 
@@ -81,7 +91,7 @@ If our pipeline is valid, this command will return:
 
 Since that is indeed the case, we can now run our test.
 
-#### Run Test
+## Step 4: Test The Pipeline
 
 To see our pipeline in action, enter the following in the terminal:
 
@@ -109,7 +119,7 @@ Here is what this test will do:
 The output file should be created when the test is run.
 :::
 
-#### Check Processed Data
+## Step 5: Check The Processed Data
 
 Now open the file named `processed-sample-data.json` to see the results. It should appear like this:
 
@@ -120,3 +130,5 @@ Now open the file named `processed-sample-data.json` to see the results. It shou
 ```
 
 Now we can proceed to creating our data flow design.
+
+<Link to="./introduction#examples" className="button button--primary">Back To Examples</Link>
