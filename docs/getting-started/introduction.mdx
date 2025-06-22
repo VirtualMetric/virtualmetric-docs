@@ -7,133 +7,150 @@ sidebar_label: Introduction
 
 Welcome to **VirtualMetric DataStream**. This section will help you deploy your product and get started using it.
 
-Here are the steps to get started:
+Here are the steps to get started.
 
-1. Before you proceed, please review our [**Deployment Models**](./deployment/overview.mdx#models) to see your options.
+## Single Node Deployment
 
-    To deploy **locally**, see the [**On Local**](./deployment/on-local.mdx) section of the chapter.
+Before you proceed, please review our [**Deployment Models**](./deployment/overview.mdx#models) to see your options.
 
-    To deploy **on cloud**, see the relevant sections for **Azure** in the same chapter.
+Here, we will use **Single Node Deployment**&mdash;i.e. we will deploy on a single machine as this is the simplest and most straightforward.
 
-    Here, we will deploy **on premises** as server&mdash;for **Windows**, **Linux**, **macOS**, and **Copilot+** (ARM64).
+- Download and install **Director** using [this section](./single-node-deployment-director.mdx).
 
-2. Once you have decided on your deployment model and chosen the location that suits you, use the relevant sections to install the binaries and make the required settings.
+- To simulate streaming data, we provide **Director**'s companion utility **Generator**. It can be used to send messages to specific logging services, although other traditional tools&mdash;such as `logger`&mdash;can also be used for this purpose on some **Unix**-based platforms.
 
-    To deploy as clusters, see the [**As Cluster**](./deployment/as-cluster.mdx) section in the same chapter.
+	Make sure to download and install **Generator** using [this section](./single-node-deployment-generator.mdx) since will be using it in our introductory examples.
 
-    Here, we will use [**Single Node Deployment**](./director-single-node-deployment.mdx)&mdash;i.e. we will deploy on a single machine as this is simplest and most straightforward.
+- Download and install **Agent** using [this section](./single-node-deployment-agent.mdx).
 
-    - First, download and install **Director**.
+We recommend that you keep all three executables in the same directory, preferably named `VirtualMetric`. In our examples throughout the documentation, we will assume that `<vm_root>` is:
 
-    - To simulate streaming data, we provide **Director**'s companion utility **Generator**. It can be used to send messages to specific logging services, although other traditional tools&mdash;such as `logger`&mdash;can also be used for this purpose on some **Unix**-based platforms.
+<Tabs>
+	<TabItem value="windows" label="Windows" default>
+	```PowerShell
+	C:\Program Files\VirtualMetric
+	```
+	</TabItem>
+	<TabItem value="linux" label="Linux">
+	```PowerShell
+	./usr/bin/VirtualMetric
+	```
+	</TabItem>
+	<TabItem value="macos" label="macOS">
+	```PowerShell
+	/Applications/VirtualMetric
+	```
+	</TabItem>
+</Tabs>
 
-        :::tip
-        Make sure to download and install **Generator** since will be using it in our introductory examples.
-        :::
+:::note
+For convenience, you may want to add **VirtualMetric**'s installation folder to your `$PATH` environment variable in order to be able to access the executable from any directory.
 
-    - Finally, download and install **Agent**.
+However, throughout this documentation, we will use the platform-specific syntax for running apps only in the current directory: we will prepend "`.\`" for Windows, and "`./`" for Unix-based systems to the binary's name.
+:::
 
-    We recommend that you keep all three executables in the same directory, preferably named `VirtualMetric`.
+## YAML Files
 
-    :::note
-    For convenience, you may want to add **VirtualMetric**'s installation folder to your `$PATH` environment variable in order to be able to invoke the executable from any directory.
+To configure telemetry streams, **DataStream** uses YAML files.
 
-    However, throughout this documentation, we will use the platform-specific syntax for running apps not on the `$PATH`, i.e. we will prepend "`.\`" for Windows, and "`./`" for Unix-based systems to the binary's name.    
-    :::
+:::warning
+On **Windows**, make sure file extensions are visible. To check this, go to **File Explorer** and select **View > Show > File name extensions**.
 
-3. To configure telemetry streams, **DataStream** uses YAML files.
+This is to avoid surprises like the system adding another extension to your YAML file's extension, e.g. `file.yml.txt`, in which case **VirtualMetric** executables will not be able to recognize them.
+:::
 
-    **Director** parses all the YAML files found under the `<vm_root>/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: to organize your components as you see fit.
+**Director** parses all the YAML files found under the `<vm_root>/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: to organize your components as you see fit.
 
-    :::warning
-    On **Windows**, make sure file extensions are visible. To check this, go to **File Explorer** and select **View > Show > File name extensions**. This is to avoid surprises like the system adding another extension to your YAML file's extension, e.g. `file.yml.txt` in which **VirtualMetric** executables will not be able to recognize them.
-    :::
+:::note
+For more details on the management of files, review [**this section**](../configuration/overview.mdx#managing-yaml-files).
+:::
 
-    However, if your files are _not_ placed under `<vm_root>/config` or in one of the subfolders created under it by default during the installation (e.g. `<vm_root>/config/devices` or `<vm_root>/config/pipelines`) , then these are considered _standalone_ files and you _do_ have to specify their paths and filenames on the command line.
+However, if your files are _not_ placed under `<vm_root>/config` or in one of the subfolders created under it by default during the installation (i.e. the `devices`, `pipelines`, `routes`, or `targets` directories), then those are considered _standalone_ files.
 
-    :::tip
-    For more details on the management of files, review [**this section**](../configuration/overview.mdx#managing-yaml-files).
-    :::
+:::warning
+You _have_ to specify the paths and names of _standalone_ files on the command line.
+:::
 
-    <a id="working-directory"/>
-    For our purposes, and to keep things simple, we will be using the following folder as our working directory:
+## Working Directory 
 
-        <Tabs>
-        <TabItem value="powershell" label="PowerShell" default>
-            ```powershell
-            C:\Path\To\<vm_root>\config\Examples
-            ```
-        </TabItem>    
-        <TabItem value="bash" label="Bash">
-            On **Linux**:
+For our purposes, and to keep things simple, we will be using the following folder as our working directory:
 
-            ```bash
-            /usr/bin/path/to/<vm_root>/config/Examples
-            ```
-            On **macOS**:
+<Tabs>
+<TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    C:\Path\To\<vm_root>\config\Examples
+    ```
+</TabItem>    
+<TabItem value="bash" label="Bash">
+    On **Linux**:
 
-            ```bash
-            /Applications/Path/To/<vm_root>/config/Examples
-            ```
-        </TabItem>
-        </Tabs>
+    ```bash
+    /usr/bin/path/to/<vm_root>/config/Examples
+    ```
+    On **macOS**:
 
-    We will be saving all our configuration files in this folder. We will also specify our output files to be created here.
+    ```bash
+    /Applications/Path/To/<vm_root>/config/Examples
+    ```
+</TabItem>
+</Tabs>
 
-    :::warning
-    As we will place all our files in this directory, they will be considered _standalone_ files and we will have to provide their path and names on the command line.
-    :::
+We will be saving all our configuration files in this folder. We will also specify our output files to be created here. As we will place all our files in this directory, they will be considered _standalone_ files and we will have to provide their paths and names on the command line.
 
-5. Finally, a simple configuration for logging is in order for you to be able to check the status of your runs.
+## Logging Setup
 
-    * Go to `<vm_root>` (i.e. the folder where you have placed **VirtualMetric**)
-    * Find the `config` directory, which is directly under `<vm_root>`
-    * Open the file named `vmetric.yml`, -or- create it if it doesn't exist
-    * Make sure the settings match the following, -or- add them to the newly created file:
+Finally, a simple logging setup is in order for you to be able to check the status of your runs.
 
-        ```yaml
-        debug:
-        log:
-            status: true
-        level: 4
-        console:
-            status: true
-        ```
+* Go to `<vm_root>`, i.e. the folder where you have placed **VirtualMetric**
+* Find the `config` directory, which is directly under it
+* Open the file named `vmetric.yml`, -or- create it if it doesn't exist
+* Make sure the settings match the following, -or- add them to the newly created file:
 
-    **Director** will generate the log of your runs and place it in the following file:
+    ```yaml
+    debug:
+    log:
+        status: true
+    level: 4
+    console:
+        status: true
+    ```
 
-    <Tabs>
-    <TabItem value="powershell" label="PowerShell" default>
-        ```powershell
-        C:\Path\To\<vm_root>\storage\logs\debug.log
-        ```
-    </TabItem>
-    <TabItem value="bash" label="Bash">
-        For **Linux**:
+**Director** will generate the log of your runs and place it in the following file:
 
-        ```bash
-        /usr/bin/path/to/<vm_root>/storage/logs/debug.log
-        ```
-        For **macOS**:
+<Tabs>
+<TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    C:\Path\To\<vm_root>\storage\logs\debug.log
+    ```
+</TabItem>
+<TabItem value="bash" label="Bash">
+    For **Linux**:
 
-        ```bash
-        /Applications/Path/To/<vm_root>/storage/logs/debug.log
-        ```
-    </TabItem>
-    </Tabs>
+    ```bash
+    /usr/bin/path/to/<vm_root>/storage/logs/debug.log
+    ```
+    For **macOS**:
 
-    Deleting this file is harmless. So long as the above debugging setting remains, it will be re-created with each run.
+    ```bash
+    /Applications/Path/To/<vm_root>/storage/logs/debug.log
+    ```
+</TabItem>
+</Tabs>
 
-6. Once you are done with the above, you can proceed to the following **Examples** to explore the basics of configuring telemetry flows and see **Director** in action.
+Deleting this file is harmless. So long as the above debugging setting remains, it will be re-created with each run.
 
-    {/* FIXME: Modify content */}
+## Examples
 
-    - [**Example: Ingesting Data**](./example-ingesting-data.mdx) - Configure your first device to receive streaming data
+Once you are done with the above, you can proceed to the following **Examples** to explore the basics of configuring telemetry flows and see **Director** in action.
 
-    - [**Example: Forwarding Data**](./example-forwarding-data.mdx) - Configure your first target to send streaming data
+- [**Example: Ingesting Data**](./example-ingesting-data.mdx) - Configure your first device to receive streaming data
 
-    - [**Example: A Syslog-To-Parquet Pipeline**](./example-a-syslog-to-parquet-pipeline.mdx) - A full, end-to-end pipeline in action
+- [**Example: Forwarding Data**](./example-forwarding-data.mdx) - Configure your first target to send streaming data
 
-    - [**Example: Using Agents**](./example-using-agents.mdx) - Configure your first **Agent** for unattended execution
+- [**Example: Readon JSON With a Pipeline**](./example-reading-json-with-a-pipeline.mdx) - Configure your first pipeline to receive and process data
 
-    {/* FIXME: Change Title and content */}
+- [**Example: A Syslog-To-Parquet Data Stream**](./example-a-syslog-to-parquet-data-stream.mdx) - A full, end-to-end data stream in action
+
+- [**Example: Using Agents**](./example-using-agents.mdx) - Configure your first **Agent** for unattended execution
+
+{/* FIXME: Change Title and content */}
