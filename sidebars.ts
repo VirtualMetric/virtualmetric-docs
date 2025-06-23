@@ -32,9 +32,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         "getting-started/introduction",
-        "getting-started/single-node-deployment-director",
-        "getting-started/single-node-deployment-generator",
-        "getting-started/single-node-deployment-agent",
+        "getting-started/single-node-deployment",
         "getting-started/example-ingesting-data",
         "getting-started/example-forwarding-data",
         "getting-started/example-reading-json-with-a-pipeline",
@@ -43,7 +41,6 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Deployment",
-          collapsed: false,
           items: [
             "getting-started/deployment/overview",
             "getting-started/deployment/on-local",

@@ -9,21 +9,17 @@ Welcome to **VirtualMetric DataStream**. This section will help you deploy your 
 
 Here are the steps to get started.
 
-## Single Node Deployment
+## Deployment
 
 Before you proceed, please review our [**Deployment Models**](./deployment/overview.mdx#models) to see your options.
 
 Here, we will use **Single Node Deployment**&mdash;i.e. we will deploy on a single machine as this is the simplest and most straightforward.
 
-- Download and install **Director** using [this section](./single-node-deployment-director.mdx).
+- Download and install **Director** using [this section](./single-node-deployment.mdx#director).
 
-- To simulate streaming data, we provide **Director**'s companion utility **Generator**. It can be used to send messages to specific logging services, although other traditional tools&mdash;such as `logger`&mdash;can also be used for this purpose on some **Unix**-based platforms.
+- Download and install **Agent** using [this section](./single-node-deployment.mdx#agent).
 
-	Make sure to download and install **Generator** using [this section](./single-node-deployment-generator.mdx) since will be using it in our introductory examples.
-
-- Download and install **Agent** using [this section](./single-node-deployment-agent.mdx).
-
-We recommend that you keep all three executables in the same directory, preferably named `VirtualMetric`. In our examples throughout the documentation, we will assume that `<vm_root>` is:
+We recommend that you keep all the executables in the same directory, preferably named `VirtualMetric`. In our examples throughout the documentation, we will assume that `<vm_root>` is:
 
 <Tabs>
 	<TabItem value="windows" label="Windows" default>
@@ -56,19 +52,19 @@ To configure telemetry streams, **DataStream** uses YAML files.
 :::warning
 On **Windows**, make sure file extensions are visible. To check this, go to **File Explorer** and select **View > Show > File name extensions**.
 
-This is to avoid surprises like the system adding another extension to your YAML file's extension, e.g. `file.yml.txt`, in which case **VirtualMetric** executables will not be able to recognize them.
+This is to avoid surprises like the system adding another extension to your YAML file's extension, e.g. `file.yml.txt`, in which case **VirtualMetric** applications will not be able to recognize them.
 :::
 
 **Director** parses all the YAML files found under the `<vm_root>/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: to organize your components as you see fit.
 
 :::note
-For more details on the management of files, review [**this section**](../configuration/overview.mdx#managing-yaml-files).
+For more details on management of configuration files, review [this section](../configuration/overview.mdx#managing-yaml-files).
 :::
 
 However, if your files are _not_ placed under `<vm_root>/config` or in one of the subfolders created under it by default during the installation (i.e. the `devices`, `pipelines`, `routes`, or `targets` directories), then those are considered _standalone_ files.
 
-:::warning
-You _have_ to specify the paths and names of _standalone_ files on the command line.
+:::tip
+Do not forget to specify the paths and names of _standalone_ files on the command line.
 :::
 
 ## Working Directory 
@@ -78,24 +74,26 @@ For our purposes, and to keep things simple, we will be using the following fold
 <Tabs>
 <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    C:\Path\To\<vm_root>\config\Examples
+    mkdir C:\Path\To\<vm_root>\config\Examples
     ```
 </TabItem>    
 <TabItem value="bash" label="Bash">
     On **Linux**:
 
     ```bash
-    /usr/bin/path/to/<vm_root>/config/Examples
+    mkdir /opt/<vm_root>/config/Examples
     ```
     On **macOS**:
 
     ```bash
-    /Applications/Path/To/<vm_root>/config/Examples
+    mkdir /Applications/Path/To/<vm_root>/config/Examples
     ```
 </TabItem>
 </Tabs>
 
-We will be saving all our configuration files in this folder. We will also specify our output files to be created here. As we will place all our files in this directory, they will be considered _standalone_ files and we will have to provide their paths and names on the command line.
+We will be saving all our configuration files in this folder. We will also specify our output files to be created here.
+
+As we will place all our files in this directory, they will be considered _standalone_ files.
 
 ## Logging Setup
 
@@ -104,7 +102,7 @@ Finally, a simple logging setup is in order for you to be able to check the stat
 * Go to `<vm_root>`, i.e. the folder where you have placed **VirtualMetric**
 * Find the `config` directory, which is directly under it
 * Open the file named `vmetric.yml`, -or- create it if it doesn't exist
-* Make sure the settings match the following, -or- add them to the newly created file:
+* Make sure the settings in it match the following, -or- add them to the newly created one:
 
     ```yaml
     debug:
@@ -141,15 +139,17 @@ Deleting this file is harmless. So long as the above debugging setting remains, 
 
 ## Examples
 
-Once you are done with the above, you can proceed to the following **Examples** to explore the basics of configuring telemetry flows and see **Director** in action.
+Once you are done with the above, you can proceed to the following examples to explore the basics of configuring telemetry flows and see **Director** in action.
 
 - [**Example: Ingesting Data**](./example-ingesting-data.mdx) - Configure your first device to receive streaming data
 
 - [**Example: Forwarding Data**](./example-forwarding-data.mdx) - Configure your first target to send streaming data
 
-- [**Example: Readon JSON With a Pipeline**](./example-reading-json-with-a-pipeline.mdx) - Configure your first pipeline to receive and process data
+- [**Example: Reading JSON With a Pipeline**](./example-reading-json-with-a-pipeline.mdx) - Configure your first pipeline to receive and process data
 
 - [**Example: A Syslog-To-Parquet Data Stream**](./example-a-syslog-to-parquet-data-stream.mdx) - A full, end-to-end data stream in action
+
+We have one more example, one using an **Agent**:
 
 - [**Example: Using Agents**](./example-using-agents.mdx) - Configure your first **Agent** for unattended execution
 
