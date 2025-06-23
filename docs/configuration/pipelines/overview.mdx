@@ -47,14 +47,14 @@ Use the `name` of the pipeline to refer to it in your configurations.
 ```yaml
 pipelines:
   - name: checkpoint
-      processors:
-        - grok:
-            field: message
-            patterns:
-              - "%{COMMONAPACHELOG}"
-        - set:
-            field: event.provider
-            value: "checkpoint"
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{COMMONAPACHELOG}"
+      - set:
+          field: event.provider
+          value: "checkpoint"
 ```
 
 This pipeline uses a `grok` processor with a pattern that extracts _Apache_ log data, and a `set` processor to write "`checkpoint`" to the `event.provider` field.
@@ -117,27 +117,27 @@ And here are some examples:
   ```yaml
   pipelines:
     - name: syslog_parser
-        description: "Parse and normalize syslog messages"
-        processors:
-          - grok:
-              field: message
-              patterns:
-                - "%{SYSLOGLINE}"
-          - date:
-              field: timestamp
-              target_field: "@timestamp"
-              formats:
-                - "MMM dd HH:mm:ss"
-                - "MMM  d HH:mm:ss"
-          - set:
-              field: event.kind
-              value: event
-          - rename:
-              fields:
-                - from: program
-                  to: process.name
-                - from: logsource
-                  to: host.hostname
+      description: "Parse and normalize syslog messages"
+      processors:
+        - grok:
+            field: message
+            patterns:
+              - "%{SYSLOGLINE}"
+        - date:
+            field: timestamp
+            target_field: "@timestamp"
+            formats:
+              - "MMM dd HH:mm:ss"
+              - "MMM  d HH:mm:ss"
+        - set:
+            field: event.kind
+            value: event
+        - rename:
+            fields:
+              - from: program
+                to: process.name
+              - from: logsource
+                to: host.hostname
   ```
 
 - **Field Enrichment**: A pipeline can be used to enrich security events with additional context, such as geolocation data or threat intelligence:
@@ -145,23 +145,22 @@ And here are some examples:
   ```yaml
   pipelines:
     - name: security_enrichment
-        description: "Enrich security events with additional context"
-        processors:
-          - geoip:
-              field: source.ip
-              target_field: source.geo
-          - set:
-              field: event.category
-              value: security
-          - script:
-              lang: painless
-              source:|
-                if (ctx.source.ip.startsWith('10.')||
-                    ctx.source.ip.startsWith('192.168.')) {
-                  ctx.source.type = 'internal';
-                } else {
-                  ctx.source.type = 'external';
-                }
+      description: "Enrich security events with additional context"
+      processors:
+        - geoip:
+            field: source.ip
+            target_field: source.geo
+        - set:
+            field: event.category
+            value: security
+        - script:
+            lang: painless
+            source: |
+              if (ctx.source.ip.startsWith('10.')||
+                  ctx.source.ip.startsWith('192.168.')) {
+                ctx.source.type = 'internal';
+              } else {
+                ctx.source.type = 'external';                }
   ```
 
 - **Data Transformation**: A sequence of processors can be used to transform data formats, such as converting IP addresses or normalizing field names:
@@ -169,24 +168,24 @@ And here are some examples:
   ```yaml
   pipelines:
     - name: data_normalizer
-        description: "Standardize field names and values"
-        processors:
-          - rename:
-              fields:
-                - from: src
-                  to: source.ip
-                - from: dst
-                  to: destination.ip
-          - convert:
-              field: bytes
-              type: long
-          - script:
-              lang: painless
-              source: "ctx.network.bytes = ctx.bytes_in + ctx.bytes_out"
-          - remove:
-              field:
-                - bytes_in
-                - bytes_out
+      description: "Standardize field names and values"
+      processors:
+        - rename:
+            fields:
+              - from: src
+                to: source.ip
+              - from: dst
+                to: destination.ip
+        - convert:
+            field: bytes
+            type: long
+        - script:
+            lang: painless
+            source: "ctx.network.bytes = ctx.bytes_in + ctx.bytes_out"
+        - remove:
+            field:
+              - bytes_in
+              - bytes_out
   ```
 
 ## Implementation Strategies
@@ -219,15 +218,15 @@ Pipelines and processors support conditional execution using the `if` parameter:
 ```yaml
 pipelines:
   - name: web_logs
-      processors:
-        - set:
-            field: event.category
-            value: web
-            if: "ctx.source == 'apache'||ctx.source == 'nginx'"
-        - geoip:
-            field: client.ip
-            target_field: client.geo
-            if: "ctx?.client?.ip != null"
+    processors:
+      - set:
+          field: event.category
+          value: web
+          if: "ctx.source == 'apache'||ctx.source == 'nginx'"
+      - geoip:
+          field: client.ip
+          target_field: client.geo
+          if: "ctx?.client?.ip != null"
 ```
 
 ### Pipeline Chaining

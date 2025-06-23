@@ -252,41 +252,41 @@ This guide provides a comprehensive approach to migrating from **Vector** to **D
 
       pipelines:
         - name: router
-            processors:
-              - script:
-                  lang: golang
-                  source: |
-                    package main
-                      
-                    func main() {
-                      service, ok := logEntry["service"].(string)
-                      if ok {
-                        if service == "app" {
-                          setPipeline("app_pipeline")
-                        } else if service == "web" {
-                          setPipeline("web_pipeline")
-                        }
+          processors:
+            - script:
+                lang: golang
+                source: |
+                  package main
+                    
+                  func main() {
+                    service, ok := logEntry["service"].(string)
+                    if ok {
+                      if service == "app" {
+                        setPipeline("app_pipeline")
+                      } else if service == "web" {
+                        setPipeline("web_pipeline")
                       }
                     }
+                  }
 
-          - name: app_pipeline
-              targets:
-                - s3_app
+      - name: app_pipeline
+          targets:
+            - s3_app
 
-          - name: web_pipeline
-              targets:
-                - s3_web
+      - name: web_pipeline
+          targets:
+            - s3_web
 
       targets:
         - name: s3_app
-            type: s3
-            properties:
-              bucket: "app-logs"
+          type: s3
+          properties:
+            bucket: "app-logs"
               
         - name: s3_web
-            type: s3
-            properties:
-              bucket: "web-logs"
+          type: s3
+          properties:
+            bucket: "web-logs"
       ```
     </CodeCol>
   </ExampleGrid>
@@ -312,7 +312,7 @@ For **Vector** metric events, use **DataStream**'s metric processing capabilitie
 processors:
   script:
     - lang: golang
-      source:|
+      source: |
         package main
         
         func main() {

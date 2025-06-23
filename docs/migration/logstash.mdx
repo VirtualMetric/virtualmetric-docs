@@ -200,8 +200,8 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
       ```yaml title="YAML"
       pipelines:
         - name: router
-            processors:
-              - script:
+          processors:
+            - script:
                 lang: golang
                 source:|
                   package main
@@ -218,18 +218,18 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
                   }
 
         - name: apache_pipeline
-            processors:
-              - grok:
-                  field: message
-                  patterns:
-                    - "%{COMBINEDAPACHELOG}"
+          processors:
+            - grok:
+                field: message
+                patterns:
+                  - "%{COMBINEDAPACHELOG}"
 
         - name: syslog_pipeline
-            processors:
-              - grok:
-                  field: message
-                  patterns:
-                    - "%{SYSLOGLINE}"
+          processors:
+            - grok:
+                field: message
+                patterns:
+                  - "%{SYSLOGLINE}"
       ```
     </CodeCol>
   </ExampleGrid>
@@ -261,22 +261,22 @@ This guide provides a comprehensive approach to migrating from **Logstash** to *
       ```yaml title="YAML"
       processors:
         - script:
-          lang: golang
-          source:|
-            package main
-              
-            func main() {
-              if msg, ok := logEntry["message"].(string); ok {
-                logEntry["uppercase_message"] = strings.ToUpper(msg)
-              }
+            lang: golang
+            source: |
+              package main
                 
-              if status, ok := logEntry["status"].(string); ok {
-                statusCode, err := strconv.Atoi(status)
-                if err == nil && statusCode >= 400 {
-                  logEntry["is_error"] = true
+              func main() {
+                if msg, ok := logEntry["message"].(string); ok {
+                  logEntry["uppercase_message"] = strings.ToUpper(msg)
+                }
+                  
+                if status, ok := logEntry["status"].(string); ok {
+                  statusCode, err := strconv.Atoi(status)
+                  if err == nil && statusCode >= 400 {
+                    logEntry["is_error"] = true
+                  }
                 }
               }
-            }          
       ```
     </CodeCol>
   </ExampleGrid>
@@ -301,18 +301,18 @@ For **Logstash** date filter functionality, **DataStream** date handling:
 
 ```yaml title="YAML" 
 - script:
-  lang: golang
-  source:|
-    package main
-      
-    func main() {
-      if timestamp, ok := logEntry["timestamp"].(string); ok {
-        parsedTime, err := time.Parse("2006-01-02T15:04:05", timestamp)
-        if err == nil {
-          logEntry["@timestamp"] = parsedTime.Format(time.RFC3339)
+    lang: golang
+    source:|
+      package main
+        
+      func main() {
+        if timestamp, ok := logEntry["timestamp"].(string); ok {
+          parsedTime, err := time.Parse("2006-01-02T15:04:05", timestamp)
+          if err == nil {
+            logEntry["@timestamp"] = parsedTime.Format(time.RFC3339)
+          }
         }
       }
-    }
 ```
 
 ## Performance Tuning

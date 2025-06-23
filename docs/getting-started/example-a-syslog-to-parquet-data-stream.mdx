@@ -81,23 +81,28 @@ We are now ready to configure our pipeline. Put the following in our configurati
 ```yml title="syslog-to-parquet.yml"
 pipelines:
   - name: extract_user_event
-<TabItem value="bash" label="Bash">            field: syslog.message
-            patterns:
-              - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
-            ignore_failure: true
-        - set:
-            field: user
-            value: user.name
-        - set:
-            field: event
-            value: event.action
-        - set:
-            field: message
-            value: syslog.message
-        - remove:
-            field:          
-              - syslog.message
-            ignore_missing: true
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
+      - grok:
+          field: syslog.message
+          patterns:
+            - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
+          ignore_failure: true
+      - set:
+          field: user
+          value: user.name
+      - set:
+          field: event
+          value: event.action
+      - set:
+          field: message
+          value: syslog.message
+      - remove:
+          field: syslog.message
+          ignore_missing: true
 ```
 
 This configuration will do the following:
