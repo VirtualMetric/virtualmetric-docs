@@ -22,9 +22,9 @@ For the following, nagivate to `<vm_root>` in your terminal, and continue workin
 
 First, create a JSON file named `sample-data.json` in our [working directory](./introduction.mdx#working-directory), and put the following sample data in it:
 
-```json
+```json title="sample-data.json"
 {
-  "raw_data": "{\"words\": [\"hello\", \"world\"]}"
+  "raw_data": "{\"words\": \"hello world\"}"
 }
 ```
 
@@ -38,10 +38,12 @@ pipelines:
     processors:
       - json:
           field: raw_data
-          target_field: words
+          target_field: parsed_data
+          add_to_root: true
       - uppercase:
           field: words
-          target_field: convertedWords
+          target_field: converted_words
+          ignore_failure: true
 ```
 
 :::tip
@@ -51,8 +53,8 @@ When configuring a pipeline, we use the identifiers in the `name` fields of the 
 Here is what this pipeline will do:
 
 - Look for the field named `raw_data` in the JSON file we will feed it.
-- Grab its contents and copy it to a field named `words`.
-- Using the [`uppercase`](../configuration/pipelines/processors/uppercase.mdx) processor, convert each item to uppercase and write them to a field named `convertedWords`.
+- Using the [`json`](../configuration/pipelines/processors/json.mdx) processor, grab its contents and copy it to a field named `parsed_data` and&mdash;since we turned on its `add_to_root` setting&mdash;move the `words` field one level up.
+- Using the [`uppercase`](../configuration/pipelines/processors/uppercase.mdx) processor, convert the words to uppercase and write them to a field named `converted_words`.
 
 ## Step 3: Validate The Pipeline
 
@@ -86,63 +88,73 @@ If our pipeline is valid, this command will return:
   </TabItem>
 </Tabs>
 
-And that is indeed the case. Now enter the following command:
+And that is indeed the case. Now, to `visualize` the output, enter the following command:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
-    .\vmetric-director -pipeline -name=".\config\Examples\convert-words.yml" -visualize
+    .\vmetric-director -pipeline -path=".\config\Examples\convert-words.yml" -name=convert_words -visualize
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-director -pipeline -name="./config/Examples/convert-words.yml" -visualize
+    ./vmetric-director -pipeline -path="./config/Examples/convert-words.yml" -name=convert_words -visualize
     ```
   </TabItem>
 </Tabs>
 
-This should return the following output:
+This should return the following:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
-    convert_words
+    {
+      "converted_words": "HELLO WORLD",
+      "raw_data": "{\"words\": \"hello world\"}",
+      "words": "hello world"
+    }
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    convert_words
+    {
+      "converted_words": "HELLO WORLD",
+      "raw_data": "{\"words\": \"hello world\"}",
+      "words": "hello world"
+    }
     ```
   </TabItem>
 </Tabs>
 
-This means, **Director** is able to recognize the pipeline we have defined by its name.
+This means, **Director** is able to recognize the pipeline we have defined by its name and generate the expected output.
 
-Now we can run test our pipeline.
+Now we can test our pipeline.
 
 ## Step 4: Test The Pipeline
 
-To see our pipeline in action, enter the following in the terminal:
+To see our pipeline in action, enter the following in the terminal and check its status message:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
     .\vmetric-director -pipeline -path=".\config\Examples\convert-words.yml" -name convert_words -input ".\config\Examples\sample-data.json" -output ".\config\Examples\processed-sample-data.json"
+    Successfully exported to .\config\Examples\processed-sample-data.json
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
     ./vmetric-director -pipeline -path="./config/Examples/convert-words.yml" -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
+    Successfully exported to ./config/Examples/processed-sample-data.json
     ```
   </TabItem>
 </Tabs>
 
-Here is what this test will do:
+Here is what this test does:
 
-* Consume the data in the input file named `sample-data.json` that we put in our working directory
-* Using the pipeline we named `convert_words`, extract convert the words in the `words` field to `uppercase`
-* Write the converted names to a new field named `convertedWords`
-* Save the results to an output file named `processed-sample-data.json` in our working directory.
+* Consume the data in the input file named `sample-data.json` in our working directory
+* Using the pipeline we named `convert_words`, extract and convert the words in the `words` field to `uppercase`
+* Write the converted names to a new field named `converted_words`
+* Save the results, along with the original `raw_data`, to an output file named `processed-sample-data.json` in our working directory.
 
 :::note
 The output file should be created when the test is run.
@@ -152,9 +164,11 @@ The output file should be created when the test is run.
 
 Now open the file named `processed-sample-data.json` to see the results. It should appear like this:
 
-```json
+```json title="processed-sample-data.json"
 {
-  "convertedWords": ["HELLO", "WORLD"]
+    "converted_words": "HELLO WORLD",
+    "raw_data": "{\"words\": \"hello world\"}",
+    "words": "hello world"
 }
 ```
 
