@@ -5,7 +5,7 @@ import Link from '@docusaurus/Link';
 This section will help you get started with targets to write processed data to specific formats, walking you through common use cases.
 
 :::tip
-For a detailed discussion, see [this section](../configuration/targets/overview.mdx#configuration).
+For a detailed discussion of targets, see [this section](../configuration/targets/overview.mdx#configuration).
 :::
 
 ## Scenarios
@@ -55,21 +55,21 @@ To see the results on the console, once again go to the terminal you are using f
   </TabItem>
 </Tabs>
 
-Then, once again, go to the other terminal you are using for **Generator** (or other traditional message sending OS tool), and start sending our familiar message:
+Then, once again, go to the other terminal you are using for the `generator` mode (or other traditional message sending tool), and start sending our familiar message:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
-    - Using **Generator**
+    - Using `generator` mode
 
     ```powershell
-    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    vmetric-director -generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
-    - Using **Generator**
+    - Using `generator` mode
   
     ```bash
-    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    vmetric-director -generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
@@ -118,22 +118,13 @@ The path we have specified for `location` is where the JSON file will be created
 Under `properties`, we did not specify any `format` since JSON is the default for the file target type.
 :::
 
-To be able to use this target, we have to configure another route. To keep things simple, first open the `syslog-to-console.yml` and comment out the route definition in it, and save:
-
-```yaml title="syslog-to-console.yml"
-# routes:
-#   - name: syslog_to_console
-#     devices:
-#       - name: from_syslog
-#     targets:
-#       - name: to_console
-```
+To be able to use this target, we have to configure another route. To keep things simple, first delete any previously created route definition.
 
 :::note
 **VirtualMetric Director** runs all the defined routes it has spotted under the `config` directory simultaneously.
 :::
 
-Now create a file named `syslog-to-json.yml` and place this new route definition in it:
+Then, create a file named `syslog-to-json.yml` and place this new route definition in it:
 
 ```yaml title="syslog-to-json.yml"
 routes:
@@ -144,21 +135,21 @@ routes:
       - name: to_json
 ```
 
-Once again, run **Generator** or equivalent to send messages to syslog:
+Once again, run `vmetric-director` in `generator` mode (or other equivalent tool) to send messages to _Syslog_:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
-    - Using **Generator**
+    - Using `generator` mode
 
     ```powershell
-    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    vmetric-director -generator -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
-    - Using **Generator**
+    - Using `generator` mode
   
     ```bash
-    vmetric-generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    vmetric-director -generator -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
@@ -169,7 +160,7 @@ Once again, run **Generator** or equivalent to send messages to syslog:
   </TabItem>
 </Tabs>
 
-To have this _syslog_ message directed to the storage file we have configured, invoke **Director** from your terminal:
+To have this _Syslog_ message directed to the storage file we have configured, invoke **Director** from your terminal:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
