@@ -33,23 +33,23 @@ const sidebars: SidebarsConfig = {
       items: [
         "getting-started/introduction",
         "getting-started/single-node-deployment",
-        "getting-started/example-ingesting-data",
-        "getting-started/example-forwarding-data",
-        "getting-started/example-reading-json-with-a-pipeline",
-        "getting-started/example-a-syslog-to-parquet-data-stream",
-        "getting-started/example-using-agents",
         {
           type: "category",
-          label: "Deployment",
+          label: "Examples",
           items: [
-            "getting-started/deployment/overview",
-            "getting-started/deployment/on-local",
-            "getting-started/deployment/as-cluster",
-            "getting-started/deployment/on-azure-vm",
-            "getting-started/deployment/on-azure-app-service",
-            "getting-started/deployment/on-azure-functions",
-            "getting-started/deployment/via-azure-arc-extension",
-          ],
+            "getting-started/examples/overview",
+            "getting-started/examples/example-ingesting-data",
+            "getting-started/examples/example-forwarding-data",
+            "getting-started/examples/example-reading-json-with-a-pipeline",
+            "getting-started/examples/example-a-syslog-to-parquet-data-stream",
+          ]
+        },
+        {
+          type: "category",
+          label: "Agent",
+          items: [
+            "getting-started/agent/example-using-agents",
+          ]
         },
       ],
     },
@@ -97,6 +97,19 @@ const sidebars: SidebarsConfig = {
             "microsoft-sentinel/content-hub/fortigate",
           ],
         },
+      ],
+    },
+    {
+      type: "category",
+      label: "Deployment",
+      items: [
+        "deployment/overview",
+        "deployment/on-local",
+        "deployment/as-cluster",
+        "deployment/on-azure-vm",
+        "deployment/on-azure-app-service",
+        "deployment/on-azure-functions",
+        "deployment/via-azure-arc-extension",
       ],
     },
     {
