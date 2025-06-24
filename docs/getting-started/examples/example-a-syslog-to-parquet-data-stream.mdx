@@ -1,4 +1,6 @@
-import Link from '@docusaurus/Link';
+---
+pagination_next: null
+---
 
 # Example: A Syslog-To-Parquet Data Stream
 
@@ -18,7 +20,7 @@ We will implement the following scenario:
 
 - **Write the data to a Parquet file** - Define the parameters for sending the messages to a _Parquet_ file as the destination.
 
-We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the Parquet file will be stored, although since we will be using our [working directory](./introduction.mdx#working-directory) that is taken care of.
+We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the Parquet file will be stored, although since we will be using our [working directory](./overview.mdx#working-directory) that is taken care of.
 
 We assume by now you understand the underlying logic of a pipeline since you have reviewed the [previous example](./example-reading-json-with-a-pipeline.mdx).
 
@@ -105,7 +107,7 @@ Put this configuration in our file.
 
 This configuration will do the following:
 
-- Parse the _Syslog_ header information using the [`grok`](../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`&mdash;and extract authentication event details
+- Parse the _Syslog_ header information using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`&mdash;and extract authentication event details
 
 - Set the fields `event`, `user`, and `message` with the data extracted from _Syslog_
 
@@ -204,5 +206,3 @@ Now **Director** should be receiving _Syslog_ messages, processing them through 
 Press <kb-short>Ctrl+C</kb-short> to exit the processes on both terminals.
 
 Check the logs for any errors, and verify that the _Parquet_ file was created with the processed _Syslog_ data.
-
-<Link to="./introduction#examples" className="button button--primary" style={{ width: '400px', display: 'inline-block', textAlign: 'center'}}>Back To Introduction</Link>

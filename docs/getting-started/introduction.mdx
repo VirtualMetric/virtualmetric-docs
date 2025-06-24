@@ -7,19 +7,23 @@ sidebar_label: Introduction
 
 Welcome to **VirtualMetric DataStream**. This section will help you deploy your product and get started using it.
 
-Here are the steps to get started.
+## The Applications
+
+**DataStream** is a telemetry pipeline solution that simplifies data collection, data processing, and data routing for **Microsoft Sentinel** and other **Azure** data services. It uses pipelines to process, enrich, and direct data flows to their optimal destinations. 
+
+The package contains the following applications:
+
+- **Director** - see [this section](../about/applications.mdx#virtualmetric-director) for a more detailed description.
+
+- **Agent** - see [this section](../about/applications.mdx#virtualmetric-agent) for a more detailed description.
 
 ## Deployment
 
-Before you proceed, please review our [**Deployment Models**](./deployment/overview.mdx#models) to see your options.
+Before you proceed, please review our [**Deployment Models**](../deployment/overview.mdx#models) to see your options.
 
 Here, we will use **Single Node Deployment**&mdash;i.e. we will deploy on a single machine as this is the simplest and most straightforward.
 
-- Download and install **Director** using [this section](./single-node-deployment.mdx#director).
-
-- Download and install **Agent** using [this section](./single-node-deployment.mdx#agent).
-
-We recommend that you keep all the executables in the same directory, preferably named `VirtualMetric`. In our examples throughout the documentation, we will assume that `<vm_root>` is:
+We recommend that you keep all **VirtualMetric** executables in the same directory, preferably named `VirtualMetric`:
 
 <Tabs>
 	<TabItem value="windows" label="Windows" default>
@@ -29,7 +33,7 @@ We recommend that you keep all the executables in the same directory, preferably
 	</TabItem>
 	<TabItem value="linux" label="Linux">
 	```PowerShell
-	./usr/bin/VirtualMetric
+	./opt/VirtualMetric
 	```
 	</TabItem>
 	<TabItem value="macos" label="macOS">
@@ -39,118 +43,38 @@ We recommend that you keep all the executables in the same directory, preferably
 	</TabItem>
 </Tabs>
 
-:::note
-For convenience, you may want to add **VirtualMetric**'s installation folder to your `$PATH` environment variable in order to be able to access the executable from any directory.
+Throughout our documentation, we will refer to this folder as `<vm_root>`. Once you have created your installation folder, you can deploy the applications:
 
-However, throughout this documentation, we will use the platform-specific syntax for running apps only in the current directory: we will prepend "`.\`" for Windows, and "`./`" for Unix-based systems to the binary's name.
-:::
+- [Download and install **Director**](./single-node-deployment.mdx#director).
 
-## YAML Files
+- [Download and install **Agent**](./single-node-deployment.mdx#agent).
 
-To configure telemetry streams, **DataStream** uses YAML files.
+If you chose to deploy manually, make sure to create the following folder under `<vm_root>`:
 
-:::warning
-On **Windows**, make sure file extensions are visible. To check this, go to **File Explorer** and select **View > Show > File name extensions**.
+<Tabs>
+	<TabItem value="windows" label="Windows" default>
+	```PowerShell
+	mkdir <vm_root>\config
+	```
+	</TabItem>
+	<TabItem value="linux" label="Linux">
+	```PowerShell
+	mkdir <vm_root>/config
+	```
+	</TabItem>
+	<TabItem value="macos" label="macOS">
+	```PowerShell
+	mkdir <vm_root>/config
+	```
+	</TabItem>
+</Tabs>
 
-This is to avoid surprises like the system adding another extension to your YAML file's extension, e.g. `file.yml.txt`, in which case **VirtualMetric** applications will not be able to recognize them.
-:::
-
-**Director** parses all the YAML files found under the `<vm_root>/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: to organize your components as you see fit.
-
-:::note
-For more details on management of configuration files, review [this section](../configuration/overview.mdx#managing-yaml-files).
-:::
-
-However, if your files are _not_ placed under `<vm_root>/config` or in one of the subfolders created under it by default during the installation (i.e. the `devices`, `pipelines`, `routes`, or `targets` directories), then those are considered _standalone_ files.
+With online (script-based) installation, the `config` directory as well as other default folders are created automatically.
 
 :::tip
-Do not forget to specify the paths and names of _standalone_ files on the command line.
+If you want to be able to access the executables from any directory, make sure to add `<vm_root>` to your `$PATH` environment variable.
 :::
 
-## Working Directory 
+---
 
-For our purposes, and to keep things simple, we will be using the following folder as our working directory:
-
-<Tabs>
-<TabItem value="powershell" label="PowerShell" default>
-    ```powershell
-    mkdir C:\Path\To\<vm_root>\config\Examples
-    ```
-</TabItem>    
-<TabItem value="bash" label="Bash">
-    On **Linux**:
-
-    ```bash
-    mkdir /opt/<vm_root>/config/Examples
-    ```
-    On **macOS**:
-
-    ```bash
-    mkdir /Applications/Path/To/<vm_root>/config/Examples
-    ```
-</TabItem>
-</Tabs>
-
-We will be saving all our configuration files in this folder. We will also specify our output files to be created here.
-
-As we will place all our files in this directory, they will be considered _standalone_ files.
-
-## Logging Setup
-
-Finally, a simple logging setup is in order for you to be able to check the status of your runs.
-
-* Go to `<vm_root>`, i.e. the folder where you have placed **VirtualMetric**
-* Find the `config` directory, which is directly under it
-* Open the file named `vmetric.yml`, -or- create it if it doesn't exist
-* Make sure the settings in it match the following, -or- add them to the newly created one:
-
-    ```yaml
-    debug:
-    log:
-        status: true
-    level: 4
-    console:
-        status: true
-    ```
-
-**Director** will generate the log of your runs and place it in the following file:
-
-<Tabs>
-<TabItem value="powershell" label="PowerShell" default>
-    ```powershell
-    C:\Path\To\<vm_root>\storage\logs\debug.log
-    ```
-</TabItem>
-<TabItem value="bash" label="Bash">
-    For **Linux**:
-
-    ```bash
-    /usr/bin/path/to/<vm_root>/storage/logs/debug.log
-    ```
-    For **macOS**:
-
-    ```bash
-    /Applications/Path/To/<vm_root>/storage/logs/debug.log
-    ```
-</TabItem>
-</Tabs>
-
-Deleting this file is harmless. So long as the above debugging setting remains, it will be re-created with each run.
-
-## Examples
-
-Once you are done with the above, you can proceed to the following examples to explore the basics of configuring telemetry flows and see **Director** in action.
-
-- [**Example: Ingesting Data**](./example-ingesting-data.mdx) - Configure your first device to receive streaming data
-
-- [**Example: Forwarding Data**](./example-forwarding-data.mdx) - Configure your first target to send streaming data
-
-- [**Example: Reading JSON With a Pipeline**](./example-reading-json-with-a-pipeline.mdx) - Configure your first pipeline to receive and process data
-
-- [**Example: A Syslog-To-Parquet Data Stream**](./example-a-syslog-to-parquet-data-stream.mdx) - A full, end-to-end data stream in action
-
-We have one more example, one using an **Agent**:
-
-- [**Example: Using Agents**](./example-using-agents.mdx) - Configure your first **Agent** for unattended execution
-
-{/* FIXME: Change Title and content */}
+After completing the above, you can proceed to the [**Examples**](./examples/overview.mdx).
