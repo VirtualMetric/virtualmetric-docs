@@ -6,7 +6,7 @@ This section will help you configure and run a full, end-to-end data flow using 
 
 ## Scenario
 
-We will create a pipeline that ingests logs from a _Syslog_ source, processes and categorizes them, and forwards them to a **Parquet file** for storage and analysis.
+We will create a pipeline that ingests logs from a _Syslog_ source, processes and categorizes them, and forwards them to a _Parquet_ file for storage and analysis.
 
 We will implement the following scenario:
 
@@ -26,7 +26,7 @@ We assume by now you understand the underlying logic of a pipeline since you hav
 
 For convenience, we will place all our configurations in a single file named `syslog-to-parquet.yml` which we will again place in our working directory.
 
-:::note
+:::warning[attention]
 To avoid any confusion, delete all the other YAML files we have previously created so that nothing other than our current configuration is run.
 :::
 
@@ -48,9 +48,7 @@ devices:
       batch_size: 1000
 ```
 
-For details of the available fields, see the [Syslog](../appendix.mdx#syslog) format.
-
-Put this device configuration in your file.
+Put this device configuration in our file.
 
 This configuration will create a UDP _Syslog_ server listening on port `514`. We specified the line feed character as the delimiter for message framing. We also set appropriate buffer and batch sizes to consume enough data in one pass.
 
@@ -70,49 +68,54 @@ targets:
       compression: snappy
 ```
 
-For details of the file layout, see the [Parquet](../appendix.mdx#parquet) format.
+With this configuration, we are setting up a _Parquet_ file target that will store the processed _Syslog_ data. We have specified batching and flush intervals for optimal performance, and enabled Snappy compression for efficient storage.
 
-With this configuration, we are setting up a Parquet file target that will store processed syslog data. We have specified batching and flush intervals for optimal performance, and enabled Snappy compression for efficient storage.
+### Step 3: Configure The Pipeline
 
-### Step 3: Create A Processing Pipeline
-
-We are now ready to configure our pipeline. Put the following in our configuration file:
+We are now ready to configure our pipeline:
 
 ```yml title="syslog-to-parquet.yml"
 pipelines:
   - name: extract_user_event
-<TabItem value="bash" label="Bash">            field: syslog.message
-            patterns:
-              - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
-            ignore_failure: true
-        - set:
-            field: user
-            value: user.name
-        - set:
-            field: event
-            value: event.action
-        - set:
-            field: message
-            value: syslog.message
-        - remove:
-            field:          
-              - syslog.message
-            ignore_missing: true
+    processors:
+      - grok:
+          field: message
+          patterns:
+            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
+      - grok:
+          field: syslog.message
+          patterns:
+            - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
+          ignore_failure: true
+      - set:
+          field: user
+          value: user.name
+      - set:
+          field: event
+          value: event.action
+      - set:
+          field: message
+          value: syslog.message
+      - remove:
+          field: syslog.message
+          ignore_missing: true
 ```
+
+Put this configuration in our file.
 
 This configuration will do the following:
 
-* Parse the _Syslog_ header information using the [`grok`](../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`&mdash;and will extract authentication event details
+- Parse the _Syslog_ header information using the [`grok`](../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`&mdash;and extract authentication event details
 
-* Set the fields `event`, `user`, and `message` with the data extracted from _Syslog_
+- Set the fields `event`, `user`, and `message` with the data extracted from _Syslog_
 
-* Clean up the temporary field `syslog.message`.
+- Clean up the temporary field `syslog.message`.
 
 :::note
-To avoid raising exceptions, we chose to ignore failures and missing fields.
+To avoid raising an exception, we chose to ignore failures and missing fields.
 :::
 
-### Step 4: Configure the Route
+### Step 4: Configure The Route
 
 Finally, we have to create a route to connect our device to the pipeline and then to our target. Put the following definition in our configuration file:
 
@@ -129,6 +132,10 @@ routes:
 
 This configuration will connect to the _Syslog_ server, apply the `extract_user_event` pipeline to the ingested data, and then write it to the _Parquet_ file specified.
 
+### Step 5: Run The Data Stream
+
+TODO: Complete
+
 ## Monitoring
 
 Let's put it all together: we have defined a device, a target, and a pipeline, and specified a route that will link the device to the pipeline and the target. At this point we have everything ready.
@@ -142,12 +149,12 @@ As we did aboveü, we will first validate the pipeline:
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
-    vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
+    vmetric-director -pipeline -name=syslog_to_parquet -validate
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-director -mode=pipeline -name=syslog_to_parquet -validate
+    vmetric-director -pipeline -name=syslog_to_parquet -validate
     ```
   </TabItem>
 </Tabs>
@@ -167,21 +174,21 @@ Once our pipeline is validated, we can start running our configuration:
   </TabItem>
 </Tabs>
 
-We will once again use the `generator` mode or a traditional platform tool to send our "`Hello world`" messages to _Syslog_:
+We will once again use the `generator` mode (or a traditional platform tool) to send our "`Hello world`" messages to _Syslog_:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     - Using `generator` mode
 
     ```powershell
-    vmetric-director -mode generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using `generator` mode
   
     ```bash
-    vmetric-director -mode generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
@@ -192,9 +199,9 @@ We will once again use the `generator` mode or a traditional platform tool to se
   </TabItem>
 </Tabs>
 
-Now **Director** should be receiving _Syslog_ messages, processing them through our pipeline, and sending them to our Parquet file.
+Now **Director** should be receiving _Syslog_ messages, processing them through our pipeline, and sending them to our _Parquet_ file.
 
-Press <kb-short>Ctrl+C</kb-short> to exit the process.
+Press <kb-short>Ctrl+C</kb-short> to exit the processes on both terminals.
 
 Check the logs for any errors, and verify that the _Parquet_ file was created with the processed _Syslog_ data.
 

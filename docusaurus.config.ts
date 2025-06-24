@@ -2,7 +2,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
-import customTheme from "./src/utils/coloring";
+import CustomTheme from "./src/utils/coloring";
 import package_json from "./package.json";
 
 const config: Config = {
@@ -143,7 +143,7 @@ const config: Config = {
       copyright: `Copyright ©${new Date().getFullYear()} VirtualMetric B.V.`,
     },
     prism: {
-      theme: customTheme
+      theme: CustomTheme
     },
   } satisfies Preset.ThemeConfig,
 };
