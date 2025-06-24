@@ -7,11 +7,11 @@ sidebar_label: Introduction
 
 Welcome to **VirtualMetric DataStream**. This section will help you deploy your product and get started using it.
 
-## The Applications
+## Suite
 
 **DataStream** is a telemetry pipeline solution that simplifies data collection, data processing, and data routing for **Microsoft Sentinel** and other **Azure** data services. It uses pipelines to process, enrich, and direct data flows to their optimal destinations. 
 
-The package contains the following applications:
+The **product suite** contains the following applications:
 
 - **Director** - see [this section](../about/applications.mdx#virtualmetric-director) for a more detailed description.
 
@@ -33,7 +33,7 @@ We recommend that you keep all **VirtualMetric** executables in the same directo
 	</TabItem>
 	<TabItem value="linux" label="Linux">
 	```PowerShell
-	./opt/VirtualMetric
+	/opt/VirtualMetric
 	```
 	</TabItem>
 	<TabItem value="macos" label="macOS">
@@ -43,38 +43,42 @@ We recommend that you keep all **VirtualMetric** executables in the same directo
 	</TabItem>
 </Tabs>
 
-Throughout our documentation, we will refer to this folder as `<vm_root>`. Once you have created your installation folder, you can deploy the applications:
-
-- [Download and install **Director**](./single-node-deployment.mdx#director).
-
-- [Download and install **Agent**](./single-node-deployment.mdx#agent).
-
-If you chose to deploy manually, make sure to create the following folder under `<vm_root>`:
-
-<Tabs>
-	<TabItem value="windows" label="Windows" default>
-	```PowerShell
-	mkdir <vm_root>\config
-	```
-	</TabItem>
-	<TabItem value="linux" label="Linux">
-	```PowerShell
-	mkdir <vm_root>/config
-	```
-	</TabItem>
-	<TabItem value="macos" label="macOS">
-	```PowerShell
-	mkdir <vm_root>/config
-	```
-	</TabItem>
-</Tabs>
-
-With online (script-based) installation, the `config` directory as well as other default folders are created automatically.
+Throughout the documentation, we will refer to this folder as `<vm_root>`. Once you have created your installation folder, you can deploy the applications:
 
 :::tip
-If you want to be able to access the executables from any directory, make sure to add `<vm_root>` to your `$PATH` environment variable.
+If you want to be able to access the executables from any directory, make sure to add `<vm_root>` to your `$PATH` environment variable later.
 :::
 
+## Downloads
+
+- [Download and install **Director**](./single-node-deployment-director.mdx).
+
+	If you chose to deploy manually, make sure to create the following folders under `<vm_root>`:
+
+	<Tabs>
+		<TabItem value="windows" label="Windows" default>
+		```PowerShell
+		New-Item -Path "<vm_root>\config\devices","<vm_root>\config\targets","<vm_root>\config\routes" -ItemType Directory -Force
+		```
+		</TabItem>
+		<TabItem value="linux" label="Linux">
+		```PowerShell
+		mkdir -p <vm_root>/config/{devices,targets,routes}
+		```
+		</TabItem>
+		<TabItem value="macos" label="macOS">
+		```PowerShell
+		mkdir -p <vm_root>/config/{devices,targets,routes}
+		```
+		</TabItem>
+	</Tabs>
+
+	With the script-based online installation, this directory tree&mdash;as well as other default folders&mdash;are created automatically.
+
+- [Download and install **Agent**](./single-node-deployment-agent.mdx).
+
 ---
+
+## Next
 
 After completing the above, you can proceed to the [**Examples**](./examples/overview.mdx).

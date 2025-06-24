@@ -32,7 +32,8 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         "getting-started/introduction",
-        "getting-started/single-node-deployment",
+        "getting-started/single-node-deployment-director",
+        "getting-started/single-node-deployment-agent",
         {
           type: "category",
           label: "Examples",
