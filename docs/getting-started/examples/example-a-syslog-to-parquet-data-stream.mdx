@@ -6,8 +6,25 @@ pagination_next: null
 
 This section will help you configure and run a full, end-to-end data flow using devices, targets, and a pipeline, walking you through a common use case.
 
-:::warning[attention]
+:::info
 To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
+
+To execute the code examples, navigate to `<vm_root>`:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    Set-Location <vm_root>
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    cd <vm_root>
+    ```
+  </TabItem>
+</Tabs>
+
+Filenames do not include the path to avoid variation in syntax for different platforms. All configuration files will be placed in our [working directory](./overview.mdx#working-directory).
 :::
 
 ## Scenario
@@ -24,7 +41,7 @@ We will implement the following scenario:
 
 - **Write the data to a Parquet file** - Define the parameters for sending the messages to a _Parquet_ file as the destination.
 
-We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the Parquet file will be stored, although since we will be using our [working directory](./overview.mdx#working-directory) that is taken care of.
+We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the Parquet file will be stored, although since we will be using our working directory that is taken care of.
 
 We assume by now you understand the underlying logic of a pipeline since you have reviewed the [previous example](./example-reading-json-with-a-pipeline.mdx).
 
@@ -151,12 +168,12 @@ As we did aboveü, we will first validate the pipeline:
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
-    vmetric-director -pipeline -name=syslog_to_parquet -validate
+    .\vmetric-director -pipeline -name=syslog_to_parquet -validate
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-director -pipeline -name=syslog_to_parquet -validate
+    ./vmetric-director -pipeline -name=syslog_to_parquet -validate
     ```
   </TabItem>
 </Tabs>
@@ -166,12 +183,12 @@ Once our pipeline is validated, we can start running our configuration:
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
-    vmetric-director
+    .\vmetric-director
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-director
+    ./vmetric-director
     ```
   </TabItem>
 </Tabs>
@@ -183,14 +200,14 @@ We will once again use the `generator` mode (or a traditional platform tool) to 
     - Using `generator` mode
 
     ```powershell
-    vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    .\vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using `generator` mode
   
     ```bash
-    vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    ./vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**

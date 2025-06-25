@@ -13,7 +13,7 @@ The use case provided are indeed very simple in order not to confuse the uniniti
 
 To configure telemetry streams, **DataStream** uses YAML files.
 
-:::warning
+:::info
 On **Windows**, make sure file extensions are visible. To check this, go to **File Explorer** and select **View > Show > File name extensions**.
 
 This is to avoid surprises like the system adding another extension to your YAML file's extension, e.g. `file.yml.txt`, in which case **VirtualMetric** applications will not be able to recognize them.
@@ -22,7 +22,7 @@ This is to avoid surprises like the system adding another extension to your YAML
 **Director** parses all the YAML files found under the `<vm_root>/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: to organize your components as you see fit.
 
 :::note
-For more details on management of configuration files, review [this section](../../configuration/overview.mdx#managing-yaml-files).
+For more details on the management of configuration files, review [this section](../../configuration/overview.mdx#managing-yaml-files).
 :::
 
 ## Working Directory 
@@ -32,7 +32,7 @@ For our purposes, and to keep things simple, we will be using the following fold
 <Tabs>
 <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    mkdir <vm_root>\config\Examples
+    New-Item -Path <vm_root>\config\Examples -ItemType Folder
     ```
 </TabItem>    
 <TabItem value="bash" label="Bash">
@@ -49,7 +49,13 @@ For our purposes, and to keep things simple, we will be using the following fold
 </TabItem>
 </Tabs>
 
-We will be saving all our configuration files in this folder. We will also specify our output files to be created here.
+We will be placing all our configuration and data source files needed for the examples in this folder. We will also specify our output files to be created here.
+
+:::warning[attention]
+For the sanity of the example runs, make sure there are no YAML files under the `config` directory and its subfolders except for `vmetric.yml`. If there are any placed there by default during an automatic installation, make a backup of the `config` folder and remove them.
+
+The only YAML files present throughout the examples should be those we deliberately create in each section and place under our working directory.
+:::
 
 ## Logging Setup
 

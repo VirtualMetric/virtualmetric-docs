@@ -2,12 +2,29 @@
 
 This section will help you get started with devices to ingest data with specific protocols, walking you through a common use case.
 
-:::warning[attention]
-To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
-:::
-
 :::tip
 For a detailed discussion of devices, see [this section](../../configuration/devices/overview.mdx#configuration).
+:::
+
+:::info
+To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
+
+To execute the code examples, navigate to `<vm_root>`:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    Set-Location <vm_root>
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    cd <vm_root>
+    ```
+  </TabItem>
+</Tabs>
+
+Filenames do not include the path to avoid variation in syntax for different platforms. All configuration files will be placed in our [working directory](./overview.mdx#working-directory).
 :::
 
 ## Scenarios
@@ -23,7 +40,7 @@ Use UDP as the listening protocol.
 
 ### Step 1. Create Configuration
 
-Create a file named `from-syslog-udp.yml` in our [working directory](./overview.mdx#working-directory), and then open it with a text editor to enter the following:
+Create a file named `from-syslog-udp.yml` in our working directory, and then open it with a text editor to enter the following:
 
 ```yaml title="from-syslog-udp.yml"
 devices:
@@ -74,35 +91,37 @@ Open a terminal and enter the following in the command line to start **Director*
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    vmetric-director
+    .\vmetric-director
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-director
+    ./vmetric-director
     ```
   </TabItem>
 </Tabs>
 
-After you press <kb-short>Enter</kb-short>, you will see a stream of initialization messages and our device will be spawned off, waiting to receive _syslog_ messages.
+After you press <kb-short>Enter</kb-short>, you will see a stream of initialization messages and our device will be spawned off, waiting to receive _Syslog_ messages.
 
 ### Step 3. Test Configuration
 
-We can now test the reception using either **Director**'s cross-platform `generator` mode or opther traditional tools available on your platform. Open a new terminal and enter the following in the command line:
+We can now test the reception using either **Director**'s cross-platform `generator` mode or other traditional tools available on your platform.
+
+Open a new terminal and enter the following in the command line:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     - Using `generator` mode
 
     ```powershell
-    vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    .\vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using `generator` mode
   
     ```bash
-    vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    ./vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
@@ -145,7 +164,7 @@ If you now switch back to **Director**'s terminal, you will see each sent messag
   </TabItem>
 </Tabs>
 
-If you want to exit both of the processes, press <kb-short>Ctrl+C</kb-short> on either terminal.
+To exit both of the processes, press <kb-short>Ctrl+C</kb-short> on either terminal.
 
 ## Secure TCP Setup
 
@@ -160,14 +179,14 @@ First, we have to prepare the TLS certificates. This can be done using either **
     - Using **Director**
 
     ```powershell
-    vmetric-director -pfx2pem=./cert-file.pfx
+    .\vmetric-director -pfx2pem=./cert-file.pfx
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using **Director**
     
     ```bash
-    vmetric-director -pfx2pem=./cert-file.pfx
+    ./vmetric-director -pfx2pem=./cert-file.pfx
     ```
     
     - Using **OpenSSL**
@@ -188,7 +207,7 @@ Now that we have created the files needed for a secure connection, we must copy 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    Copy-Item cert.pem key.pem <vm_root>/
+    Copy-Item -Path cert.pem key.pem -Destination <vm_root>
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
@@ -198,7 +217,7 @@ Now that we have created the files needed for a secure connection, we must copy 
   </TabItem>
 </Tabs>
 
-:::warning[attention]
+:::info
 - The private key file (`key.pem`) should be readable only by the **Director** process
 - The certificate file (`cert.pem`) can be world-readable
 :::
@@ -222,26 +241,36 @@ devices:
         key_name: key.pem
 ```
 
-Note that we specified the certificate files we have created in the previous step. That is because we have set the `status` of the `tls` field to `true`.
+Note that we specified the certificate files we have created in the previous step. That is because we have set the `status` of the `tls` field to `true` so unless we point to these files the process will not run.
 
 We can run our device in the background:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    vmetric-director -background
+    .\vmetric-director -background
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-director -background
+    ./vmetric-director -background
     ```
   </TabItem>
 </Tabs>
 
 ### Step 4. Test Configuration
 
-Time to test the secure connection. In the terminal where you have previously sent messages in `generator` mode, and enter the following command:
+Time to test the secure connection. This time, however, we will send our messages using a standard command and piping it through `openssl`. 
+
+:::info
+On **Windows**, `openssl` is _not_ available by default. You have to install it yourself:
+
+```powershell
+winget install openssl
+```
+:::
+
+In the terminal where you have previously sent messages (in `generator` mode), enter the following command:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -256,7 +285,9 @@ Time to test the secure connection. In the terminal where you have previously se
   </TabItem>
 </Tabs>
 
-Our test message is sent to the port **Director** is listening via TCP.
+Our test message is sent to the port **Director** is listening to via TCP.
+
+## Monitoring
 
 Check **Director**'s logs&mdash;the files in the directory indicated [here](./overview.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
 
@@ -264,4 +295,4 @@ You can now exit the processes on both terminals by pressing <kb-short>Ctrl+C</k
 
 ---
 
-In the next section, we will create a different type of target to forward the data ingested through the UDP device we have defined here.
+In the next section, we will create a different type of _target_ to forward the data ingested through the UDP device we have defined here.

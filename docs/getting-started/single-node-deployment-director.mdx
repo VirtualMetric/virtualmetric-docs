@@ -28,7 +28,9 @@ To download, install, and test run the **VirtualMetric Director** binary, follow
 You can install **Director** online or offline, depending on your system's internet access.
 
 :::warning[attention]
-**Director**  does _not_ require administrative privileges to run as a background process. However, if you want to run it as a _service_, administrative privileges are required for installing it. Once installed, you can run it as a service with regular user privileges.
+**Director**  does _not_ require administrative privileges to run as a background process. However, if you want to run it as a _service_, administrative privileges are required for installing, starting, or stopping it.
+
+Once installed, you can run **Director** as a service with regular user privileges.
 :::
 
 This guide assumes you are installing **Director** as a _service_. If you do not have the necessary privileges to run it as a service, you can configure **Director** to run as a **Scheduled Task** (on Windows) or a **Cron job** (on Linux/macOS) to ensure it starts automatically after a reboot.
@@ -100,13 +102,13 @@ For systems without internet access, you can download and install **Director** m
   <tr><td><a href="https://dl.vget.me/director/darwin/arm64/vmetric-director">**Director** for ARM64</a></td></tr>
 </table>
 
-Once you have downloaded the binary, open a terminal with admin privileges. Create the directory where you want to run **Director** (we will refer to that directory as `<vm_root>`), and copy the downloaded binary to it. Then, navigate to that directory.
+Once you have downloaded the binary, open a terminal with admin privileges. Create the directory where you want to run **Director** if you haven't [already done so](./introduction.mdx#deployment), and copy the downloaded binary to it. Then, navigate to that directory.
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```PowerShell
-    mkdir "C:\Program Files\VirtualMetric"
-    cp C:\Users\<user>\Downloads\vmetric-director.exe "C:\Program Files\VirtualMetric"
+    Copy-Item -Path C:\Users\<username>\Downloads\vmetric-director.exe -Destination "C:\Program Files\VirtualMetric"
+    Set-Location "C:\Program Files\VirtualMetric"
     ```
   </TabItem>
 
@@ -116,6 +118,7 @@ Once you have downloaded the binary, open a terminal with admin privileges. Crea
     ```bash
     mkdir /opt/virtualmetric
     cp ./vmetric-director /opt/virtualmetric
+    cd /opt/virtualmetric
     ```
 
     On **macOS**:
@@ -123,6 +126,7 @@ Once you have downloaded the binary, open a terminal with admin privileges. Crea
     ```bash
     mkdir /Applications/VirtualMetric
     cp ./vmetric-director /Applications/VirtualMetric
+    cd /Applications/VirtualMetric
     ```
   </TabItem>
 </Tabs>
@@ -176,7 +180,7 @@ After completing the above steps, if you have installed **Director** as a servic
   <TabItem value="bash" label="Bash">
     ```bash
     systemctl status vmetric-director
-    TODO: Complete: screen output
+    TODO: Complete
     ```
   </TabItem>
 </Tabs>
