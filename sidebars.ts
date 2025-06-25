@@ -37,6 +37,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Examples",
+          collapsed: false,
           items: [
             "getting-started/examples/overview",
             "getting-started/examples/example-ingesting-data",
