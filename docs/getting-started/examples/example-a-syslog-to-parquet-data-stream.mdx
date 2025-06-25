@@ -49,7 +49,7 @@ We assume by now you understand the underlying logic of a pipeline since you hav
 
 For convenience, we will place all our configurations in a single file named `syslog-to-parquet.yml` which we will again place in our working directory.
 
-### Step 1: Configure The Device
+### Step 1: Configure the device
 
 First, we have to define a device that will receive the log data. We will use the configuration we have created in our [ingesting data example](./example-ingesting-data.mdx) as our starting point, modifying it as fits our needs:
 
@@ -67,11 +67,13 @@ devices:
       batch_size: 1000
 ```
 
+This configuration will create a UDP _Syslog_ server listening on port `514`. We specified the line feed character as the delimiter for message framing.
+
+We also set appropriate buffer and batch sizes to consume enough data in one pass.
+
 Put this device configuration in our file.
 
-This configuration will create a UDP _Syslog_ server listening on port `514`. We specified the line feed character as the delimiter for message framing. We also set appropriate buffer and batch sizes to consume enough data in one pass.
-
-### Step 2: Configure The Target
+### Step 2: Configure the target
 
 Next, we will define a target for _Parquet_ file storage in our configuration:
 
@@ -87,9 +89,13 @@ targets:
       compression: snappy
 ```
 
-With this configuration, we are setting up a _Parquet_ file target that will store the processed _Syslog_ data. We have specified batching and flush intervals for optimal performance, and enabled Snappy compression for efficient storage.
+With this configuration, we are setting up a _Parquet_ file target that will store the processed _Syslog_ data.
 
-### Step 3: Configure The Pipeline
+We have also specified batching and flush intervals for optimal performance, and enabled **Snappy** compression for efficient storage.
+
+Put this configuration in our file.
+
+### Step 3: Configure the pipeline
 
 We are now ready to configure our pipeline:
 
@@ -97,10 +103,6 @@ We are now ready to configure our pipeline:
 pipelines:
   - name: extract_user_event
     processors:
-      - grok:
-          field: message
-          patterns:
-            - "%{SYSLOGBASE} %{GREEDYDATA:syslog.message}"
       - grok:
           field: syslog.message
           patterns:
@@ -120,21 +122,21 @@ pipelines:
           ignore_missing: true
 ```
 
-Put this configuration in our file.
+This configuration will:
 
-This configuration will do the following:
+- parse the _Syslog_ header information using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the field `syslog.message` and extracting `event.action`, `user.name`, and `source.ip` from it;
 
-- Parse the _Syslog_ header information using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the fields `syslog.message`, `event.action`, `user.name`, and `source.ip`&mdash;and extract authentication event details
+- set the fields `event`, `user`, and `message` with the data extracted;
 
-- Set the fields `event`, `user`, and `message` with the data extracted from _Syslog_
-
-- Clean up the temporary field `syslog.message`.
+- clean up the temporary field `syslog.message`.
 
 :::note
 To avoid raising an exception, we chose to ignore failures and missing fields.
 :::
 
-### Step 4: Configure The Route
+Put this configuration in our file.
+
+### Step 4: Configure the route
 
 Finally, we have to create a route to connect our device to the pipeline and then to our target. Put the following definition in our configuration file:
 
@@ -150,10 +152,6 @@ routes:
 ```
 
 This configuration will connect to the _Syslog_ server, apply the `extract_user_event` pipeline to the ingested data, and then write it to the _Parquet_ file specified.
-
-### Step 5: Run The Data Stream
-
-TODO: Complete
 
 ## Monitoring
 
@@ -218,8 +216,12 @@ We will once again use the `generator` mode (or a traditional platform tool) to 
   </TabItem>
 </Tabs>
 
-Now **Director** should be receiving _Syslog_ messages, processing them through our pipeline, and sending them to our _Parquet_ file.
+Now, **Director** should be receiving _Syslog_ messages, processing them through our pipeline, and sending them to our _Parquet_ file.
 
 Press <kb-short>Ctrl+C</kb-short> to exit the processes on both terminals.
+
+
+TODO: Check the output file. Screen shot.
+
 
 Check the logs for any errors, and verify that the _Parquet_ file was created with the processed _Syslog_ data.

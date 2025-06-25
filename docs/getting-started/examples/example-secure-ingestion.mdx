@@ -1,0 +1,312 @@
+# Example: Secure Ingestion
+
+This section will help you get started with devices to ingest data with specific protocols, walking you through a common use case.
+
+:::tip
+For a detailed discussion of devices, see [this section](../../configuration/devices/overview.mdx#configuration).
+:::
+
+:::info
+To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
+
+To execute the code examples, navigate to `<vm_root>`:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    Set-Location <vm_root>
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    cd <vm_root>
+    ```
+  </TabItem>
+</Tabs>
+
+Filenames do not include the path to avoid variation in syntax for different platforms. All configuration files will be placed in our [working directory](./overview.mdx#working-directory).
+:::
+
+## Scenario
+
+Use a **TCP** as the listening protocol.
+
+## Setup
+
+We will create a TLS-enabled device to ingest data over TCP securely. We will be sending an TLS-encrypted message over a TCP connection, and to do that we will using **OpenSSL**.
+
+:::info
+On **Windows**, **OpenSSL** is _not_ available by default. If you have not previously installed it yourself, here is how to do it:
+
+1. Open a terminal with _Administrative_ privileges.
+
+2. On the command line type:
+
+    ```powershell
+    C:\Users\username>winget search openssl
+    ```
+
+    This will have an output like:
+
+    ```powershell
+    Name                 Id                           Version Match        Source
+    -----------------------------------------------------------------------------
+    FireDaemon Lozenge   FireDaemon.FireDaemonLozenge 3.0.4   Tag: openssl winget
+    FireDaemon OpenSSL 3 FireDaemon.OpenSSL           3.5.0   Tag: openssl winget
+    Stunnel              MichalTrojnara.Stunnel       5.75    Tag: openssl winget
+    OpenSSL 3.5.0        ShiningLight.OpenSSL.Dev     3.5.0                winget
+    OpenSSL Light 3.5.0  ShiningLight.OpenSSL.Light   3.5.0                winget
+    ```
+    We will pick **FireDaemon** for installation.
+
+3. Write the installation command for `winget`:
+
+    ```powershell
+    C:\Users\username>winget install --id=FireDaemon.OpenSSL -e
+    ```
+
+    This will have an output that resembles this:
+
+    ```powershell
+    Found FireDaemon OpenSSL 3 [FireDaemon.OpenSSL] Version 3.1.4
+    This application is licensed to you by its owner.
+    Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+    Downloading https://download.firedaemon.com/FireDaemon-OpenSSL/FireDaemon-OpenSSL-x64-3.1.4.exe
+      ██████████████████████████████  11.3 MB / 11.3 MB
+    Successfully verified installer hash
+    Starting package install...
+    Successfully installed  
+    ```
+
+4. Add the installation location to your `$PATH`&mdash;if you have not changed the default installation directory, this will be:
+
+    ```powershell
+    C:\Users\username>$Env:PATH += ";C:\Program Files\FireDaemon OpenSSL 3\bin"
+    ```
+
+5. Finally, test to see whether **OpenSSL** is working as expected&mdash;type the command:
+
+    ```powershell
+    C:\Users\username>openssl
+    help:
+
+    Standard commands
+    asn1parse         ca                ciphers           cmp
+    cms               crl               crl2pkcs7         dgst
+    dhparam           dsa               dsaparam          ec
+    ecparam           enc               engine            errstr
+    fipsinstall       gendsa            genpkey           genrsa
+    help              info              kdf               list  
+    ...
+    etc.
+    ```
+:::
+
+We can now proceed to our scenario.
+
+### Step 1. Prepare certificates
+
+First, we have to prepare TLS certificates for the secure connection. This can be done with **OpenSSL**. Open a terminal and stay at the `$HOME` directory. Then type this command:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    C:>Users\username>openssl genrsa -out cert.key 2048
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ~/: openssl genrsa -out cert.key 2048
+    ```
+  </TabItem>
+</Tabs>
+
+Now enter the following line&mdash;you will be prompted to enter some information like country, state/province, locality, etc. For our purposes, you can leave all of them blank by typing `.`:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    C:>Users\username>openssl req -new -x509 -key cert.key -out cert.crt -days 365
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ~/: openssl req -new -x509 -key cert.key -out cert.crt -days 365
+    ```
+  </TabItem>
+</Tabs>
+
+Now we will generate a `pfx` file from these. Enter the following command, and type again `.` for password when prompted:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    C:>Users\username>openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.crt
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ~/: openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.crt
+    ```
+  </TabItem>
+</Tabs>
+
+If you check your current directory, you will see that these files were created:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    C:>Users\username>Get-ChildItem cert.* | Format-Table Name
+    
+    Name
+    ----
+    cert.crt
+    cert.key
+    cert.pfx
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ~/: ls cert.*
+    cert.crt cert.key cert.pfx
+    ```
+  </TabItem>
+</Tabs>
+
+### Step 2. Place certificates
+
+Now we have to convert these `pfx` files to the `pem` format that **Director** uses. To do that, we first have to copy the `pfx` file to `<vm_root>` and navigate there:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    C:>Users\username>Copy-Item -Path cert.pfx -Destination "<vm_root>"
+    Set-Location <vm_root>
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ~/: cp cert.pfx <vm_root>
+    cd <vm_root>
+    ```
+  </TabItem>
+</Tabs>
+
+To convert the file, enter the following:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-director -pfx2pem "cert.pfx"
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -pfx2pem "cert.pfx"
+    ```
+  </TabItem>
+</Tabs>
+
+You will be prompted for the password&mdash;we picked `.` above; enter it&mdash;and then the `*.pem` files will generated. Check your current directory to verify that they are there:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    C:>Users\username>Get-ChildItem *.pem | Format-Table Name
+    
+    Name
+    ----
+    cert.pem
+    key.pem
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ~/: ls *.pem
+    cert.pem key.pem
+    ```
+  </TabItem>
+</Tabs>
+
+:::note
+- The private key file (`key.pem`) should be readable only by the **Director** process
+- The certificate file (`cert.pem`) can be world-readable
+:::
+
+### Step 3. Create secure configuration
+
+We will now prepare a secure configuration by creating another file named `from-syslog-tcp.yml` in our working directory:
+
+```yaml title="from-syslog-tcp.yml"
+devices:
+  - id: 2
+    name: secure_syslog
+    type: syslog
+    properties:
+      protocol: tcp
+      address: 0.0.0.0
+      port: 6514
+      tls:
+        status: true
+        cert_name: cert.pem
+        key_name: key.pem
+```
+
+Note that we have specified the `*.pem` files we have created in the previous step. That is because we have set the `status` of the `tls` field to `true` so unless we point to these files the process will not run.
+
+Also, port `6514` is the one commonly used for _Syslog_ over TLS ([RFC 5425](https://www.rfc-editor.org/rfc/rfc5425)).
+
+### Step 4. Run listener
+
+We can run our device in the background to listen on the TCP connection:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-director -background
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -background
+    ```
+  </TabItem>
+</Tabs>
+
+### Step 5. Test configuration
+
+Time to test the secure connection. This time we will send our message using a standard command and piping it through `openssl`. 
+
+In the terminal where you have previously sent messages (in `generator` mode), enter the following command:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    Write-Output "Hello world" | openssl s_client -connect 127.0.0.1:6514
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    echo "Hello world" | openssl s_client -connect 127.0.0.1:6514
+    ```
+  </TabItem>
+</Tabs>
+
+This command
+
+- sends a "Hello world" message to the terminal's pipeline;
+- opens a TLS-encrypted TCP connection to `127.0.0.1` on port `6514`, and sends the message piped into it over the encrypted connection.
+
+Let's check what we have received via _Syslog_:
+
+TODO: Screen output
+
+## Monitoring
+
+Check **Director**'s logs&mdash;the files in the directory indicated [here](./overview.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
+
+You can now exit the processes on both terminals by pressing <kb-short>Ctrl+C</kb-short>.
+
+---
+
+In the next section, we will create a different type of _target_ to forward the data ingested through a  UDP device.
