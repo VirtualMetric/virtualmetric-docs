@@ -82,7 +82,7 @@ targets:
   - name: to_parquet
     type: parquet
     properties:
-      location: "<vm_root>/config/Examples"
+      location: "./config/Examples"
       name: "from-syslog.parquet"
       batch_size: 1000
       flush_interval: 300
@@ -106,29 +106,30 @@ pipelines:
       - grok:
           field: syslog.message
           patterns:
-            - "%{DATA:event.action} %{WORD:user.name} from %{IP:source.ip}"
-          ignore_failure: true
+            - %{SYSLOGTIMESTAMP:timestamp} %{USERNAME:user_name} %{GREEDYDATA:message_body}
+          ignore_missing: true
       - set:
-          field: user
-          value: user.name
-      - set:
-          field: event
-          value: event.action
-      - set:
-          field: message
-          value: syslog.message
+          field: User
+          value: user_name
+      - concat:
+          sources: ["Said '", message_body, "' on ", timestamp.date, " at ", timestamp.time]
+          separator: ""
+          target: Message
       - remove:
           field: syslog.message
+          ignore_missing: true
+      - remove:
+          field: syslog.timestamp
           ignore_missing: true
 ```
 
 This configuration will:
 
-- parse the _Syslog_ header information using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the field `syslog.message` and extracting `event.action`, `user.name`, and `source.ip` from it;
+- parse the _Syslog_ header information using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the field `syslog.message` and extracting `timestamp`, `user_name`, and `message_body` from it;
 
-- set the fields `event`, `user`, and `message` with the data extracted;
+- set the fields `User`, and `Message` with the data extracted;
 
-- clean up the temporary field `syslog.message`.
+- clean up the temporary fields `syslog.message` and `syslog.timestamp`.
 
 :::note
 To avoid raising an exception, we chose to ignore failures and missing fields.
@@ -153,12 +154,12 @@ routes:
 
 This configuration will connect to the _Syslog_ server, apply the `extract_user_event` pipeline to the ingested data, and then write it to the _Parquet_ file specified.
 
-## Monitoring
+### Step 5: Run the data stream
 
 Let's put it all together: we have defined a device, a target, and a pipeline, and specified a route that will link the device to the pipeline and the target. At this point we have everything ready.
 
 :::note
-We will use the `mode` parameter to tell **Director** that we will run a "pipeline", and then use the pipeline's `name` parameter to specify it on the CLI.
+We will use the `mode` parameter to tell **Director** that we will run a _pipeline_, and then use the pipeline's `name` parameter to specify it on the CLI.
 :::
 
 As we did aboveü, we will first validate the pipeline:
@@ -166,12 +167,12 @@ As we did aboveü, we will first validate the pipeline:
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
-    .\vmetric-director -pipeline -name=syslog_to_parquet -validate
+    .\vmetric-director -pipeline -path=".\config\Examples\syslog-to-parquet.yml" -name=syslog_to_parquet -validate
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-director -pipeline -name=syslog_to_parquet -validate
+    ./vmetric-director -pipeline -path="./config/Examples/syslog-to-parquet.yml" -name=syslog_to_parquet -validate
     ```
   </TabItem>
 </Tabs>
@@ -195,23 +196,13 @@ We will once again use the `generator` mode (or a traditional platform tool) to 
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
-    - Using `generator` mode
-
     ```powershell
     .\vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
-    - Using `generator` mode
-  
     ```bash
     ./vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
-    ```
-    
-    - Using **System Logger**
-
-    ```bash
-    logger -n 127.0.0.1 -P 514 "Hello world"
     ```
   </TabItem>
 </Tabs>
@@ -221,7 +212,10 @@ Now, **Director** should be receiving _Syslog_ messages, processing them through
 Press <kb-short>Ctrl+C</kb-short> to exit the processes on both terminals.
 
 
-TODO: Check the output file. Screen shot.
+TODO: Copy 1- Screen output 2- Parquet file contents
 
+## Monitoring
 
 Check the logs for any errors, and verify that the _Parquet_ file was created with the processed _Syslog_ data.
+
+TODO: Copy the log output.
