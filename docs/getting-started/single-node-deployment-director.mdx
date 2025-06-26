@@ -107,8 +107,8 @@ Once you have downloaded the binary, open a terminal with admin privileges. Crea
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```PowerShell
-    Copy-Item -Path C:\Users\<username>\Downloads\vmetric-director.exe -Destination "C:\Program Files\VirtualMetric"
-    Set-Location "C:\Program Files\VirtualMetric"
+    C:\Users\username>Copy-Item -Path C:\Users\<username>\Downloads\vmetric-director.exe -Destination "C:\Program Files\VirtualMetric"
+    C:\Users\username>Set-Location "C:\Program Files\VirtualMetric"
     ```
   </TabItem>
 
@@ -116,8 +116,8 @@ Once you have downloaded the binary, open a terminal with admin privileges. Crea
     On **Linux**:
 
     ```bash
-    mkdir /opt/virtualmetric
-    cp ./vmetric-director /opt/virtualmetric
+    sudo mkdir /opt/virtualmetric
+    sudo cp ./vmetric-director /opt/virtualmetric
     cd /opt/virtualmetric
     ```
 
@@ -157,8 +157,8 @@ If you _do_ have the required privileges, you can start **Director** as a servic
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-director -service install
-    ./vmetric-director -service start
+    sudo ./vmetric-director -service install
+    sudo ./vmetric-director -service start
     ```
   </TabItem>
 </Tabs>
@@ -179,13 +179,18 @@ After completing the above steps, if you have installed **Director** as a servic
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ~: systemctl status vmetric-director
-       vmetric-director.service - VirtualMetric Director handles the monitoring of local and remote de>
-          Loaded: loaded (/etc/systemd/system/vmetric-director.service)
-          Active: active (running) since Tue 2025-06-24 08:52:53 UTC;
-        Main PID: 1953 (vmetric-directo)
-       ...
-       etc. 
+    systemctl status vmetric-director
+      ● vmetric-director.service - VirtualMetric Director handles the monitoring of local and remote devices.
+          Loaded: loaded (/etc/systemd/system/vmetric-director.service; enabled; preset: enabled)
+          Active: active (running) since Wed 2025-06-25 16:32:45 +03; 2s ago
+        Main PID: 545 (vmetric-directo)
+            Tasks: 17 (limit: 9158)
+          Memory: 79.1M (peak: 79.7M)
+              CPU: 295ms
+          CGroup: /system.slice/vmetric-director.service
+                  └─545 /opt/virtualmetric/vmetric-director -mode=director
+
+      Jun 25 16:32:45 VMLAPTOP systemd[1]: Started vmetric-director.service - VirtualMetric Director handles the monitoring of local and remote devic>
     ```
   </TabItem>
 </Tabs>
@@ -200,7 +205,7 @@ To stop the service, use:
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-director -service stop
+    sudo ./vmetric-director -service stop
     ```
   </TabItem>
 </Tabs>

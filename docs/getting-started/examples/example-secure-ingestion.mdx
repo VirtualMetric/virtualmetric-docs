@@ -239,18 +239,21 @@ We will now prepare a secure configuration by creating another file named `from-
 
 ```yaml title="from-syslog-tcp.yml"
 devices:
-  - id: 2
-    name: secure_syslog
+  - id: 1
+    name: from_syslog_tcp
     type: syslog
+    status: true
     properties:
       protocol: tcp
-      address: 0.0.0.0
+      address: 127.0.0.1
       port: 6514
       tls:
         status: true
         cert_name: cert.pem
         key_name: key.pem
 ```
+
+FIXME: To be corrected from here on.
 
 Note that we have specified the `*.pem` files we have created in the previous step. That is because we have set the `status` of the `tls` field to `true` so unless we point to these files the process will not run.
 
@@ -275,7 +278,40 @@ We can run our device in the background to listen on the TCP connection:
 
 ### Step 5. Test configuration
 
-Time to test the secure connection. This time we will send our message using a standard command and piping it through `openssl`. 
+Time to test the secure connection configuration. But first we have to make sure that our connection is working.
+
+In the terminal where you have previously sent messages (in `generator` mode), enter the following command:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    Test-NetConnection -ComputerName 127.0.0.1 -Port 6514
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    TODO: Complete
+    ```
+  </TabItem>
+</Tabs>
+
+The IP number `127.0.0.1` is the one that is assigned to the local machine by default. If the result you get is
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    WARNING: TCP connect to (127.0.0.1 : 6514) failed
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    TODO: Complete
+    ```
+  </TabItem>
+</Tabs>
+
+
+This time we will send our message using a standard command and piping it through `openssl`. 
 
 In the terminal where you have previously sent messages (in `generator` mode), enter the following command:
 
@@ -297,11 +333,11 @@ This command
 - sends a "Hello world" message to the terminal's pipeline;
 - opens a TLS-encrypted TCP connection to `127.0.0.1` on port `6514`, and sends the message piped into it over the encrypted connection.
 
+## Monitoring
+
 Let's check what we have received via _Syslog_:
 
 TODO: Screen output
-
-## Monitoring
 
 Check **Director**'s logs&mdash;the files in the directory indicated [here](./overview.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
 

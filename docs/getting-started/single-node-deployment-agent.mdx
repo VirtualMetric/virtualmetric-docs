@@ -107,8 +107,10 @@ Once you have downloaded the binary, open a terminal with admin privileges. Crea
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```PowerShell
-    Copy-Item -Path C:\Users\<username>\Downloads\vmetric-agent.exe -Destination "C:\Program Files\VirtualMetric"
-    Set-Location "C:\Program Files\VirtualMetric"  </TabItem>
+    Copy-Item -Path C:\Path\To\Downloads\vmetric-agent.exe -Destination "C:\Program Files\VirtualMetric"
+    Set-Location "C:\Program Files\VirtualMetric"
+    ```
+  </TabItem>
 
   <TabItem value="bash" label="Bash">
     On **Linux**:
@@ -155,8 +157,8 @@ If you _do_ have the required privileges, you can start **Agent** as a service b
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-agent -service install
-    ./vmetric-agent -service start
+    sudo ./vmetric-agent -service install
+    sudo ./vmetric-agent -service start
     ```
   </TabItem>
 </Tabs>
@@ -177,13 +179,18 @@ After completing the above steps, if you have installed **Agent** as a service, 
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ~: systemctl status vmetric-agent
-       vmetric-agent.service - VirtualMetric Agent handles the monitoring of local and remote de>
-          Loaded: loaded (/etc/systemd/system/vmetric-agent.service)
-          Active: active (running) since Tue 2025-06-24 08:52:53 UTC;
-        Main PID: 1953 (vmetric-agent)
-       ...
-       etc. 
+    systemctl status vmetric-agent
+      ● vmetric-agent.service - VirtualMetric Agent handles the monitoring of local and remote devices.
+          Loaded: loaded (/etc/systemd/system/vmetric-agent.service; enabled; preset: enabled)
+          Active: active (running) since Wed 2025-06-25 16:32:45 +03; 2s ago
+        Main PID: 545 (vmetric-agent)
+            Tasks: 17 (limit: 9158)
+          Memory: 79.1M (peak: 79.7M)
+              CPU: 295ms
+          CGroup: /system.slice/vmetric-agent.service
+                  └─545 /opt/virtualmetric/vmetric-agent -mode=agent
+
+      Jun 25 16:32:45 VMLAPTOP systemd[1]: Started vmetric-agent.service - VirtualMetric Agent handles the monitoring of local and remote devic>
     ```
   </TabItem>
 </Tabs>
@@ -198,7 +205,7 @@ To stop the service, use:
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-agent -service stop
+    sudo ./vmetric-agent -service stop
     ```
   </TabItem>
 </Tabs>
