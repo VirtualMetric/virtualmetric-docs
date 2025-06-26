@@ -2,28 +2,42 @@
 
 This section will help you get started with devices to ingest data with specific protocols, walking you through a common use case.
 
-:::warning[attention]
-To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
-:::
-
 :::tip
 For a detailed discussion of devices, see [this section](../../configuration/devices/overview.mdx#configuration).
 :::
 
-## Scenarios
+:::info
+To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
 
-We will create a device that will receive data from _Syslog_. We will do this:
+To execute the code examples, navigate to `<vm_root>`:
 
-- Using a **UDP** connection, which is not secure.
-- Using a **TCP** connection, which can be configured for secure access.
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    Set-Location <vm_root>
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    cd <vm_root>
+    ```
+  </TabItem>
+</Tabs>
 
-## Basic UDP Setup
+Filenames do not include the path to avoid variation in syntax for different platforms. All configuration files will be placed in our [working directory](./overview.mdx#working-directory).
+:::
+
+## Scenario
 
 Use UDP as the listening protocol.
 
-### Step 1. Create Configuration
+## Setup
 
-Create a file named `from-syslog-udp.yml` in our [working directory](./overview.mdx#working-directory), and then open it with a text editor to enter the following:
+We will create a device that will receive data from _Syslog_ using an insecure **UDP** connection.
+
+### Step 1. Create configuration
+
+Create a file named `from-syslog-udp.yml` in our working directory, and then open it with a text editor to enter the following:
 
 ```yaml title="from-syslog-udp.yml"
 devices:
@@ -67,42 +81,44 @@ For a detailed discussion, see [Routes: Overview](../../configuration/routes.mdx
 
 We are now ready to try our configuration.
 
-### Step 2. Run the UDP Device
+### Step 2. Run UDP device
 
 Open a terminal and enter the following in the command line to start **Director**:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    vmetric-director
+    .\vmetric-director
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-director
+    ./vmetric-director
     ```
   </TabItem>
 </Tabs>
 
-After you press <kb-short>Enter</kb-short>, you will see a stream of initialization messages and our device will be spawned off, waiting to receive _syslog_ messages.
+After you press <kb-short>Enter</kb-short>, you will see a stream of initialization messages and our device will be spawned off, waiting to receive _Syslog_ messages.
 
-### Step 3. Test Configuration
+### Step 3. Test configuration
 
-We can now test the reception using either **Director**'s cross-platform `generator` mode or opther traditional tools available on your platform. Open a new terminal and enter the following in the command line:
+We can now test the reception using either **Director**'s cross-platform `generator` mode or other traditional tools available on your platform.
+
+Open a new terminal and enter the following in the command line:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     - Using `generator` mode
 
     ```powershell
-    vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    .\vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using `generator` mode
   
     ```bash
-    vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    ./vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
@@ -117,7 +133,7 @@ If you are using the `generator` mode, after you press <kb-short>Enter</kb-short
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
-    ```PowerShell
+    ```powershell
     1 message sent successfully in 11 ms with 0 error(s) at 2025-06-02 01:54:02.0349011 +0300 +03 m=+2.821324601
     2 messages sent successfully since 2025-06-02 01:54:00 +0300 +03
     ```
@@ -134,7 +150,7 @@ If you now switch back to **Director**'s terminal, you will see each sent messag
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
-    ```PowerShell
+    ```powershell
     <1> 2025-06-02T08:33:28+03:00 VirtualMetric Test[3872]: Hello world
     ```
   </TabItem>
@@ -145,123 +161,12 @@ If you now switch back to **Director**'s terminal, you will see each sent messag
   </TabItem>
 </Tabs>
 
-If you want to exit both of the processes, press <kb-short>Ctrl+C</kb-short> on either terminal.
+To exit both of the processes, press <kb-short>Ctrl+C</kb-short> on either terminal.
 
-## Secure TCP Setup
-
-Now we will create a TLS-enabled device to ingest data over TCP.
-
-### Step 1. Prepare Certificates
-
-First, we have to prepare the TLS certificates. This can be done using either **Director** or **OpenSSL**.
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-    - Using **Director**
-
-    ```powershell
-    vmetric-director -pfx2pem=./cert-file.pfx
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    - Using **Director**
-    
-    ```bash
-    vmetric-director -pfx2pem=./cert-file.pfx
-    ```
-    
-    - Using **OpenSSL**
-    
-    ```bash
-    openssl genrsa -out server.key 2048
-    openssl req -new -x509 -key server.key -out server.crt -days 365
-    ```
-  </TabItem>
-</Tabs>
-
-The above commands will generate the required `key.pem` and `cert.pem` files.
-
-### Step 2. Place Certificates
-
-Now that we have created the files needed for a secure connection, we must copy them to our root directory:
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-    ```powershell
-    Copy-Item cert.pem key.pem <vm_root>/
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    cp cert.pem key.pem <vm_root>/
-    ```
-  </TabItem>
-</Tabs>
-
-:::warning[attention]
-- The private key file (`key.pem`) should be readable only by the **Director** process
-- The certificate file (`cert.pem`) can be world-readable
-:::
-
-### Step 3. Create Secure Configuration
-
-We will now prepare a secure configuration by creating another file named `from-syslog-tcp.yml` in our working directory:
-
-```yaml title="from-syslog-tcp.yml"
-devices:
-  - id: 2
-    name: secure_syslog
-    type: syslog
-    properties:
-      protocol: tcp
-      address: 0.0.0.0
-      port: 6514
-      tls:
-        status: true
-        cert_name: cert.pem
-        key_name: key.pem
-```
-
-Note that we specified the certificate files we have created in the previous step. That is because we have set the `status` of the `tls` field to `true`.
-
-We can run our device in the background:
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-    ```powershell
-    vmetric-director -background
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    vmetric-director -background
-    ```
-  </TabItem>
-</Tabs>
-
-### Step 4. Test Configuration
-
-Time to test the secure connection. In the terminal where you have previously sent messages in `generator` mode, and enter the following command:
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-    ```powershell
-    Write-Output "Hello secure world" | openssl s_client -connect 127.0.0.1:6514
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    echo "Hello secure world" | openssl s_client -connect 127.0.0.1:6514
-    ```
-  </TabItem>
-</Tabs>
-
-Our test message is sent to the port **Director** is listening via TCP.
+## Monitoring
 
 Check **Director**'s logs&mdash;the files in the directory indicated [here](./overview.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
 
-You can now exit the processes on both terminals by pressing <kb-short>Ctrl+C</kb-short>.
-
 ---
 
-In the next section, we will create a different type of target to forward the data ingested through the UDP device we have defined here.
+In the next section, we will create a secure _device_ to ingest the data.

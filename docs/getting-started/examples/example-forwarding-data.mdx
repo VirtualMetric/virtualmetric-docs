@@ -2,12 +2,29 @@
 
 This section will help you get started with targets to write processed data to specific formats, walking you through common use cases.
 
-:::warning[attention]
-To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
-:::
-
 :::tip
 For a detailed discussion of targets, see [this section](../../configuration/targets/overview.mdx#configuration).
+:::
+
+:::info
+To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
+
+To execute the code examples, navigate to `<vm_root>`:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    Set-Location <vm_root>
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    cd <vm_root>
+    ```
+  </TabItem>
+</Tabs>
+
+Filenames do not include the path to avoid variation in syntax for different platforms. All configuration files will be placed in our working directory.
 :::
 
 ## Scenarios
@@ -30,7 +47,7 @@ routes:
       - name: to_console
 ```
 
-Assume, however, that we want to customize the stream directed to the console. For that purpose, we will modify the target configuration in our `to-console.yml` file (placed in our [working directory](./overview.mdx#working-directory)) as:
+Assume, however, that we want to customize the stream directed to the console. For that purpose, we will modify our target configuration as:
 
 ```yaml title="to-console.yml"
 targets:
@@ -40,38 +57,40 @@ targets:
       format: "ecs"
 ```
 
-With this setting, we will normalize our data to the [ECS](../../appendix.mdx#ecs) format.
+Recreate this file and put this configuration in it.
 
-To see the results on the console, once again go to the terminal you are using for **Director** invoke it by entering:
+Note that we added a `format` property. With this setting, we will normalize our data to the [ECS](../../appendix.mdx#ecs) format which provides a standardized, consistent structure to query Web data.
+
+To see the results on the console, once again go to the terminal you are using for **Director**, and invoke it by entering:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
-    vmetric-director
+    .\vmetric-director
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    metric-director
+    ./vmetric-director
     ```
   </TabItem>
 </Tabs>
 
-Then, once again, go to the other terminal you are using for the `generator` mode (or other traditional message sending tool), and start sending our familiar message:
+Then, switch to the other terminal you are using for the `generator` mode (or other traditional message sending tool), and start sending our familiar message:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     - Using `generator` mode
 
     ```powershell
-    vmetric-director -generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    .\vmetric-director -generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using `generator` mode
   
     ```bash
-    vmetric-director -generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    ./vmetric-director -generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
@@ -109,7 +128,7 @@ targets:
     type: file
     properties:
       location: "<vm_root>/config/Examples"
-      name: "from_syslog_{{.Year}}_{{.Month}}_{{.Day}}.json"
+      name: "from_syslog-{{.Year}}_{{.Month}}_{{.Day}}.json"
 ```
 
 Create a file named `to-json.yml` in our working directory and save this code in it.
@@ -120,13 +139,7 @@ The path we have specified for `location` is where the JSON file will be created
 Under `properties`, we did not specify any `format` since JSON is the default for the file target type.
 :::
 
-To be able to use this target, we have to configure another route. To keep things simple, first delete any previously created route definition.
-
-:::note
-**VirtualMetric Director** runs all the defined routes it has spotted under the `config` directory simultaneously.
-:::
-
-Then, create a file named `syslog-to-json.yml` and place this new route definition in it:
+To be able to use this target, we have to configure another route. Create a file named `syslog-to-json.yml` and place this new route definition in it:
 
 ```yaml title="syslog-to-json.yml"
 routes:
@@ -144,14 +157,14 @@ Once again, run `vmetric-director` in `generator` mode (or other equivalent tool
     - Using `generator` mode
 
     ```powershell
-    vmetric-director -generator -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    .\vmetric-director -generator -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using `generator` mode
   
     ```bash
-    vmetric-director -generator -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    ./vmetric-director -generator -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
@@ -162,17 +175,21 @@ Once again, run `vmetric-director` in `generator` mode (or other equivalent tool
   </TabItem>
 </Tabs>
 
-To have this _Syslog_ message directed to the storage file we have configured, invoke **Director** from your terminal:
+:::warning[attention]
+Be careful not to forget to specify the `count` parameter, and keep it as small as possible as we did here by specifying `1`.
+:::
+
+To have this _Syslog_ message directed to the storage file we have configured, invoke **Director** from your other terminal:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
-    vmetric-director
+    .\vmetric-director
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-director
+    ./vmetric-director
     ```
   </TabItem>
 </Tabs>
@@ -194,7 +211,7 @@ To have this _Syslog_ message directed to the storage file we have configured, i
 
 Press <kb-short>Ctrl+C</kb-short> in both terminals to exit the processes.
 
-Now we can check our output. In our working directory, you will find a file with a name like `from_syslog_2025_06_02.json`. Open it with a text editor. You will find that the ingested data has been stored in it in a format like this:
+Now we can check our output. In our working directory, you will find a file with a name like `from_syslog-2025_06_02.json`. Open it with a text editor. You will find that the ingested data has been stored in it in a format like this:
 
 ```json
 {"epoch":1748852145,"message":"<3> 2025-06-02T11:15:45+03:00 VirtualMetric Test[5832]: Hello world"}
@@ -204,4 +221,4 @@ Since we have only sent the same message multiple times, there will be multiple 
 
 ---
 
-In the next section, we will learn how **Director** combines _devices_ and _targets_ using _routes_.
+In the next section, we will learn how **Director** handles _pipelines_.
