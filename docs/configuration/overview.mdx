@@ -3,6 +3,8 @@ pagination_prev: null
 sidebar_label: Overview
 ---
 
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Configuration: Overview
 
 In order to create its telemetry pipelines, **DataStream** uses five key components: **Devices**, **Targets**, **Pipelines**, **Processors**, and **Routes**. Configuration involves handling and managing text-based structured files (_YAML_) that specify values for various settings required for running these components.
@@ -25,43 +27,29 @@ The various stages where these components are used and how they connect to each 
 
 By using these dedicated components, you can design powerful and efficient telemetry systems very elegantly. You only need to understand how they work, how they interact, and how they can be configured and combined to achieve your objectives.
 
-## Managing YAML Files
+## Directory Tree
+
+**VirtualMetric**'s installation folder contains the following directory tree:
+
+<img src={useBaseUrl('/img/graphs/directory-tree.svg')} alt="Directory Tree" height="300"/>
+
+All configuration files needed to define and run telemetry streams can be found&mdash;and are placed in&mdash;specific folders under this tree.
+
+## YAML Files
 
 The most fundamental tools you use to design your telemetry streams are YAML files.
 
 To implement the logic of the components that will define and run the processes of the above-mentioned stages, **DataStream** uses YAML-based configuration files.
 
-These can be found in some of the folders under its root directory, here indicated with `<vm_root>`:
+These can be found in the folders under `config`. These are
 
-```powershell
-<vm_root>
-│   vmetric.yml
-├───config
-│   ├───devices
-│   │       estreamer.yml
-│   │       syslog.yml
-│   │       tcp.yml
-│   ├───routes
-│   │       default.yml
-│   └───targets
-│           console.yml
-│           file.yml
-├───package
-│   └───definitions
-│       └───pipelines
-│               checkpoint.yml
-│               cisco.yml
-│               normalize.yml
-└───user
-    └───definitions
-        └───pipelines
-                checkpoint.yml
-                normalize.yml
-```
+- `devices`
+- `routes`
+- `targets`
 
-All management tasks related to running the telemetry operation are carried out using these files.
+All management tasks related to running the telemetry operation are carried out using the files under these directories.
 
-By default, these files are placed in folders according to their component types. They contain predefined fields that the components recognize, and **DataStream** uses the setting values in these fields to spawn and run its processes.
+By default, the files are placed in these folders according to their component types. They contain predefined fields that the components recognize, and **DataStream** uses the setting values in these fields to spawn and run its processes.
 
 * Two directories are of importance: `package` and `user`.
 

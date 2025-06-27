@@ -44,7 +44,7 @@ const sidebars: SidebarsConfig = {
             "getting-started/examples/example-secure-ingestion",
             "getting-started/examples/example-forwarding-data",
             "getting-started/examples/example-reading-json-with-a-pipeline",
-            "getting-started/examples/example-a-syslog-to-parquet-data-stream",
+            "getting-started/examples/example-a-syslog-to-json-data-stream",
           ]
         },
         {
