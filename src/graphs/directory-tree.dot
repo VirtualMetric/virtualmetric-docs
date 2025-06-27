@@ -1,0 +1,42 @@
+graph dirTree {
+   tooltip="Directory Tree"
+   rankdir="TD"
+
+   subgraph folderNode {
+      node [shape="folder" style="filled" fillcolor="#bbdefb" fontname="Calibri" fontsize="10"]
+
+      root[label="&lt;vm_root&gt;"]
+
+      config[label="config"]
+      devices[label="devices"]
+      routes[label="routes"]
+      targets[label="targets"]
+
+      package[label="package"]
+
+      agent[label="agent"]
+      database[label="database"]      
+
+      packageDefinitions[label="definitions"]
+      packageDefinitionsModule[label="module"]
+      packageDefinitionsPipelines[label="pipelines"]
+
+      lookups[label="lookups"]
+      mibs[label="mibs"]
+
+      user[label="user"]
+      userDefinitions[label="definitions"]
+      userDefinitionsModule[label="module"]
+      userDefinitionsPipelines[label="pipelines"]
+   }
+
+   root -- {config package user}
+   
+   config -- {devices routes targets}
+   
+   package -- {agent database packageDefinitions lookups mibs}
+   packageDefinitions -- {packageDefinitionsModule packageDefinitionsPipelines}
+   
+   user -- {userDefinitions}
+   userDefinitions -- {userDefinitionsModule userDefinitionsPipelines}
+}

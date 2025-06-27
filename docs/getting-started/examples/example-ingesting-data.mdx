@@ -42,11 +42,11 @@ Create a file named `from-syslog-udp.yml` in our working directory, and then ope
 ```yaml title="from-syslog-udp.yml"
 devices:
   - id: 1
-    name: from_syslog
+    name: from_syslog_udp
     type: syslog
     properties:
       protocol: udp
-      address: 0.0.0.0
+      address: 127.0.0.1
       port: 514
 ```
 
@@ -68,7 +68,7 @@ Now create a file named `syslog-to-console.yml` and add the following route defi
 routes:
   - name: syslog_to_console
     devices:
-      - name: from_syslog
+      - name: from_syslog_udp
     targets:
       - name: to_console
 ```
@@ -76,7 +76,7 @@ routes:
 :::tip[info]
 To see the ingested data, the stream must be _routed_ to a specific destination, combining the relevant components and orchestrating their flow!
 
-For a detailed discussion, see [Routes: Overview](../../configuration/routes.mdx#configuration).
+For a detailed discussion of Routes, see [this section](../../configuration/routes.mdx#configuration).
 :::
 
 We are now ready to try our configuration.

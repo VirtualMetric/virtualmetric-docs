@@ -43,7 +43,7 @@ On **Windows**, **OpenSSL** is _not_ available by default. If you have not previ
 2. On the command line type:
 
     ```powershell
-    C:\Users\username>winget search openssl
+    winget search openssl
     ```
 
     This will have an output like:
@@ -62,7 +62,7 @@ On **Windows**, **OpenSSL** is _not_ available by default. If you have not previ
 3. Write the installation command for `winget`:
 
     ```powershell
-    C:\Users\username>winget install --id=FireDaemon.OpenSSL -e
+    winget install --id=FireDaemon.OpenSSL -e
     ```
 
     This will have an output that resembles this:
@@ -81,13 +81,13 @@ On **Windows**, **OpenSSL** is _not_ available by default. If you have not previ
 4. Add the installation location to your `$PATH`&mdash;if you have not changed the default installation directory, this will be:
 
     ```powershell
-    C:\Users\username>$Env:PATH += ";C:\Program Files\FireDaemon OpenSSL 3\bin"
+    $Env:PATH += ";C:\Program Files\FireDaemon OpenSSL 3\bin"
     ```
 
 5. Finally, test to see whether **OpenSSL** is working as expected&mdash;type the command:
 
     ```powershell
-    C:\Users\username>openssl
+    C:\>openssl
     help:
 
     Standard commands
@@ -111,12 +111,12 @@ First, we have to prepare TLS certificates for the secure connection. This can b
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    C:>Users\username>openssl genrsa -out cert.key 2048
+    openssl genrsa -out cert.key 2048
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ~/: openssl genrsa -out cert.key 2048
+    openssl genrsa -out cert.key 2048
     ```
   </TabItem>
 </Tabs>
@@ -126,12 +126,12 @@ Now enter the following line&mdash;you will be prompted to enter some informatio
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    C:>Users\username>openssl req -new -x509 -key cert.key -out cert.crt -days 365
+    openssl req -new -x509 -key cert.key -out cert.crt -days 365
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ~/: openssl req -new -x509 -key cert.key -out cert.crt -days 365
+    openssl req -new -x509 -key cert.key -out cert.crt -days 365
     ```
   </TabItem>
 </Tabs>
@@ -141,12 +141,12 @@ Now we will generate a `pfx` file from these. Enter the following command, and t
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    C:>Users\username>openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.crt
+    openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.crt
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ~/: openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.crt
+    openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.crt
     ```
   </TabItem>
 </Tabs>
@@ -156,7 +156,7 @@ If you check your current directory, you will see that these files were created:
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    C:>Users\username>Get-ChildItem cert.* | Format-Table Name
+    Get-ChildItem cert.* | Format-Table Name
     
     Name
     ----
@@ -167,7 +167,7 @@ If you check your current directory, you will see that these files were created:
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ~/: ls cert.*
+    ls cert.*
     cert.crt cert.key cert.pfx
     ```
   </TabItem>
@@ -175,24 +175,24 @@ If you check your current directory, you will see that these files were created:
 
 ### Step 2. Place certificates
 
-Now we have to convert these `pfx` files to the `pem` format that **Director** uses. To do that, we first have to copy the `pfx` file to `<vm_root>` and navigate there:
+Now we have to convert this  PFX file to the [PEM](../../appendix.mdx#pem) format that **Director** uses. To do that, we first have to copy the `cert.pfx` file to `<vm_root>` and navigate there:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    C:>Users\username>Copy-Item -Path cert.pfx -Destination "<vm_root>"
+    Copy-Item -Path cert.pfx -Destination "<vm_root>"
     Set-Location <vm_root>
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ~/: cp cert.pfx <vm_root>
+    cp cert.pfx <vm_root>
     cd <vm_root>
     ```
   </TabItem>
 </Tabs>
 
-To convert the file, enter the following:
+To generate the PEM files, enter the following command:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -207,12 +207,14 @@ To convert the file, enter the following:
   </TabItem>
 </Tabs>
 
-You will be prompted for the password&mdash;we picked `.` above; enter it&mdash;and then the `*.pem` files will generated. Check your current directory to verify that they are there:
+You will be prompted for the password&mdash;we picked `.` above; enter it&mdash;and then the `*.pem` files will generated.
+
+Check your current directory to verify that they are there:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    C:>Users\username>Get-ChildItem *.pem | Format-Table Name
+    Get-ChildItem *.pem | Format-Table Name
     
     Name
     ----
@@ -222,7 +224,7 @@ You will be prompted for the password&mdash;we picked `.` above; enter it&mdash;
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ~/: ls *.pem
+    ls *.pem
     cert.pem key.pem
     ```
   </TabItem>

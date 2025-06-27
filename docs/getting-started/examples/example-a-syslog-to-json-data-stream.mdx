@@ -2,7 +2,7 @@
 pagination_next: null
 ---
 
-# Example: A Syslog-To-Parquet Data Stream
+# Example: A Syslog-To-JSON Data Stream
 
 This section will help you configure and run a full, end-to-end data flow using devices, targets, and a pipeline, walking you through a common use case.
 
@@ -29,31 +29,31 @@ Filenames do not include the path to avoid variation in syntax for different pla
 
 ## Scenario
 
-We will create a pipeline that ingests logs from a _Syslog_ source, processes and categorizes them, and forwards them to a _Parquet_ file for storage and analysis.
+We will create a pipeline that ingests logs from a _Syslog_ source, processes and categorizes them, and forwards them to a _JSON_ file for storage and analysis.
 
 We will implement the following scenario:
 
 - **Ingest Syslog data** - Define the parameters of a _Syslog_ listener to receive messages.
 
-- **Extract user related information** - Define the parameters to extract specific information from _Syslog_ data and map them to fields that will be stored in a _Parquet_ file.
+- **Extract user related information** - Define the parameters to extract specific information from _Syslog_ data and map them to fields that will be stored in a _JSON_ file.
 
 - **Route the data flow** - Define the parameters that will relate the _source_ to the _pipeline_ that will process the ingested data and the _destination_ that will receive the processed result.
 
-- **Write the data to a Parquet file** - Define the parameters for sending the messages to a _Parquet_ file as the destination.
+- **Write the data to a JSON file** - Define the parameters for sending the messages to a _JSON_ file as the destination.
 
-We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the Parquet file will be stored, although since we will be using our working directory that is taken care of.
+We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the _JSON_ file will be stored, although since we will be using our working directory that is taken care of.
 
 We assume by now you understand the underlying logic of a pipeline since you have reviewed the [previous example](./example-reading-json-with-a-pipeline.mdx).
 
 ## Setup
 
-For convenience, we will place all our configurations in a single file named `syslog-to-parquet.yml` which we will again place in our working directory.
+For convenience, we will place all our configurations in a single file named `syslog-to-json.yml` which we will again place in our working directory.
 
 ### Step 1: Configure the device
 
 First, we have to define a device that will receive the log data. We will use the configuration we have created in our [ingesting data example](./example-ingesting-data.mdx) as our starting point, modifying it as fits our needs:
 
-```yml title="syslog-to-parquet.yml"
+```yml title="syslog-to-json.yml"
 devices:
   - id: 1
     name: from_syslog
@@ -61,10 +61,6 @@ devices:
     properties:
       protocol: udp
       port: 514
-      framing: delimiter
-      line_delimiter: "\n"
-      buffer_size: 16384
-      batch_size: 1000
 ```
 
 This configuration will create a UDP _Syslog_ server listening on port `514`. We specified the line feed character as the delimiter for message framing.
@@ -75,84 +71,108 @@ Put this device configuration in our file.
 
 ### Step 2: Configure the target
 
-Next, we will define a target for _Parquet_ file storage in our configuration:
+Next, we will define a target for the _JSON_ file storage:
 
-```yml title="syslog-to-parquet.yml"
+```yml title="syslog-to-json.yml"
 targets:
-  - name: to_parquet
-    type: parquet
+  - name: to_json
+    type: file
+    status: true
     properties:
-      location: "./config/Examples"
-      name: "from-syslog.parquet"
-      batch_size: 1000
-      flush_interval: 300
-      compression: snappy
+      location: "./Examples"
+      name: "syslog-event-data.json"
+      compression: ztsd
+      format: "json"
 ```
 
-With this configuration, we are setting up a _Parquet_ file target that will store the processed _Syslog_ data.
+With this configuration, we are setting up a _JSON_ file target that will store the processed _Syslog_ data. We have also specified batching and flush intervals for optimal performance, and enabled **ZTSD** compression for efficient storage.
 
-We have also specified batching and flush intervals for optimal performance, and enabled **Snappy** compression for efficient storage.
-
-Put this configuration in our file.
+Put this target configuration in our file.
 
 ### Step 3: Configure the pipeline
 
 We are now ready to configure our pipeline:
 
-```yml title="syslog-to-parquet.yml"
+{/* ```yml title="syslog-to-json.yml"
 pipelines:
   - name: extract_user_event
     processors:
       - grok:
-          field: syslog.message
+          field: message
+          pattern_definitions:
+            SYSLOG_HEADER: "<\\d+> \\d+ \\S+ \\S+ \\S+ \\d+ \\S+ - "
+            USER_NAME: "(?<User>[A-Za-z]+ [A-Za-z]+)"
+            USER_MESSAGE: "(?<Message>.*)"
           patterns:
-            - %{SYSLOGTIMESTAMP:timestamp} %{USERNAME:user_name} %{GREEDYDATA:message_body}
-          ignore_missing: true
+            - "%{SYSLOG_HEADER}%{USER_NAME} %{USER_MESSAGE}"            
+      - remove:
+          field: message
+```
+
+This configuration will parse the _Syslog_ header information using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the field `message` and extracting `SYSLOG_HEADER`, `USER_NAME`, and `USER_MESSAGE` from it, and send these to the _JSON_ file.
+
+ */}
+
+```yml title="syslog-to-json.yml"
+pipelines:
+  - name: extract_user_event
+    processors:
+      - grok:
+          field: message
+          patterns:
+            -  %{GREEDYDATA:user} %{GREEDYDATA:message_body} %{DATESTAMP:date} %{TIMESTAMP:time}
       - set:
-          field: User
-          value: user_name
+          field: user
+          target_field: user_name
       - concat:
-          sources: ["Said '", message_body, "' on ", timestamp.date, " at ", timestamp.time]
+          sources: ["Said '", message_body, "' on ", date, " at ", time]
           separator: ""
-          target: Message
+          target: event
       - remove:
-          field: syslog.message
-          ignore_missing: true
-      - remove:
-          field: syslog.timestamp
+          field: message
           ignore_missing: true
 ```
 
-This configuration will:
+This configuration will 
 
-- parse the _Syslog_ header information using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor&mdash;reading the field `syslog.message` and extracting `timestamp`, `user_name`, and `message_body` from it;
+- using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor, parse the _Syslog_ header information to read the field `message`
 
-- set the fields `User`, and `Message` with the data extracted;
+- extract the `user`, `message_body`, `date`, and `time` value from it
 
-- clean up the temporary fields `syslog.message` and `syslog.timestamp`.
+- write the `user` value to the `user_name` field in the _JSON_ file
+
+- using the [concat](../../configuration/pipelines/processors/concat.mdx) processor, combine the values of the `message_body`, `date`, and `time` and write the resulting text to the `event` field in the _JSON_ file
+
+- remove the `message` field of _Syslog_
 
 :::note
-To avoid raising an exception, we chose to ignore failures and missing fields.
+To avoid raising an exception, we chose to ignore missing fields.
 :::
 
-Put this configuration in our file.
+Put this pipeline configuration in our file.
 
 ### Step 4: Configure the route
 
 Finally, we have to create a route to connect our device to the pipeline and then to our target. Put the following definition in our configuration file:
 
-```yml title="syslog-to-parquet.yml"
+```yml title="syslog-to-json.yml"
 routes:
-  - name: syslog_to_parquet
+  - name: syslog_to_json
     devices:
       - name: from_syslog
     pipelines:
       - name: extract_user_event
     targets:
-      - name: to_parquet
+      - name: to_json
 ```
 
-This configuration will connect to the _Syslog_ server, apply the `extract_user_event` pipeline to the ingested data, and then write it to the _Parquet_ file specified.
+This configuration will 
+
+- connect to the _Syslog_ server and receive data from it,
+- apply the `extract_user_event` pipeline to the ingested data,
+- write the processed data to the _JSON_ file specified.
+
+Put this route configuration in our file.
 
 ### Step 5: Run the data stream
 
@@ -167,12 +187,12 @@ As we did aboveü, we will first validate the pipeline:
 <Tabs>
   <TabItem value="powershell" label="PowerShell">
     ```PowerShell
-    .\vmetric-director -pipeline -path=".\config\Examples\syslog-to-parquet.yml" -name=syslog_to_parquet -validate
+    .\vmetric-director -pipeline -path=".\config\Examples\syslog-to-json.yml" -name=syslog_to_json -validate
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-director -pipeline -path="./config/Examples/syslog-to-parquet.yml" -name=syslog_to_parquet -validate
+    ./vmetric-director -pipeline -path="./config/Examples/syslog-to-json.yml" -name=syslog_to_json -validate
     ```
   </TabItem>
 </Tabs>
@@ -207,15 +227,15 @@ We will once again use the `generator` mode (or a traditional platform tool) to 
   </TabItem>
 </Tabs>
 
-Now, **Director** should be receiving _Syslog_ messages, processing them through our pipeline, and sending them to our _Parquet_ file.
+Now, **Director** should be receiving _Syslog_ messages, processing them through our pipeline, and sending them to our _JSON_ file.
 
 Press <kb-short>Ctrl+C</kb-short> to exit the processes on both terminals.
 
 
-TODO: Copy 1- Screen output 2- Parquet file contents
+TODO: Copy 1- Screen output 2- JSON file contents
 
 ## Monitoring
 
-Check the logs for any errors, and verify that the _Parquet_ file was created with the processed _Syslog_ data.
+Check the logs for any errors, and verify that the _JSON_ file was created with the processed _Syslog_ data.
 
 TODO: Copy the log output.

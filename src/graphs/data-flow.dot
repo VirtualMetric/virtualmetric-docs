@@ -1,0 +1,54 @@
+digraph dataFlow {
+   rankdir=LR
+   node [shape=box style=filled fillcolor="#f0f0f0" fontname="Calibri" fontsize=8]
+
+   // Left: Sources
+   subgraph cluster_sources {
+      label="Sources"
+      style="rounded,filled"
+      fillcolor="#e3f2fd"
+      fontname="Calibri"
+      fontsize=8
+      source1 [label="S1" shape=box fillcolor="#bbdefb"]
+      source2 [label="S2" shape=box fillcolor="#bbdefb"]
+   }
+
+   // Preprocessing (outside Routing)
+   preprocess [label="Preprocess" shape=box fillcolor="#c8e6c9"]
+
+   // Middle: Routing
+   subgraph cluster_routing {
+      label="Routing"
+      style="rounded,filled"
+      fillcolor="#e8f5e9"
+      fontname="Calibri"
+      fontsize=8
+      transform [label="Transform" shape=box fillcolor="#c8e6c9"]
+      enrich [label="Enrich" shape=box fillcolor="#c8e6c9"]
+      transform -> enrich
+   }
+
+   // Postprocessing (outside Routing)
+   postprocess [label="Postprocess" shape=box fillcolor="#c8e6c9"]
+
+   // Right: Targets
+   subgraph cluster_targets {
+      label="Targets"
+      style="rounded,filled"
+      fillcolor="#fff3e0"
+      fontname="Calibri"
+      fontsize=8
+      target1 [label="T1" shape=box fillcolor="#ffe0b2"]
+      target2 [label="T2" shape=box fillcolor="#ffe0b2"]
+      target3 [label="T3" shape=box fillcolor="#ffe0b2"]
+   }
+
+   // Connections
+   source1 -> preprocess
+   source2 -> preprocess
+   preprocess -> transform
+   enrich -> postprocess
+   postprocess -> target1
+   postprocess -> target2
+   postprocess -> target3
+}
