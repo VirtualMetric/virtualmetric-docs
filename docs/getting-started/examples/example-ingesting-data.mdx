@@ -35,7 +35,7 @@ Use UDP as the listening protocol.
 
 We will create a device that will receive data from _Syslog_ using an insecure **UDP** connection.
 
-### Step 1. Create configuration
+### Step 1. Create the device configuration
 
 Create a file named `from-syslog-udp.yml` in our working directory, and then open it with a text editor to enter the following:
 
@@ -81,28 +81,45 @@ For a detailed discussion of Routes, see [this section](../../configuration/rout
 
 We are now ready to try our configuration.
 
-### Step 2. Run UDP device
+### Step 2. Run the UDP device
 
 Open a terminal and enter the following in the command line to start **Director**:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    .\vmetric-director
+    .\vmetric-director -background
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-director
+    ./vmetric-director -background
     ```
   </TabItem>
 </Tabs>
 
+This will start **Director** as a background process which you can verify as [indicated before](../single-node-deployment-director.mdx#post-installation). Now enter:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-director -console
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -console
+    ```
+  </TabItem>
+</Tabs>
+
+The `-console` switch will print status messages to the terminal.
+
 After you press <kb-short>Enter</kb-short>, you will see a stream of initialization messages and our device will be spawned off, waiting to receive _Syslog_ messages.
 
-### Step 3. Test configuration
+### Step 3. Run the configuration
 
-We can now test the reception using either **Director**'s cross-platform `generator` mode or other traditional tools available on your platform.
+We can now run the reception using **Director**'s cross-platform generator mode.
 
 Open a new terminal and enter the following in the command line:
 
@@ -129,7 +146,11 @@ Open a new terminal and enter the following in the command line:
   </TabItem>
 </Tabs>
 
-If you are using the `generator` mode, after you press <kb-short>Enter</kb-short> the program will start sending our message, one at a time, to _Syslog_. It will signal that it sent the message with a prompt like this:
+:::warning[attention]
+Be careful not to forget to specify the `count` parameter, and keep it as small as possible as we did here by specifying `1`.
+:::
+
+If you are using the `-generator` mode, after you press <kb-short>Enter</kb-short> the program will start sending our message, one at a time, to _Syslog_. It will signal that it sent the message with a prompt like this:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -146,7 +167,9 @@ If you are using the `generator` mode, after you press <kb-short>Enter</kb-short
   </TabItem>
 </Tabs>
 
-If you now switch back to **Director**'s terminal, you will see each sent message (i.e. "Hello world") on the console:
+After sending a limited number of messages&mdash;say 5 of them&mdash;press <kb-short>Ctrl+C</kb-short> to exit the process.
+
+If you now switch back to **Director**'s terminal, you will see each sent message (i.e. "Hello world") as received on the console:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -160,12 +183,10 @@ If you now switch back to **Director**'s terminal, you will see each sent messag
     ```
   </TabItem>
 </Tabs>
-
-To exit both of the processes, press <kb-short>Ctrl+C</kb-short> on either terminal.
 
 ## Monitoring
 
-Check **Director**'s logs&mdash;the files in the directory indicated [here](./overview.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
+Check **Director**'s logs&mdash;the files in the directory indicated [here](./overview.mdx#logging-setup)&mdash;for any error messages. If there were no errors, it should be blank.
 
 ---
 

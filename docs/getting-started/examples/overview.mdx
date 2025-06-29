@@ -52,9 +52,11 @@ For our purposes, and to keep things simple, we will be using the following fold
 We will be placing all our configuration and data source files needed for the examples in this folder. We will also specify our output files to be created here.
 
 :::warning[attention]
-For the sanity of the example runs, make sure there are no YAML files under the `config` directory and its subfolders except for `vmetric.yml`. If there are any placed there by default during an automatic installation, make a backup of the `config` folder and remove them.
+For the sanity of the example runs, make sure there are no YAML files under the `config` directory (except for `vmetric.yml`) and its subfolders . 
 
-The only YAML files present throughout the examples should be those we deliberately create in each section and place under our working directory.
+There will be files placed under `config` by default during an automated installation. Make a backup of the `config` folder, and then remove those files.
+
+The only YAML files present throughout each example section should be those we deliberately created and place under our working directory.
 :::
 
 ## Logging Setup
@@ -68,36 +70,48 @@ Finally, a simple logging setup is in order for you to be able to check the stat
 
     ```yaml
     debug:
-    log:
-        status: true
-    level: 4
-    console:
-        status: true
+        log:
+            status: true
+        level: 4
+        console:
+            status: true
     ```
 
-**Director** will generate the log of your runs and place it in the following file:
+:::note
+Level `4` indicates that only error messages will be logged.
+:::
+
+**Director** will generate the log of your runs and place it in the following directory:
 
 <Tabs>
 <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    C:\Path\To\<vm_root>\storage\logs\debug.log
+    <vm_root>\storage\logs\
     ```
 </TabItem>
 <TabItem value="bash" label="Bash">
     For **Linux**:
 
     ```bash
-    /opt/<vm_root>/storage/logs/debug.log
+    <vm_root>/storage/logs/
     ```
     For **macOS**:
 
     ```bash
-    /Applications/<vm_root>/storage/logs/debug.log
+    <vm_root>/storage/logs/
     ```
 </TabItem>
 </Tabs>
 
-Deleting this file is harmless. So long as the above debugging setting remains, it will be re-created with each run.
+Deleting the file here is harmless. So long as the above debugging setting remains, it will be re-created with each run.
+
+## Sending Messages
+
+As **VirtualMetric DataStream** is a telemetry system that captures, processes, and forwards log emssages, we will have to send those messages to our sample configurations by some mechanism. In this guide, we will be utilizing the generator mode of **Director**, which needs to be run on a separate terminal and requires the use of a syntax similar to the following:
+
+> `.\vmetric-director -generator ...`
+
+You are free to use other traditional tool&mdash;such as `logger` for **Unix**-based on platforms. Only make sure that it is not invasive, and only sends messages to the listeners on the ports specified.
 
 ## Examples
 
