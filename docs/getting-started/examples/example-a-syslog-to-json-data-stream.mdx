@@ -79,7 +79,7 @@ targets:
     properties:
       location: C:\Users\<username>\Documents\Logs
       name: syslog-event-data.json
-      compression: ztsd
+      compression: zstd
       format: "json"
 ```
 
@@ -118,15 +118,11 @@ pipelines:
 
 This configuration will 
 
-- using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor, parse the _Syslog_ header information to read the field `message`
+- using the [`grok`](../../configuration/pipelines/processors/grok.mdx) processor, parse the _Syslog_ header information to read the field `raw_message`
 
-- extract the `user`, `message`, `date`, and `time` values from it
+- write the `raw_message` value to the `Event` field in the _JSON_ file
 
-- write the `user` value to the `user_name` field in the _JSON_ file
-
-- using the [`concat`](../../configuration/pipelines/processors/concat.mdx) processor, combine the `message`, `date`, and `time` values and write the resulting string to the `event` field in the _JSON_ file
-
-- remove the `message` field of _Syslog_ from the output
+- remove the `message` and `raw_message` fields of _Syslog_ from the output
 
 :::note
 To avoid raising an exception, we chose to ignore missing fields.
