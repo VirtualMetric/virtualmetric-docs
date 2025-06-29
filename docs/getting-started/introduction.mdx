@@ -80,23 +80,65 @@ Throughout the documentation, we will refer to this folder as `<vm_root>`. Once 
 :::tip
 If you want to be able to access the executables from any directory, make sure to add `<vm_root>` to your `$PATH` environment variable. This can be done easily through a terminal:
 
-	<Tabs>
-		<TabItem value="windows" label="Windows" default>
-		```PowerShell
-		$Env:PATH += "C:\Program Files\VirtualMetric"
-		```
-		</TabItem>
-		<TabItem value="linux" label="Linux">
-		```bash
-		export PATH=$PATH:/opt/virtualmetric
-		```
-		</TabItem>
-		<TabItem value="macos" label="macOS">
-		```bash
-		export PATH=$PATH:/Applications/VirtualMetric
-		```
-		</TabItem>
-	</Tabs>
+To add only for the current terminal session:
+
+<Tabs>
+	<TabItem value="windows" label="Windows" default>
+	```PowerShell
+	$Env:PATH += <vm_root>
+	```
+	</TabItem>
+	<TabItem value="linux" label="Linux">
+	```bash
+	export PATH=$PATH:<vm_root>
+	```
+	</TabItem>
+	<TabItem value="macos" label="macOS">
+	```bash
+	export PATH=$PATH:<vm_root>
+	```
+	</TabItem>
+</Tabs>
+
+To add for all sessions:
+
+<Tabs>
+	<TabItem value="windows" label="Windows" default>
+		- Open **Settings**.
+		- Go to **System > About**, scroll down to click the link **Advanced system settings**.
+		- Click the button **Environment Variables** at the bottom of the dialog box.
+		- On the lower pane labelled **System variables**, click the variable **Path**.
+		- Go to the bottom of the list, and add the full path of `<vm_root>`.
+		- Click **OK** to close the box and apply the updated settings.
+	</TabItem>
+	<TabItem value="linux" label="Linux">
+		- Open **Terminal**.
+		- In your home directory, open `.profile` with **vim**.
+			```bash
+			$ vim .profile
+			```
+		- Add the following line at the bottom of the file:
+			```bash
+			export PATH=$PATH:<vm_root>
+			```
+		- Save and close the file.
+	</TabItem>
+	<TabItem value="macos" label="macOS">
+		- Open Finder and navigate to your home directory (`~/`).
+		- Locate the shell configuration file for your shell. For **zsh** (default shell for **Catalina** or later), that will be `.zshrc` or `.zprofile`.
+		- Open it with a text editor like **TextEdit**:
+			```bash
+			open -e ~/.zprofile
+			```
+		- Add the following line at the bottom of the file:
+			```bash
+			export PATH=$PATH:<vm_root>
+			```
+		- Save and close the file.
+	</TabItem>
+</Tabs>
+
+Do _not_ forget to close and reopen your terminal.
 :::
 
 ---

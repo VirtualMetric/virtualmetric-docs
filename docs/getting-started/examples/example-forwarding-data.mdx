@@ -34,7 +34,7 @@ In this section, we will send the data we receive from _Syslog_ to these destina
 * **Console**: the data will be sent to the console first raw, then normalized to ECS
 * **Storage File**: the data will be converted to the JSON storage format
 
-## Console Setup
+## Console Setup and Trial
 
 The most basic target to which we can direct our output is a _console_. In the previous section, to have the _syslog_ data we have ingested&mdash;using the device we have configured there&mdash;directed to the console, we created a route like so:
 
@@ -47,6 +47,8 @@ routes:
       - name: to_console
 ```
 
+### Step 1: Configure the target
+
 Assume, however, that we want to customize the stream directed to the console. For that purpose, we will modify our target configuration as:
 
 ```yaml title="to-console.yml"
@@ -57,26 +59,47 @@ targets:
       format: "ecs"
 ```
 
-Recreate this file and put this configuration in it.
+Put this configuration in the indicated file.
 
 Note that we added a `format` property. With this setting, we will normalize our data to the [ECS](../../appendix.mdx#ecs) format which provides a standardized, consistent structure to query Web data.
 
-To see the results on the console, once again go to the terminal you are using for **Director**, and invoke it by entering:
+### Step 2: Run the target
+
+To see the results on the console, go to the terminal you are using for **Director**, and invoke it by entering:
 
 <Tabs>
-  <TabItem value="powershell" label="PowerShell">
-    ```PowerShell
-    .\vmetric-director
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-director -background
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-director
+    ./vmetric-director -background
     ```
   </TabItem>
 </Tabs>
 
-Then, switch to the other terminal you are using for the `generator` mode (or other traditional message sending tool), and start sending our familiar message:
+This will start **Director** as a background process which you can verify as [indicated before](../single-node-deployment-director.mdx#post-installation). Now enter:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-director -console
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -console
+    ```
+  </TabItem>
+</Tabs>
+
+The `-console` switch will print status messages to the terminal.
+
+### Step 3: Send messages to console
+
+Open another terminal to using our message sending tool, and start sending our familiar message:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -101,7 +124,9 @@ Then, switch to the other terminal you are using for the `generator` mode (or ot
   </TabItem>
 </Tabs>
 
-This time, you will see that our message is printed to the console in ECS format we have specified:
+After sending a limited number of messages&mdash;say 5 of them&mdash;press <kb-short>Ctrl+C</kb-short> to exit the process.
+
+If you now switch back to the other terminal, this time you will see that our message is printed to the console in ECS format we have specified:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -116,9 +141,7 @@ This time, you will see that our message is printed to the console in ECS format
   </TabItem>
 </Tabs>
 
-Once again, you can exit either process by pressing <kb-short>Ctrl+C</kb-short>.
-
-## Storage File Setup
+## Storage File Setup and Trial
 
 The next type of output we can use is a file. Various formats are available in **DataStream**, but for the sake of simplicity, we will pick the widely used _JSON_ format which is the default for the `file` target type:
 
@@ -132,6 +155,10 @@ targets:
 ```
 
 Create a file named `to-json.yml` in our working directory and save this code in it.
+
+:::info
+You can create new configuration files, or update existing ones, as **Director** is running in the background. After being invoked with the `-console`, it will print an update status every time a configuration is added or modified.
+:::
 
 The path we have specified for `location` is where the JSON file will be created. (Do not forget to replace `<vm_root>` with the actual path of your **VirtualMetric** installation.) The nested `name` parameter is for the file: it will have a `from_syslog_` prefix to which the internal field values of `Year`, `Month`, and `Day` will be appended.
 
@@ -149,6 +176,8 @@ routes:
     targets:
       - name: to_json
 ```
+
+### Step 4: Send messages to output file
 
 Once again, run `vmetric-director` in `generator` mode (or other equivalent tool) to send messages to _Syslog_:
 
@@ -179,20 +208,7 @@ Once again, run `vmetric-director` in `generator` mode (or other equivalent tool
 Be careful not to forget to specify the `count` parameter, and keep it as small as possible as we did here by specifying `1`.
 :::
 
-To have this _Syslog_ message directed to the storage file we have configured, invoke **Director** from your other terminal:
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell">
-    ```PowerShell
-    .\vmetric-director
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    ./vmetric-director
-    ```
-  </TabItem>
-</Tabs>
+To have this _Syslog_ message directed to the storage file we have configured, check **Director**'s status messages from your other terminal:
 
 **Director** will issue prompts like the following while it is writing the ingested data to our JSON file:
 
@@ -209,8 +225,6 @@ To have this _Syslog_ message directed to the storage file we have configured, i
   </TabItem>
 </Tabs>
 
-Press <kb-short>Ctrl+C</kb-short> in both terminals to exit the processes.
-
 Now we can check our output. In our working directory, you will find a file with a name like `from_syslog-2025_06_02.json`. Open it with a text editor. You will find that the ingested data has been stored in it in a format like this:
 
 ```json
@@ -218,6 +232,10 @@ Now we can check our output. In our working directory, you will find a file with
 ```
 
 Since we have only sent the same message multiple times, there will be multiple copies of it in the file.
+
+## Monitoring
+
+Check the log file indicated [earlier](./overview.mdx#logging-setup). If there were no errors during the trial, it should be blank.
 
 ---
 
