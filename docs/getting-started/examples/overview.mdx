@@ -19,7 +19,7 @@ On **Windows**, make sure file extensions are visible. To check this, go to **Fi
 This is to avoid surprises like the system adding another extension to your YAML file's extension, e.g. `file.yml.txt`, in which case **VirtualMetric** applications will not be able to recognize them.
 :::
 
-**Director** parses all the YAML files found under the `<vm_root>/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: to organize your components as you see fit.
+**Director** parses all YAML files found under the `<vm_root>/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: i.e. to organize your components as you see fit.
 
 :::note
 For more details on the management of configuration files, review [this section](../../configuration/overview.mdx#yaml-files).
@@ -58,6 +58,16 @@ There will be files placed under `config` by default during an automated install
 
 The only YAML files present throughout each example section should be those we deliberately created and place under our working directory.
 :::
+
+## Message Sender
+
+In our examples, we will be handling log emssages, and we will have to send those messages by some mechanism. For that purpose, we will be using the generator mode of **Director**.
+
+The generator mode needs to be run on a separate terminal, and is called like this:
+
+> `.\vmetric-director -generator -now -count 10 -address ...`
+
+You are of course free to use some other traditional tool&mdash;such as `logger` for **Unix**-based on platforms. Only make sure that it is not invasive, and only sends messages to the listeners on specific ports.
 
 ## Logging Setup
 
@@ -103,15 +113,9 @@ Level `4` indicates that only error messages will be logged.
 </TabItem>
 </Tabs>
 
-Deleting the file here is harmless. So long as the above debugging setting remains, it will be re-created with each run.
+Deleting the generated file is harmless. So long as the above debugging setting remains, it will be re-created with each run if there are any errors.
 
-## Sending Messages
-
-As **VirtualMetric DataStream** is a telemetry system that captures, processes, and forwards log emssages, we will have to send those messages to our sample configurations by some mechanism. In this guide, we will be utilizing the generator mode of **Director**, which needs to be run on a separate terminal and requires the use of a syntax similar to the following:
-
-> `.\vmetric-director -generator ...`
-
-You are free to use other traditional tool&mdash;such as `logger` for **Unix**-based on platforms. Only make sure that it is not invasive, and only sends messages to the listeners on the ports specified.
+---
 
 ## Examples
 

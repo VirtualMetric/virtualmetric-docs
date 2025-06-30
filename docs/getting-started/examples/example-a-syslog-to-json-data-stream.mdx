@@ -33,11 +33,11 @@ We will create a pipeline that ingests logs from a _Syslog_ source, processes an
 
 We will implement the following scenario:
 
-- **Ingest Syslog data** - Listen to _Syslog_ to receive messages.
+- **Ingest data** - Listen to _Syslog_ to receive messages.
 
-- **Extract user related information** - Extract specific information from the _Syslog_ messages and map them to fields that will be stored in a _JSON_ file.
+- **Extract information** - Extract specific information from the _Syslog_ messages and map them to fields that will be stored in a _JSON_ file.
 
-- **Write the data to a JSON file** - Write the processed information to a _JSON_ file.
+- **Write the information** - Write the fields mapped from the extracted information to a _JSON_ file.
 
 We need to work in an environment that has access to _Syslog_ messages. We also need write permissions to the directory where the _JSON_ file will be stored, although since we will be using our working directory that is taken care of.
 
@@ -141,29 +141,9 @@ routes:
       - name: from_syslog
     pipelines:
       - name: extract_user_event
-        processors:
-          - grok:
-              field: message
-              patterns:
-                - "%{DATA}: %{GREEDYDATA:raw_message} - %{NUMBER}"
-          - set:
-              field: Event
-              copy_from: raw_message
-          - remove:
-              field: message
-              ignore_missing: true
-          - remove:
-              field: raw_message
-              ignore_missing: true
     targets:
       - name: to_json
 ```
-
-Note that we have placed our pipeline configuration within the route definition.
-
-:::warning[attention]
-Pipeline definitions should be either put in a separate file, or, if their configuration is included in the same file as the route, then they should be placed under the `pipelines:` branch of the route.
-:::
 
 This configuration will 
 
