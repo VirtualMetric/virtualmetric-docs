@@ -106,55 +106,30 @@ We can now proceed to our scenario.
 
 ### Step 1. Prepare certificates
 
-First, we have to prepare TLS certificates for the secure connection. This can be done with **OpenSSL**. Open a terminal and stay at the `$HOME` directory. Then type this command:
+First, we have to prepare TLS certificates for the secure connection. The following procedure is platform-specific, so please follow it through:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
+    This can be done with **OpenSSL**. Open a terminal and stay at the `$HOME` directory. Then type this command:
+
     ```powershell
     openssl genrsa -out cert.key 2048
     ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    openssl genrsa -out cert.key 2048
-    ```
-  </TabItem>
-</Tabs>
 
-Now enter the following line&mdash;you will be prompted to enter some information like country, state/province, locality, etc. For our purposes, you can leave all of them blank by typing `.`:
+    Now enter the following line&mdash;you will be prompted to enter some information like country, state/province, locality, etc. For our purposes, you can leave all of them blank by typing `.`:
 
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
     ```powershell
     openssl req -new -x509 -key cert.key -out cert.crt -days 365
     ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    openssl req -new -x509 -key cert.key -out cert.crt -days 365
-    ```
-  </TabItem>
-</Tabs>
 
-Now we will generate a `pfx` file from these. Enter the following command, and type again `.` for password when prompted:
+    We will now generate a `pfx` file from these. Enter the following command, and type again `.` for password when prompted:
 
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
     ```powershell
     openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.crt
     ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.crt
-    ```
-  </TabItem>
-</Tabs>
 
-If you check your current directory, you will see that these files were created:
+    If you check your current directory, you will see that these files were created:
 
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
     ```powershell
     Get-ChildItem cert.* | Format-Table Name
     
@@ -166,6 +141,26 @@ If you check your current directory, you will see that these files were created:
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
+    This can be done with **OpenSSL**. Open a terminal and stay at the `$HOME` directory. Then type this command:
+
+    ```bash
+    openssl genrsa -out cert.key 2048
+    ```
+
+    Now enter the following line&mdash;you will be prompted to enter some information like country, state/province, locality, etc. For our purposes, you can leave all of them blank by typing `.`:
+
+    ```bash
+    openssl req -new -x509 -key cert.key -out cert.crt -days 365
+    ```
+
+    We will now generate a `pfx` file from these. Enter the following command, and type again `.` for password when prompted:
+
+    ```bash
+    openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.crt
+    ```
+    
+    If you check your current directory, you will see that these files were created:
+
     ```bash
     ls cert.*
     cert.crt cert.key cert.pfx
@@ -241,7 +236,7 @@ We will now prepare a secure configuration by creating another file named `from-
 
 ```yaml title="from-syslog-tcp.yml"
 devices:
-  - id: 1
+  - id: 2222
     name: from_syslog_tcp
     type: syslog
     status: true
@@ -255,15 +250,13 @@ devices:
         key_name: key.pem
 ```
 
-FIXME: To be corrected from here on.
-
 Note that we have specified the `*.pem` files we have created in the previous step. That is because we have set the `status` of the `tls` field to `true` so unless we point to these files the process will not run.
 
 Also, port `6514` is the one commonly used for _Syslog_ over TLS ([RFC 5425](https://www.rfc-editor.org/rfc/rfc5425)).
 
 ### Step 4. Run listener
 
-We can run our device in the background to listen on the TCP connection:
+Open a terminal and enter the following in the command line to start **Director**:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -278,11 +271,35 @@ We can run our device in the background to listen on the TCP connection:
   </TabItem>
 </Tabs>
 
+This will start **Director** as a background process which you can verify as [indicated before](../single-node-deployment-director.mdx#post-installation). Now enter:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-director -console
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -console
+    ```
+  </TabItem>
+</Tabs>
+
+After you press <kb-short>Enter</kb-short>, you will see a stream of initialization messages and our device will be spawned off. If it has successfully processed the `pem` files, you should get the following status messages:
+
+```console
+[2025-06-30 11:40:32] [Information] [vmetric-director] Reassigned device 2222 to node VM_LAPTOP
+[2025-06-30 11:40:39] [Information] [vmetric-director] [syslog-2222] Listener server is successfully started.
+```
+
+Now it is waiting to receive messages from _Syslog_.
+
 ### Step 5. Test configuration
 
 Time to test the secure connection configuration. But first we have to make sure that our connection is working.
 
-In the terminal where you have previously sent messages (in `generator` mode), enter the following command:
+Open another terminal to send messages in generator, and enter the following command:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -292,30 +309,32 @@ In the terminal where you have previously sent messages (in `generator` mode), e
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    TODO: Complete
+    nc -zv 127.0.0.1 6514
     ```
   </TabItem>
 </Tabs>
 
-The IP number `127.0.0.1` is the one that is assigned to the local machine by default. If the result you get is
+If everything is running as expected, you should see the following:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    WARNING: TCP connect to (127.0.0.1 : 6514) failed
+    ComputerName     : 127.0.0.1
+    RemoteAddress    : 127.0.0.1
+    RemotePort       : 6514
+    InterfaceAlias   : Loopback Pseudo-Interface 1
+    SourceAddress    : 127.0.0.1
+    TcpTestSucceeded : True
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    TODO: Complete
+    Connection to 127.0.0.1 6514 port [tcp/*] succeeded!
     ```
   </TabItem>
 </Tabs>
 
-
-This time we will send our message using a standard command and piping it through `openssl`. 
-
-In the terminal where you have previously sent messages (in `generator` mode), enter the following command:
+This time we will send our message using a standard command and piping it through `openssl`. In the same terminal, enter the following command:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -335,15 +354,53 @@ This command
 - sends a "Hello world" message to the terminal's pipeline;
 - opens a TLS-encrypted TCP connection to `127.0.0.1` on port `6514`, and sends the message piped into it over the encrypted connection.
 
+The output of the command should be a long status report starting as:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    Connecting to 127.0.0.1
+    CONNECTED(0000018C)
+    Can't use SSL_get_servername
+    depth=0 C=AU, ST=Some-State, L=city, O=Widgets Ltd, OU=TW, CN=JohnDoe, emailAddress=johndoe@somewhere.com
+    verify error:num=18:self-signed certificate
+    ...
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    Connecting to 127.0.0.1
+    CONNECTED(0000018C)
+    Can't use SSL_get_servername
+    depth=0 C=AU, ST=Some-State, L=city, O=Widgets Ltd, OU=TW, CN=JohnDoe, emailAddress=johndoe@somewhere.com
+    verify error:num=18:self-signed certificate
+    ...
+    ```
+  </TabItem>
+</Tabs>
+
+When you switch back to the other terminal where **Director** is issuing status messages, you should see:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    [2025-06-30 11:45:05] [Information] [vmetric-director] [syslog-2222] Processing Syslog messages.. Number of Messages: 1
+    [2025-06-30 11:45:06] [Information] [vmetric-director] [syslog-2222] Completed processing of vmdb.syslog.2222.1751273105828017700.1.vmfl logs. Number of processed logs: 1
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    [2025-06-30 11:45:05] [Information] [vmetric-director] [syslog-2222] Processing Syslog messages.. Number of Messages: 1
+    [2025-06-30 11:45:06] [Information] [vmetric-director] [syslog-2222] Completed processing of vmdb.syslog.2222.1751273105828017700.1.vmfl logs. Number of processed logs: 1
+    ```
+  </TabItem>
+</Tabs>
+
+You can now exit the process on both terminals by pressing <kb-short>Ctrl+C</kb-short>.
+
 ## Monitoring
 
-Let's check what we have received via _Syslog_:
-
-TODO: Screen output
-
-Check **Director**'s logs&mdash;the files in the directory indicated [here](./overview.mdx#logging-setup)&mdash;for success messages on launching and initialization, connection acceptance, and configuration validation.
-
-You can now exit the processes on both terminals by pressing <kb-short>Ctrl+C</kb-short>.
+Check **Director**'s logs to see if there was any errors. If there were no errors, no log file will be created.
 
 ---
 
