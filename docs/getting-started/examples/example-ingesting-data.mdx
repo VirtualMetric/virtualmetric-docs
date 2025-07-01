@@ -6,7 +6,7 @@ This section will help you get started with devices to ingest data with specific
 For a detailed discussion of devices, see [this section](../../configuration/devices/overview.mdx#configuration).
 :::
 
-:::info
+:::warning[attention]
 To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
 
 To execute the code examples, navigate to `<vm_root>`:
@@ -29,7 +29,7 @@ Filenames do not include the path to avoid variation in syntax for different pla
 
 ## Scenario
 
-Use UDP as the listening protocol.
+Use **UDP** as the listening protocol.
 
 ## Setup
 
@@ -44,6 +44,7 @@ devices:
   - id: 1
     name: from_syslog_udp
     type: syslog
+    status: true
     properties:
       protocol: udp
       address: 127.0.0.1
@@ -52,6 +53,12 @@ devices:
 
 This YAML code specifies that this is a _Syslog_ device, that it will use UDP as its protocol, and that it will be listening on port `514`. You can enter any integer as the `id` value.
 
+:::info
+We need to set the devices's `status` to `true` to enable it.
+
+**Director** allows you to add, update/modify, or remove devices and targets while it is running and, by the same mechanism, to start or stop them by enabling or disabling them.
+:::
+
 However, we also need to define a target that the ingested data willl be directed to, and a route combining the device and the target.
 
 Create a file named `to-console.yml` and add the following target definition to it:
@@ -59,6 +66,7 @@ Create a file named `to-console.yml` and add the following target definition to 
 ```yaml title="to-console.yml"
 targets:
   - name: to_console
+    status: true
     type: console
 ```
 
@@ -73,10 +81,8 @@ routes:
       - name: to_console
 ```
 
-:::tip[info]
-To see the ingested data, the stream must be _routed_ to a specific destination, combining the relevant components and orchestrating their flow!
-
-For a detailed discussion of Routes, see [this section](../../configuration/routes.mdx#configuration).
+:::info
+To see the ingested data, your must _route_ the stream to a specific destination! For a detailed discussion of Routes, see [this section](../../configuration/routes.mdx#configuration).
 :::
 
 We are now ready to try our configuration.
@@ -150,7 +156,7 @@ Open a new terminal and enter the following in the command line:
 Be careful not to forget to specify the `count` parameter, and keep it as small as possible as we did here by specifying `1`.
 :::
 
-If you are using the `-generator` mode, after you press <kb-short>Enter</kb-short> the program will start sending our message, one at a time, to _Syslog_. It will signal that it sent the message with a prompt like this:
+If you are using the generator mode, after you press <kb-short>Enter</kb-short> the program will start sending our message, one at a time, to _Syslog_. It will signal that it sent the message with a prompt like this:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>

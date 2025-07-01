@@ -6,7 +6,7 @@ This section will help you get started with devices to ingest data with specific
 For a detailed discussion of devices, see [this section](../../configuration/devices/overview.mdx#configuration).
 :::
 
-:::info
+:::warning[attention]
 To avoid any confusion, delete all YAML files created in other examples. This guarantees that only our current configurations are run.
 
 To execute the code examples, navigate to `<vm_root>`:
@@ -36,70 +36,72 @@ Use a **TCP** as the listening protocol.
 We will create a TLS-enabled device to ingest data over TCP securely. We will be sending an TLS-encrypted message over a TCP connection, and to do that we will using **OpenSSL**.
 
 :::info
-**OpenSSL** is _not_ available by default on **Windows**. If you have not previously installed it yourself, here is how to do it:
+**OpenSSL** is _not_ available by default on **Windows**. If you have not previously installed it yourself, the procedure is under the foldable link.
 
-1. Open a terminal with _Administrative_ privileges.
+<Details summary="Install OpenSSL">
+  1. Open a terminal with **Administrative** privileges.
 
-2. On the command line type:
+  2. On the command line type:
 
-    ```powershell
-    winget search openssl
-    ```
+      ```powershell
+      winget search openssl
+      ```
 
-    This will have an output like:
+      This will have an output like:
 
-    ```powershell
-    Name                 Id                           Version Match        Source
-    -----------------------------------------------------------------------------
-    FireDaemon Lozenge   FireDaemon.FireDaemonLozenge 3.0.4   Tag: openssl winget
-    FireDaemon OpenSSL 3 FireDaemon.OpenSSL           3.5.0   Tag: openssl winget
-    Stunnel              MichalTrojnara.Stunnel       5.75    Tag: openssl winget
-    OpenSSL 3.5.0        ShiningLight.OpenSSL.Dev     3.5.0                winget
-    OpenSSL Light 3.5.0  ShiningLight.OpenSSL.Light   3.5.0                winget
-    ```
-    We will pick **FireDaemon** for installation.
+      ```powershell
+      Name                 Id                           Version Match        Source
+      -----------------------------------------------------------------------------
+      FireDaemon Lozenge   FireDaemon.FireDaemonLozenge 3.0.4   Tag: openssl winget
+      FireDaemon OpenSSL 3 FireDaemon.OpenSSL           3.5.0   Tag: openssl winget
+      Stunnel              MichalTrojnara.Stunnel       5.75    Tag: openssl winget
+      OpenSSL 3.5.0        ShiningLight.OpenSSL.Dev     3.5.0                winget
+      OpenSSL Light 3.5.0  ShiningLight.OpenSSL.Light   3.5.0                winget
+      ```
+      We will pick **FireDaemon** for installation.
 
-3. Write the installation command for `winget`:
+  3. Write the installation command for `winget`:
 
-    ```powershell
-    winget install --id=FireDaemon.OpenSSL -e
-    ```
+      ```powershell
+      winget install --id=FireDaemon.OpenSSL -e
+      ```
 
-    This will have an output that resembles this:
+      This will have an output that resembles this:
 
-    ```powershell
-    Found FireDaemon OpenSSL 3 [FireDaemon.OpenSSL] Version 3.1.4
-    This application is licensed to you by its owner.
-    Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
-    Downloading https://download.firedaemon.com/FireDaemon-OpenSSL/FireDaemon-OpenSSL-x64-3.1.4.exe
-      ██████████████████████████████  11.3 MB / 11.3 MB
-    Successfully verified installer hash
-    Starting package install...
-    Successfully installed  
-    ```
+      ```powershell
+      Found FireDaemon OpenSSL 3 [FireDaemon.OpenSSL] Version 3.1.4
+      This application is licensed to you by its owner.
+      Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+      Downloading https://download.firedaemon.com/FireDaemon-OpenSSL/FireDaemon-OpenSSL-x64-3.1.4.exe
+        ██████████████████████████████  11.3 MB / 11.3 MB
+      Successfully verified installer hash
+      Starting package install...
+      Successfully installed  
+      ```
 
-4. Add the installation location to your `$PATH`&mdash;if you have not changed the default installation directory, this will be:
+  4. Add the installation location to your `$PATH`&mdash;if you have not changed the default installation directory, this will be:
 
-    ```powershell
-    $Env:PATH += ";C:\Program Files\FireDaemon OpenSSL 3\bin"
-    ```
+      ```powershell
+      $Env:PATH += ";C:\Program Files\FireDaemon OpenSSL 3\bin"
+      ```
 
-5. Finally, test to see whether **OpenSSL** is working as expected&mdash;type the command:
+  5. Finally, test to see whether **OpenSSL** is working as expected&mdash;type the command:
 
-    ```powershell
-    C:\>openssl
-    help:
+      ```powershell
+      C:\>openssl
+      help:
 
-    Standard commands
-    asn1parse         ca                ciphers           cmp
-    cms               crl               crl2pkcs7         dgst
-    dhparam           dsa               dsaparam          ec
-    ecparam           enc               engine            errstr
-    fipsinstall       gendsa            genpkey           genrsa
-    help              info              kdf               list  
-    ...
-    etc.
-    ```
+      Standard commands
+      asn1parse         ca                ciphers           cmp
+      cms               crl               crl2pkcs7         dgst
+      dhparam           dsa               dsaparam          ec
+      ecparam           enc               engine            errstr
+      fipsinstall       gendsa            genpkey           genrsa
+      help              info              kdf               list  
+      ...
+      etc.
+      ```
+</Details>
 :::
 
 We can now proceed to our scenario.
