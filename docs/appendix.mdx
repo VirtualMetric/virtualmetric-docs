@@ -44,9 +44,11 @@ There are 3 different security definitons that can be used under the `<vm_root>\
 
     [`8005`, `8006`, `8007`, `8222`]
 
-## Configuration BNF
+## Configuration Syntax
 
 All **DataStream** configuration files are in YAML format and conform to the following syntax:
+
+### BNF
 
 <TermTable>
    <TermCol>`comp-decl`</TermCol>
@@ -98,11 +100,33 @@ All **DataStream** configuration files are in YAML format and conform to the fol
    <DefCol>`::= '0' .. '9'`</DefCol>
 </TermTable>
 
+### Fields
+
+Fields can be referred to in other fields in two ways:
+
+- Directly:
+
+  ```yaml
+  processors:
+    - set:
+        field: some_field
+        value: user_name
+  ```
+
+- Using the so called _mustache_ syntax for concatenation:
+
+  ```yaml
+  processors:
+    - set:
+        field: some_field
+        value: "User {{user_name}} sent {{file_name}}"
+  ```
+
 ## File Formats
 
 ### Parquet
 
-Apache Parquet is a column-oriented storage format designed for efficiency:
+Apache Parquet is a column-oriented binary storage format designed for efficiency:
 
 **Row-based storage** (traditional):
 
@@ -129,6 +153,10 @@ Key features:
 - Run-length encoding
 - Optimal for columnar queries
 
+:::info
+A third-party tool is required to access and query the contents of these files.
+:::
+
 ### PEM
 
 Privacy Enhanced Mail (PEM) files are used for storing cryptographic keys and certificates:
@@ -140,6 +168,8 @@ MIIHzTCCBbWgAwIBAgIQaBYE3/M08XHYCnNVmcFBcjANBgkqhkiG9w0BAQsFADBy
 ---END CERTIFICATE---
 ```
 
+Files have Base64-encoded content, have `BEGIN`/`END` markers, can contain multiple certificates/keys, and are text-based.
+
 Common uses:
 
 - SSL/TLS certificates
@@ -147,12 +177,6 @@ Common uses:
 - RSA private keys
 - Certificate chains
 
-File characteristics:
-
-- Base64-encoded content
-- Begin/end markers
-- Can contain multiple certificates/keys
-- Text-based format
 
 ### Avro
 
