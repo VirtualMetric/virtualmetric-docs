@@ -74,36 +74,36 @@ By default, the files are placed in these folders according to their component t
   <Tabs>
     <TabItem value="powershell" label="PowerShell" default>
       ```powershell
-      C:\Path\To\<vm_root>\config\target.yml
+      <vm_root>\config\target.yml
       ```
 
       -or-
 
       ```powershell
-      C:\Path\To\<vm_root>\config\targets\outputs.yml
+      <vm_root>\config\targets\outputs.yml
       ```
 
       -or-
 
       ```powershell
-      C:\Path\To\<vm_root>\config\targets\outputs\sentinel.yml
+      <vm_root>\config\targets\outputs\sentinel.yml
       ```
     </TabItem>
     <TabItem value="bash" label="Bash">
       ```bash
-      /opt/<vm_root>/config/target.yml
+      <vm_root>/config/target.yml
       ```
 
       -or-
 
       ```bash
-      /opt/<vm_root>/config/targets/outputs.yml
+      <vm_root>/config/targets/outputs.yml
       ```
 
       -or-
 
       ```bash
-      /opt/<vm_root>/config/targets/outputs/sentinel.yml
+      <vm_root>/config/targets/outputs/sentinel.yml
       ```
     </TabItem>
   </Tabs>
@@ -117,7 +117,7 @@ By default, the files are placed in these folders according to their component t
 All components follow a consistent YAML structure that emphasizes readability and maintainability:
 
 :::caution
-Configurations must conform to [**these syntactic rules**](../appendix.mdx#bnf).
+Configurations must conform to [**these syntactic rules**](../appendix.mdx#configuration-bnf).
 
 The **Overview** sections of the component types summarize their common fields under the **Configuration** heading. 
 
@@ -128,14 +128,18 @@ All components have properties&mdash;i.e. YAML fields with parameters&mdash;that
 
 A few are worth mentioning since they are frequently used:
 
-* **Identification** - Every component requires unique identification:
+### Identification
+
+Every component requires a unique identification:
 
   ```yaml
   - id: 1                   # Numeric identifier
     name: example_component # Human-readable name
   ```
 
-* **Status Control** - Components can be enabled or disabled:
+### Status Control
+
+Components can be enabled or disabled:
 
   ```yaml
   - id: 1
@@ -143,7 +147,9 @@ A few are worth mentioning since they are frequently used:
     status: true  # Enables this component
   ```
 
-* **Environment Variables** - Sensitive information can be stored in system variables:
+### Environment Variables
+
+Sensitive information can be stored in system variables:
 
   ```yaml
   properties:
@@ -151,7 +157,9 @@ A few are worth mentioning since they are frequently used:
     password: ${SECRET_PASSWORD}  # References environment variable
   ```
 
-* **Tagging** - Components can be tagged for better organization, and&mdash;optionally&mdash;a description can be used to document its purpose:
+### Tagging
+
+Components can be tagged for better organization, and&mdash;optionally&mdash;a description can be used to document its purpose:
 
   ```yaml
   - id: 1
@@ -161,6 +169,28 @@ A few are worth mentioning since they are frequently used:
       - production  # For quick search
       - security
   ```
+
+### Scoping and Reference
+
+Fields within the same YAML file are all part of the same scope, and they can be referred to by other fields. This can be done in two ways:
+
+1. Directly:
+
+    ```yaml
+    processors:
+      - set:
+          field: some_field
+          value: user_name
+    ```
+
+2. Using the so called _mustache_ syntax for concatenation:
+
+    ```yaml
+    processors:
+      - set:
+          field: some_field
+          value: "User {{user_name}} sent {{file_name}}"
+    ```
 
 ### Data Flow
 
@@ -212,7 +242,7 @@ This route refers to:
               target_field: source.geo
     ```
 
-- and two targets named `security_elasticsearch` and `security_team_notification` respectively:
+- two targets named `security_elasticsearch` and `security_team_notification` respectively:
 
     ```yaml
     targets:
@@ -228,7 +258,7 @@ This route refers to:
           method: POST
     ```
 
-This configuration is intended to do the following:
+This configuration is intended to implement the following:
 
 * the device collects firewall logs from _Syslog_ that have _critical_ status
 

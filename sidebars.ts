@@ -118,7 +118,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Configuration",
-      items: [        
+      items: [
         "configuration/overview",
         {
           type: "category",
