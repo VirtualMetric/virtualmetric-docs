@@ -7,7 +7,7 @@ const sidebars: SidebarsConfig = {
       label: "About",
       collapsed: false,
       items: [
-        "about/introduction",
+        "about/product",
         "about/applications",
         "about/key-features",
         "about/benchmarks",
@@ -31,7 +31,7 @@ const sidebars: SidebarsConfig = {
       label: "Getting Started",
       collapsed: false,
       items: [
-        "getting-started/introduction",
+        "getting-started/overview",
         "getting-started/single-node-deployment-director",
         "getting-started/single-node-deployment-agent",
         {
@@ -39,7 +39,7 @@ const sidebars: SidebarsConfig = {
           label: "Examples",
           collapsed: false,
           items: [
-            "getting-started/examples/overview",
+            "getting-started/examples/user-notes",
             "getting-started/examples/example-ingesting-data",
             "getting-started/examples/example-secure-ingestion",
             "getting-started/examples/example-forwarding-data",
