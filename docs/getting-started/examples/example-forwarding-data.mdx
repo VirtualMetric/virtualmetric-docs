@@ -1,21 +1,24 @@
-import ConfigFilesWarning from './_config-files-warning.mdx';
+import AttentionConfigFiles from './_attention-config-files.mdx';
+import AttentionCountForGenerator from './_attention-count-for-generator.mdx';
+import InfoUpdateConfigLive from './_info-update-config-live.mdx';
+import ComponentEnablement from './_info-component-enablement.mdx'
 
 # Example: Forwarding Data
 
 This section will help you get started with targets to write processed data to specific formats, walking you through common use cases.
 
-:::tip
+:::info
 For a detailed discussion of targets, see [this section](../../configuration/targets/overview.mdx#configuration).
 :::
 
-<ConfigFilesWarning />
+<AttentionConfigFiles />
 
 ## Scenarios
 
-In this section, we will send the data we receive from _Syslog_ to these destinations:
+Send data received from _Syslog_ to:
 
-* **Console**: the data will be sent to the console first raw, then normalized to ECS
-* **Storage File**: the data will be converted to the JSON storage format
+* **Console**: the data will be sent first raw, then normalized to ECS
+* **Storage File**: the data will be converted to JSON storage format
 
 ## Console Setup and Trial
 
@@ -42,6 +45,8 @@ targets:
     properties:
       format: "ecs"
 ```
+
+<ComponentEnablement />
 
 Put this configuration in the indicated file.
 
@@ -94,14 +99,14 @@ Open another terminal to using our message sending tool, and start sending our f
     - Using `generator` mode
 
     ```powershell
-    .\vmetric-director -generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    .\vmetric-director -generator -mode syslog -now -count 1 -address "127.0.0.1:514" -message "Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using `generator` mode
   
     ```bash
-    ./vmetric-director -generator -mode=syslog -address="127.0.0.1:514" -message="Hello world"
+    ./vmetric-director -generator -mode syslog -now -count 1 -address "127.0.0.1:514" -message "Hello world"
     ```
     
     - Using **System Logger**
@@ -111,6 +116,8 @@ Open another terminal to using our message sending tool, and start sending our f
     ```
   </TabItem>
 </Tabs>
+
+<AttentionCountForGenerator />
 
 After sending a limited number of messages&mdash;say 5 of them&mdash;press <kb-short>Ctrl+C</kb-short> to exit the process.
 
@@ -145,9 +152,7 @@ targets:
 
 Create a file named `to-json.yml` in our working directory and save this code in it.
 
-:::info
-You can create new configuration files, or update existing ones, as **Director** is running in the background. After being invoked with the `-console`, it will print an update status every time a configuration is added or modified.
-:::
+<InfoUpdateConfigLive />
 
 The path we have specified for `location` is where the JSON file will be created. (Do not forget to replace `<vm_root>` with the actual path of your **VirtualMetric** installation.) The nested `name` parameter is for the file: it will have a `from_syslog_` prefix to which the internal field values of `Year`, `Month`, and `Day` will be appended.
 
@@ -175,14 +180,14 @@ Once again, run `vmetric-director` in `generator` mode (or other equivalent tool
     - Using `generator` mode
 
     ```powershell
-    .\vmetric-director -generator -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    .\vmetric-director -generator -mode syslog -now -count 1 -address "127.0.0.1:514" -message "Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using `generator` mode
   
     ```bash
-    ./vmetric-director -generator -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    ./vmetric-director -generator -mode syslog -now -count 1 -address "127.0.0.1:514" -message "Hello world"
     ```
     
     - Using **System Logger**
@@ -192,10 +197,6 @@ Once again, run `vmetric-director` in `generator` mode (or other equivalent tool
     ```
   </TabItem>
 </Tabs>
-
-:::warning[attention]
-Be careful not to forget to specify the `count` parameter, and keep it as small as possible as we did here by specifying `1`.
-:::
 
 To have this _Syslog_ message directed to the storage file we have configured, check **Director**'s status messages from your other terminal:
 

@@ -1,14 +1,16 @@
-import ConfigFilesWarning from './_config-files-warning.mdx';
+import AttentionConfigFiles from './_attention-config-files.mdx';
+import AttentionCountForGenerator from './_attention-count-for-generator.mdx';
+import InfoComponentEnablement from './_info-component-enablement.mdx';
 
 # Example: Ingesting Data
 
 This section will help you get started with devices to ingest data with specific protocols, walking you through a common use case.
 
-:::tip
+:::info
 For a detailed discussion of devices, see [this section](../../configuration/devices/overview.mdx#configuration).
 :::
 
-<ConfigFilesWarning />
+<AttentionConfigFiles />
 
 ## Scenario
 
@@ -36,11 +38,7 @@ devices:
 
 This YAML code specifies that this is a _Syslog_ device, that it will use UDP as its protocol, and that it will be listening on port `514`. You can enter any integer as the `id` value.
 
-:::info
-We need to set the devices's `status` to `true` to enable it.
-
-**Director** allows you to add, update/modify, or remove devices and targets while it is running and, by the same mechanism, to start or stop them by enabling or disabling them.
-:::
+<InfoComponentEnablement />
 
 However, we also need to define a target that the ingested data willl be directed to, and a route combining the device and the target.
 
@@ -117,14 +115,14 @@ Open a new terminal and enter the following in the command line:
     - Using `generator` mode
 
     ```powershell
-    .\vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    .\vmetric-director -generator -now -mode syslog -count 1 -address "127.0.0.1:514" -message="Hello world"
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     - Using `generator` mode
   
     ```bash
-    ./vmetric-director -generator -now -mode=syslog -count=1 -address="127.0.0.1:514" -message="Hello world"
+    ./vmetric-director -generator -now -mode syslog -count 1 -address "127.0.0.1:514" -message="Hello world"
     ```
     
     - Using **System Logger**
@@ -135,9 +133,7 @@ Open a new terminal and enter the following in the command line:
   </TabItem>
 </Tabs>
 
-:::warning[attention]
-Be careful not to forget to specify the `count` parameter, and keep it as small as possible as we did here by specifying `1`.
-:::
+<AttentionCountForGenerator />
 
 If you are using the generator mode, after you press <kb-short>Enter</kb-short> the program will start sending our message, one at a time, to _Syslog_. It will signal that it sent the message with a prompt like this:
 
