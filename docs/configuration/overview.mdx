@@ -170,27 +170,57 @@ Components can be tagged for better organization, and&mdash;optionally&mdash;a d
       - security
   ```
 
-### Scoping and Reference
+### Scoping and Referencing
 
-Fields within the same YAML file are all part of the same scope, and they can be referred to by other fields. This can be done in two ways:
+Field names within the same YAML file are all part of the same scope, and they can be referred to from other fields. This can be done as in two ways:
 
-1. Directly:
+- **Directly** - with plain syntax:
 
     ```yaml
     processors:
+      - json:
+          field: user_name
+          ...
       - set:
-          field: some_field
+          field: display
           value: user_name
     ```
 
-2. Using the so called _mustache_ syntax for concatenation:
+- **Indirectly** - with the so-called _mustache_ syntax:
 
     ```yaml
     processors:
+      - json:
+          field: user_name
+          ...
       - set:
-          field: some_field
-          value: "User {{user_name}} sent {{file_name}}"
+          field: display
+          value: "Sent by {{user_name}}"
     ```
+
+Fields within data structures are referred to using the _dot_ notation:
+
+    ```yaml
+    processors:
+      - json:
+          field: user
+          ...
+      - set:
+          field: display
+          value: user.name"
+    ```
+
+### Meta Fields
+
+TODO: Mention these fields:
+
+- `_ingest` and its subfields `_key`, `_value`, and `_message`
+- `_vmetric`
+
+TODO: Mention nullability
+
+- `_vmetric?.pipeline`
+
 
 ### Data Flow
 
@@ -301,5 +331,5 @@ Before deploying your configuration, check it using the available tools. The val
   </Tabs>
 
 :::tip
-Refer to specific component documentation for detailed options.
+Refer to component-specific documentation for details on the available options.
 :::
