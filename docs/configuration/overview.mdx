@@ -226,15 +226,62 @@ Field names within the same YAML file are all part of the same scope, and they c
 
 ### Meta Fields
 
-TODO: Mention these fields:
+**DataStream** uses the following meta fields to carry out some of its pipeline marshalling operations in the background.
 
-- `_ingest` and its subfields `_key`, `_value`, and `_message`
-- `_vmetric`
+#### `_ingest` Field
 
-TODO: Mention nullability
+The `_ingest` field serves as a temporary internal namespace for data processing operations within the pipeline. It contains ephemeral metadata that facilitates various processor operations and is typically cleaned up after processing is complete.
 
-- `_vmetric?.pipeline`
+**Structure and Subfields:**
 
+- **`_ingest._key`** - Contains the current iteration key when processing arrays or maps in the `foreach` processor. This field is dynamically populated during iteration and represents either the array index (as integer) or the map key (as string).
+
+- **`_ingest._value`** - Holds the current iteration value when processing collections in the `foreach` processor. This field contains the actual data being processed for each iteration step.
+
+- **`_ingest._message`** - Stores the complete JSON representation of the log entry during enrichment operations. This field is used by the `enrich` processor to create temporary database tables and perform SQL-based data enrichment queries.
+
+**Lifecycle and Nullability:**
+
+The `_ingest` field and its subfields are temporary by design. They are created during specific processor operations and automatically cleaned up afterward. The nullability patterns follow these principles:
+
+- Fields may be `null` or undefined (`?`) when not actively being used by a processor
+- `_ingest._key` and `_ingest._value` are only populated during `foreach` operations
+- `_ingest._message` is only populated during `enrich` operations
+- The entire `_ingest` object is deleted after processing completes
+
+**Configuration Context:**
+
+The `_ingest` field also plays a crucial role in configuration evaluation and definition processing. During device configuration processing, the field is populated with definition and input metadata to enable conditional evaluation using expression language conditions. This allows for dynamic configuration filtering based on device properties and current processing context.
+
+**Error Handling Context:**
+
+When processor failures occur, the `_ingest` namespace is also used to capture error metadata:
+
+- `_ingest.on_failure_pipeline` - Name of the pipeline where the error occurred
+- `_ingest.on_failure_processor_type` - Type of processor that failed
+- `_ingest.on_failure_processor_tag` - Tag of the specific processor instance
+- `_ingest.on_failure_message` - Detailed error message
+
+#### `_vmetric` Field
+
+The `_vmetric` field appears to be referenced in the system architecture but is not directly visible in the current processor implementations. Based on the codebase patterns, this field likely serves as a system-level metadata container for VirtualMetric-specific operational data.
+
+**Expected Structure:**
+
+The `_vmetric` field serves as a system-level metadata container that provides context about the VirtualMetric processing environment. Based on the codebase architecture, this field contains:
+
+- Device identification and metadata (ID, name, type, tags)
+- Processing pipeline information and configuration
+- System service context and ingestion channel details
+- Cross-component communication metadata
+
+**Nullability and Usage:**
+
+The `_vmetric` field follows similar nullability patterns to `_ingest`, where subfields may be undefined (`?`) when not actively populated by system operations. Unlike the ephemeral `_ingest` data, this field typically persists throughout the processing lifecycle to provide consistent system context.
+
+**Integration with Processing Pipeline:**
+
+Both meta fields integrate seamlessly with the processing pipeline's field manipulation system, supporting dot notation access patterns and dynamic field creation/deletion operations.
 
 ## Data Flow
 
@@ -316,7 +363,11 @@ Refer to component-specific documentation for details of the available options.
 
 ## Validation
 
-Before deploying your configuration, check it using the available tools. The validator checks for syntactic correctness, required field presence, reference integrity, and logical consistency.
+Before deploying your configuration, check it using the available tools.
+
+:::info
+The validator checks for syntactic correctness, required field presence, reference integrity, and logical consistency.
+:::
 
 - Check the configuration file
 
