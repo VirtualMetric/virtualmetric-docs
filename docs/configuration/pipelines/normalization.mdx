@@ -9,7 +9,7 @@ The processor supports several widely-used log formats:
 ### Generic
 
 |Format|Notation|Key Identifier|Layout Characteristics|Example Fields|
-|---|---|---|---|---|
+|:-:|:-:|:-:|:-:|:-:|
 |Elastic Common Schema (ECS)|Dot notation with lowercase|`@timestamp`|Hierarchical structure|`source.ip`, `network.direction`|
 |Splunk Common Information Model (CIM)|Underscore with lowercase|`_time`|Flat structure|`src_ip`, `network_direction`|
 |Advanced Security Information Model (ASIM)|PascalCase|`TimeGenerated`|Explicit names|`SourceIp`, `NetworkDirection`|
@@ -17,7 +17,7 @@ The processor supports several widely-used log formats:
 ### Security-specific
 
 |Format|Description|Key Identifier|Example Fields|
-|---|---|---|---|
+|:-:|:-:|:-:|:-:|
 |Common Event Format (CEF)|ArcSight's standard format|`rt` (receiptTime)|`networkUser`, `sourceAddress`|
 |Log Event Extended Format (LEEF)|IBM QRadar's format|`devTime`|`networkUser`, `srcAddr`|
 |Common Security Log (CSL)|Microsoft Sentinel's format|`TimeGenerated`|`NetworkUser`, `SourceAddress`|
@@ -27,7 +27,7 @@ The processor supports several widely-used log formats:
 Source formats can be automatically detected using certain characteristic fields, e.g.
 
 |Context|Field|Format|
-|---|---|---|
+|--:|:--|:--|
 |Timestamp|`@timestamp`|ECS|
 ||`_time`|CIM|
 ||`TimeGenerated`|ASIM/CSL
@@ -62,7 +62,7 @@ Each format follows specific naming conventions:
   <DefCol>`SourceIP`, `EventSeverity`</DefCol>
 </TermTable>
 
-:::warning
+:::caution
 Complex format conversions may impact performance.
 :::
 
@@ -115,8 +115,10 @@ normalize:
 
 ## Best Practices
 
-For _data integrity_, always validate transformed logs against originals, keep original fields when possible for debugging, and document format-specific transformations.
+It is best to keep the following in mind during normalization:
 
-For _performance_, do the normalization early in the pipeline, cache results for lookup when possible, and monitor transformation overhead.
+- **Data Integrity** - Always validate transformed logs against originals, keep original fields when possible for debugging, and document format-specific transformations.
 
-For _error handling_, use `ignore_failure` and implement fallback mechanisms. Also, do not forget to test with diverse samples.
+- **Performance** - Do the normalization early in the pipeline, cache results for lookup when possible, and monitor transformation overhead.
+
+- **Error Jandling** - Use `ignore_failure` and implement fallback mechanisms. Also, do not forget to test with diverse samples.
