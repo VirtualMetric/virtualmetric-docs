@@ -77,7 +77,10 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
-  plugins: [require.resolve("docusaurus-lunr-search")],
+  plugins: [
+    require.resolve("docusaurus-lunr-search"),
+    require.resolve('./plugins/validate-topics'),
+  ],
   themeConfig: {
     image: "telemetry-color.jpg",
     colorMode: {

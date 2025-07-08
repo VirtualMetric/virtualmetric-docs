@@ -102,7 +102,20 @@ All **DataStream** configuration files are in YAML format and conform to the fol
 
 ### Parquet
 
-Apache Parquet is a column-oriented binary storage format designed for efficiency:
+**Apache Parquet** is a column-oriented binary storage format optimized for analytical workloads. Originally developed within the Apache Hadoop ecosystem, Parquet provides efficient compression and encoding schemes for large-scale data processing.
+
+#### 📦 Binary Layout
+
+|Section|Internal Name|Description|Possible Values / Format|
+|--:|:-:|:--|:--|
+|**File Header**|`magic`|4-byte magic number identifying Parquet files|ASCII: `PAR1` (hex: `50 41 52 31`)|
+|**Row Group**|`row_group_metadata`|Metadata for each row group|Contains column chunk metadata and statistics|
+||`column_chunk`|Data for each column in the row group|Compressed and encoded column data|
+|**File Footer**|`metadata`|File-level metadata including schema and row groups|Thrift-encoded metadata structure|
+||`metadata_length`|Length of metadata section|4-byte little-endian integer|
+||`magic`|Footer magic number|ASCII: `PAR1` (hex: `50 41 52 31`)|
+
+#### 🗂️ Column Storage Example
 
 **Row-based storage** (traditional):
 
@@ -116,43 +129,80 @@ id,name,last_name,age
 **Column-based Storage** (Parquet):
 
 ```plaintext
-id:1,2,3
-name:John,Jane,Joe
-last_name:Buck,Doe,Dane
-age:35,27,42
+id: [1, 2, 3]
+name: [John, Jane, Joe]
+last_name: [Buck, Doe, Dane]
+age: [35, 27, 42]
 ```
 
-Key features:
+#### 🔧 Encoding Types
 
-- Dictionary encoding
-- Compressing and bit packing
-- Run-length encoding
-- Optimal for columnar queries
+|Encoding|Internal Name|Description|Use Case|
+|--:|:-:|:--|:--|
+|Plain|`PLAIN`|No encoding applied|Small datasets or unsorted data|
+|Dictionary|`PLAIN_DICTIONARY`|Values replaced with dictionary indices|Repeated string values|
+|Run Length|`RLE`|Consecutive identical values compressed|Sparse or repetitive data|
+|Bit Packing|`BIT_PACKED`|Pack values using minimum required bits|Boolean or small integer ranges|
+|Delta|`DELTA_BINARY_PACKED`|Store differences between consecutive values|Sorted numerical data|
 
-:::info
-A third-party tool is required to access and query the contents of these files.
-:::
+#### 🗜️ Compression Codecs
+
+|Codec|Description|Best For|
+|--:|:--|:--|
+|`UNCOMPRESSED`|No compression applied|Testing or very small files|
+|`SNAPPY`|Fast compression/decompression|General-purpose, balanced performance|
+|`GZIP`|Higher compression ratio|Storage-constrained environments|
+|`LZO`|Fast decompression|Read-heavy workloads|
+|`BROTLI`|Modern compression algorithm|High compression ratio needs|
+|`LZ4`|Extremely fast compression|Low-latency applications|
 
 ### PEM
 
-Privacy Enhanced Mail (PEM) files are used for storing cryptographic keys and certificates:
+**Privacy Enhanced Mail (PEM)** is a Base64-encoded format for storing cryptographic keys, certificates, and other security-related data. Despite its name, PEM is widely used beyond email applications for various cryptographic purposes.
+
+#### 📦 Structure Format
+
+|Component|Description|Example|
+|--:|:--|:--|
+|**Begin Marker**|Header identifying content type|`-----BEGIN CERTIFICATE-----`|
+|**Headers**|Optional key-value metadata pairs|`Proc-Type: 4,ENCRYPTED`|
+|**Encoded Data**|Base64-encoded binary content|`MIIHzTCCBbWgAwIBAgIQaBYE3/M08XHYCnNVmcFBcjANBgkqhkiG9w0BAQsFADBy...`|
+|**End Marker**|Footer matching the begin marker|`-----END CERTIFICATE-----`|
+
+#### 🔑 Common PEM Types
+
+|Type|Begin/End Label|Description|Use Case|
+|--:|:-:|:--|:--|
+|Certificate|`CERTIFICATE`|X.509 public key certificate|SSL/TLS, code signing|
+|Private Key|`PRIVATE KEY`|PKCS#8 private key|General-purpose private key storage|
+|RSA Private Key|`RSA PRIVATE KEY`|PKCS#1 RSA private key|RSA-specific private keys|
+|Public Key|`PUBLIC KEY`|X.509 SubjectPublicKeyInfo|Public key distribution|
+|Certificate Request|`CERTIFICATE REQUEST`|PKCS#10 certificate signing request|Certificate authority requests|
+|DH Parameters|`DH PARAMETERS`|Diffie-Hellman parameters|Key exchange configuration|
+|EC Private Key|`EC PRIVATE KEY`|Elliptic Curve private key|EC cryptography|
+
+#### 🔒 Encrypted PEM Format
+
+|Field|Description|Example|
+|--:|:--|:--|
+|**Proc-Type**|Processing type and encryption flag|`Proc-Type: 4,ENCRYPTED`|
+|**DEK-Info**|Encryption algorithm and IV|`DEK-Info: AES-256-CBC,A1B2C3D4E5F6...`|
+|**Encrypted Data**|Base64-encoded encrypted content|`Encrypted binary data...`|
+
+#### 📋 Example Structure
 
 ```encoding
----BEGIN CERTIFICATE---
-MIIHzTCCBbWgAwIBAgIQaBYE3/M08XHYCnNVmcFBcjANBgkqhkiG9w0BAQsFADBy
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-256-CBC,A1B2C3D4E5F67890A1B2C3D4E5F67890
+
+MIIEpAIBAAKCAQEA2Z3QX0KZVE9I+sLlmEUKkYgJiEQSvfNF6JUVNBQdHPvs
+kNkRFWGLQQEjLXPOCjGhvQZZLvbPjVZGKlnTJ1yJQvzjhvnP0zJhExFmKWz8
 ...
----END CERTIFICATE---
+-----END RSA PRIVATE KEY-----
 ```
 
-Files have Base64-encoded content, have `BEGIN`/`END` markers, can contain multiple certificates/keys, and are text-based.
-
-Common uses:
-
-- SSL/TLS certificates
-- SSH keys
-- RSA private keys
-- Certificate chains
-
+PEM files are text-based, human-readable, and can contain multiple objects separated by blank lines. They're commonly used in web servers, email systems, and various security applications.
 
 ### Avro
 
@@ -502,3 +552,122 @@ Standard protocol for system logging:
 |--:|:--|
 |`correlation_id`|Matches the request|
 |`response_body`|Depends on the request type|
+
+### Redis
+
+Redis Serialization Protocol (RESP) for client-server communication:
+
+#### Message Format
+
+|Field|Description|Example Value|
+|--:|:--|:--|
+|**Type**|First byte indicates data type|`+` (Simple String), `-` (Error), `:` (Integer), `$` (Bulk String), `*` (Array)|
+|**Data**|Payload following type indicator|`OK\r\n`, `3\r\n`, `$5\r\nhello\r\n`|
+|**Terminator**|CRLF sequence marking end of element|`\r\n`|
+
+#### Data Types
+
+|Type|Indicator|Format|Example|
+|:-:|:-:|:--|:--|
+|Simple String|`+`|`+<string>\r\n`|`+OK\r\n`|
+|Error|`-`|`-<error>\r\n`|`-ERR unknown command\r\n`|
+|Integer|`:`|`:<number>\r\n`|`:1000\r\n`|
+|Bulk String|`$`|`$<length>\r\n<string>\r\n`|`$5\r\nhello\r\n`|
+|Array|`*`|`*<count>\r\n<elements>`|`*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n`|
+
+### RabbitMQ
+
+Advanced Message Queuing Protocol (AMQP) 0-9-1 frame structure:
+
+#### 📦 Binary Layout
+
+|Field|Internal Name|Description|Type / Format|Example / Values|
+|--:|:--:|:--|:--|:--|
+|**Type**|`frame_type`|Type of frame|`uint8`|`1` = Method, `2` = Header, `3` = Body, `8` = Heartbeat|
+|**Channel**|`channel_id`|Channel number|`uint16`|e.g. `1`, `0` for connection-level|
+|**Size**|`frame_size`|Payload size in bytes|`uint32`|e.g. `0x00000014`|
+|**Payload**|`payload`|Frame-specific data|Binary|Depends on `frame_type`|
+|**End**|`frame_end`|Frame terminator|`uint8`|Always `0xCE`|
+
+#### 🔑 Frame Types
+
+|Type|Name|Purpose|
+|--:|:--|:--|
+|`1`|Method|AMQP method calls (open, close, publish, etc.)|
+|`2`|Header|Content header with properties|
+|`3`|Body|Message content data|
+|`8`|Heartbeat|Keep-alive signal|
+
+### NATS
+
+NATS protocol for lightweight messaging:
+
+#### Message Format
+
+|Field|Description|Example Value|
+|--:|:--|:--|
+|**Operation**|Command type|`PUB`, `SUB`, `MSG`, `PING`, `PONG`, `INFO`, `CONNECT`|
+|**Subject**|Message topic/subject|`foo.bar`, `user.123`|
+|**Reply-To**|Optional reply subject|`_INBOX.abc123`|
+|**Payload Size**|Byte length of payload|`13`|
+|**Payload**|Message data|`Hello, World!`|
+|**Terminator**|CRLF sequence|`\r\n`|
+
+#### Protocol Operations
+
+|Operation|Format|Purpose|
+|:-:|:--|:--|
+|`PUB`|`PUB <subject> [reply-to] <size>\r\n<payload>\r\n`|Publish message|
+|`SUB`|`SUB <subject> [queue] <sid>\r\n`|Subscribe to subject|
+|`MSG`|`MSG <subject> <sid> [reply-to] <size>\r\n<payload>\r\n`|Received message|
+|`PING`|`PING\r\n`|Keep-alive request|
+|`PONG`|`PONG\r\n`|Keep-alive response|
+
+### SMTP
+
+Simple Mail Transfer Protocol for email transmission:
+
+#### Message Format
+
+|Field|Description|Example Value|
+|--:|:--|:--|
+|**Command**|SMTP command|`MAIL`, `RCPT`, `DATA`, `HELO`, `EHLO`, `QUIT`|
+|**Parameters**|Command arguments|`FROM:<sender@domain.com>`, `TO:<recipient@domain.com>`|
+|**Response Code**|3-digit status code|`250`, `354`, `550`|
+|**Response Text**|Human-readable message|`OK`, `Start mail input`, `Mailbox unavailable`|
+|**Terminator**|CRLF sequence|`\r\n`|
+
+#### Response Codes
+
+|Code|Category|Description|
+|:-:|:-:|:--|
+|`2xx`|Success|Command completed successfully|
+|`3xx`|Intermediate|Command accepted, more info needed|
+|`4xx`|Transient Error|Temporary failure, retry possible|
+|`5xx`|Permanent Error|Command failed, do not retry|
+
+### TFTP
+
+Trivial File Transfer Protocol for simple file transfers:
+
+#### 📦 Binary Layout
+
+|Field|Internal Name|Description|Type / Format|Example / Values|
+|--:|:--:|:--|:--|:--|
+|**Opcode**|`opcode`|Operation type|`uint16`|`1` = RRQ, `2` = WRQ, `3` = DATA, `4` = ACK, `5` = ERROR|
+|**Filename**|`filename`|File path (RRQ/WRQ only)|Null-terminated string|`config.txt\0`|
+|**Mode**|`mode`|Transfer mode (RRQ/WRQ only)|Null-terminated string|`octet\0`, `netascii\0`|
+|**Block Number**|`block_num`|Data block sequence (DATA/ACK)|`uint16`|e.g. `1`, `2`, `3`|
+|**Data**|`data`|File content (DATA only)|Binary|Up to 512 bytes|
+|**Error Code**|`error_code`|Error type (ERROR only)|`uint16`|`0` = Not defined, `1` = File not found|
+|**Error Message**|`error_msg`|Error description (ERROR only)|Null-terminated string|`File not found\0`|
+
+#### 🔑 Opcodes
+
+|Opcode|Name|Purpose|
+|--:|:--|:--|
+|`1`|RRQ|Read Request|
+|`2`|WRQ|Write Request|
+|`3`|DATA|Data packet|
+|`4`|ACK|Acknowledgment|
+|`5`|ERROR|Error packet|
