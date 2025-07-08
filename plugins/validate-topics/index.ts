@@ -5,7 +5,7 @@ import glob from 'fast-glob';
 
 export default function validateTopicsPlugin(context: LoadContext): Plugin<void> {
   return {
-    name: 'ValidateTopics',
+    name: 'validate-topics',
 
     async loadContent() {
       const rootDir = context.siteDir;
