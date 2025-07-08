@@ -12,8 +12,13 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
       const docsDir = path.join(rootDir, 'docs');
       const topicsPath = path.join(rootDir, 'topics.json');
 
-      // Read TopicLinks.json
-      const topicLinks = JSON.parse(fs.readFileSync(topicsPath, 'utf-8'));
+      // Read topics.json
+      let topicLinks;
+      try {
+        topicLinks = JSON.parse(await fs.promises.readFile(topicsPath, 'utf-8'));
+      } catch (error) {
+        throw new Error(`Failed to read topics.json: ${error.message}`);
+      }
       const validIds = new Set(Object.keys(topicLinks));
 
       // Find all MDX files in the docs directory
@@ -22,7 +27,13 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
       const errors: string[] = [];
 
       for (const file of mdxFiles) {
-        const content = fs.readFileSync(file, 'utf-8');
+        let content;
+        try {
+          content = await fs.promises.readFile(file, 'utf-8');
+        } catch (error) {
+          console.warn(`Warning: Could not read file ${file}: ${error.message}`);
+          continue;
+        }
 
         // Naive Topic match: <Topic id="some-id">
         const matches = [...content.matchAll(/<Topic\s+id=["']([\w\-]+)["']/g)];
@@ -39,7 +50,7 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
         console.error('\nTopic Validation Errors:\n');
         errors.forEach(err => console.error(err));
         console.error('\nFix invalid Topic IDs or update topics.json.\n');
-        process.exit(1); // Halt build
+        throw new Error('Topic validation failed. Fix invalid Topic IDs or update topics.json.');
       } else {
         console.log('✅ All Topic IDs are valid.');
       }
