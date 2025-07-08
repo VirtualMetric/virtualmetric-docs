@@ -1,4 +1,4 @@
-import AttentionConfigFiles from './_attention-config-files.mdx';
+import ImportantConfigFiles from './_important-config-files.mdx';
 
 # Example: Reading JSON With a Pipeline
 
@@ -8,13 +8,7 @@ This section will help you get started with configuring and running a very simpl
 For a detailed discussion of pipelines, see [this section](../../configuration/pipelines/overview.mdx#configuration).
 :::
 
-<AttentionConfigFiles />
-
 In this example, we will use a feature of **Director** that facilitates designing and testing pipelines.
-
-:::caution
-Note that when running the code samples, we have to specify the paths and names of the files we are using. This is specific to the _pipeline_ mode.
-:::
 
 ## Scenario
 
@@ -22,7 +16,11 @@ To understand how a pipeline works at the very basic level, we will create a ver
 
 Using **Director**'s pipeline validation and testing functionality, we will see the pipeline in action.
 
-## Step 1: Create Test Data
+## Setup and Trial
+
+<ImportantConfigFiles />
+
+### Step 1: Create Test Data
 
 First, create a JSON file named `sample-data.json` in our working directory, and put the following sample data in it:
 
@@ -32,7 +30,7 @@ First, create a JSON file named `sample-data.json` in our working directory, and
 }
 ```
 
-## Step 2: Define Pipeline Logic
+### Step 2: Define Pipeline Logic
 
 Then, create a YAML file in our working directory named `convert-words.yml`, and put the following pipeline definition in it:
 
@@ -58,7 +56,7 @@ Here is what this pipeline will do:
 - Using the [`json`](../../configuration/pipelines/processors/json.mdx) processor, grab its contents and&mdash;since we turned on its `add_to_root` setting&mdash;move the `words` field one level up.
 - Using the [`uppercase`](../../configuration/pipelines/processors/uppercase.mdx) processor, convert the words to uppercase and write them to a field named `converted_words`.
 
-## Step 3: Validate The Pipeline
+### Step 3: Validate The Pipeline
 
 To see whether our pipeline is valid, we enter the following command in the terminal:
 
@@ -74,6 +72,10 @@ To see whether our pipeline is valid, we enter the following command in the term
     ```
   </TabItem>
 </Tabs>
+
+:::info[important]
+Note that we have to specify the paths and names of the files we are using. This is specific to the _pipeline_ mode.
+:::
 
 If our pipeline is valid, this command will return:
 
@@ -132,7 +134,7 @@ This means, **Director** is able to recognize the pipeline we have defined by it
 
 Now we can test our pipeline.
 
-## Step 4: Test The Pipeline
+### Step 4: Test The Pipeline
 
 To see our pipeline in action, enter the following in the terminal and check its status message:
 
@@ -162,7 +164,7 @@ Here is what this test does:
 The output file should be created when the test is run.
 :::
 
-## Step 5: Check The Processed Data
+### Step 5: Check The Processed Data
 
 Now open the file named `processed-sample-data.json` to see the results. It should appear like this:
 

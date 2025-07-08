@@ -70,8 +70,8 @@ const sidebars: SidebarsConfig = {
             description: "The following documents contain detailed information on this topic."
           },
           items: [
-            "microsoft-sentinel/integration/via-autodiscovery",
             "microsoft-sentinel/integration/manual",
+            "microsoft-sentinel/integration/via-autodiscovery",
           ],
         },
         {
