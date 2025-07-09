@@ -337,9 +337,10 @@ const sidebars: SidebarsConfig = {
     "appendix",
     "glossary"
   ],
-  // tutorDocs: [
-  //   "tutorials/index",
-  // ],  
+  tutorDocs: [
+    "tutorials/user-notes",
+    "tutorials/a-local-pipeline",
+  ],  
 };
 
 export default sidebars;

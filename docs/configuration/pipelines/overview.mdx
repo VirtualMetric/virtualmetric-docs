@@ -93,20 +93,15 @@ Even if the pipeline routes some of the data without any processing, this will b
 
 Pipelines can be categorized based on their role in the data processing workflow:
 
-* **Pre-processing** - These pipelines prepare raw data for further processing:
-  * Parse raw logs, normalize timestamps, remove unnecessary fields
+* **Pre-processing** - These pipelines prepare raw data for further processing: Parse raw logs, normalize timestamps, remove unnecessary fields
   
-* **Routing** - These pipelines determine where data should be directed:
-  * Filter events by criteria, tag data for specific destinations
+* **Routing** - These pipelines determine where data should be directed: Filter events by criteria, tag data for specific destinations
   
-* **Transformation** - These pipelines change data structure or format:
-  * Field mapping, data type conversion, schema alignment
+* **Transformation** - These pipelines change data structure or format: Field mapping, data type conversion, schema alignment
   
-* **Enrichment** - These pipelines add context to existing data:
-  * Lookup tables, geolocation, threat intelligence integration
+* **Enrichment** - These pipelines add context to existing data: Lookup tables, geolocation, threat intelligence integration
   
-* **Post-processing** - These pipelines prepare data for specific targets:
-  * Format adaptation, field mapping to destination schemas
+* **Post-processing** - These pipelines prepare data for specific targets: Format adaptation, field mapping to destination schemas
 
 ## Use Cases
 
@@ -164,13 +159,13 @@ And here are some examples:
             field: event.category
             value: security
         - script:
-            lang: painless
+            lang: Go
             source: |
-              if (ctx.source.ip.startsWith('10.')||
-                  ctx.source.ip.startsWith('192.168.')) {
-                ctx.source.type = 'internal';
+              if strings.HasPrefix(source.ip, '192.168.') {
+                source.type = 'internal';
               } else {
-                ctx.source.type = 'external';                }
+                  source.type = 'external';                
+              }
   ```
 
 - **Data Transformation**: A sequence of processors can be used to transform data formats, such as converting IP addresses or normalizing field names:
@@ -189,9 +184,6 @@ And here are some examples:
         - convert:
             field: bytes
             type: long
-        - script:
-            lang: painless
-            source: "ctx.network.bytes = ctx.bytes_in + ctx.bytes_out"
         - remove:
             field:
               - bytes_in
@@ -232,11 +224,11 @@ pipelines:
       - set:
           field: event.category
           value: web
-          if: "ctx.source == 'apache'||ctx.source == 'nginx'"
+          if: "_ingest.key.source == 'apache'|| _ingest.key.source == 'nginx'"
       - geoip:
           field: client.ip
           target_field: client.geo
-          if: "ctx?.client?.ip != null"
+          if: "_ingest._key.client?.ip != null"
 ```
 
 ### Pipeline Chaining
@@ -244,7 +236,6 @@ pipelines:
 Pipelines can be chained together using routes or referenced in device configurations:
 
 ```yaml
-# Reference in a device configuration
 devices:
   - name: web_server_logs
     type: http
@@ -254,3 +245,9 @@ devices:
     properties:
       port: 8080
 ```
+
+---
+
+## Next Steps
+
+For an example of a locally validated pipeline, see our <Topic id="tutorial-local-pipeline">A Local Pipeline</Topic> tutorial.

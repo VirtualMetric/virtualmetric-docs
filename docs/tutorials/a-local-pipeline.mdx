@@ -1,0 +1,82 @@
+# A Local Pipeline
+
+## Synopsis
+
+This tutorial walks through the process of creating, validating, and testing a **DataStream** pipeline using the CSV processor, with validation and testing done via **Director**'s pipeline mode.
+
+## Scenario
+
+## Setup and Trial
+
+### Step 1: Define Your Pipeline Configuration
+
+Create a YAML configuration file that defines your pipeline structure and processors:
+
+```yaml title="pipeline.yml"
+pipelines:
+  name: "csv-processing-pipeline"
+  description: "Process CSV data from log entries"
+  processors:
+    - csv:
+        field: "message"
+        target_fields: ["timestamp", "level", "component", "details"]
+        separator: ","
+        trim: true
+        empty_value: "unknown"
+        ignore_failure: false    
+    - set:
+        field: "processed_at"
+        value: "{{ now() }}"
+```
+
+### Step 2: Prepare Test Data
+
+Create sample input data to use for validating your pipeline:
+
+```json title="test-data.json"
+{
+  "message": "2024-01-15T10:30:00Z,INFO,auth-service,User login successful",
+  "@timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### Step 3: Validate Pipeline Syntax
+
+Use **Director** to validate your pipeline configuration to make sure that:
+
+- Pipeline configuration is valid [✓]
+- All processors are correctly configured [✓]
+- There are no syntax errors [✓]
+
+```bash
+vmetric-director -pipeline -path pipeline.yml -validate
+
+```
+
+:::info
+The validator checks for syntactic correctness, required field presence, reference integrity, and logical consistency.
+:::
+
+### Step 4: Test Pipeline Processing
+
+Run your pipeline in test mode with sample data:
+
+```bash
+vmetric-director -pipeline -path pipeline.yml -input test-data.json -test
+```
+
+### Step 5: Verify Output
+
+Check that your pipeline produces the expected output. Expected output is:
+
+```json
+{
+  "message": "2024-01-15T10:30:00Z,INFO,auth-service,User login successful",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "level": "INFO",
+  "component": "auth-service",
+  "details": "User login successful",
+  "processed_at": "2024-01-15T10:30:15.123Z",
+  "@timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
