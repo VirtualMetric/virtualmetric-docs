@@ -334,7 +334,71 @@ const sidebars: SidebarsConfig = {
     //     "migration/vector",
     //   ],
     // },
-    "appendix",
+    {
+      type: "category",
+      label: "Appendix",
+      items: [
+        "appendix/agent-ids",
+        "appendix/configuration-bnf",
+        {
+          type: "category",
+          label: "File Formats",
+          link: {
+            type: "generated-index",
+            description: "Storage file format specifications"
+          },
+          items: [
+            "appendix/file-formats/avro",
+            "appendix/file-formats/parquet",
+            "appendix/file-formats/pem",
+          ],
+        },
+        {
+          type: "category",
+          label: "Log Formats",
+          link: {
+            type: "generated-index",
+            description: "Log format specifications"
+          },
+          items: [
+            "appendix/log-formats/asim",
+            "appendix/log-formats/cef",
+            "appendix/log-formats/cim",
+            "appendix/log-formats/ecs",
+            "appendix/log-formats/estreamer",
+            "appendix/log-formats/ipfix",
+            "appendix/log-formats/leef",
+            "appendix/log-formats/netflow",
+            "appendix/log-formats/sflow",
+          ],
+        },
+        {
+          type: "category",
+          label: "Pattern Matching",
+          items: [
+            "appendix/pattern-matching/grok",
+            "appendix/pattern-matching/metadata",
+          ],
+        },
+        {
+          type: "category",
+          label: "Protocols",
+          link: {
+            type: "generated-index",
+            description: "Protocol specifications"
+          },
+          items: [
+            "appendix/protocols/kafka",
+            "appendix/protocols/nats",
+            "appendix/protocols/rabbitmq",
+            "appendix/protocols/redis",
+            "appendix/protocols/smtp",
+            "appendix/protocols/syslog",
+            "appendix/protocols/tftp",
+          ],
+        },
+      ],
+    },
     "glossary"
   ],
   tutorDocs: [
