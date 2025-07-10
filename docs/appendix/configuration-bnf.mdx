@@ -1,0 +1,58 @@
+---
+pagination_prev: null
+pagination_next: null
+---
+
+# Configuration BNF
+
+All **DataStream** configuration files are in YAML format and conform to the following syntax:
+
+<TermTable>
+   <TermCol>`comp-decl`</TermCol>
+   <DefCol>`::= <comp-type> ":" "\n\t" <comp-def>`</DefCol>
+
+   <TermCol>`comp-type`</TermCol>
+   <DefCol>`::= ("devices"|"targets"|"pipelines"|"routes")`</DefCol>
+
+   <TermCol>`comp-def`</TermCol>
+   <DefCol>`::= <id-fld-def> <fld-defs>`</DefCol>
+
+   <TermCol>`id-fld-def`</TermCol>
+   <DefCol>`::= "-" <id-fld-name> ":" <id>`</DefCol>
+
+   <TermCol>`id-fld-name`</TermCol>
+   <DefCol>`::= "-" <id>`</DefCol>
+
+   <TermCol>`id`</TermCol>
+   <DefCol>`::= <txt-val>`</DefCol>
+
+   <TermCol>`fld-defs`</TermCol>
+   <DefCol>`::= <fld-def> ["\n" <fld-defs>]*`</DefCol>
+
+   <TermCol>`fld-def`</TermCol>
+   <DefCol>`::= <fld-name> ":" <fld-vals>`</DefCol>
+
+   <TermCol>`fld-name`</TermCol>
+   <DefCol>`::= <txt-val>`</DefCol>
+
+   <TermCol>`fld-vals`</TermCol>
+   <DefCol>`::= (<fld-val>|"[" <fld-val> ["," <fld-vals>]* "]"|["\n\t -" <fld-val>]+)`</DefCol>
+
+   <TermCol>`fld-val`</TermCol>
+   <DefCol>`::= (txt-val|num-val)`</DefCol>
+
+   <TermCol>`txt-val`</TermCol>
+   <DefCol>`::= <txt-char>+ <alnum-char>*`</DefCol>
+
+   <TermCol>`num-val`</TermCol>
+   <DefCol>`::= ('-'|'+')? <num-char>+`</DefCol>
+
+   <TermCol>`alnum-char`</TermCol>
+   <DefCol>`::= (<txt-char>|<num-char>)*`</DefCol>
+
+   <TermCol>`txt-char`</TermCol>
+   <DefCol>`::= ('a' .. 'z'|'A' .. 'Z'|'_')`</DefCol>
+
+   <TermCol>`num-char`</TermCol>
+   <DefCol>`::= '0' .. '9'`</DefCol>
+</TermTable>
