@@ -298,20 +298,6 @@ const sidebars: SidebarsConfig = {
         'configuration/routes',
       ],
     },
-    {
-      type: "category",
-      label: "CLI",
-      link: {
-        type: "generated-index",
-        title: "Command-Line Interface",
-        description: "Chapters providing detailed information on the CLI options."
-      },
-      items: [
-        "cli/director",
-        // "cli/generator",
-        "cli/agent",
-      ]
-    },
     // {
     //   type: "category",
     //   label: "Architecture",
@@ -337,9 +323,23 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Appendix",
+      link: {
+        type: "generated-index",
+        title: "Appendix",
+        description: "Reference information on various topics."
+      },
       items: [
         "appendix/agent-ids",
         "appendix/configuration-bnf",
+        {
+          type: "category",
+          label: "CLI",
+          items: [
+            "appendix/cli/director",
+            // "appendix/cli/generator",
+            "appendix/cli/agent",
+          ]
+        },
         {
           type: "category",
           label: "File Formats",
