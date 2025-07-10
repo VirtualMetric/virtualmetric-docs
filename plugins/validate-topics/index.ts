@@ -13,13 +13,13 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
       const topicsPath = path.join(rootDir, 'topics.json');
 
       // Read topics.json
-      let topicLinks;
+      let topics;
       try {
-        topicLinks = JSON.parse(await fs.promises.readFile(topicsPath, 'utf-8'));
+        topics = JSON.parse(await fs.promises.readFile(topicsPath, 'utf-8'));
       } catch (error) {
         throw new Error(`Failed to read topics.json: ${error.message}`);
       }
-      const validIds = new Set(Object.keys(topicLinks));
+      const validIds = new Set(Object.keys(topics));
 
       // Find all MDX files in the docs directory
       const mdxFiles = await glob('**/*.mdx', { cwd: docsDir, absolute: true });

@@ -1,0 +1,19 @@
+digraph DeviceToPipeline {
+  graph [fontname="Calibri"];
+  node [shape=box, style="rounded,filled", fontname="Calibri", fontsize=11, fillcolor="#ececec", color="#999999"];
+  edge [fontname="Calibri", fontsize=10, color="#606090"];
+
+  Syslog [label="Syslog"];
+  Winlogbeat [label="Windows Agent"];
+  Kafka [label="Kafka Stream"];
+  HTTP [label="HTTP Webhook"];
+
+  P1 [label="Pipeline A\n(Syslog Parsing)"];
+  P2 [label="Pipeline B\n(Normalization)"];
+  P3 [label="Pipeline C\n(Alert Enrichment)"];
+
+  Syslog -> P1;
+  Winlogbeat -> P2;
+  Kafka -> P2;
+  HTTP -> P3;
+}

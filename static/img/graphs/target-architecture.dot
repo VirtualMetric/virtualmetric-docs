@@ -1,0 +1,16 @@
+digraph TargetFlow {
+  tooltip="Processor Chain"
+  rankdir="LR"
+
+  graph [fontname="Calibri"];
+  node [shape=box, style="filled,rounded", fontname="Calibri", fontsize=11, fillcolor="#f3e5f5", color="#ce93d8"];
+  edge [fontname="Calibri", fontsize=10, color="#ba68c8"];
+
+  Pipeline [label="Pipeline Output"];
+  Buffer [label="Write-Ahead Log\n(Buffering)"];
+  FieldMapping [label="Field Mapping"];
+  IndexStrategy [label="Index Strategy\n(e.g., daily, dynamic)"];
+  Elasticsearch [label="Target: Elasticsearch"];
+
+  Pipeline -> Buffer -> FieldMapping -> IndexStrategy -> Elasticsearch;
+}

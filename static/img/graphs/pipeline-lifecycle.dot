@@ -1,0 +1,16 @@
+digraph PipelineLifecycle {
+  graph [fontname="Calibri", bgcolor="white", style="filled", fillcolor="#f9f9f9"];
+  node [shape=box, style="filled,rounded", fontname="Calibri", fontsize=11, fillcolor="#e3f3f3", color="#9090f9"];
+  edge [fontname="Calibri", fontsize=10, color="#64b5f6"];
+
+  Input [label="Data Input (Device)"];
+  PreProcessing [label="Pre-Processing\n(e.g., decrypt, dissect)"];
+  CoreProcessors [label="Core Processing\n(enrich, convert, route)"];
+  Conditional [label="Conditionals / Filters"];
+  Reroute [label="Reroute Processor"];
+  PostProcessing [label="Post-Processing\n(e.g., mask, compact)"];
+  Target [label="Target (Blob, Sentinel, etc)"];
+
+  Input -> PreProcessing -> CoreProcessors -> Conditional -> PostProcessing -> Target;
+  Conditional -> Reroute -> CoreProcessors [label="if matched"];
+}

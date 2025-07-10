@@ -48,14 +48,14 @@ Files can have the following properties:
 |---|---|---|---|
 |`location`|N|`<service-root>`|File output directory|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|File name template|
-|`format`|N|`"json"`|File format: `json`, `multijson`, `avro`, `ocf`, or `parquet`|
-|`compression`|N|`"zstd"`|Compression algorithm. For [Avro](../../appendix.mdx#avro) `ztsd`, `snappy`, `deflate`; for [Parquet](../../appendix.mdx#parquet) `zstd`, `snappy`, `brotli`, `gzip`, and `lz4`|
+|`format`|N|`"json"`|File format. See [Formats](#formats) below|
+|`compression`|N|-|Compression algorithm. See applicable <Topic id="appendix-file-formats">Appendix</Topic> section|
 |`extension`|N|Matches `type`|Custom file extension|
-|`schema`|N|-|Data schema for Avro/Parquet formats or schema template name|
+|`schema`|N|-|Data schema for <Topic id="appendix-avro">Avro</Topic> / <Topic id="appendix-parquet">Parquet</Topic> formats or schema template name|
 |`batch_size`|N|`100000`|Maximum number of messages per file|
 |`max_size`|N|`32MB`|Maximum file size before rotating|
 |`no_buffer`|N|`false`|Disable write buffering|
-|`field_format`|N|-|Field normalization format: `ecs`, `cim`, or `asim`|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
 
 ### Multiple Locations
 
@@ -91,7 +91,7 @@ The target supports the following built-in schema templates:
 Files with no messages (i.e. with `counter=0`) are automatically removed when the target is disposed.
 :::
 
-:::warning
+:::caution
 When `no_buffer` is enabled, each write operation will be immediately flushed to disk. This provides durability but may impact performance.
 :::
 
@@ -126,11 +126,10 @@ The following template variables can be used in the file name:
 
 Files can use the following compression algorithms:
 
-|Format|Compression Options|
-|---|---|
-|JSON/MultiJSON|`zstd` (default)|
-|Avro|`null`, `deflate`, `snappy`, `zstd`|
-|Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+|Format|Default|Compression Options|
+|---|---|---|
+|Avro|`ztsd`|See the relevant column of the <Topic id="appendix-avro">Appendix</Topic> section|
+|Parquet|`ztsd`|See the relevant column of the <Topic id="appendix-parquet">Appendix</Topic> section|
 
 ## Examples
 
