@@ -331,6 +331,7 @@ const sidebars: SidebarsConfig = {
       items: [
         "appendix/agent-ids",
         "appendix/configuration-bnf",
+        "appendix/grok-patterns",
         {
           type: "category",
           label: "CLI",
@@ -374,14 +375,6 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: "category",
-          label: "Pattern Matching",
-          items: [
-            "appendix/pattern-matching/grok",
-            "appendix/pattern-matching/metadata",
-          ],
-        },
-        {
-          type: "category",
           label: "Protocols",
           link: {
             type: "generated-index",
@@ -404,6 +397,13 @@ const sidebars: SidebarsConfig = {
   tutorDocs: [
     "tutorials/user-notes",
     "tutorials/a-local-pipeline",
+    "tutorials/kafka-to-parquet-pipeline",
+    "tutorials/azure-sentinel-advanced-integration",
+    "tutorials/rabbitmq-threat-intelligence",
+    "tutorials/multi-source-log-correlation",
+    "tutorials/high-volume-sampling-strategies",
+    "tutorials/advanced-netflow-processing",
+    "tutorials/ai-powered-log-analysis",
   ],  
 };
 
