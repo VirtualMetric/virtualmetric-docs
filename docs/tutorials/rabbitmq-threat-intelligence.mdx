@@ -246,15 +246,13 @@ pipelines:
       
       # VirusTotal enrichment for URLs
       - virustotal:
-          field: extracted_url
+          field: urls
           target_field: threat_intelligence.virustotal_url
           api_key: "your_virustotal_api_key"
           resource_type: url
           cache_ttl: 1800
           ignore_failure: true
-          if: "urls != null"
-      
-      # VirusTotal enrichment for file hashes
+          if: "urls != null"      # VirusTotal enrichment for file hashes
       - virustotal:
           field: file_hash
           target_field: threat_intelligence.virustotal_hash
