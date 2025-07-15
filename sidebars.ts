@@ -331,7 +331,6 @@ const sidebars: SidebarsConfig = {
         description: "Reference information on various topics."
       },
       items: [
-        "appendix/agent-ids",
         "appendix/configuration-bnf",
         "appendix/grok-patterns",
         {
@@ -392,6 +391,7 @@ const sidebars: SidebarsConfig = {
             "appendix/protocols/tftp",
           ],
         },
+        "appendix/agent-ids",
       ],
     },
     "glossary"
@@ -401,11 +401,11 @@ const sidebars: SidebarsConfig = {
     "tutorials/a-local-pipeline",
     "tutorials/kafka-to-parquet-pipeline",
     "tutorials/azure-sentinel-advanced-integration",
-    "tutorials/rabbitmq-threat-intelligence",
-    "tutorials/multi-source-log-correlation",
-    "tutorials/high-volume-sampling-strategies",
-    "tutorials/advanced-netflow-processing",
-    "tutorials/ai-powered-log-analysis",
+    // "tutorials/rabbitmq-threat-intelligence",
+    // "tutorials/multi-source-log-correlation",
+    // "tutorials/high-volume-sampling-strategies",
+    // "tutorials/advanced-netflow-processing",
+    // "tutorials/ai-powered-log-analysis",
   ],  
 };
 
