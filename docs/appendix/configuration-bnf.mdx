@@ -6,14 +6,14 @@ toc: false
 
 # Configuration BNF
 
-All **DataStream** configuration files are in YAML format and conform to the following syntax:
+All **DataStream** configuration files in YAML format conform to the following syntax:
 
 <TermTable>
    <TermCol>`comp-decl`</TermCol>
-   <DefCol>`::= <comp-type> ":" <INDENT> <comp-def>`</DefCol>
+   <DefCol>`::= <comp-type> ":" <NEWLINE> <INDENT> <comp-def>`</DefCol>
 
    <TermCol>`comp-type`</TermCol>
-   <DefCol>`::= "devices" | "targets"|"pipelines" | "routes"`</DefCol>
+   <DefCol>`::= "devices" | "targets" | "pipelines" | "routes"`</DefCol>
 
    <TermCol>`comp-def`</TermCol>
    <DefCol>`::= <id-fld-def> <fld-defs>`</DefCol>
@@ -22,7 +22,7 @@ All **DataStream** configuration files are in YAML format and conform to the fol
    <DefCol>`::= "-" <id> ":" <id>`</DefCol>
 
    <TermCol>`fld-defs`</TermCol>
-   <DefCol>`::= <fld-def> [<INDENT> <fld-def>]*`</DefCol>
+   <DefCol>`::= <fld-def> [<NEWLINE> <INDENT> <fld-def>]*`</DefCol>
 
    <TermCol>`fld-def`</TermCol>
    <DefCol>`::= <fld-name> ":" <fld-vals>`</DefCol>
@@ -34,7 +34,7 @@ All **DataStream** configuration files are in YAML format and conform to the fol
    <DefCol>`::= "[" <fld-val> ("," <fld-val>)* "]"`</DefCol>
 
    <TermCol>`block-list`</TermCol>
-   <DefCol>`::= (<INDENT> "-" <fld-val>)+`</DefCol>
+   <DefCol>`::= (<NEWLINE> <INDENT> "-" <fld-val>)+`</DefCol>
 
    <TermCol>`fld-val`</TermCol>
    <DefCol>`::= txt-val | num-val`</DefCol>
@@ -51,7 +51,13 @@ All **DataStream** configuration files are in YAML format and conform to the fol
    <TermCol>`num-char`</TermCol>
    <DefCol>`::= '0' .. '9'`</DefCol>
 
-   <TermCol>`<INDENT>`</TermCol>
-   <DefCol>`::= '\n' '\t'`</DefCol>
+   <TermCol>`<NEWLINE>`</TermCol>
+   <DefCol>`::= '\n' | "\r\n" `</DefCol>
+
+   <TermCol>`<INDENT>`*</TermCol>
+   <DefCol>`::= '\t' | [' ']{2,} `</DefCol>
 </TermTable>
 
+:::note[important]
+\* Users may choose tabs or multiple spaces for indentation. However, the indentation patterns _must_ be consistent in all configuration files, and follow the patterns given in the code samples found throughout this guide.
+:::

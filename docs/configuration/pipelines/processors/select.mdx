@@ -1,0 +1,304 @@
+---
+description: Extracts a specific element from arrays by position
+sidebar_custom_props: 
+  customIcon: 🎯
+  customCategory: Filter
+---
+
+# Select
+
+<span className="theme-doc-version-badge badge badge--primary">Array Processing</span><span className="theme-doc-version-badge badge badge--secondary">Data Extraction</span><span className="theme-doc-version-badge badge badge--secondary">Element Selection</span>
+
+## Synopsis
+
+An array processing processor that extracts a specific element from arrays by position, supporting both positive and negative indexing for flexible element selection from various array types including strings, integers, floats, and booleans.
+
+## Schema
+
+```yaml {2-4}
+- select:
+  field: <ident>
+  position: <string>
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the array to process|
+|`position`|Y|-|Position of element to select (0-based index)|
+|`target_field`|Y|-|Field to store the selected element|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if selection fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor supports multiple array types including string arrays, interface arrays, integer arrays, float arrays, and boolean arrays. Position indexing is zero-based with support for negative indices to count from the end of the array.
+
+:::note
+Negative indices allow selection from the end of arrays, where -1 represents the last element, -2 the second-to-last, and so on.
+:::
+
+Array bounds checking ensures safe element access, returning errors for out-of-bounds positions rather than causing runtime panics. The processor validates that the target field is specified since element selection requires a destination.
+
+Position validation ensures that the provided position is a valid integer value, supporting both positive and negative indexing for comprehensive array element access.
+
+:::warning
+The target_field parameter is required and must be specified to store the selected element.
+:::
+
+## Examples
+
+### First Elements
+
+<ExampleGrid>
+  <CommentCol>
+    Selecting the first element from an array...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_levels": ["ERROR", "WARN", "INFO", "DEBUG"],
+      "ip_addresses": ["192.168.1.1", "10.0.0.1", "172.16.0.1"]
+    }
+    ```
+    ```yaml
+    processors:
+      - select:
+        field: log_levels
+        position: "0"
+        target_field: primary_level
+      - select:
+        field: ip_addresses
+        position: "0"
+        target_field: primary_ip
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts the first elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_levels": ["ERROR", "WARN", "INFO", "DEBUG"],
+      "ip_addresses": ["192.168.1.1", "10.0.0.1", "172.16.0.1"],
+      "primary_level": "ERROR",
+      "primary_ip": "192.168.1.1"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Last Elements
+
+<ExampleGrid>
+  <CommentCol>
+    Using negative indexing to select the last element...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_parts": ["usr", "local", "bin", "application"],
+      "scores": [85, 92, 78, 96, 88]
+    }
+    ```
+    ```yaml
+    processors:
+      - select:
+        field: file_parts
+        position: "-1"
+        target_field: filename
+      - select:
+        field: scores
+        position: "-1"
+        target_field: latest_score
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts the last elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_parts": ["usr", "local", "bin", "application"],
+      "scores": [85, 92, 78, 96, 88],
+      "filename": "application",
+      "latest_score": 88
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Middle Elements
+
+<ExampleGrid>
+  <CommentCol>
+    Selecting elements from the middle of arrays...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["urgent", "security", "network", "firewall", "monitoring"],
+      "timestamps": ["08:00", "09:15", "10:30", "11:45", "13:00"]
+    }
+    ```
+    ```yaml
+    processors:
+      - select:
+        field: tags
+        position: "2"
+        target_field: category
+      - select:
+        field: timestamps
+        position: "3"
+        target_field: peak_time
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts middle elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["urgent", "security", "network", "firewall", "monitoring"],
+      "timestamps": ["08:00", "09:15", "10:30", "11:45", "13:00"],
+      "category": "network",
+      "peak_time": "11:45"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Boolean Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Selecting from boolean arrays...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "test_results": [true, false, true, true, false],
+      "feature_flags": [false, true, false, true]
+    }
+    ```
+    ```yaml
+    processors:
+      - select:
+        field: test_results
+        position: "0"
+        target_field: first_test
+      - select:
+        field: feature_flags
+        position: "-2"
+        target_field: second_last_flag
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts boolean values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "test_results": [true, false, true, true, false],
+      "feature_flags": [false, true, false, true],
+      "first_test": true,
+      "second_last_flag": false
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple
+
+<ExampleGrid>
+  <CommentCol>
+    Selecting multiple elements from the same array...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url_parts": ["https:", "", "api.example.com", "v1", "users", "123"]
+    }
+    ```
+    ```yaml
+    processors:
+      - select:
+        field: url_parts
+        position: "0"
+        target_field: protocol
+      - select:
+        field: url_parts
+        position: "2"
+        target_field: domain
+      - select:
+        field: url_parts
+        position: "-1"
+        target_field: user_id
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts multiple components:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url_parts": ["https:", "", "api.example.com", "v1", "users", "123"],
+      "protocol": "https:",
+      "domain": "api.example.com",
+      "user_id": "123"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional
+
+<ExampleGrid>
+  <CommentCol>
+    Selecting elements based on conditions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_stack": ["DatabaseError", "ConnectionTimeout", "RetryExhausted"],
+      "has_errors": true
+    }
+    ```
+    ```yaml
+    processors:
+      - select:
+        field: error_stack
+        position: "0"
+        target_field: root_cause
+        if: "has_errors == true"
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies selection when condition matches:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_stack": ["DatabaseError", "ConnectionTimeout", "RetryExhausted"],
+      "has_errors": true,
+      "root_cause": "DatabaseError"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

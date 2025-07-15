@@ -188,6 +188,7 @@ const sidebars: SidebarsConfig = {
                 "configuration/pipelines/processors/attachment",
                 "configuration/pipelines/processors/azure-openai",
                 "configuration/pipelines/processors/bytes",
+                "configuration/pipelines/processors/capitalize",
                 "configuration/pipelines/processors/cef",
                 "configuration/pipelines/processors/ceil",
                 "configuration/pipelines/processors/circle",
@@ -269,6 +270,7 @@ const sidebars: SidebarsConfig = {
                 "configuration/pipelines/processors/round",
                 "configuration/pipelines/processors/sample",
                 "configuration/pipelines/processors/script",
+                "configuration/pipelines/processors/select",
                 "configuration/pipelines/processors/serialize",
                 "configuration/pipelines/processors/set",
                 "configuration/pipelines/processors/slice",
@@ -329,8 +331,8 @@ const sidebars: SidebarsConfig = {
         description: "Reference information on various topics."
       },
       items: [
-        "appendix/agent-ids",
         "appendix/configuration-bnf",
+        "appendix/grok-patterns",
         {
           type: "category",
           label: "CLI",
@@ -374,14 +376,6 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: "category",
-          label: "Pattern Matching",
-          items: [
-            "appendix/pattern-matching/grok",
-            "appendix/pattern-matching/metadata",
-          ],
-        },
-        {
-          type: "category",
           label: "Protocols",
           link: {
             type: "generated-index",
@@ -397,6 +391,7 @@ const sidebars: SidebarsConfig = {
             "appendix/protocols/tftp",
           ],
         },
+        "appendix/agent-ids",
       ],
     },
     "glossary"
@@ -404,6 +399,13 @@ const sidebars: SidebarsConfig = {
   tutorDocs: [
     "tutorials/user-notes",
     "tutorials/a-local-pipeline",
+    "tutorials/kafka-to-parquet-pipeline",
+    "tutorials/azure-sentinel-advanced-integration",
+    // "tutorials/rabbitmq-threat-intelligence",
+    // "tutorials/multi-source-log-correlation",
+    // "tutorials/high-volume-sampling-strategies",
+    // "tutorials/advanced-netflow-processing",
+    // "tutorials/ai-powered-log-analysis",
   ],  
 };
 
