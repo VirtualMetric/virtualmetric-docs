@@ -1,32 +1,35 @@
 ---
-sidebar_label: Azure Sentinel Advanced Integration
+sidebar_label: Microsoft Sentinel Advanced Integration
 ---
 
 import ImportantConfigFiles from '../reusable/examples/important-config-files.mdx';
 
-# Azure Sentinel Advanced Integration with ASIM Normalization
+# Microsoft Sentinel Advanced Integration with ASIM Normalization
 
 ## Synopsis
 
-This tutorial demonstrates advanced Azure Sentinel integration using DataStream's native Microsoft Sentinel capabilities, including automated DCR (Data Collection Rules) creation, ASIM (Advanced Security Information Model) normalization, and multi-table routing. You'll learn to optimize data ingestion costs, implement schema-aware processing, and leverage Sentinel's advanced analytics capabilities.
+This tutorial demonstrates advanced Microsoft Sentinel integration using DataStream's native Microsoft Sentinel capabilities, including automated DCR (Data Collection Rules) creation, ASIM (Advanced Security Information Model) normalization, and multi-table routing. You'll learn to optimize data ingestion costs, implement schema-aware processing, and leverage Sentinel's advanced analytics capabilities.
 
 **Prerequisites:**
-- Azure subscription with Sentinel workspace
-- Service Principal with appropriate permissions for DCR management
-- Understanding of Azure Monitor, DCRs, and ASIM schema
+
+- **Azure** subscription with **Sentinel** workspace
+- _Service Principal_ with appropriate permissions for DCR management
+- Understanding of **Azure Monitor**, DCRs, and ASIM schema
 - Knowledge of KQL (Kusto Query Language) for analytics
 
 **Configuration files used:**
+
 - `azure-sentinel-advanced.yml` - Main configuration with DCR automation
 - `asim-normalization.yml` - ASIM schema mappings
 
 **Sample data:**
+
 - Various log types (Windows Events, Syslog, Network logs)
 - Sample ASIM-normalized events
 
 ## Scenario
 
-Enterprise security teams need to optimize their Azure Sentinel deployment for cost-efficiency while maintaining comprehensive security monitoring. This tutorial implements advanced Sentinel integration that:
+Enterprise security teams need to optimize their Microsoft Sentinel deployment for cost-efficiency while maintaining comprehensive security monitoring. This tutorial implements advanced Sentinel integration that:
 
 - **Automated DCR management** - Creates and manages Data Collection Rules programmatically
 - **ASIM normalization** - Transforms logs to Advanced Security Information Model standards
@@ -36,7 +39,7 @@ Enterprise security teams need to optimize their Azure Sentinel deployment for c
 - **Custom table creation** - Creates specialized tables for unique data types
 
 **Data flow:**
-Raw Logs → ASIM Normalization → DCR Routing → Azure Sentinel Tables → Analytics Rules
+Raw Logs → ASIM Normalization → DCR Routing → Microsoft Sentinel Tables → Analytics Rules
 
 **Techniques demonstrated:**
 - Azure authentication and DCR automation
@@ -51,22 +54,22 @@ Raw Logs → ASIM Normalization → DCR Routing → Azure Sentinel Tables → An
 
 - **Device**: Multi-source log collection with Azure integration
 - **Pipeline**: ASIM normalization and Sentinel preparation
-- **Target**: Azure Sentinel with automated DCR management
+- **Target**: Microsoft Sentinel with automated DCR management
 
 ### Quick Reference of Processors Used
 
-| Processor | Purpose | Key Parameters |
-|-----------|---------|----------------|
-| `normalize` | ASIM schema transformation | `format`, `target_schema`, `version` |
-| `enforce_schema` | Schema validation | `schema`, `strict_mode` |
-| `set` | Field mapping | `field`, `value`, `copy_from` |
-| `script` | Custom transformations | `lang`, `source` |
-| `iff` | Conditional routing | `if`, `then`, `else` |
+|Processor|Purpose|Key Parameters|
+|---|---|---|
+|`normalize`|ASIM schema transformation|`format`, `target_schema`, `version`|
+|`enforce_schema`|Schema validation|`schema`, `strict_mode`|
+|`set`|Field mapping|`field`, `value`, `copy_from`|
+|`script`|Custom transformations|`lang`, `source`|
+|`iff`|Conditional routing|`if`, `then`, `else`|
 
 ### Expected Input/Output Formats
 
 **Input**: Various log formats (Syslog, Windows Events, CEF, JSON)
-**Output**: ASIM-normalized events ready for Azure Sentinel ingestion
+**Output**: ASIM-normalized events ready for Microsoft Sentinel ingestion
 
 ## Trial
 
@@ -107,6 +110,7 @@ Replace the placeholder values above with your actual Azure credentials, but ens
 For development, you can use environment variable substitution like `tenant_id: "${AZURE_TENANT_ID}"` instead of hardcoded values.
 :::
 
+```yml
 devices:
   # Windows Event logs
   - id: 1
@@ -142,11 +146,11 @@ devices:
       tag: applications
 ```
 
-### Step 2: Configure Azure Sentinel Target with DCR Automation
+### Step 2: Configure Microsoft Sentinel Target with DCR Automation
 
 ```yml title="azure-sentinel-advanced.yml"
 targets:
-  # Azure Sentinel with automated DCR creation
+  # Microsoft Sentinel with automated DCR creation
   - name: sentinel_asim_events
     type: microsoft-sentinel
     status: true
@@ -435,7 +439,7 @@ pipelines:
       # Add custom processing logic
       - script:
           lang: javascript
-          source: |
+          source:|
             // Custom risk scoring logic
             var riskScore = 0;
             
@@ -526,7 +530,7 @@ routes:
         if: "event_classification == 'custom_events'"
 ```
 
-### Step 5: Start Azure Sentinel Integration
+### Step 5: Start Microsoft Sentinel Integration
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -582,24 +586,24 @@ Example ASIM Authentication Event output:
 
 ### Step 8: Create KQL Analytics Rules
 
-In Azure Sentinel, create analytics rules using the normalized data:
+In Microsoft Sentinel, create analytics rules using the normalized data:
 
 ```kql
 // High-risk authentication failures
 ASimAuthenticationEventLogs
-| where EventResult == "Failure"
-| where SrcIpAddr !startswith "192.168."
-| summarize FailureCount = count() by ActorUsername, SrcIpAddr, bin(TimeGenerated, 5m)
-| where FailureCount >= 5
-| project TimeGenerated, ActorUsername, SrcIpAddr, FailureCount
+|where EventResult == "Failure"
+|where SrcIpAddr !startswith "192.168."
+|summarize FailureCount = count() by ActorUsername, SrcIpAddr, bin(TimeGenerated, 5m)
+|where FailureCount >= 5
+|project TimeGenerated, ActorUsername, SrcIpAddr, FailureCount
 
 // Suspicious network sessions
 ASimNetworkSessionLogs
-| where EventResult == "Success"
-| where DstPortNumber in (22, 3389, 5985) // SSH, RDP, WinRM
-| where SrcIpAddr !startswith "192.168."
-| summarize ConnectionCount = count() by SrcIpAddr, DstPortNumber, bin(TimeGenerated, 1h)
-| where ConnectionCount >= 10
+|where EventResult == "Success"
+|where DstPortNumber in (22, 3389, 5985) // SSH, RDP, WinRM
+|where SrcIpAddr !startswith "192.168."
+|summarize ConnectionCount = count() by SrcIpAddr, DstPortNumber, bin(TimeGenerated, 1h)
+|where ConnectionCount >= 10
 ```
 
 ## Monitoring
@@ -607,7 +611,7 @@ ASimNetworkSessionLogs
 ### Key Metrics to Observe
 
 1. **DCR Status**: Successful creation and configuration of Data Collection Rules
-2. **Ingestion Costs**: Monitor Azure Sentinel data ingestion charges
+2. **Ingestion Costs**: Monitor Microsoft Sentinel data ingestion charges
 3. **Schema Compliance**: ASIM normalization success rates
 4. **Query Performance**: Analytics rule execution times
 5. **Data Quality**: Field population rates and validation errors
@@ -620,40 +624,43 @@ ASimNetworkSessionLogs
 - **Sampling**: Implement intelligent sampling for high-volume sources
 - **Filtering**: Remove unnecessary fields before ingestion
 
-### Azure Sentinel Analytics
+### Microsoft Sentinel Analytics
 
 Leverage ASIM data for advanced analytics:
 
 ```kql
 // User behavior analytics across multiple data sources
 let AuthEvents = ASimAuthenticationEventLogs
-| where TimeGenerated > ago(24h)
-| project TimeGenerated, ActorUsername, SrcIpAddr, EventResult;
+|where TimeGenerated > ago(24h)
+|project TimeGenerated, ActorUsername, SrcIpAddr, EventResult;
 
 let NetworkEvents = ASimNetworkSessionLogs
-| where TimeGenerated > ago(24h)
-| project TimeGenerated, SrcIpAddr, DstIpAddr, NetworkProtocol;
+|where TimeGenerated > ago(24h)
+|project TimeGenerated, SrcIpAddr, DstIpAddr, NetworkProtocol;
 
 AuthEvents
-| join kind=inner (NetworkEvents) on SrcIpAddr
-| summarize AuthAttempts = count(), UniqueDestinations = dcount(DstIpAddr) 
+|join kind=inner (NetworkEvents) on SrcIpAddr
+|summarize AuthAttempts = count(), UniqueDestinations = dcount(DstIpAddr) 
   by ActorUsername, SrcIpAddr
-| where AuthAttempts > 10 or UniqueDestinations > 5
+|where AuthAttempts > 10 or UniqueDestinations > 5
 ```
 
 ### Common Troubleshooting
 
 **Issue**: DCR creation failures
+
 - Verify Azure permissions for service principal
 - Check subscription and resource group settings
 - Validate Azure resource naming conventions
 
 **Issue**: Schema validation errors
+
 - Review ASIM field mappings
 - Check data type conversions
 - Verify required field population
 
 **Issue**: High ingestion costs
+
 - Implement data sampling
 - Optimize batch sizes
 - Review table selection strategy
@@ -670,5 +677,5 @@ Monitor Azure integration performance:
 ```
 
 :::caution
-Azure Sentinel ingestion incurs costs based on data volume. Monitor usage carefully and implement appropriate cost controls for production deployments.
+Microsoft Sentinel ingestion incurs costs based on data volume. Monitor usage carefully and implement appropriate cost controls for production deployments.
 :::

@@ -332,7 +332,6 @@ const sidebars: SidebarsConfig = {
       },
       items: [
         "appendix/configuration-bnf",
-        "appendix/grok-patterns",
         {
           type: "category",
           label: "CLI",
@@ -400,7 +399,7 @@ const sidebars: SidebarsConfig = {
     "tutorials/user-notes",
     "tutorials/a-local-pipeline",
     "tutorials/kafka-to-parquet-pipeline",
-    "tutorials/azure-sentinel-advanced-integration",
+    "tutorials/microsoft-sentinel-advanced-integration",
     // "tutorials/rabbitmq-threat-intelligence",
     // "tutorials/multi-source-log-correlation",
     // "tutorials/high-volume-sampling-strategies",
