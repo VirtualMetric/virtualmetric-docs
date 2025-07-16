@@ -254,14 +254,13 @@ pipelines:
           ignore_failure: true
           if: "urls != null"      # VirusTotal enrichment for file hashes
       - virustotal:
-          field: file_hash
+          field: file_hashes    # keep naming consistent with extraction
           target_field: threat_intelligence.virustotal_hash
           api_key: "your_virustotal_api_key"
           resource_type: file
           cache_ttl: 7200
           ignore_failure: true
-          if: "file_hashes != null"
-      
+          if: "file_hashes != null"      
       # AlienVault OTX enrichment
       - alienvault:
           field: source_ip
