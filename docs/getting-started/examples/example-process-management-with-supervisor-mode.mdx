@@ -5,19 +5,19 @@ pagination_next: null
 import ImportantConfigFiles from '../../reusable/examples/important-config-files.mdx';
 import InfoUpdateConfigLive from '../../reusable/examples/info-update-config-live.mdx';
 
-# Example: Process Management with Agent Supervisor
+# Example: Process Management with Supervisor Mode
 
-This section will help you configure and run an **Agent** in **Supervisor mode** to manage and monitor other processes while maintaining connection to a **Director**.
+This section will help you configure and run an **Agent** in _Supervisor_ mode to manage and monitor other processes while maintaining connection to a **Director**.
 
 ## Synopsis
 
-We will configure an **Agent** to operate in **Supervisor mode**, which allows it to manage other system processes while simultaneously collecting metrics and sending them to a **Director**. This demonstrates the dual-purpose capability of process management combined with monitoring.
+We will configure an **Agent** to operate in _Supervisor_ mode, which allows it to manage other system processes while simultaneously collecting metrics and sending them to a **Director**. This demonstrates the dual-purpose capability of process management combined with monitoring.
 
 ## Scenario
 
 We will implement the following process management setup:
 
-- **Configure Supervisor** - Set up Agent to run in Supervisor mode for process management.
+- **Configure Supervisor** - Set up **Agent** to run in _Supervisor_ mode for process management.
 
 - **Manage processes** - Monitor and control other system processes or services.
 
@@ -25,17 +25,17 @@ We will implement the following process management setup:
 
 - **Send data** - Transmit both process status and system metrics to Director for centralized monitoring.
 
-We assume you have a **Director** instance running and processes that need supervision. The Agent will need appropriate permissions to manage other processes on the system.
+We assume you have a **Director** instance running and processes that need supervision. **Agent** will need appropriate permissions to manage other processes on the system.
 
 ## Setup and Trial
 
 <ImportantConfigFiles />
 
-For this example, we will create a configuration file named `vmetric.yml` in the Agent's working directory for Supervisor mode operation.
+For this example, we will create a configuration file named `vmetric.yml` in the Agent's working directory for _Supervisor_ mode operation.
 
-### Step 1: Configure the Director
+### Step 1: Configure Director
 
-First, add a device configuration to your **Director**'s configuration file to define the Agent in Supervisor mode:
+First, add a device configuration to your **Director**'s configuration file to define **Agent** in _Supervisor_ mode:
 
 ```yaml title="director-config.yml"
 devices:
@@ -52,13 +52,14 @@ devices:
 ```
 
 This configuration will:
-- Create a device entry with `id: 2` specifically for the Supervisor Agent
+
+- Create a device entry with `id: 2` specifically for the _Supervisor_-mode **Agent**
 - Set the device `type: windows` to indicate the target operating system
 - Enable the device with `status: true` to allow data collection
-- Configure `type: agent` with `mode: supervisor` to specify this is a Supervisor-mode Agent
+- Configure `type: agent` with `mode: supervisor` to specify this is a _Supervisor_-mode **Agent**
 - Include metric `definitions` for both process monitoring and system metrics
 
-### Step 2: Configure the Agent for Supervisor Mode
+### Step 2: Configure Agent for Supervisor Mode
 
 On the system where you want to run process supervision, create a `vmetric.yml` configuration file:
 
@@ -77,13 +78,14 @@ supervisor:
 ```
 
 This configuration will:
-- Set `device.id: 2` to match the Supervisor device ID configured in Director
-- Specify `director.address` as the IP address and port where Director is listening
+
+- Set `device.id: 2` to match the _Supervisor_* device ID configured in **Director**
+- Specify `director.address` as the IP address and port where **Director** is listening
 - Enable `supervisor.enabled: true` to activate process management features
 - Define a `processes` list with a critical service to monitor and manage
 - Configure `restart_on_failure: true` to automatically restart failed processes
 
-### Step 3: Start the Director
+### Step 3: Start Director
 
 Launch **Director** in console mode to monitor both process events and metrics:
 
@@ -100,11 +102,11 @@ Launch **Director** in console mode to monitor both process events and metrics:
   </TabItem>
 </Tabs>
 
-You should see Director start up and begin listening for Agent connections.
+You should see Director start up and begin listening for **Agent** connections.
 
-### Step 4: Start the Agent in Supervisor Mode
+### Step 4: Start Agent in Supervisor Mode
 
-On the target system, launch the **Agent** with Supervisor mode enabled:
+On the target system, launch **Agent** with _Supervisor_ mode enabled:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -119,17 +121,18 @@ On the target system, launch the **Agent** with Supervisor mode enabled:
   </TabItem>
 </Tabs>
 
-The Agent will:
+**Agent** will:
+
 - Read the `vmetric.yml` configuration file
-- Connect to the Director at the specified address
-- Initialize Supervisor mode for process management
+- Connect to **Director** at the specified address
+- Initialize _Supervisor_ mode for process management
 - Begin monitoring and managing the configured processes
 - Collect both process status and system metrics
-- Send all collected data to Director for processing
+- Send all collected data to **Director** for processing
 
 ### Step 5: Verify Supervisor Operation
 
-In the Director console, you should see messages indicating successful Supervisor Agent connection and dual-mode operation:
+In the **Director** console, you should see messages indicating successful _Supervisor_ **Agent** connection and dual-mode operation:
 
 ```console
 [2025-01-15 10:45:20] [Information] [vmetric-director] Supervisor Agent connection established for device: supervisor_server
@@ -142,11 +145,11 @@ In the Director console, you should see messages indicating successful Superviso
 
 ## Monitoring
 
-Check the Director's logs to verify successful process supervision and metric collection:
+Check **Director**'s logs to verify successful process supervision and metric collection:
 
-- **Connection logs** - Confirm Supervisor Agent successfully connected to Director
+- **Connection logs** - Confirm _Supervisor_-mode **Agent** successfully connected to **Director**
 - **Process logs** - Verify managed processes are being monitored and controlled
 - **Metric logs** - Confirm system metrics are being collected alongside process data
 - **Restart logs** - Check for any automatic process restarts or management actions
 
-If the Supervisor Agent is running correctly, you should see periodic messages for both process management activities and metric collection, indicating the dual-purpose monitoring and management system is operational.
+If _Supervisor_-mode **Agent** is running correctly, you should see periodic messages for both process management activities and metric collection, indicating the dual-purpose monitoring and management system is operational.

@@ -17,15 +17,15 @@ We will configure an **Agent** to connect to a **Director** and automatically co
 
 We will implement the following monitoring setup:
 
-- **Install Agent** - Deploy the Agent service on a remote system that needs monitoring.
+- **Install Agent** - Deploy **Agent** service on a remote system that needs monitoring.
 
-- **Configure connection** - Set up secure communication between Agent and Director.
+- **Configure connection** - Set up secure communication between **Agent** and **Director**.
 
 - **Collect metrics** - Automatically gather system performance data using predefined metric definitions.
 
-- **Send data** - Transmit collected metrics to Director for processing and storage.
+- **Send data** - Transmit collected metrics to **Director** for processing and storage.
 
-We assume you have a **Director** instance running and accessible from the Agent system. The Agent will need network connectivity to reach the Director's service endpoint.
+We assume you have a **Director** instance running and accessible from **Agent**'s system. **Agent** will need network connectivity to reach **Director**'s service endpoint.
 
 ## Setup and Trial
 
@@ -33,9 +33,9 @@ We assume you have a **Director** instance running and accessible from the Agent
 
 For this example, we will create a simple configuration file named `vmetric.yml` in the Agent's working directory.
 
-### Step 1: Configure the Director
+### Step 1: Configure Director
 
-First, add a device configuration to your **Director**'s configuration file to define the Agent:
+First, add a device configuration to your **Director**'s configuration file to define the **Agent**:
 
 ```yaml title="director-config.yml"
 devices:
@@ -51,13 +51,14 @@ devices:
 ```
 
 This configuration will:
+
 - Create a device entry with `id: 1` for the Agent to connect to
 - Set the device `type: windows` to indicate the target operating system
 - Enable the device with `status: true` to allow data collection
 - Configure `type: agent` in properties to specify this is an Agent-based device
 - Include two metric `definitions` that specify which system metrics to collect
 
-### Step 2: Configure the Agent
+### Step 2: Configure Agent
 
 On the system where you want to collect metrics, create a `vmetric.yml` configuration file:
 
@@ -69,11 +70,12 @@ director:
 ```
 
 This configuration will:
-- Set `device.id: 1` to match the device ID configured in Director
-- Specify `director.address` as the IP address and port where Director is listening
-- Use port `8080` which is Director's default service port
 
-### Step 3: Start the Director
+- Set `device.id: 1` to match the device ID configured in **Director**
+- Specify `director.address` as the IP address and port where Director is listening
+- Use port `8080` which is **Director**'s default service port
+
+### Step 3: Start Director
 
 Launch **Director** in console mode to monitor the connection:
 
@@ -90,9 +92,9 @@ Launch **Director** in console mode to monitor the connection:
   </TabItem>
 </Tabs>
 
-You should see Director start up and begin listening for Agent connections.
+You should see **Director** start up and begin listening for **Agent** connections.
 
-### Step 4: Start the Agent
+### Step 4: Start Agent
 
 On the remote system, launch the **Agent**:
 
@@ -109,15 +111,16 @@ On the remote system, launch the **Agent**:
   </TabItem>
 </Tabs>
 
-The Agent will:
+Agent will:
+
 - Read the `vmetric.yml` configuration file
-- Connect to the Director at the specified address
+- Connect to **Director** at the specified address
 - Begin collecting system metrics based on the configured definitions
 - Send collected data to Director for processing
 
 ### Step 5: Verify the connection
 
-In the Director console, you should see messages indicating successful Agent connection and data collection:
+In **Director**'s console, you should see messages indicating successful **Agent** connection and data collection:
 
 ```console
 [2025-01-15 10:30:15] [Information] [vmetric-director] Agent connection established for device: production_server
@@ -129,10 +132,10 @@ In the Director console, you should see messages indicating successful Agent con
 
 ## Monitoring
 
-Check the Director's logs to verify successful metric collection:
+Check the **Director**'s logs to verify successful metric collection:
 
-- **Connection logs** - Confirm Agent successfully connected to Director
+- **Connection logs** - Confirm **Agent** successfully connected to **Director**
 - **Metric logs** - Verify system metrics are being collected and processed
 - **Error logs** - Check for any connection or configuration issues
 
-If the Agent is running correctly, you should see periodic metric collection messages in the Director console, indicating the distributed monitoring system is operational.
+If **Agent** is running correctly, you should see periodic metric collection messages in the **Director** console, indicating the distributed monitoring system is operational.
