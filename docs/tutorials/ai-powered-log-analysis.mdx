@@ -300,10 +300,13 @@ pipelines:
                   Perform anomaly detection on this log entry:
                   
                   Event: {{message}}
-                  Normal patterns in knowledge base: {{historical_patterns}}
+                  Log Level: {{log_level}}
+                  Application: {{application}}
+                  Timestamp: {{timestamp}}
                   
                   Score this event for anomaly (0-100) and explain why.
                   Consider frequency, timing, user behavior, and technical patterns.
+                  Look for unusual patterns in error messages, unexpected log levels, or abnormal timing.
                 target_field: azure_anomaly_analysis
                 temperature: 0.0
                 max_tokens: 200
@@ -370,6 +373,11 @@ pipelines:
               trigger_alert = shouldAlert;
               ai_processing.models_used = insights.processed_by;
               ai_processing.processing_cost = insights.total_cost_estimate;
+              
+              // Copy primary_category to root level for lookup processors
+              if (insights.primary_category) {
+                primary_category = insights.primary_category;
+              }
             }
       
       # Historical pattern matching and learning

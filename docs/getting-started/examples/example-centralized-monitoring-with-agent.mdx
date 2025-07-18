@@ -1,0 +1,141 @@
+---
+pagination_next: null
+---
+
+import ImportantConfigFiles from '../../reusable/examples/important-config-files.mdx';
+import InfoUpdateConfigLive from '../../reusable/examples/info-update-config-live.mdx';
+
+# Example: Centralized Monitoring with Agent
+
+This section will help you configure and run a **VirtualMetric Agent** to collect system metrics and send them to a **Director** for processing.
+
+## Synopsis
+
+We will configure an **Agent** to connect to a **Director** and automatically collect system performance metrics from a remote server. This demonstrates the core distributed monitoring capability that allows centralized data collection from multiple systems.
+
+## Scenario
+
+We will implement the following monitoring setup:
+
+- **Install Agent** - Deploy **Agent** service on a remote system that needs monitoring.
+
+- **Configure connection** - Set up secure communication between **Agent** and **Director**.
+
+- **Collect metrics** - Automatically gather system performance data using predefined metric definitions.
+
+- **Send data** - Transmit collected metrics to **Director** for processing and storage.
+
+We assume you have a **Director** instance running and accessible from **Agent**'s system. **Agent** will need network connectivity to reach **Director**'s service endpoint.
+
+## Setup and Trial
+
+<ImportantConfigFiles />
+
+For this example, we will create a simple configuration file named `vmetric.yml` in the Agent's working directory.
+
+### Step 1: Configure Director
+
+First, add a device configuration to your **Director**'s configuration file to define the **Agent**:
+
+```yaml title="director-config.yml"
+devices:
+  - id: 1
+    name: production_server
+    type: windows
+    status: true
+    properties:
+      type: agent 
+    definitions:
+      - id: 491591344758837249
+      - id: 486227243115741541
+```
+
+This configuration will:
+
+- Create a device entry with `id: 1` for the Agent to connect to
+- Set the device `type: windows` to indicate the target operating system
+- Enable the device with `status: true` to allow data collection
+- Configure `type: agent` in properties to specify this is an Agent-based device
+- Include two metric `definitions` that specify which system metrics to collect
+
+### Step 2: Configure Agent
+
+On the system where you want to collect metrics, create a `vmetric.yml` configuration file:
+
+```yaml title="vmetric.yml"
+device:
+  id: 1
+director:
+  address: 192.168.1.200:8080
+```
+
+This configuration will:
+
+- Set `device.id: 1` to match the device ID configured in **Director**
+- Specify `director.address` as the IP address and port where Director is listening
+- Use port `8080` which is **Director**'s default service port
+
+### Step 3: Start Director
+
+Launch **Director** in console mode to monitor the connection:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-director -console
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -console
+    ```
+  </TabItem>
+</Tabs>
+
+You should see **Director** start up and begin listening for **Agent** connections.
+
+### Step 4: Start Agent
+
+On the remote system, launch the **Agent**:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-agent
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-agent
+    ```
+  </TabItem>
+</Tabs>
+
+Agent will:
+
+- Read the `vmetric.yml` configuration file
+- Connect to **Director** at the specified address
+- Begin collecting system metrics based on the configured definitions
+- Send collected data to Director for processing
+
+### Step 5: Verify the connection
+
+In **Director**'s console, you should see messages indicating successful **Agent** connection and data collection:
+
+```console
+[2025-01-15 10:30:15] [Information] [vmetric-director] Agent connection established for device: production_server
+[2025-01-15 10:30:16] [Information] [vmetric-director] Processing metrics from device ID: 1
+[2025-01-15 10:30:16] [Information] [vmetric-director] Completed processing of agent metrics. Number of processed metrics: 2
+```
+
+<InfoUpdateConfigLive />
+
+## Monitoring
+
+Check the **Director**'s logs to verify successful metric collection:
+
+- **Connection logs** - Confirm **Agent** successfully connected to **Director**
+- **Metric logs** - Verify system metrics are being collected and processed
+- **Error logs** - Check for any connection or configuration issues
+
+If **Agent** is running correctly, you should see periodic metric collection messages in the **Director** console, indicating the distributed monitoring system is operational.

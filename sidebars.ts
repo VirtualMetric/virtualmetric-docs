@@ -45,13 +45,8 @@ const sidebars: SidebarsConfig = {
             "getting-started/examples/example-forwarding-data",
             "getting-started/examples/example-reading-json-with-a-pipeline",
             "getting-started/examples/example-a-syslog-to-json-data-stream",
-          ]
-        },
-        {
-          type: "category",
-          label: "Agent",
-          items: [
-            "getting-started/agent/example-using-agents",
+            "getting-started/examples/example-centralized-monitoring-with-agent",
+            "getting-started/examples/example-process-management-with-supervisor-mode",
           ]
         },
       ],
@@ -332,7 +327,6 @@ const sidebars: SidebarsConfig = {
       },
       items: [
         "appendix/configuration-bnf",
-        "appendix/grok-patterns",
         {
           type: "category",
           label: "CLI",
@@ -400,12 +394,12 @@ const sidebars: SidebarsConfig = {
     "tutorials/user-notes",
     "tutorials/a-local-pipeline",
     "tutorials/kafka-to-parquet-pipeline",
-    "tutorials/azure-sentinel-advanced-integration",
-    // "tutorials/rabbitmq-threat-intelligence",
-    // "tutorials/multi-source-log-correlation",
-    // "tutorials/high-volume-sampling-strategies",
-    // "tutorials/advanced-netflow-processing",
-    // "tutorials/ai-powered-log-analysis",
+    "tutorials/microsoft-sentinel-advanced-integration",
+    "tutorials/rabbitmq-threat-intelligence",
+    "tutorials/multi-source-log-correlation",
+    "tutorials/high-volume-sampling-strategies",
+    "tutorials/advanced-netflow-processing",
+    "tutorials/ai-powered-log-analysis",
   ],  
 };
 
