@@ -395,11 +395,11 @@ const sidebars: SidebarsConfig = {
     "tutorials/a-local-pipeline",
     "tutorials/kafka-to-parquet-pipeline",
     "tutorials/microsoft-sentinel-advanced-integration",
-    // "tutorials/rabbitmq-threat-intelligence",
-    // "tutorials/multi-source-log-correlation",
-    // "tutorials/high-volume-sampling-strategies",
-    // "tutorials/advanced-netflow-processing",
-    // "tutorials/ai-powered-log-analysis",
+    "tutorials/rabbitmq-threat-intelligence",
+    "tutorials/multi-source-log-correlation",
+    "tutorials/high-volume-sampling-strategies",
+    "tutorials/advanced-netflow-processing",
+    "tutorials/ai-powered-log-analysis",
   ],  
 };
 
