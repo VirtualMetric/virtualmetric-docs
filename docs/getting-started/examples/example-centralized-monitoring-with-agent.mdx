@@ -52,11 +52,17 @@ devices:
 
 This configuration will:
 
-- Create a device entry with `id: 1` for the Agent to connect to
+- Create a device entry with `id: 1` for **Agent** to connect to
 - Set the device `type: windows` to indicate the target operating system
 - Enable the device with `status: true` to allow data collection
-- Configure `type: agent` in properties to specify this is an Agent-based device
-- Include two metric `definitions` that specify which system metrics to collect
+- Configure `type: agent` in properties to specify this is an **Agent**-based device
+- Include two predefined **Windows** metric `definitions`:
+  - `491591344758837249`: Base Windows system metrics collection
+  - `486227243115741541`: Windows security log collection (includes Security events, AppLocker events)
+
+:::info Agent Definition IDs
+For complete details on predefined Agent definition IDs and security event collections, see <Topic id="appendix-agent-ids">Appendix</Topic>.
+:::
 
 ### Step 2: Configure Agent
 
@@ -96,7 +102,7 @@ You should see **Director** start up and begin listening for **Agent** connectio
 
 ### Step 4: Start Agent
 
-On the remote system, launch the **Agent**:
+On the remote system, launch **Agent**:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
@@ -111,12 +117,12 @@ On the remote system, launch the **Agent**:
   </TabItem>
 </Tabs>
 
-Agent will:
+**Agent** will:
 
 - Read the `vmetric.yml` configuration file
 - Connect to **Director** at the specified address
 - Begin collecting system metrics based on the configured definitions
-- Send collected data to Director for processing
+- Send collected data to **Director** for processing
 
 ### Step 5: Verify the connection
 

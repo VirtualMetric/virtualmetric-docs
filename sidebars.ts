@@ -173,7 +173,7 @@ const sidebars: SidebarsConfig = {
               type: "category",
               label: "Processors",
               items: [
-                "configuration/pipelines/processors/overview",
+                "configuration/pipelines/processors/categorized-list",
                 "configuration/pipelines/processors/aad-errcode",
                 "configuration/pipelines/processors/abs",
                 "configuration/pipelines/processors/add",
@@ -226,6 +226,7 @@ const sidebars: SidebarsConfig = {
                 "configuration/pipelines/processors/gsub",
                 "configuration/pipelines/processors/html-strip",
                 "configuration/pipelines/processors/http-status",
+                "configuration/pipelines/processors/icmp-type",
                 "configuration/pipelines/processors/iff",
                 "configuration/pipelines/processors/ip-quality-score",
                 "configuration/pipelines/processors/ip-type",
