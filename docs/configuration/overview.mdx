@@ -37,98 +37,114 @@ By using these dedicated components, you can design powerful and efficient telem
 
 <img src={useBaseUrl('/img/graphs/directory-tree.svg')} alt="Directory Tree" height="300"/>
 
+The default installation includes the following key directories and configuration files:
+
+- `config/` - Main configuration directory containing user-customizable settings
+  - `config/devices/` - Input source configurations (syslog, kafka, http, etc.)
+  - `config/routes/` - Data routing and flow control definitions  
+  - `config/targets/` - Output destination configurations (elasticsearch, sentinel, etc.)
+  - `config/vmetric.yml` - Primary system configuration file
+  - `config/Examples/from-syslog-tcp.yml` - Sample configuration demonstrating basic setup
+- `package/` - System-provided templates and resources (read-only)
+  - `package/database/GeoLite2-*.mmdb` - GeoIP databases for geographic enrichment
+  - `package/definitions/` - Pre-built pipeline and module definitions
+  - `package/lookups/` - Reference tables for protocol, application, and vendor identification
+  - `package/mibs/` - SNMP MIB files for network device monitoring
+  - `package/snmp/custom-oids.csv` - Custom SNMP OID definitions
+- `user/` - User-customizable copies of package definitions
+- `storage/` - Runtime data and system state
+  - `storage/data/` - Message queues and database partitions
+  - `storage/logs/` - System and application logs
+  - `storage/cache/` - Temporary processing cache
+- `cert.pem` and `key.pem` - TLS certificates for secure communications
+
 All configuration files needed to define and run telemetry streams can be found&mdash;and are placed in&mdash;specific folders under this tree.
 
 ## YAML Files
 
-The most fundamental tools you use to design your telemetry streams are YAML files.
+**DataStream** uses YAML-based configuration files to implement the logic of telemetry pipeline components. These human-readable structured files define device configurations, processing pipelines, routing rules, and output targets.
 
-To implement the logic of the components that will define and run the processes of the above-mentioned stages, **DataStream** uses YAML-based configuration files.
+### Configuration Organization
 
-These can be found in the folders under `config`. These are
+Configuration files are organized in three main directories under `config/`:
 
-- `devices`
-- `routes`
-- `targets`
+- **`devices/`** - Input source configurations for data ingestion (syslog, kafka, http, netflow, etc.)
+- **`routes/`** - Data routing and conditional flow control between devices, pipelines, and targets
+- **`targets/`** - Output destination configurations (elasticsearch, azure sentinel, splunk, etc.)
 
-All management tasks related to running the telemetry operation are carried out using the files under these directories.
+Each directory can contain multiple YAML files organized according to your preferred structure - either grouped by function, environment, or kept as individual files per component.
 
-By default, the files are placed in these folders according to their component types. They contain predefined fields that the components recognize, and **DataStream** uses the setting values in these fields to spawn and run its processes.
+### Package vs User Configurations
 
-* Two directories are of importance: `package` and `user`.
+**DataStream** separates system-provided and user-customizable configurations:
 
-  The `package` directory contains templates and ready-to-use definitions. These definitions are updated with newer versions of **Director**.
+- **`package/`** - Contains system-provided templates and definitions that are updated with new software versions
+- **`user/`** - Contains custom configurations that take precedence over package definitions and are preserved during updates
 
-  :::warning
-  Never modify the definition files under `package` directly. To create a configuration using one of these as a template, copy the relevant file to the corresponding location under `user` first, and then edit it.
-  :::
+:::warning
+Never modify files under `package/` directly. Copy files to the corresponding `user/` location before customizing them.
+:::
 
-  The `user` directory contains custom configurations. These definitions take precedence over those under the `package` directory. The definitions here are preserved between updates.
+### File Discovery and Organization
 
-* The configurations may be placed in separate files or they may be grouped together logically, i.e. based on their intended purpose of use or the type of data streams they process. By default, these files reside in the directories under the `config` folder.
+Files can be organized by purpose, environment, or data stream type for better maintainability.
 
-  :::tip
-  You can place your files anywhere you wish under the `config` directory. **Director** discovers all of them by traversing the folders recursively.
-  :::
+:::tip
+Configuration files can be placed anywhere within the `config/` directory structure. **Director** discovers all YAML files by recursively scanning subdirectories.
+:::
 
-  To illustrate, a target configuration file can be named as, e.g.
+To illustrate, a target configuration file can be named as, e.g.
 
-  <Tabs>
-    <TabItem value="powershell" label="PowerShell" default>
-      ```powershell
-      <vm_root>\config\target.yml
-      ```
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    <vm_root>\config\target.yml
+    ```
 
-      -or-
+    -or-
 
-      ```powershell
-      <vm_root>\config\targets\outputs.yml
-      ```
+    ```powershell
+    <vm_root>\config\targets\outputs.yml
+    ```
 
-      -or-
+    -or-
 
-      ```powershell
-      <vm_root>\config\targets\outputs\sentinel.yml
-      ```
-    </TabItem>
-    <TabItem value="bash" label="Bash">
-      ```bash
-      <vm_root>/config/target.yml
-      ```
+    ```powershell
+    <vm_root>\config\targets\outputs\sentinel.yml
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    <vm_root>/config/target.yml
+    ```
 
-      -or-
+    -or-
 
-      ```bash
-      <vm_root>/config/targets/outputs.yml
-      ```
+    ```bash
+    <vm_root>/config/targets/outputs.yml
+    ```
 
-      -or-
+    -or-
 
-      ```bash
-      <vm_root>/config/targets/outputs/sentinel.yml
-      ```
-    </TabItem>
-  </Tabs>
+    ```bash
+    <vm_root>/config/targets/outputs/sentinel.yml
+    ```
+  </TabItem>
+</Tabs>
 
-  As the nesting level increases, the file names become more specific, offering additional context for classification.
+As the nesting level increases, the file names become more specific, offering additional context for classification.
 
-  Select the organizational style that best suits your needs.
+Select the organizational style that best suits your needs.
 
 ## General Format
 
 All components follow a consistent YAML structure that emphasizes readability and maintainability:
 
+All components have properties&mdash;i.e. YAML fields with parameters&mdash;that define their specific behavior. Some of these are mandatory and must be present in every component.
+
 :::info
 Configurations must conform to <Topic id="appendix-bnf">**these syntactic rules**</Topic>.
 :::
-
-:::tip
-The **Overview** sections of the component types summarize their common fields under the **Configuration** heading. 
-
-The **Schema** paragraphs of specific component sections provide their fields.
-:::
-
-All components have properties&mdash;i.e. YAML fields with parameters&mdash;that define their specific behavior. Some of these are mandatory and must be present in every component.
 
 ### Commonly Used Fields
 
@@ -139,11 +155,17 @@ A few are worth mentioning since they are frequently used:
     - `id` and `name` on devices. This will be e numeric value
     - `name` on all others: this is a human-readable value
 
-- **Status Control** - Components can be enabled or disabled using the `status` field by using `true`/`false`:
+- **Status Control** - Components can be enabled or disabled by setting the `status` field.
 
-- **Environment Variables** - Sensitive information such as `${ADMIN_PASSWORD}` can be stored in system variables:
+- **Environment Variables** - Sensitive information such as `${PASSWORD}` can be stored in system variables:
 
 - **Tagging** - Optionally, components can have descriptions in their `tag` fields to document their purposes for better organization and facilitating searching.
+
+:::tip
+The **Overview** sections of the component types summarize their common fields under the **Configuration** heading. 
+
+The **Schema** paragraphs of specific components provide their fields.
+:::
 
 ### Scoping and Referencing
 
@@ -201,58 +223,36 @@ Field names within the same YAML file are all part of the same scope, and they c
 
 #### `_ingest` Field
 
-The `_ingest` field serves as a temporary internal namespace for data processing operations within the pipeline. It contains ephemeral metadata that facilitates various processor operations and is typically cleaned up after processing is complete.
+The `_ingest` field serves as a temporary internal namespace for data processing operations within the pipeline. It contains ephemeral metadata that facilitates processor operations and is automatically cleaned up after processing.
 
-**Structure and Subfields:**
+**Key Subfields:**
 
-- **`_ingest._key`** - Contains the current iteration key when processing arrays or maps in the `foreach` processor. This field is dynamically populated during iteration and represents either the array index (as integer) or the map key (as string).
+- **`_ingest._key`** - Current iteration key during `foreach` processing (array index or map key)
+- **`_ingest._value`** - Current iteration value during `foreach` processing  
+- **`_ingest._message`** - Complete JSON representation during `enrich` operations
 
-- **`_ingest._value`** - Holds the current iteration value when processing collections in the `foreach` processor. This field contains the actual data being processed for each iteration step.
+**Usage:**
 
-- **`_ingest._message`** - Stores the complete JSON representation of the log entry during enrichment operations. This field is used by the `enrich` processor to create temporary database tables and perform SQL-based data enrichment queries.
-
-**Lifecycle and Nullability:**
-
-The `_ingest` field and its subfields are temporary by design. They are created during specific processor operations and automatically cleaned up afterward. The nullability patterns follow these principles:
-
+- Fields are populated only during specific processor operations (`foreach`, `enrich`, error handling)
+- Automatically deleted after processing completes
+- Used for configuration evaluation and error metadata capture
 - Fields may be `null` or undefined (`?`) when not actively being used by a processor
-- `_ingest._key` and `_ingest._value` are only populated during `foreach` operations
-- `_ingest._message` is only populated during `enrich` operations
-- The entire `_ingest` object is deleted after processing completes
-
-**Configuration Context:**
-
-The `_ingest` field also plays a crucial role in configuration evaluation and definition processing. During device configuration processing, the field is populated with definition and input metadata to enable conditional evaluation using expression language conditions. This allows for dynamic configuration filtering based on device properties and current processing context.
-
-**Error Handling Context:**
-
-When processor failures occur, the `_ingest` namespace is also used to capture error metadata:
-
-- `_ingest.on_failure_pipeline` - Name of the pipeline where the error occurred
-- `_ingest.on_failure_processor_type` - Type of processor that failed
-- `_ingest.on_failure_processor_tag` - Tag of the specific processor instance
-- `_ingest.on_failure_message` - Detailed error message
 
 #### `_vmetric` Field
 
-The `_vmetric` field appears to be referenced in the system architecture but is not directly visible in the current processor implementations. Based on the codebase patterns, this field likely serves as a system-level metadata container for VirtualMetric-specific operational data.
+The `_vmetric` field serves as a system-level metadata container for VirtualMetric-specific operational data.
 
-**Expected Structure:**
-
-The `_vmetric` field serves as a system-level metadata container that provides context about the VirtualMetric processing environment. Based on the codebase architecture, this field contains:
+**Contents:**
 
 - Device identification and metadata (ID, name, type, tags)
 - Processing pipeline information and configuration
 - System service context and ingestion channel details
-- Cross-component communication metadata
 
-**Nullability and Usage:**
+**Usage:**
 
-The `_vmetric` field follows similar nullability patterns to `_ingest`, where subfields may be undefined (`?`) when not actively populated by system operations. Unlike the ephemeral `_ingest` data, this field typically persists throughout the processing lifecycle to provide consistent system context.
-
-**Integration with Processing Pipeline:**
-
-Both meta fields integrate seamlessly with the processing pipeline's field manipulation system, supporting dot notation access patterns and dynamic field creation/deletion operations.
+- Persists throughout the processing lifecycle for consistent system context
+- Integrates with field manipulation system supporting dot notation access
+- Follows similar nullability patterns to `_ingest`, where subfields may be undefined (`?`) when not actively populated by system operations
 
 ## Data Flow
 
@@ -329,5 +329,5 @@ This configuration is intended to implement the following:
 * the targets forward the events curated to _Elasticsearch_ and a notification system for a security team
 
 :::tip
-Refer to component-specific documentation for details of the available options.
+Refer to component-specific documentation for the details of available options.
 :::
