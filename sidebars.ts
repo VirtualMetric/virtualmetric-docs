@@ -163,9 +163,7 @@ const sidebars: SidebarsConfig = {
           label: "Pipelines",
           items: [
             "configuration/pipelines/overview",
-            "configuration/pipelines/pre-processing",
             "configuration/pipelines/normalization",
-            "configuration/pipelines/post-processing",
             "configuration/pipelines/conditional-running",
             "configuration/pipelines/handling-failures",
             "configuration/pipelines/handling-success",
