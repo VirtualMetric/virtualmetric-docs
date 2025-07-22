@@ -53,6 +53,18 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "GUI",
+      collapsed: false,
+      items: [
+        "gui/create-account",
+        "gui/welcome-screen",
+        "gui/my-pipelines-screen",
+        "gui/create-new-pipeline",
+        "gui/content-hub",
+      ]
+    },
+    {
+      type: "category",
       label: "Microsoft Sentinel",
       items: [
         "microsoft-sentinel/overview",
@@ -163,9 +175,7 @@ const sidebars: SidebarsConfig = {
           label: "Pipelines",
           items: [
             "configuration/pipelines/overview",
-            "configuration/pipelines/pre-processing",
             "configuration/pipelines/normalization",
-            "configuration/pipelines/post-processing",
             "configuration/pipelines/conditional-running",
             "configuration/pipelines/handling-failures",
             "configuration/pipelines/handling-success",
@@ -173,7 +183,7 @@ const sidebars: SidebarsConfig = {
               type: "category",
               label: "Processors",
               items: [
-                "configuration/pipelines/processors/categorized-list",
+                "configuration/pipelines/processors/overview",
                 "configuration/pipelines/processors/aad-errcode",
                 "configuration/pipelines/processors/abs",
                 "configuration/pipelines/processors/add",
