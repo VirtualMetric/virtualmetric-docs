@@ -61,6 +61,9 @@ const sidebars: SidebarsConfig = {
         "gui/my-pipelines-screen",
         "gui/create-new-pipeline",
         "gui/content-hub",
+        "gui/directors-screen",
+        "gui/devices-screen",
+        "gui/targets-screen",
       ]
     },
     {
