@@ -57,7 +57,8 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         "gui/create-account",
-        "gui/welcome-screen",
+        "gui/account-settings",
+        "gui/welcome-dashboard",
         "gui/my-pipelines-screen",
         "gui/create-new-pipeline",
         "gui/content-hub",
