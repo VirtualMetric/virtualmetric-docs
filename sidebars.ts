@@ -405,7 +405,7 @@ const sidebars: SidebarsConfig = {
             "appendix/protocols/tftp",
           ],
         },
-        "appendix/agent-ids",
+        "appendix/agent-names",
       ],
     },
     "glossary"
