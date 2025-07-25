@@ -57,14 +57,19 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         "gui/create-account",
-        "gui/account-settings",
         "gui/welcome-dashboard",
-        "gui/my-pipelines-screen",
+        "gui/account-settings",
+        "gui/my-pipelines-dashboard",
         "gui/create-new-pipeline",
         "gui/content-hub",
-        "gui/directors-screen",
-        "gui/devices-screen",
-        "gui/targets-screen",
+        "gui/directors-dashboard",
+        "gui/devices-dashboard",
+        "gui/targets-dashboard",
+        "gui/quick-routes",
+        "gui/advanced-routes",
+        "gui/manage-users",
+        "gui/manage-roles",
+        "gui/audit",
       ]
     },
     {
@@ -400,7 +405,7 @@ const sidebars: SidebarsConfig = {
             "appendix/protocols/tftp",
           ],
         },
-        "appendix/agent-ids",
+        "appendix/agent-names",
       ],
     },
     "glossary"

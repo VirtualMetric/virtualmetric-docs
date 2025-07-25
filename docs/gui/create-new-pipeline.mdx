@@ -1,4 +1,13 @@
 import CreateNewPipelineFull from '../assets/gui/create-new-pipeline-full.png';
+import CreateNewPipelineFullFilledIn from '../assets/gui/create-new-pipeline-full-filled-in.png';
+
+import CreateNewPipelineChildAdd from '../assets/gui/create-new-pipeline-child-add.png';
+import CreateNewPipelineChildAddFilledIn from '../assets/gui/create-new-pipeline-child-add-filled-in.png';
+import CreateNewPipelineChildDelete from '../assets/gui/create-new-pipeline-child-delete.png';
+
+import CreateNewPipelineDetails from '../assets/gui/create-new-pipeline-details.png';
+import CreateNewPipelineEditMode from '../assets/gui/create-new-pipeline-edit-mode.png';
+
 import CreateNewPipelineDeviceType from '../assets/gui/create-new-pipeline-device-type.png';
 import CreateNewPipelineDeviceVendor from '../assets/gui/create-new-pipeline-device-vendor.png';
 import CreateNewPipelineTarget from '../assets/gui/create-new-pipeline-target.png';
@@ -29,3 +38,148 @@ Under the **Device Info** section:
 <img src={CreateNewPipelineTarget} style={{maxWidth: "50%"}} />
 
 Once you are done filling out the boxes, click **Create pipeline** to finish, or **Cancel** to revert your changes.
+
+---
+
+# VirtualMetric Pipeline Management Documentation
+
+This documentation covers the complete pipeline creation and management workflow in VirtualMetric, from initial setup through child pipeline configuration and editing capabilities.
+
+## Pipeline Overview
+
+VirtualMetric pipelines are the core data processing units that transform, enrich, and route data from various sources to target destinations. The pipeline system supports hierarchical structures with parent and child pipelines, allowing for modular and scalable data processing architectures.
+
+## Creating a New Pipeline
+
+<img src={CreateNewPipelineFull} style={{maxWidth: "100%"}} />
+
+The pipeline creation interface provides a comprehensive form for defining your data processing pipeline:
+
+### General Overview Section
+
+**Name**: Enter a descriptive name for your pipeline that clearly identifies its purpose and data source.
+
+**Description**: Provide detailed information about the pipeline's functionality, data sources, and processing goals. The description field supports up to 100 characters and helps team members understand the pipeline's purpose.
+
+### Device Info Section
+
+**Device Type**: Select the category of device or system that will be the source of your data. Available options include Firewall, Network devices, Security appliances, and other infrastructure components.
+
+**Device Vendor**: Choose the specific vendor or manufacturer of your source system. This field is optional but helps with template matching and processor selection.
+
+**Target**: Specify the destination platform where processed data will be sent. Common targets include Microsoft Sentinel, Elasticsearch, Splunk, and other SIEM or analytics platforms.
+
+### Pipeline Creation Actions
+
+**Create Pipeline**: Finalizes the pipeline configuration and creates the new data processing pipeline.
+
+**Cancel**: Discards the current configuration and returns to the previous screen.
+
+<img src={CreateNewPipelineFullFilledIn} style={{maxWidth: "100%"}} />
+
+This example shows a completed pipeline configuration:
+
+- **Name**: Test_Pipeline
+- **Description**: "This is a test pipeline" (23/100 characters used)
+- **Device Type**: Firewall
+- **Device Vendor**: Microsoft
+- **Target**: Microsoft Sentinel
+
+## Managing Pipeline Hierarchies
+
+### Adding Child Pipelines
+
+<img src={CreateNewPipelineChildAdd} style={{maxWidth: "100%"}} />
+
+Child pipelines allow you to create modular processing units within a parent pipeline structure. The "Add child pipeline" dialog enables you to:
+
+**Child Pipeline Name**: Enter a unique identifier for the sub-pipeline. This should be descriptive and indicate its specific processing function within the parent pipeline.
+
+**Add Child Pipeline**: Confirms the creation of the new child pipeline.
+
+**Cancel**: Discards the child pipeline creation without making changes.
+
+<img src={CreateNewPipelineChildAddFilledIn} style={{maxWidth: "100%"}} />
+
+Example of a named child pipeline:
+
+- **Child Pipeline Name**: child_pipeline
+
+This creates a subordinate processing unit that can handle specific data transformation tasks while being part of the larger pipeline structure.
+
+## Pipeline Management Interface
+
+<img src={CreateNewPipelineDetails} style={{maxWidth: "100%"}} />
+
+The pipeline details interface provides comprehensive management capabilities:
+
+### Navigation Structure
+
+- **Breadcrumb Path**: Pipelines / Test_Pipeline
+- **Tab Navigation**: General Overview and Pipeline Overview for different views of pipeline configuration
+
+### Pipeline Hierarchy Display
+
+The left sidebar shows the complete pipeline structure:
+
+- **Test_Pipeline (root)**: The main pipeline container
+- **child_pipeline**: The subordinate processing unit
+- **Add new child pipeline**: Option to create additional child pipelines
+
+### Configuration Editor
+
+The main panel displays the pipeline configuration in YAML format, showing:
+
+- **Description**: Pipeline metadata and purpose
+- **Processors**: Data transformation components (currently empty, ready for configuration)
+- **Comments**: Instructional text guiding users to add processors for data processing
+
+### Action Controls
+
+- **Save changes on selected pipeline**: Commits modifications to the pipeline configuration
+- **Actions Menu**: Additional pipeline management options
+
+<img src={CreateNewPipelineChildDelete} style={{maxWidth: "100%"}} />
+
+The Actions menu provides pipeline management options:
+
+- **Add child pipeline**: Create new subordinate processing units
+- **Delete entire pipeline**: Remove the complete pipeline and all its components
+
+The delete action includes a confirmation dialog ("Delete entire pipeline") to prevent accidental removal of configured pipelines.
+
+## Pipeline Editing and Configuration
+
+<img src={CreateNewPipelineEditMode} style={{maxWidth: "100%"}} />
+
+The General Overview tab provides direct editing capabilities for pipeline metadata:
+
+### General Info Section
+
+- **Name**: Editable field showing the current pipeline name (Test_Pipeline)
+- **Description**: Text area for updating pipeline description with character count (currently showing the full description)
+
+### Device Info Section
+
+- **Device Type**: Dropdown selection for source system category (set to Firewall)
+- **Device Vendor**: Optional vendor specification (set to Microsoft)
+- **Target**: Destination platform selection (set to Microsoft Sentinel)
+
+### Edit Controls
+
+Each section includes:
+
+- **Cancel**: Discard changes and revert to previous values
+- **Save**: Apply modifications to the pipeline configuration
+
+This editing interface allows administrators to update pipeline metadata and routing information without affecting the underlying data processing configuration.
+
+## Pipeline Configuration Workflow
+
+1. **Initial Setup**: Use the Create New Pipeline interface to define basic pipeline parameters
+2. **Structure Design**: Add child pipelines to create modular processing architecture
+3. **Configuration**: Use the Pipeline Overview to add processors and define data transformation rules
+4. **Management**: Utilize the General Overview for metadata updates and the Actions menu for structural changes
+5. **Monitoring**: Save changes and monitor pipeline performance through the VirtualMetric dashboard
+
+The pipeline system provides a flexible foundation for building complex data processing workflows while maintaining clear organizational structure through the hierarchical pipeline design.
