@@ -5,157 +5,133 @@ pagination_next: null
 import ImportantConfigFiles from '../../assets/reusable/examples/important-config-files.mdx';
 import InfoUpdateConfigLive from '../../assets/reusable/examples/info-update-config-live.mdx';
 
-# Example: Process Management with Supervisor Mode
+# Example: Service Management with Supervisor
 
-This section will help you configure and run an **Agent** in _Supervisor_ mode to manage and monitor other processes while maintaining connection to a **Director**.
+This section will help you configure and run the **VirtualMetric Supervisor** to manage DataStream services while maintaining system availability.
 
 ## Synopsis
 
-We will configure an **Agent** to operate in _Supervisor_ mode, which allows it to manage other system processes while simultaneously collecting metrics and sending them to a **Director**. This demonstrates the dual-purpose capability of process management combined with monitoring.
+We will configure the **Supervisor** service to monitor and manage **Director** and **Agent** services automatically. This demonstrates the service watchdog capability that ensures DataStream components remain operational.
 
 ## Scenario
 
-We will implement the following process management setup:
+We will implement the following service management setup:
 
-- **Configure Supervisor** - Set up **Agent** to run in _Supervisor_ mode for process management.
+- **Install Supervisor** - Deploy **Supervisor** service to monitor other DataStream services.
 
-- **Manage processes** - Monitor and control other system processes or services.
+- **Configure monitoring** - Set up **Supervisor** to watch **Director** and **Agent** services.
 
-- **Collect metrics** - Simultaneously gather system performance data during process supervision.
+- **Service management** - Automatically restart failed services to maintain system availability.
 
-- **Send data** - Transmit both process status and system metrics to Director for centralized monitoring.
+- **Health monitoring** - Continuously check service status and respond to failures.
 
-We assume you have a **Director** instance running and processes that need supervision. **Agent** will need appropriate permissions to manage other processes on the system.
+We assume you have **Director** and **Agent** services installed. **Supervisor** will need appropriate permissions to manage system services.
 
 ## Setup and Trial
 
 <ImportantConfigFiles />
 
-For this example, we will create a configuration file named `vmetric.yml` in the Agent's working directory for _Supervisor_ mode operation.
+For this example, we will create a configuration file named `vmetric.yml` in the Supervisor's working directory.
 
-### Step 1: Configure Director
+### Step 1: Install Required Services
 
-First, add a device configuration to your **Director**'s configuration file to define **Agent** in _Supervisor_ mode:
+First, ensure you have **Director** and **Agent** services installed on your system:
 
-```yaml title="director-config.yml"
-devices:
-  - id: 2
-    name: supervisor_server
-    type: windows
-    status: true
-    properties:
-      type: agent
-      mode: supervisor
-    definitions:
-      - id: 491591344758837249
-      - id: 486227243115741541
+```powershell title="Install Director Service"
+.\vmetric-director -service=install
 ```
 
-This configuration will:
+```powershell title="Install Agent Service"
+.\vmetric-agent -service=install
+```
 
-- Create a device entry with `id: 2` specifically for the _Supervisor_-mode **Agent**
-- Set the device `type: windows` to indicate the target operating system
-- Enable the device with `status: true` to allow data collection
-- Configure `type: agent` with `mode: supervisor` to specify this is a _Supervisor_-mode **Agent**
-- Include predefined Windows metric `definitions` for both process monitoring and system metrics:
-  - `491591344758837249`: Base Windows system metrics collection
-  - `486227243115741541`: Windows security log collection (includes Security events, AppLocker events)
+### Step 2: Configure Supervisor
 
-:::info Agent Definition IDs
-For complete details on predefined Agent definition IDs and security event collections, see <Topic id="appendix-agent-ids">Appendix</Topic>.
-:::
-
-### Step 2: Configure Agent for Supervisor Mode
-
-On the system where you want to run process supervision, create a `vmetric.yml` configuration file:
+Create a `vmetric.yml` configuration file for the **Supervisor** service:
 
 ```yaml title="vmetric.yml"
-device:
-  id: 2
-director:
-  address: 192.168.1.200:8080
 supervisor:
   enabled: true
-  processes:
-    - name: "critical_service"
-      command: "service_executable.exe"
-      working_directory: "C:\\Services\\CriticalService"
-      restart_on_failure: true
+  services:
+    - name: "vmetric-director"
+      auto_restart: true
+      restart_delay: 5
+    - name: "vmetric-agent"
+      auto_restart: true
+      restart_delay: 5
+  check_interval: 60
 ```
 
 This configuration will:
 
-- Set `device.id: 2` to match the _Supervisor_* device ID configured in **Director**
-- Specify `director.address` as the IP address and port where **Director** is listening
-- Enable `supervisor.enabled: true` to activate process management features
-- Define a `processes` list with a critical service to monitor and manage
-- Configure `restart_on_failure: true` to automatically restart failed processes
+- Enable `supervisor.enabled: true` to activate service monitoring
+- Define `services` list with **Director** and **Agent** services to monitor
+- Configure `auto_restart: true` to automatically restart failed services
+- Set `restart_delay: 5` seconds before attempting service restart
+- Use `check_interval: 60` seconds for service health checks
 
-### Step 3: Start Director
+### Step 3: Install Supervisor Service
 
-Launch **Director** in console mode to monitor both process events and metrics:
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-    ```powershell
-    .\vmetric-director -console
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    ./vmetric-director -console
-    ```
-  </TabItem>
-</Tabs>
-
-You should see Director start up and begin listening for **Agent** connections.
-
-### Step 4: Start Agent in Supervisor Mode
-
-On the target system, launch **Agent** with _Supervisor_ mode enabled:
+Install the **Supervisor** service to run as a system service:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    .\vmetric-agent -supervisor
+    .\vmetric-supervisor -service=install
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    ./vmetric-agent -supervisor
+    ./vmetric-supervisor -service=install
     ```
   </TabItem>
 </Tabs>
 
-**Agent** will:
+### Step 4: Start Supervisor Service
+
+Launch the **Supervisor** service to begin monitoring other DataStream services:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-supervisor -service=start
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-supervisor -service=start
+    ```
+  </TabItem>
+</Tabs>
+
+**Supervisor** will:
 
 - Read the `vmetric.yml` configuration file
-- Connect to **Director** at the specified address
-- Initialize _Supervisor_ mode for process management
-- Begin monitoring and managing the configured processes
-- Collect both process status and system metrics
-- Send all collected data to **Director** for processing
+- Begin monitoring the status of **Director** and **Agent** services
+- Automatically restart any failed services according to the configuration
+- Log service management activities for monitoring
+- Maintain continuous health checks on managed services
 
 ### Step 5: Verify Supervisor Operation
 
-In the **Director** console, you should see messages indicating successful _Supervisor_ **Agent** connection and dual-mode operation:
+Check the **Supervisor** service logs to confirm it's monitoring the other services:
 
 ```console
-[2025-01-15 10:45:20] [Information] [vmetric-director] Supervisor Agent connection established for device: supervisor_server
-[2025-01-15 10:45:21] [Information] [vmetric-director] Process supervision started for: critical_service
-[2025-01-15 10:45:21] [Information] [vmetric-director] Processing metrics from supervisor device ID: 2
-[2025-01-15 10:45:22] [Information] [vmetric-director] Completed processing of supervisor metrics. Number of processed metrics: 2
+[2025-01-15 10:45:20] [Information] [vmetric-supervisor] Supervisor service started successfully
+[2025-01-15 10:45:21] [Information] [vmetric-supervisor] Starting health check for service: vmetric-director
+[2025-01-15 10:45:21] [Information] [vmetric-supervisor] Starting health check for service: vmetric-agent
+[2025-01-15 10:45:22] [Information] [vmetric-supervisor] All supervised services are running normally
 ```
 
 <InfoUpdateConfigLive />
 
 ## Monitoring
 
-Check **Director**'s logs to verify successful process supervision and metric collection:
+Check the **Supervisor** service logs to verify successful service management:
 
-- **Connection logs** - Confirm _Supervisor_-mode **Agent** successfully connected to **Director**
-- **Process logs** - Verify managed processes are being monitored and controlled
-- **Metric logs** - Confirm system metrics are being collected alongside process data
-- **Restart logs** - Check for any automatic process restarts or management actions
+- **Service status logs** - Confirm **Supervisor** is monitoring **Director** and **Agent** services
+- **Health check logs** - Verify periodic service health checks are occurring
+- **Restart logs** - Check for any automatic service restarts when failures occur
+- **Error logs** - Monitor for any service management issues or failures
 
-If _Supervisor_-mode **Agent** is running correctly, you should see periodic messages for both process management activities and metric collection, indicating the dual-purpose monitoring and management system is operational.
+If **Supervisor** is running correctly, you should see periodic health check messages indicating that it's actively monitoring the DataStream services and will restart them automatically if they fail.
