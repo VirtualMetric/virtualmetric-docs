@@ -45,8 +45,8 @@ const sidebars: SidebarsConfig = {
             "getting-started/examples/example-forwarding-data",
             "getting-started/examples/example-reading-json-with-a-pipeline",
             "getting-started/examples/example-a-syslog-to-json-data-stream",
-            "getting-started/examples/example-centralized-monitoring-with-agent",
-            "getting-started/examples/example-process-management-with-supervisor-mode",
+            "getting-started/examples/example-centralized-log-collection-with-agent",
+            "getting-started/examples/example-service-management-with-supervisor",
           ]
         },
       ],
