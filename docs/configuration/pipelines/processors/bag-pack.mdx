@@ -1,0 +1,187 @@
+---
+description: Creates a map (bag) from key-value pairs with template support
+sidebar_custom_props:
+  customCategory: Transform
+  customIcon: 🎒
+---
+
+# Bag Pack
+
+<span className="theme-doc-version-badge badge badge--primary">Transform</span><span className="theme-doc-version-badge badge badge--secondary">Data Structure</span>
+
+Creates a map (bag) from a list of key-value pairs, supporting template resolution for dynamic values.
+
+## Schema
+
+```yaml {2-5}
+- bag_pack:
+    field: <ident>
+    items:
+      - key: <string>
+        value: <string>
+    skip_empty: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the created map|
+|`items`|Y|-|Array of key-value pairs to include in the map|
+|`items.key`|Y|-|Key name for the map entry|
+|`items.value`|Y|-|Value for the map entry (supports templates)|
+|`skip_empty`|N|`false`|Skip items with empty values|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if processor fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`tag`|N|-|Processor identifier|
+
+## Item Configuration
+
+Each item in the `items` array supports:
+
+- **key**: The key name in the resulting map
+- **value**: The value to assign (supports template expressions like `{{field_name}}`)
+
+## Details
+
+Values support template expressions using `{{field_name}}` syntax, allowing for dynamic content insertion from other fields in the log entry. The `skip_empty` option can be used to exclude items with null, empty string, or empty array/object values from the resulting map. 
+
+Template-resolved values maintain their original data types, ensuring proper type handling throughout the processing pipeline. When `ignore_missing` is enabled, missing template fields are skipped rather than causing errors, providing robust handling of variable log structures.
+
+This processor excels at data restructuring by converting separate fields into organized maps and building metadata objects from various log fields. It's particularly effective for API response formatting where structured data needs to be prepared for external consumption. 
+
+The processor also supports conditional field mapping, creating dynamic field mappings based on log content, and enables configuration object creation by building structured configuration objects from template values across different parts of the log entry.
+
+## Examples
+
+### Basic Map Creation
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a map from user fields with both dynamic and static values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "name": "john_doe",
+        "dept": "engineering"
+      }
+    }
+    ```
+    ```yaml
+    - bag_pack:
+        field: user_info
+        items:
+          - key: username
+            value: "{{user.name}}"
+          - key: department
+            value: "{{user.dept}}"
+          - key: role
+            value: "admin"
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces a structured map object:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "name": "john_doe",
+        "dept": "engineering"
+      },
+      "user_info": {
+        "username": "john_doe",
+        "department": "engineering",
+        "role": "admin"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Skip Empty Values
+
+<ExampleGrid>
+  <CommentCol>
+    Using `skip_empty` to exclude null and empty values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "email": "john@example.com",
+        "phone": "",
+        "address": null
+      }
+    }
+    ```
+    ```yaml
+    - bag_pack:
+        field: contact_info
+        skip_empty: true
+        items:
+          - key: email
+            value: "{{user.email}}"
+          - key: phone
+            value: "{{user.phone}}"
+          - key: address
+            value: "{{user.address}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    only includes non-empty values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "email": "john@example.com",
+        "phone": "",
+        "address": null
+      },
+      "contact_info": {
+        "email": "john@example.com"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Static and Dynamic Values
+
+<ExampleGrid>
+  <CommentCol>
+    Combining template expressions with static values for metadata...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - bag_pack:
+        field: event_metadata
+        items:
+          - key: timestamp
+            value: "{{@timestamp}}"
+          - key: source
+            value: "{{log.file.path}}"
+          - key: processed_by
+            value: "datastream-pipeline"
+          - key: version
+            value: "1.0"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
