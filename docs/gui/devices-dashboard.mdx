@@ -1,17 +1,268 @@
-import DevicesFull from '../assets/gui/devices-full.png';
+import DevicesDashboardFull from '../assets/gui/devices-dashboard-full.png';
 import DevicesSyslogFull from '../assets/gui/devices-syslog-full.png';
+import DevicesPushSyslog from '../assets/gui/devices-push-syslog.png';
+import DevicesSyslogSearch from '../assets/gui/devices-syslog-search.png';
+import DevicesSyslogDirectorFilterApplied from '../assets/gui/devices-syslog-director-filter-applied.png';
+import DevicesSyslogStatusFilterApplied from '../assets/gui/devices-syslog-status-filter-applied.png';
+import DevicesSyslogTableViewActions from '../assets/gui/devices-syslog-table-view-actions.png';
+import DevicesSyslogMultipleDirectorsSelected from '../assets/gui/devices-syslog-multiple-directors-selected.png';
+import DevicesAddNewDeviceStep1 from '../assets/gui/devices-add-new-device-step1.png';
+import DevicesAddNewDeviceStep2 from '../assets/gui/devices-add-new-device-step2.png';
+import DevicesAddNewDeviceStep2TcpFields from '../assets/gui/devices-add-new-device-step2-tcp-fields.png';
+import DevicesAddNewDeviceStep2TcpTlsFields from '../assets/gui/devices-add-new-device-step2-tcp-tls-fields.png';
+import DevicesAddNewDeviceStep3 from '../assets/gui/devices-add-new-device-step3.png';
+import DevicesAddNewDeviceStep3MultipleAddresses from '../assets/gui/devices-add-new-device-step3-multiple-addresses.png';
+import DevicesSyslogClone from '../assets/gui/devices-syslog-clone.png';
+import DevicesSyslogClonePortMustBeUnique from '../assets/gui/devices-syslog-clone-port-must-be-unique.png';
+import DevicesDeleteModal from '../assets/gui/devices-delete-modal.png';
+import DevicesDeleteModalPrompt from '../assets/gui/devices-delete-modal-prompt.png';
+import DevicesSyslogEditStep1 from '../assets/gui/devices-syslog-edit-step1.png';
+import DevicesSyslogEditStep2 from '../assets/gui/devices-syslog-edit-step2.png';
+import DevicesSyslogEditStep3 from '../assets/gui/devices-syslog-edit-step3.png';
+import DevicesWindowsNoClone from '../assets/gui/devices-windows-no-clone.png';
+import DevicesWindowsNoDirectorNoAgentInstall from '../assets/gui/devices-windows-no-director-no-agent-install.png';
+import DevicesCreateWindowsDeviceStep1GeneralInfo from '../assets/gui/devices-create-windows-device-step1-general-info.png';
+import DevicesCreateWindowsDeviceAgentInstalledNoConnection from '../assets/gui/devices-create-windows-device-agent-installed-no-connection.png';
+import DevicesCreateWindowsDeviceStep2Success from '../assets/gui/devices-create-windows-device-step2-success.png';
+import DevicesCreateWindowsDeviceLoadingState from '../assets/gui/devices-create-windows-device-loading-state.png';
+import DevicesCreateWindowsDeviceConnectionFailure from '../assets/gui/devices-create-windows-device-connection-failure.png';
+import DevicesCreateWindowsDeviceConnectionSuccess from '../assets/gui/devices-create-windows-device-connection-success.png';
+import DevicesAgentInstallStep3LogSelection from '../assets/gui/devices-agent-install-step3-log-selection.png';
+import DevicesAgentInstallStep3LogSelectionCustomOption from '../assets/gui/devices-agent-install-step3-log-selection-custom-option.png';
+import DevicesAgentCreatedNotification from '../assets/gui/devices-agent-created-notification.png';
 import EstreamerFull from '../assets/gui/estreamer-full.png';
 
 # Devices Dashboard
 
-This is the working area where you manage your devices.
+The Devices Dashboard is your central management interface for configuring and monitoring all data ingestion sources in your VirtualMetric DataStream environment. This interface provides comprehensive device management capabilities for both Push devices (which receive data) and Pull devices (Agents that collect data from local systems).
 
-<img src={DevicesFull} style={{maxWidth: "100%"}} />
+## Main Dashboard Overview
 
-**Example** - A _Syslog_ device
+<img src={DevicesDashboardFull} style={{maxWidth: "100%"}} alt="Devices dashboard showing Push and Pull device categories with available device types"/>
 
-<img src={DevicesSyslogFull} style={{maxWidth: "100%"}} />
+The main dashboard displays devices organized into two distinct categories:
 
-**Example** - An _Estreamer_ device
+### Push Devices
+Push devices are network-accessible endpoints that receive incoming log data from external sources. These devices listen on specified ports and protocols:
 
-<img src={EstreamerFull} style={{maxWidth: "100%"}} alt="Estreamer device full view"/>
+- **Syslog**: Standard protocol for collecting and forwarding log messages from various devices to a centralized server
+- **HTTP**: Enables log data ingestion through HTTP protocol for efficient data transmission
+- **UDP**: Allows log data collection using the User Datagram Protocol (UDP) for faster but less reliable transmission
+- **TCP**: Collects logs using the Transmission Control Protocol (TCP) for reliable and ordered data delivery
+- **eStreamer**: A protocol designed for retrieving detailed event and log data from network and security devices
+
+Each Push device shows enabled/disabled status counters, allowing you to quickly assess your device configuration state.
+
+### Pull Devices (Agents)
+Pull devices are lightweight agents installed on target systems to collect logs locally. These agents actively gather data from the systems they're installed on:
+
+- **Windows**: The Windows agent collects logs from Windows systems including event logs, performance data, and security information
+- **Linux**: Linux agent support (marked as "Coming Soon" in current interface)
+
+Pull devices require agent installation and show connection status to help you monitor agent health and connectivity.
+
+## Device Type Specific Views
+
+### Syslog Device Management
+
+<img src={DevicesPushSyslog} style={{maxWidth: "100%"}} alt="Syslog device category page showing navigation sidebar and main content area"/>
+
+The Syslog device page provides a comprehensive view of all configured Syslog devices with a navigation sidebar categorizing device types. The interface shows the device count for each category, helping you understand your current configuration distribution.
+
+<img src={DevicesSyslogFull} style={{maxWidth: "100%"}} alt="Detailed Syslog device table showing configured devices with directors, ports, protocols, and status information"/>
+
+The main Syslog device table displays:
+- **Name**: Device identifier for easy reference
+- **Description**: Optional descriptive text for device purpose
+- **Director(s)**: Associated directors managing this device
+- **Preprocessing Pipeline**: Data transformation pipeline applied to incoming logs
+- **Port**: Network port for incoming connections
+- **Protocol**: Transport protocol (UDP/TCP)
+- **Status**: Current operational state (Enabled/Disabled)
+
+#### Search and Filtering
+
+<img src={DevicesSyslogSearch} style={{maxWidth: "100%"}} alt="Syslog device search interface with search box and filtering options"/>
+
+Use the search functionality to quickly locate specific devices by name or description. The search box provides real-time filtering of the device list.
+
+<img src={DevicesSyslogDirectorFilterApplied} style={{maxWidth: "100%"}} alt="Syslog device list with director filter applied showing filtered results"/>
+
+Filter devices by director assignment to view only devices managed by specific directors. This helps organize large deployments by management responsibility.
+
+<img src={DevicesSyslogStatusFilterApplied} style={{maxWidth: "100%"}} alt="Syslog device list with status filter showing only enabled or disabled devices"/>
+
+Filter by device status to quickly identify enabled or disabled devices, useful for troubleshooting and configuration audits.
+
+#### Device Actions
+
+<img src={DevicesSyslogTableViewActions} style={{maxWidth: "100%"}} alt="Syslog device table showing action menu options for individual devices"/>
+
+Each device row provides action options accessible through the context menu:
+- **Edit**: Modify device configuration
+- **Clone**: Create a copy of the device with similar settings
+- **Delete**: Remove the device from configuration
+- **Enable/Disable**: Toggle device operational state
+
+<img src={DevicesSyslogMultipleDirectorsSelected} style={{maxWidth: "100%"}} alt="Syslog device configuration showing multiple directors selected for load distribution"/>
+
+Devices can be associated with multiple directors for load balancing and redundancy. This configuration ensures high availability and distributed processing capabilities.
+
+## Device Creation and Configuration
+
+### Adding New Push Devices
+
+<img src={DevicesAddNewDeviceStep1} style={{maxWidth: "100%"}} alt="First step of device creation showing device type selection and basic configuration"/>
+
+The device creation wizard guides you through the setup process:
+1. **Device Type Selection**: Choose the appropriate protocol (Syslog, HTTP, UDP, TCP, eStreamer)
+2. **Basic Configuration**: Set device name, description, and initial parameters
+3. **Director Assignment**: Select which directors will manage this device
+
+<img src={DevicesAddNewDeviceStep2} style={{maxWidth: "100%"}} alt="Second step showing advanced configuration options and protocol-specific settings"/>
+
+Step 2 provides protocol-specific configuration options tailored to your selected device type, including network settings, security parameters, and data handling preferences.
+
+<img src={DevicesAddNewDeviceStep2TcpFields} style={{maxWidth: "100%"}} alt="TCP-specific configuration fields showing protocol options and connection settings"/>
+
+TCP devices require specific configuration for connection handling, including timeout settings, connection limits, and reliability parameters.
+
+<img src={DevicesAddNewDeviceStep2TcpTlsFields} style={{maxWidth: "100%"}} alt="TCP with TLS configuration showing security certificate and encryption settings"/>
+
+For secure TCP connections, TLS configuration options include certificate management, encryption settings, and security validation parameters.
+
+<img src={DevicesAddNewDeviceStep3} style={{maxWidth: "100%"}} alt="Final configuration step showing summary and confirmation options"/>
+
+The final step provides configuration summary and confirmation before device creation.
+
+<img src={DevicesAddNewDeviceStep3MultipleAddresses} style={{maxWidth: "100%"}} alt="Configuration showing multiple network addresses for device accessibility"/>
+
+Devices can be configured with multiple network addresses for improved accessibility and network redundancy.
+
+### Device Cloning
+
+<img src={DevicesSyslogClone} style={{maxWidth: "100%"}} alt="Device cloning interface showing original device settings being copied"/>
+
+Cloning creates a new device based on an existing configuration, streamlining setup for similar devices.
+
+<img src={DevicesSyslogClonePortMustBeUnique} style={{maxWidth: "100%"}} alt="Error message showing port uniqueness validation during device cloning"/>
+
+:::caution
+When cloning devices, ensure port numbers are unique to avoid conflicts. The system validates port availability and displays errors for duplicate ports.
+:::
+
+### Device Editing
+
+<img src={DevicesSyslogEditStep1} style={{maxWidth: "100%"}} alt="First step of device editing showing basic configuration modification"/>
+
+Device editing follows a structured approach:
+1. **Basic Settings**: Modify name, description, and basic parameters
+2. **Protocol Configuration**: Adjust protocol-specific settings
+3. **Advanced Options**: Configure advanced features and optimizations
+
+<img src={DevicesSyslogEditStep2} style={{maxWidth: "100%"}} alt="Second step showing protocol and network configuration options"/>
+
+Step 2 focuses on protocol and network configuration adjustments.
+
+<img src={DevicesSyslogEditStep3} style={{maxWidth: "100%"}} alt="Final editing step with advanced configuration and confirmation"/>
+
+Final editing step covers advanced configuration options and change confirmation.
+
+### Device Deletion
+
+<img src={DevicesDeleteModal} style={{maxWidth: "100%"}} alt="Device deletion confirmation modal with safety warnings"/>
+
+<img src={DevicesDeleteModalPrompt} style={{maxWidth: "100%"}} alt="Final deletion confirmation prompt with impact assessment"/>
+
+:::warning
+Device deletion is irreversible and will stop all data collection for the deleted device. Ensure you have proper backups and understand the impact before proceeding with deletion.
+:::
+
+## Windows Agent (Pull Device) Management
+
+### Agent Limitations and Requirements
+
+<img src={DevicesWindowsNoClone} style={{maxWidth: "100%"}} alt="Windows device interface showing clone option unavailable for agent devices"/>
+
+Windows Agent devices have different management characteristics compared to Push devices:
+- **No Cloning**: Agent devices cannot be cloned due to their system-specific nature
+- **Unique Installation**: Each agent is tied to a specific system and configuration
+
+<img src={DevicesWindowsNoDirectorNoAgentInstall} style={{maxWidth: "100%"}} alt="Windows device creation showing requirement for director selection before agent installation"/>
+
+:::caution
+Windows Agent installation requires an active director connection. Ensure directors are properly configured and connected before attempting agent installation.
+:::
+
+### Windows Agent Creation Process
+
+<img src={DevicesCreateWindowsDeviceStep1GeneralInfo} style={{maxWidth: "100%"}} alt="Windows device creation step 1 showing device naming and director selection"/>
+
+Windows Agent creation involves:
+1. **Device Definition**: Name your Windows device and select which director it will work with
+2. **Deployment Type**: Choose Agent deployment for local system log collection
+3. **Director Assignment**: Select from available, connected directors
+
+<img src={DevicesCreateWindowsDeviceStep2Success} style={{maxWidth: "100%"}} alt="Successful Windows device creation confirmation with next steps"/>
+
+Successful device creation provides confirmation and guides you to the next steps for agent installation.
+
+### Agent Installation and Connection States
+
+<img src={DevicesCreateWindowsDeviceLoadingState} style={{maxWidth: "100%"}} alt="Windows device showing loading state during agent installation process"/>
+
+During agent installation, the interface shows loading states to indicate progress.
+
+<img src={DevicesCreateWindowsDeviceAgentInstalledNoConnection} style={{maxWidth: "100%"}} alt="Windows device showing agent installed but not yet connected to director"/>
+
+After installation, agents may show "installed but not connected" status while establishing communication with directors.
+
+<img src={DevicesCreateWindowsDeviceConnectionFailure} style={{maxWidth: "100%"}} alt="Windows device showing connection failure with troubleshooting options"/>
+
+Connection failures provide diagnostic information and troubleshooting guidance.
+
+<img src={DevicesCreateWindowsDeviceConnectionSuccess} style={{maxWidth: "100%"}} alt="Windows device showing successful connection and operational status"/>
+
+Successful connections confirm agent operational status and data collection readiness.
+
+### Agent Log Selection Configuration
+
+<img src={DevicesAgentInstallStep3LogSelection} style={{maxWidth: "100%"}} alt="Agent installation step 3 showing log source selection options"/>
+
+During agent setup, select which log sources to collect:
+- **Predefined Options**: Common log types like Security, System, Application logs
+- **Custom Configuration**: Specify additional or custom log sources
+
+<img src={DevicesAgentInstallStep3LogSelectionCustomOption} style={{maxWidth: "100%"}} alt="Custom log selection interface showing advanced configuration options"/>
+
+Custom log selection allows specification of additional event logs, performance counters, and system metrics based on your monitoring requirements.
+
+<img src={DevicesAgentCreatedNotification} style={{maxWidth: "100%"}} alt="Success notification confirming agent creation and configuration"/>
+
+Successful agent creation displays confirmation notifications with next steps and configuration summary.
+
+## eStreamer Device Example
+
+<img src={EstreamerFull} style={{maxWidth: "100%"}} alt="eStreamer device configuration showing protocol-specific settings and connection parameters"/>
+
+eStreamer devices provide specialized configuration for network security device integration, including connection parameters, authentication settings, and data filtering options specific to the eStreamer protocol.
+
+## Best Practices
+
+### Push Device Configuration
+- **Port Management**: Ensure unique port assignments to avoid conflicts
+- **Director Distribution**: Distribute devices across multiple directors for load balancing
+- **Security**: Use TLS encryption for sensitive data transmission
+- **Monitoring**: Regularly check device status and connection health
+
+### Agent (Pull Device) Management
+- **Director Requirements**: Ensure directors are operational before agent installation
+- **Log Selection**: Choose appropriate log sources based on monitoring requirements
+- **Connection Monitoring**: Monitor agent connectivity and resolve connection issues promptly
+- **System Resources**: Consider system resource impact when configuring multiple log sources
+
+### General Device Management
+- **Naming Conventions**: Use descriptive names for easy identification
+- **Documentation**: Maintain descriptions for complex configurations
+- **Regular Audits**: Periodically review device configurations and status
+- **Backup Procedures**: Ensure device configurations are included in backup procedures
