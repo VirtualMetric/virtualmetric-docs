@@ -3,6 +3,8 @@ import MDXComponents from "@theme-original/MDXComponents";
 import { ExampleGrid, CommentCol, CodeCol } from "@site/src/components/CustomFeatures/ExampleGrid";
 import { TermTable, TermCol, DefCol } from "@site/src/components/CustomFeatures/TermTable";
 import Topic from "@site/src/components/CustomFeatures/Topic";
+import Image from "@site/src/components/CustomFeatures/Image";
+import Include from "@site/src/components/CustomFeatures/Include";
 
 import FooterCopyright from "@theme/Footer/Copyright";
 import DocCardList from "@theme/DocCardList";
@@ -21,6 +23,8 @@ export default {
   TermCol,
   DefCol,
 	Topic,
+	Image,
+	Include,
 
 	FooterCopyright,
 	DocCardList,
