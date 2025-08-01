@@ -10,7 +10,7 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
     async loadContent() {
       const rootDir = context.siteDir;
       const docsDir = path.join(rootDir, 'docs');
-      const topicsPath = path.join(rootDir, 'docs', 'assets', 'topics.json');
+      const topicsPath = path.join(rootDir, 'src', 'components', 'CustomFeatures', 'Topic', 'topics.json');
 
       // Read topics.json
       let topics;
@@ -20,6 +20,20 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
         throw new Error(`Failed to read topics.json: ${error.message}`);
       }
       const validIds = new Set(Object.keys(topics));
+
+      // Validate that all paths in topics.json point to existing files
+      const pathErrors: string[] = [];
+      for (const [id, topicPath] of Object.entries(topics)) {
+        // Convert topic path to file system path
+        const cleanPath = (topicPath as string).replace(/^\//, '').replace(/#.*$/, ''); // Remove leading slash and anchor
+        const fullPath = path.join(docsDir, `${cleanPath}.mdx`);
+        
+        try {
+          await fs.promises.access(fullPath);
+        } catch (error) {
+          pathErrors.push(`❌ Topic ID '${id}' points to non-existent path '${topicPath}' (resolved to '${fullPath}')`);
+        }
+      }
 
       // Find all MDX files in the docs directory
       const mdxFiles = await glob('**/*.mdx', { cwd: docsDir, absolute: true });
@@ -46,13 +60,16 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
         }
       }
 
-      if (errors.length > 0) {
+      // Combine both types of errors
+      const allErrors = [...pathErrors, ...errors];
+
+      if (allErrors.length > 0) {
         console.error('\nTopic Validation Errors:\n');
-        errors.forEach(err => console.error(err));
-        console.error('\nFix invalid Topic IDs or update topics.json.\n');
-        throw new Error('Topic validation failed. Fix invalid Topic IDs or update topics.json.');
+        allErrors.forEach(err => console.error(err));
+        console.error('\nFix invalid Topic IDs, update topics.json, or create missing files.\n');
+        throw new Error('Topic validation failed. Fix invalid Topic IDs, update topics.json, or create missing files.');
       } else {
-        console.log('✅ All Topic IDs are valid.');
+        console.log('✅ All Topic IDs and paths are valid.');
       }
     },
   };
