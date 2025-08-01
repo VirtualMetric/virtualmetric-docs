@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import reusablesConfig from './reusables.json';
+import includesConfig from './includes.json';
 
 interface IncludeProps {
   id: string;
@@ -16,16 +16,16 @@ const Include: React.FC<IncludeProps> = ({ id }) => {
         setLoading(true);
         setError(null);
 
-        const reusablePath = reusablesConfig[id];
-        if (!reusablePath) {
-          throw new Error(`Reusable content with ID "${id}" not found in reusables.json`);
+        const includePath = includesConfig[id];
+        if (!includePath) {
+          throw new Error(`Include content with ID "${id}" not found in includes.json`);
         }
 
-        const module = await import(`@site/src/reusables/${reusablePath}`);
+        const module = await import(`@site/src/includes/${includePath}`);
         setContent(() => module.default);
       } catch (err) {
-        console.error(`Failed to load reusable content "${id}":`, err);
-        setError(`Failed to load reusable content "${id}"`);
+        console.error(`Failed to load include content "${id}":`, err);
+        setError(`Failed to load include content "${id}"`);
       } finally {
         setLoading(false);
       }
@@ -35,7 +35,7 @@ const Include: React.FC<IncludeProps> = ({ id }) => {
   }, [id]);
 
   if (loading) {
-    return <div>Loading reusable content...</div>;
+    return <div>Loading include content...</div>;
   }
 
   if (error) {
@@ -46,7 +46,7 @@ const Include: React.FC<IncludeProps> = ({ id }) => {
 
   if (!Content) {
     return <div style={{ color: 'orange', border: '1px solid orange', padding: '10px', borderRadius: '4px' }}>
-      Reusable content "{id}" not found
+      Include content "{id}" not found
     </div>;
   }
 

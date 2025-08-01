@@ -81,7 +81,7 @@ const config: Config = {
     require.resolve("docusaurus-lunr-search"),
     require.resolve('./plugins/validate-topics'),
     require.resolve('./plugins/validate-images'),
-    require.resolve('./plugins/validate-reusables'),
+    require.resolve('./plugins/validate-includes'),
   ],
   themeConfig: {
     image: "telemetry-color.jpg",

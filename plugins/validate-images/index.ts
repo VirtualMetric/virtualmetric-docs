@@ -21,6 +21,19 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
       }
       const validIds = new Set(Object.keys(images));
 
+      // Validate that all paths in images.json point to existing files
+      const pathErrors: string[] = [];
+      for (const [id, imagePath] of Object.entries(images)) {
+        // Convert image path to file system path (images are in static/ directory)
+        const fullPath = path.join(rootDir, 'static', imagePath as string);
+        
+        try {
+          await fs.promises.access(fullPath);
+        } catch (error) {
+          pathErrors.push(`❌ Image ID '${id}' points to non-existent path '${imagePath}' (resolved to '${fullPath}')`);
+        }
+      }
+
       // Find all MDX files in the docs directory
       const mdxFiles = await glob('**/*.mdx', { cwd: docsDir, absolute: true });
 
@@ -46,13 +59,16 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
         }
       }
 
-      if (errors.length > 0) {
+      // Combine both types of errors
+      const allErrors = [...pathErrors, ...errors];
+
+      if (allErrors.length > 0) {
         console.error('\nImage Validation Errors:\n');
-        errors.forEach(err => console.error(err));
-        console.error('\nFix invalid Image IDs or update images.json.\n');
-        throw new Error('Image validation failed. Fix invalid Image IDs or update images.json.');
+        allErrors.forEach(err => console.error(err));
+        console.error('\nFix invalid Image IDs, update images.json, or add missing image files.\n');
+        throw new Error('Image validation failed. Fix invalid Image IDs, update images.json, or add missing image files.');
       } else {
-        console.log('✅ All Image IDs are valid.');
+        console.log('✅ All Image IDs and paths are valid.');
       }
     },
   };
