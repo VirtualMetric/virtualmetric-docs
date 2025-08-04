@@ -1,0 +1,217 @@
+# Managing Devices
+
+This guide covers comprehensive device management including creation, configuration, monitoring, and maintenance of both Push devices and Pull devices (Agents) in your DataStream environment.
+
+## Device Creation and Configuration
+
+### Adding New Push Devices
+
+The device creation process uses a guided wizard approach that walks you through the complete setup process:
+
+**Step 1: Device Type Selection and Basic Configuration**
+- Choose the appropriate protocol (Syslog, HTTP, UDP, TCP, eStreamer)
+- Set device name and description for identification
+- Configure initial parameters specific to the selected protocol
+
+**Step 2: Advanced Protocol Configuration**
+This step provides protocol-specific configuration options tailored to your selected device type, including:
+- Network settings and connection parameters
+- Security parameters and authentication options
+- Data handling preferences and processing rules
+
+For TCP devices, this step includes specific configuration for connection handling, such as timeout settings, connection limits, and reliability parameters that ensure stable data collection.
+
+When configuring secure TCP connections with TLS, additional options become available for certificate management, encryption settings, and security validation parameters to protect data in transit.
+
+**Step 3: Final Configuration and Confirmation**
+The final step provides a comprehensive configuration summary and confirmation interface before device creation. This step allows you to review all settings and make final adjustments.
+
+During configuration, you can specify multiple network addresses for improved accessibility and network redundancy, ensuring your devices remain reachable even if primary network paths experience issues.
+
+### Device Cloning
+
+Device cloning creates a new device based on an existing configuration, significantly streamlining the setup process for similar devices. This feature is particularly useful when deploying multiple devices with similar configurations across different network segments or locations.
+
+:::caution
+When cloning devices, ensure port numbers are unique to avoid conflicts. The system validates port availability and displays errors for duplicate ports, preventing configuration conflicts that could disrupt data collection.
+:::
+
+### Device Editing
+
+Device editing follows a structured three-step approach to ensure comprehensive configuration management:
+
+**Step 1: Basic Settings Modification**
+Modify fundamental device properties including name, description, and basic operational parameters without affecting advanced configurations.
+
+**Step 2: Protocol and Network Configuration**
+Focus on protocol-specific settings and network configuration adjustments, allowing you to fine-tune connection parameters and data handling options.
+
+**Step 3: Advanced Configuration and Confirmation**
+The final editing step covers advanced configuration options and provides change confirmation before applying modifications to the running device.
+
+## Device Management Operations
+
+### Device Actions
+
+Each device in the management interface provides comprehensive action options:
+
+- **Edit**: Modify device configuration settings through the guided editing process
+- **Clone**: Create a copy of the device with similar settings for rapid deployment
+- **Delete**: Remove the device from the configuration entirely with safety confirmations
+- **Enable/Disable**: Toggle device operational state without full reconfiguration
+- **View Details**: Access detailed device information including logs and performance metrics
+- **Test Connection**: Verify device connectivity and functionality
+
+### Device Status Management
+
+Devices can exist in various operational states:
+
+- **Enabled**: Device is actively collecting data and fully operational
+- **Disabled**: Device is configured but not actively collecting data
+- **Error**: Device has encountered issues that prevent normal operation
+- **Pending**: Device is in the process of starting up or being configured
+
+### Multi-Director Configuration
+
+Devices can be associated with multiple directors for load balancing and redundancy purposes. This multi-director configuration ensures:
+
+- **High Availability**: Continued operation even if one director fails
+- **Load Distribution**: Balanced processing across multiple directors
+- **Fault Tolerance**: Automatic failover to backup directors
+- **Scalability**: Distributed processing capabilities for high-volume environments
+
+## Windows Agent Management
+
+### Windows Agent Creation Process
+
+Windows Agent creation involves a systematic approach to ensure proper deployment and connectivity:
+
+**Step 1: Device Definition and Director Selection**
+- Name your Windows device with a descriptive identifier
+- Select which director will manage this agent
+- Choose Agent deployment type for local system log collection
+- Ensure the selected director is active and connected
+
+**Step 2: Creation Confirmation and Next Steps**
+Successful device creation provides confirmation and guides you through the subsequent steps required for agent installation and configuration.
+
+### Agent Installation and Connection States
+
+The Windows Agent installation process involves several distinct states that help you monitor progress and troubleshoot issues:
+
+**Loading State**: During agent installation, the interface displays loading indicators to show installation progress and system activity.
+
+**Installation Complete, Connection Pending**: After successful installation, agents may display "installed but not connected" status while establishing communication with their assigned directors. This is normal and typically resolves within a few minutes.
+
+**Connection Failure**: When connection attempts fail, the interface provides diagnostic information and troubleshooting guidance to help resolve connectivity issues between the agent and director.
+
+**Connection Success**: Successful connections confirm agent operational status and data collection readiness, indicating the agent is fully functional and ready to collect logs.
+
+### Agent Log Selection Configuration
+
+During agent setup, you must configure which log sources the agent will collect from the target system:
+
+**Predefined Log Source Options**: The interface provides common log types including:
+- Security logs for audit and security monitoring
+- System logs for operational and error information
+- Application logs for software-specific events
+- Other standard Windows event log categories
+
+**Custom Log Source Configuration**: For advanced monitoring requirements, you can specify:
+- Additional event logs beyond standard categories
+- Performance counters for system metrics
+- Custom log files and sources
+- Specific event ID filters and collection rules
+
+The custom log selection interface allows detailed specification of monitoring requirements based on your organization's compliance, security, and operational needs.
+
+**Agent Creation Confirmation**: Successful agent creation displays comprehensive confirmation notifications that include:
+- Configuration summary showing selected log sources
+- Next steps for agent management and monitoring
+- Connection status and health indicators
+- Instructions for verifying proper operation
+
+### Agent Limitations and Considerations
+
+Windows Agent devices have specific characteristics that differ from Push devices:
+
+- **No Cloning**: Agent devices cannot be cloned because each agent is uniquely tied to a specific system and configuration
+- **Unique Installation**: Each agent requires individual installation and configuration on its target system
+- **Director Dependency**: Agent functionality requires active director connections for management and data transmission
+- **System-Specific**: Each agent is configured for the specific system it's installed on
+
+## Device Deletion
+
+Device deletion requires careful consideration and confirmation due to its irreversible nature. The deletion process includes safety warnings and impact assessment to help you understand the consequences.
+
+### Deletion Process
+
+1. **Impact Assessment**: The system analyzes connected routes, pipelines, and dependencies
+2. **Warning Display**: Clear indication of deletion consequences including affected systems
+3. **Confirmation Requirements**: Multiple validation steps to prevent accidental deletion
+4. **Final Confirmation**: Explicit confirmation required before proceeding with deletion
+
+:::warning
+Device deletion is irreversible and will immediately stop all data collection for the deleted device. Ensure you have proper backups and understand the impact on your monitoring and compliance requirements before proceeding with deletion.
+:::
+
+## Search and Filtering
+
+The device management interface provides powerful search and filtering capabilities:
+
+### Search Functionality
+- **Real-time Search**: Filter devices as you type in the search box
+- **Multi-field Search**: Search by device name, description, or other attributes
+- **Case-insensitive**: Search works regardless of capitalization
+
+### Filtering Options
+- **Director Assignment**: View only devices managed by specific directors
+- **Device Status**: Filter by enabled, disabled, or error states
+- **Device Type**: Filter by protocol type (Syslog, HTTP, TCP, UDP, etc.)
+- **Connection Status**: For agents, filter by connection state
+
+## Performance Monitoring
+
+### Device Metrics
+
+Monitor device performance through comprehensive metrics:
+
+- **Data Throughput**: Volume of data processed by each device
+- **Connection Status**: Real-time connectivity information
+- **Error Rates**: Failed connections or processing errors
+- **Resource Usage**: System resources consumed by devices
+- **Performance Trends**: Historical performance data and trends
+
+### Health Monitoring
+
+- **Status Indicators**: Visual indicators for device health
+- **Alert Notifications**: Automated alerts for device issues
+- **Health Checks**: Regular connectivity and functionality testing
+- **Performance Thresholds**: Configurable alerts for performance issues
+
+## Best Practices
+
+### Device Organization
+- Use descriptive names that clearly identify the device purpose and source
+- Implement consistent naming conventions across your environment
+- Group related devices logically for easier management
+- Document device configurations and dependencies
+
+### Security Configuration
+- Use secure protocols (TLS/SSL) when available
+- Implement proper authentication and authorization
+- Regularly update agent software and security patches
+- Monitor device access logs for suspicious activity
+
+### Performance Optimization
+- Monitor device performance metrics regularly
+- Configure appropriate buffer sizes for your data volumes
+- Use multiple directors for load balancing in high-volume environments
+- Optimize network configurations for reliable data transmission
+
+### Maintenance
+- Schedule regular device health checks
+- Keep device configurations backed up
+- Plan for device failover scenarios
+- Test device configurations in non-production environments first
+- Maintain documentation of device dependencies and relationships
