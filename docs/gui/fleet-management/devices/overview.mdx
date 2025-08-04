@@ -1,0 +1,86 @@
+# Devices Overview
+
+The Devices View is your central management interface for configuring and monitoring all data ingestion sources in your VirtualMetric DataStream environment. This interface provides comprehensive device management capabilities for both Push devices (which receive data) and Pull devices (Agents that collect data from local systems).
+
+## Main Overview
+
+The main view displays devices organized into two distinct categories, providing a clear overview of your data collection infrastructure and the ability to quickly assess your device configuration state.
+
+### Push Devices
+
+Push devices are network-accessible endpoints that receive incoming log data from external sources. These devices listen on specified ports and protocols:
+
+- **Syslog**: Standard protocol for collecting and forwarding log messages from various devices to a centralized server
+- **HTTP**: Enables log data ingestion through HTTP protocol for efficient data transmission
+- **UDP**: Allows log data collection using the User Datagram Protocol (UDP) for faster but less reliable transmission
+- **TCP**: Collects logs using the Transmission Control Protocol (TCP) for reliable and ordered data delivery
+- **eStreamer**: A protocol designed for retrieving detailed event and log data from network and security devices
+
+Each Push device displays enabled/disabled status counters, allowing you to quickly assess your device configuration state and monitor the operational status of your data collection endpoints.
+
+### Pull Devices (Agents)
+
+Pull devices are lightweight agents installed on target systems to collect logs locally. These agents actively gather data from the systems they're installed on:
+
+- **Windows**: The Windows agent collects logs from Windows systems including event logs, performance data, and security information
+- **Linux**: Linux agent support (marked as "Coming Soon" in current interface)
+
+Pull devices require agent installation and display connection status to help you monitor agent health and connectivity with their assigned directors.
+
+## Device Type Specific Views
+
+### Syslog Device Management
+
+The Syslog device management interface provides a comprehensive view of all configured Syslog devices with a navigation sidebar that categorizes device types. The interface displays device counts for each category, helping you understand your current configuration distribution and manage large deployments effectively.
+
+The main Syslog device management table displays detailed information for each configured device:
+- **Name**: Device identifier for easy reference and organization
+- **Description**: Optional descriptive text explaining the device purpose or source
+- **Director(s)**: Associated directors responsible for managing this device
+- **Preprocessing Pipeline**: Data transformation pipeline applied to incoming logs
+- **Port**: Network port configured for incoming connections
+- **Protocol**: Transport protocol used (UDP/TCP)
+- **Status**: Current operational state (Enabled/Disabled)
+
+#### Search and Filtering
+
+The search functionality allows you to quickly locate specific devices by name or description. The search box provides real-time filtering of the device list, making it easy to find devices in large deployments.
+
+You can filter devices by director assignment to view only devices managed by specific directors. This filtering capability helps organize large deployments by management responsibility and simplifies troubleshooting when issues are director-specific.
+
+Status filtering enables you to quickly identify enabled or disabled devices, which is particularly useful for troubleshooting and conducting configuration audits. This filter helps you understand which devices are actively collecting data and which may need attention.
+
+#### Device Actions
+
+Each device row in the management table provides action options accessible through a context menu system:
+- **Edit**: Modify device configuration settings
+- **Clone**: Create a copy of the device with similar settings for rapid deployment
+- **Delete**: Remove the device from the configuration entirely
+- **Enable/Disable**: Toggle device operational state without full reconfiguration
+
+Devices can be associated with multiple directors for load balancing and redundancy purposes. This multi-director configuration ensures high availability and distributed processing capabilities, preventing single points of failure in your data collection infrastructure.
+
+## Windows Agent (Pull Device) Management
+
+### Agent Limitations and Requirements
+
+Windows Agent devices have different management characteristics compared to Push devices due to their system-specific nature:
+
+- **No Cloning**: Agent devices cannot be cloned because each agent is uniquely tied to a specific system and configuration
+- **Unique Installation**: Each agent requires individual installation and configuration on its target system
+- **Director Dependency**: Agent functionality requires active director connections for management and data transmission
+
+:::caution
+Windows Agent installation requires an active director connection. Ensure directors are properly configured and connected before attempting agent installation. Without proper director connectivity, agents cannot be deployed or managed effectively.
+:::
+
+## eStreamer Device Management
+
+eStreamer devices provide specialized configuration options designed for network security device integration. These devices require specific configuration parameters including:
+
+- **Connection Parameters**: Network settings for connecting to eStreamer-enabled security devices
+- **Authentication Settings**: Credentials and certificates required for secure communication
+- **Data Filtering Options**: Rules for selecting which events and data types to collect
+- **Protocol-Specific Settings**: eStreamer-specific configuration options for optimal data collection
+
+The eStreamer protocol is specifically designed for retrieving detailed event and log data from network and security devices, making it essential for comprehensive security monitoring and compliance reporting in enterprise environments.

@@ -56,20 +56,120 @@ const sidebars: SidebarsConfig = {
       label: "GUI",
       collapsed: false,
       items: [
-        "gui/create-account",
-        "gui/welcome-dashboard",
-        "gui/account-settings",
-        "gui/my-pipelines-dashboard",
-        "gui/create-new-pipeline",
-        "gui/content-hub",
-        "gui/directors-dashboard",
-        "gui/devices-dashboard",
-        "gui/targets-dashboard",
-        "gui/quick-routes",
-        "gui/advanced-routes",
-        "gui/manage-users",
-        "gui/manage-roles",
-        "gui/audit",
+        {
+          type: "category",
+          label: "Accounts",
+          items: [
+            "gui/accounts/overview",
+            "gui/accounts/creating-accounts",
+            "gui/accounts/managing-accounts",
+            "gui/accounts/troubleshooting-accounts",
+          ]
+        },
+        "gui/home",
+        {
+          type: "category",
+          label: "Fleet Management",
+          items: [
+            {
+              type: "category",
+              label: "Directors",
+              items: [
+                "gui/fleet-management/directors/overview",
+                "gui/fleet-management/directors/creating-directors",
+                "gui/fleet-management/directors/managing-directors",
+                "gui/fleet-management/directors/troubleshooting-directors",
+              ]
+            },
+            {
+              type: "category",
+              label: "Devices",
+              items: [
+                "gui/fleet-management/devices/overview",
+                "gui/fleet-management/devices/creating-devices",
+                "gui/fleet-management/devices/creating-agents",
+                "gui/fleet-management/devices/managing-devices",
+                "gui/fleet-management/devices/troubleshooting-devices",
+              ]
+            },
+            {
+              type: "category",
+              label: "Targets",
+              items: [
+                "gui/fleet-management/targets/overview",
+                "gui/fleet-management/targets/creating-targets",
+                "gui/fleet-management/targets/managing-targets",
+              ]
+            }
+          ]
+        },
+        {
+          type: "category",
+          label: "Pipelines",
+          items: [
+            "gui/pipelines/overview",
+            "gui/pipelines/creating-pipelines",
+            "gui/pipelines/managing-pipelines",
+          ]
+        },
+        {
+          type: "category",
+          label: "Routes",
+          items: [
+            "gui/routes/overview",
+            {
+              type: "category",
+              label: "Quick Routes",
+              items: [
+                "gui/routes/quick-routes/creating-quick-routes",
+                "gui/routes/quick-routes/managing-quick-routes",
+              ]
+            },
+            {
+              type: "category",
+              label: "Advanced Routes",
+              items: [
+                "gui/routes/advanced-routes/creating-advanced-routes",
+                "gui/routes/advanced-routes/managing-advanced-routes",
+              ]
+            }
+          ]
+        },
+        {
+          type: "category",
+          label: "Content Hub",
+          items: [
+            "gui/content-hub/overview",
+            "gui/content-hub/azure-sentinel-integration",
+            "gui/content-hub/installing-solutions",
+            "gui/content-hub/managing-solutions",
+          ]
+        },
+        {
+          type: "category",
+          label: "Organization",
+          items: [
+            {
+              type: "category",
+              label: "Users",
+              items: [
+                "gui/organization/users/overview",
+                "gui/organization/users/creating-users",
+                "gui/organization/users/managing-users",
+              ]
+            },
+            {
+              type: "category",
+              label: "Roles",
+              items: [
+                "gui/organization/roles/overview",
+                "gui/organization/roles/creating-roles",
+                "gui/organization/roles/managing-roles",
+              ]
+            },
+            "gui/organization/audit",
+          ]
+        }
       ]
     },
     {
