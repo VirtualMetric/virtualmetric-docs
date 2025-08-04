@@ -1,3 +1,146 @@
 # Creating Targets
 
-Content to be added.
+Creating **Targets** in DataStream defines where processed data will be sent after pipeline processing. Targets represent output destinations such as Azure Sentinel, files, databases, or other analytics platforms. This guide covers the comprehensive target creation process using the multi-step wizard approach.
+
+## Target Types Overview
+
+DataStream supports various target types for different data output requirements:
+
+- **Azure Sentinel**: Microsoft's cloud-native SIEM and SOAR solution
+- **File**: Local or network file system storage
+- **Database**: SQL Server, PostgreSQL, and other database systems
+- **Elasticsearch**: Search and analytics engine
+- **Splunk HEC**: Splunk HTTP Event Collector
+- **Syslog**: Standard syslog protocol for log forwarding
+- **Console**: Output for testing and debugging purposes
+
+## Target Creation Process
+
+The target creation process follows a multi-step wizard approach, guiding administrators through the necessary configuration phases to ensure proper setup and validation.
+
+### Step 1: General Information
+
+Begin target creation with essential identification and type selection. The first step presents a form for basic target properties that will be used throughout the configuration process.
+
+Configure basic target properties:
+
+- **Target name**: Unique identifier for the target configuration
+- **Target type**: Selection from available output types (Sentinel, File, Database, etc.)
+- **Description**: Optional documentation for target purpose and usage
+- **Environment tags**: Categorization for development, staging, or production use
+
+#### Target Type Selection Impact
+The target type selection in Step 1 determines which configuration options become available in subsequent steps. Each target type has specific requirements and configuration parameters.
+
+### Step 2: Azure Properties Configuration
+
+Configure Azure-specific connection parameters for Sentinel and other Azure targets. The interface dynamically enables or disables Azure-specific fields based on the target type selected in Step 1.
+
+#### Dynamic Configuration Interface
+When Azure target types are not selected, the Azure properties section remains disabled, preventing unnecessary configuration. Once an Azure-compatible target type is chosen, the section becomes active and displays all relevant Azure configuration options.
+
+Azure configuration includes:
+
+- **Subscription settings**: Azure subscription ID and resource group information
+- **Authentication**: Service principal credentials or managed identity configuration
+- **Workspace details**: Log Analytics workspace ID and connection strings
+- **Regional settings**: Azure region and data residency preferences
+- **Security parameters**: SSL/TLS configuration and encryption settings
+
+#### Azure Sentinel Specific Configuration
+For Azure Sentinel targets, additional configuration options include:
+- **Data Collection Rules (DCR)**: Configure automated DCR creation and management
+- **Table routing**: Specify target tables for different data types
+- **ASIM compliance**: Enable Advanced Security Information Model normalization
+
+### Step 3: Stream Configuration
+
+Configure data stream mappings and routing for the target. This step provides two primary configuration modes to accommodate different setup preferences and technical requirements.
+
+#### Automatic Stream Configuration
+
+The system can automatically detect available data streams and suggest optimal routing configurations. This mode analyzes existing pipeline outputs and recommends appropriate stream assignments based on data types and target compatibility.
+
+**Benefits of Automatic Configuration:**
+- Reduced setup time and complexity
+- Optimized routing based on data analysis
+- Minimized configuration errors
+- Best practice recommendations
+
+#### Manual Stream Configuration
+
+For advanced users or specific requirements, manual configuration provides granular control over stream routing and data processing rules. This mode allows custom mapping of data streams to target-specific formats and routing logic.
+
+**Manual Configuration Advantages:**
+- Complete control over data routing
+- Custom transformation rules
+- Specialized filtering criteria
+- Advanced performance tuning
+
+#### Stream Configuration Options
+
+Stream configuration options include:
+
+- **Automatic detection**: System-identified data streams with recommended routing
+- **Manual selection**: Custom stream mapping for specific data types
+- **Filtering rules**: Include/exclude criteria for data stream processing
+- **Format options**: Output format selection (JSON, CEF, LEEF, Custom)
+- **Batch settings**: Batching and buffering parameters for optimal performance
+
+## Installation Success and Validation
+
+Upon successful completion of the configuration wizard, the system provides confirmation of the target creation along with validation results and next steps. This confirmation phase ensures the target is properly configured and ready for operation.
+
+Successful target creation provides:
+
+- **Confirmation status**: Target successfully configured and operational
+- **Connection validation**: Initial connectivity test results
+- **Configuration summary**: Review of all configured parameters
+- **Next steps**: Guidance for additional configuration or testing
+- **Monitoring setup**: Links to target performance and health monitoring
+
+## Best Practices for Target Creation
+
+### Planning and Design
+- **Assess data volume requirements** to choose appropriate target types
+- **Consider compliance requirements** when selecting Azure regions or data residency options
+- **Plan for redundancy** by creating multiple targets for critical data streams
+- **Design naming conventions** that clearly identify target purpose and environment
+
+### Security Configuration
+- **Use managed identities** when possible for Azure authentication
+- **Enable encryption** for all data transmission
+- **Implement proper access controls** for target systems
+- **Regular security audits** of target configurations
+
+### Performance Optimization
+- **Configure appropriate batch sizes** based on data volume and latency requirements
+- **Set reasonable timeout values** for network conditions
+- **Monitor target performance** and adjust settings as needed
+- **Use automatic stream configuration** initially, then optimize manually if needed
+
+### Testing and Validation
+- **Test connectivity** immediately after target creation
+- **Validate data flow** with sample data before production use
+- **Monitor initial data processing** to ensure proper formatting
+- **Document configuration decisions** for future reference and troubleshooting
+
+## Common Target Configuration Scenarios
+
+### Azure Sentinel Integration
+- Configure subscription and workspace details
+- Enable automatic DCR management
+- Set up ASIM normalization for security data
+- Configure appropriate table routing for different log types
+
+### File-Based Targets
+- Define file rotation policies
+- Configure compression and archival settings
+- Set appropriate file permissions and access controls
+- Plan storage capacity and retention policies
+
+### Database Targets
+- Configure connection pooling for performance
+- Set up appropriate table schemas
+- Implement data retention policies
+- Configure backup and recovery procedures
