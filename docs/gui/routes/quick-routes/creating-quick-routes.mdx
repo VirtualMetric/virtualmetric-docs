@@ -1,79 +1,84 @@
 # Creating Quick Routes
 
-Quick routes provide a streamlined interface for setting up basic data routing configurations without complex conditional logic. This simplified approach allows you to rapidly deploy common routing scenarios between devices, pipelines, and targets.
+Quick routes provide a visual interface for connecting devices to targets through pipelines. The interface displays devices on the left, targets on the right, and pipelines in the center with connection lines showing data flow.
 
-## Overview
+## Device Selection
 
-Quick routes are ideal for straightforward data routing scenarios where complex processing logic is not required, enabling efficient data flow management across your infrastructure. The simplified interface reduces configuration complexity while maintaining the flexibility needed for most common routing use cases.
+Click **Select device** to open the device selection modal showing:
 
-## Creating New Routes
+### Device Types Available
+- **Syslog**: Creates a Syslog server that accepts log messages over UDP or TCP connections
+- **HTTP**: Creates an HTTP server that accepts messages via HTTP POST requests  
+- **TCP**: Creates a server that accepts network messages over TCP connections
+- **UDP**: Creates a server that accepts network messages over UDP connections
+- **Windows**: Creates a monitoring agent that collects performance metrics and system logs from Windows systems
+- **eStreamer**: Creates an eStreamer client that connects to an eStreamer server to receive events
 
-### Device Selection
+Each device type shows:
+- **Name and description**
+- **Enabled/Disabled count**
+- **Choose device type** button to proceed
 
-When creating a new route, you begin by selecting the source device configuration that will provide data for your route. The device selection interface presents all available device types in a categorized list, making it easy to find the appropriate data source.
+### Multiple Device Selection
+- Select multiple devices by clicking the **Select device** links
+- Each selected device appears as a card on the left side
+- **"i" information button** shows device details
+- **"not selected"** status indicates unselected pipelines
 
-Available device types typically include:
-- Database connections
-- API endpoints
-- File system monitors
-- Network sensors
-- Message queues
-- Custom integrations
+## Target Selection
 
-You can select multiple devices if you need to route data from several sources simultaneously. This multi-device selection enables data aggregation scenarios where information from different sources needs to be combined and routed together.
+Click **Select target** to open the target selection modal showing:
 
-If your required device configuration doesn't exist, you can create a new device configuration directly from the routing interface. This streamlined workflow eliminates the need to navigate to separate device management screens during route setup.
+### Target Types Available
+- **Azure Sentinel**: Creates a target that writes log messages into Microsoft Sentinel workspace tables
+- **Console**: Creates a target that writes log messages to the standard output
+- **File**: Creates a file target that writes log messages to files in various formats like JSON, CSV, etc.
+- **Azure Data Explorer**: Creates an Azure Data Explorer (Kusto) target that ingests data directly into ADX tables
+- **Azure Blob Storage**: Creates a target that writes log messages to Azure Blob Storage with support for various formats
 
-### Target Configuration
+Each target type shows:
+- **Name and description**
+- **Enabled/Disabled count**
+- **Choose target type** button to proceed
 
-After configuring the source device, you specify the destination target where the routed data will be sent. The target selection interface displays available output destinations organized by type and capability.
+### Multiple Target Selection
+- Select multiple targets by clicking the **Select target** links
+- Each selected target appears as a card on the right side
+- **"not selected"** status indicates unselected pipelines
 
-Common target types include:
-- Data warehouses
-- Analytics platforms
-- Alert systems
-- File storage locations
-- External APIs
-- Monitoring views
+## Route Configuration
 
-The interface supports configuring multiple targets to distribute data to several destinations simultaneously. This multi-target routing enables scenarios where the same data needs to be sent to different systems for various purposes such as storage, analysis, and alerting.
+When devices and targets are connected, a **Configure route** panel appears showing:
 
-Similar to device configuration, you can create new target configurations directly within the routing interface if your desired destination isn't already configured in the system.
+- **Route description**: "Configure route from [device] to target [target]"
+- **Insert pipeline within route** link with "+" icon
+- **Optional** label indicating pipeline selection is not required
 
-### Pipeline Configuration
+### Pipeline Selection
+- Click the **Insert pipeline within route** link to add processing
+- Pipelines appear as blue rectangular nodes in the center
+- Multiple pipeline steps can be chained together
+- **Save route** button confirms the configuration
+- **Discard route** button cancels changes
 
-The pipeline configuration step allows you to specify the processing pipeline that will handle data transformation between source and destination. The pipeline selection interface provides a dropdown menu showing all available processing pipelines with descriptions of their capabilities.
+## Route Management
 
-Pipeline options typically include:
-- Data transformation rules
-- Filtering and validation logic
-- Format conversion (JSON, XML, CSV, etc.)
-- Enrichment and aggregation functions
-- Custom processing scripts
+### Viewing Routes
+- **Filter devices and targets** dropdown to organize the display
+- **Search** functionality to find specific routes
+- **Status filters** to show active/inactive routes
 
-You can choose from existing pipelines that match your data processing requirements, or create new pipelines if specialized processing is needed. Each pipeline displays its input/output formats and processing capabilities to help you make the appropriate selection.
+### Route Actions
+- **Remove route** button (trash icon) for deleting connections
+- **Confirmation modal** appears before deletion: "Are you sure you want to remove this route?"
+- **Device and target details** panels show configuration options
+- **Route deleted** confirmation message after successful removal
 
-Once you've selected a pipeline, you can review the complete route configuration including source devices, target destinations, and processing pipeline before finalizing the route creation.
+## Step-by-Step Process
 
-## Quick Routes Benefits
-
-- **Simplified Configuration**: Streamlined interface for basic routing scenarios without complex conditional logic
-- **Rapid Deployment**: Quick setup process that enables fast deployment of common routing patterns
-- **Visual Management**: Clear view of all configured routes with comprehensive status information
-- **Flexible Sources**: Support for multiple device types and configurations with easy multi-device selection
-- **Multiple Targets**: Route data to several destinations simultaneously for comprehensive data distribution
-- **Safety Features**: Confirmation dialogs and validation checks prevent accidental configuration changes
-- **Integrated Workflow**: Create devices and targets directly within the routing interface
-- **Real-time Monitoring**: Live status updates and performance metrics for all configured routes
-
-## Step-by-Step Creation Process
-
-1. **Access Quick Routes** - Navigate to the Routes section and select Quick Routes
-2. **Start New Route** - Click the "Create New Route" button
-3. **Select Source Device** - Choose the device that will provide data for your route
-4. **Configure Target** - Specify where the routed data will be sent
-5. **Choose Pipeline** - Select the processing pipeline for data transformation
-6. **Review Configuration** - Verify all settings before finalizing
-7. **Create Route** - Confirm the route creation and activate the data flow
-
-The quick routes creation process is designed to be intuitive and efficient, allowing you to establish data routing in minutes rather than hours.
+1. **Open Quick Routes** - Navigate to Routes → Quick Routes
+2. **Select devices** - Click "Select device" and choose from available device types
+3. **Select targets** - Click "Select target" and choose destination types  
+4. **Connect routes** - Drag connections between devices and targets
+5. **Configure pipeline** (optional) - Add processing steps using "Insert pipeline within route"
+6. **Save route** - Click "Save route" to activate the data flow
