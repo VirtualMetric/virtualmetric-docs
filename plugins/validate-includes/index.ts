@@ -23,6 +23,8 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
 
       // Validate that all paths in includes.json point to existing files
       const pathErrors: string[] = [];
+      const namingErrors: string[] = [];
+      
       for (const [id, includePath] of Object.entries(includes)) {
         // Convert include path to file system path (includes are in src/includes/ directory)
         const fullPath = path.join(rootDir, 'src', 'includes', includePath as string);
@@ -31,6 +33,12 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
           await fs.promises.access(fullPath);
         } catch (error) {
           pathErrors.push(`❌ Include ID '${id}' points to non-existent path '${includePath}' (resolved to '${fullPath}')`);
+        }
+
+        // Validate naming convention: ID should match filename (without .mdx extension)
+        const expectedFilename = `${id}.mdx`;
+        if (includePath !== expectedFilename) {
+          namingErrors.push(`❌ Include ID '${id}' should point to '${expectedFilename}'`);
         }
       }
 
@@ -54,13 +62,13 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
         for (const match of matches) {
           const id = match[1];
           if (!validIds.has(id)) {
-            errors.push(`❌ Invalid Include ID '${id}' in file: ${file}`);
+            errors.push(`❌ Include ID '${id}' is invalid`);
           }
         }
       }
 
-      // Combine both types of errors
-      const allErrors = [...pathErrors, ...errors];
+      // Combine all types of errors
+      const allErrors = [...pathErrors, ...namingErrors, ...errors];
 
       if (allErrors.length > 0) {
         console.error('\nInclude Validation Errors:\n');
