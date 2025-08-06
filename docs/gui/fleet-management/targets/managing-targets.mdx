@@ -1,151 +1,260 @@
 # Managing Targets
 
-This guide covers comprehensive target management including creation, configuration, editing, and maintenance of data output destinations in your DataStream environment.
+This guide covers comprehensive target management operations including monitoring, editing, cloning, and maintaining data output destinations across diverse target types within your DataStream environment.
 
-## Adding New Targets
+## Target Management Interface
 
-The target creation process follows a multi-step wizard approach, guiding administrators through the necessary configuration phases to ensure proper setup and validation.
+### Table View Management
 
-### Step 1: General Information
+The targets management interface provides organized access to all configured targets through comprehensive table functionality:
 
-Begin target creation with essential identification and type selection. The first step presents a form for basic target properties that will be used throughout the configuration process.
+**Interface Components:**
+- **Target Identification**: Name, type, and description columns for easy recognition and categorization
+- **Status Indicators**: Real-time operational status showing connection health and data flow state
+- **Action Buttons**: Quick access to edit, clone, and delete functions for immediate operations
+- **Performance Metrics**: Connection status and throughput indicators for operational monitoring
+- **Pagination Controls**: Navigate through large target inventories with customizable page sizes
 
-Configure basic target properties:
+### Search and Filtering Operations
 
-- **Target name**: Unique identifier for the target configuration
-- **Target type**: Selection from available output types (Sentinel, File, Database, etc.)
-- **Description**: Optional documentation for target purpose and usage
-- **Environment tags**: Categorization for development, staging, or production use
+Efficiently locate and manage targets using advanced search and filtering capabilities:
 
-### Step 2: Azure Properties Configuration
+**Search Functionality:**
+- **Text-Based Search**: Filter targets by name or configuration properties with instant results
+- **Real-Time Filtering**: Immediate filtering as you type search terms providing responsive feedback
+- **Case-Insensitive Matching**: Flexible search without exact case requirements for user convenience
+- **Multi-Field Search**: Search across target names, types, descriptions, and configuration parameters
 
-Configure Azure-specific connection parameters for Sentinel and other Azure targets. The interface dynamically enables or disables Azure-specific fields based on the target type selected in Step 1.
+**Status-Based Filtering:**
+Advanced filtering options help focus on targets requiring specific attention:
 
-When Azure target types are not selected, the Azure properties section remains disabled, preventing unnecessary configuration. Once an Azure-compatible target type is chosen, the section becomes active and provides all relevant Azure configuration options.
+- **Connection Status Filtering**: Display only connected, disconnected, or error state targets
+- **Health Monitoring Focus**: Quickly identify targets requiring attention for proactive management
+- **Operational Overview**: Assess system-wide target health and performance at a glance
+- **Maintenance Planning**: Identify targets needing configuration updates or operational attention
 
-Azure configuration includes:
+## Target Actions and Operations
 
-- **Subscription settings**: Azure subscription ID and resource group information
-- **Authentication**: Service principal credentials or managed identity configuration
-- **Workspace details**: Log Analytics workspace ID and connection strings
-- **Regional settings**: Azure region and data residency preferences
-- **Security parameters**: SSL/TLS configuration and encryption settings
+### Target Action Menu
 
-### Step 3: Stream Configuration
+Each target provides comprehensive management options through context-sensitive action menus:
 
-Configure data stream mappings and routing for the target. This step provides two primary configuration modes to accommodate different setup preferences and technical requirements.
+**Standard Target Actions:**
+- **Edit target**: Modify configuration, credentials, and connection parameters with guided workflows
+- **Clone target**: Duplicate existing configurations for similar setups and rapid deployment
+- **Delete target**: Remove targets with confirmation safeguards and impact assessment
+- **View details**: Access comprehensive target information, logs, and performance metrics
 
-#### Automatic Stream Configuration
+### Target Editing Process
 
-The system can automatically detect available data streams and suggest optimal routing configurations. This mode analyzes existing pipeline outputs and recommends appropriate stream assignments based on data types and target compatibility.
+Target editing follows a structured, multi-tab approach for organized configuration management:
 
-#### Manual Stream Configuration
+#### Tab 1: General Settings
 
-For advanced users or specific requirements, manual configuration provides granular control over stream routing and data processing rules. This mode allows custom mapping of data streams to target-specific formats and routing logic.
+The first tab focuses on fundamental target configuration and basic operational parameters:
 
-Stream configuration options:
+**General Settings Management:**
+- **Basic Information**: Name, description, and type modification with validation
+- **Connection Parameters**: Update authentication and endpoint details with security validation
+- **Status Controls**: Enable/disable target operation without losing configuration data
+- **Validation Tools**: Test connection and configuration accuracy with real-time feedback
 
-- **Automatic detection**: System-identified data streams with recommended routing
-- **Manual selection**: Custom stream mapping for specific data types
-- **Filtering rules**: Include/exclude criteria for data stream processing
-- **Format options**: Output format selection (JSON, CEF, LEEF, Custom)
-- **Batch settings**: Batching and buffering parameters for optimal performance
+**Configuration Validation:**
+- **Real-Time Validation**: Immediate feedback on configuration changes and potential issues
+- **Connection Testing**: Built-in tools to verify target accessibility and functionality
+- **Security Verification**: Validation of authentication credentials and security settings
+- **Performance Testing**: Basic performance verification for configuration changes
 
-#### Installation Success
+#### Tab 2: Advanced Configuration
 
-Upon successful completion of the configuration wizard, the system provides confirmation of the target creation along with validation results and next steps. This confirmation phase ensures the target is properly configured and ready for operation.
+The second tab provides access to advanced configuration options for performance and behavior tuning:
 
-Successful target creation provides:
+**Advanced Configuration Options:**
+- **Performance Tuning**: Batch sizes, retry logic, timeout settings, and connection optimization
+- **Data Transformation**: Field mapping, format conversion rules, and data enrichment options
+- **Security Settings**: Encryption configuration, authentication methods, and access controls
+- **Monitoring Configuration**: Alerting thresholds, health check parameters, and performance monitoring
 
-- **Confirmation status**: Target successfully configured and operational
-- **Connection validation**: Initial connectivity test results
-- **Next steps**: Guidance for additional configuration or testing
-- **Monitoring setup**: Links to target performance and health monitoring
+**Optimization Features:**
+- **Batch Processing**: Configure optimal batch sizes based on target characteristics and performance requirements
+- **Retry Mechanisms**: Set up sophisticated retry logic for handling temporary failures and network issues
+- **Timeout Management**: Configure appropriate timeouts for different target types and network conditions
+- **Connection Pooling**: Optimize connection management for high-throughput scenarios
 
-## Target Editing and Management
+#### Tab 3: Stream Management
 
-Target editing is organized into multiple tabs to provide logical groupings of configuration options while maintaining an intuitive interface structure.
+The third tab focuses on data stream routing and processing configuration:
 
-### Edit Interface - General Settings
+**Stream Management Capabilities:**
+- **Active Streams**: Currently configured data stream assignments with real-time status
+- **Routing Rules**: Conditional routing based on data content, metadata, and system conditions
+- **Filter Configuration**: Include/exclude rules for data processing with complex criteria support
+- **Output Formatting**: Customize output structure, field mapping, and data transformation
 
-The general settings tab provides access to fundamental target configuration options. This primary tab contains the most frequently modified settings and basic operational controls.
+**Advanced Stream Configuration:**
+- **Dynamic Routing**: Configure routing rules that adapt based on data content and system conditions
+- **Stream Prioritization**: Assign priorities to different data streams for processing order optimization
+- **Load Balancing**: Distribute data streams across multiple target instances when supported
+- **Performance Monitoring**: Track stream-specific performance metrics and throughput
 
-General settings management:
+## Target Operations Management
 
-- **Basic information**: Name, description, and type modification
-- **Connection parameters**: Update authentication and endpoint details
-- **Status controls**: Enable/disable target operation
-- **Validation tools**: Test connection and configuration accuracy
+### Target Cloning Operations
 
-### Edit Interface - Advanced Configuration
+Target cloning provides efficient configuration duplication for scaling and environment management:
 
-The advanced configuration tab contains performance tuning options and specialized settings that require deeper technical knowledge. These settings are separated from general options to prevent accidental modification by less experienced users.
+**Cloning Process:**
+- **Configuration Inheritance**: Preserve all settings from source target including advanced configurations
+- **Name Modification**: Assign unique names to cloned targets with automatic suggestions
+- **Selective Copying**: Choose which configuration elements to replicate for customized cloning
+- **Environment Adaptation**: Modify cloned targets for different environments (dev, staging, prod)
 
-Advanced configuration options:
+**Cloning Benefits:**
+- **Rapid Deployment**: Quickly create similar targets for scaling operations
+- **Environment Consistency**: Maintain consistent configurations across different environments
+- **Configuration Templating**: Use successful configurations as templates for new targets
+- **Reduced Errors**: Minimize configuration errors by copying proven configurations
 
-- **Performance tuning**: Batch sizes, retry logic, and timeout settings
-- **Data transformation**: Field mapping and format conversion rules
-- **Security settings**: Encryption, authentication, and access controls
-- **Monitoring configuration**: Alerting thresholds and health check parameters
+### Target Deletion Management
 
-### Edit Interface - Stream Management
+Target deletion includes comprehensive safety measures to prevent data loss and system disruption:
 
-The stream management tab focuses specifically on data routing and processing rules. This dedicated interface allows administrators to modify stream assignments and processing logic without affecting other target configurations.
-
-Stream management capabilities:
-
-- **Active streams**: Currently configured data stream assignments
-- **Routing rules**: Conditional routing based on data content
-- **Filter configuration**: Include/exclude rules for data processing
-- **Output formatting**: Customize output structure and field mapping
-
-## Target Operations
-
-### Cloning Targets
-
-Duplicate existing target configurations for efficient setup. The cloning process presents options to customize the duplicated configuration while preserving the majority of settings from the source target.
-
-Cloning features:
-
-- **Configuration inheritance**: Preserve all settings from source target
-- **Name modification**: Assign unique name to cloned target
-- **Selective copying**: Choose which configuration elements to replicate
-- **Environment adaptation**: Modify cloned targets for different environments
-
-### Target Deletion
-
-Safe target removal with comprehensive validation. The deletion process implements a multi-step confirmation workflow to prevent accidental removal of critical targets. The system first presents an impact assessment showing all systems that would be affected by the deletion.
-
-The deletion workflow includes an initial confirmation step that analyzes target usage and provides warnings about potential impacts. After reviewing the impact assessment, users must provide explicit confirmation through a secondary prompt that requires typing the target name or clicking a final confirmation button.
-
-Deletion safety measures:
-
-- **Impact assessment**: Review of pipelines and routes using the target
-- **Confirmation requirements**: Multi-step confirmation to prevent accidents
-- **Dependency checking**: Identify connected components that may be affected
-- **Backup recommendations**: Guidance for configuration preservation
+**Safe Deletion Process:**
+- **Impact Assessment**: Comprehensive analysis of pipelines and routes using the target
+- **Confirmation Requirements**: Multi-step confirmation process to prevent accidental removal
+- **Dependency Checking**: Identification of connected components that may be affected
+- **Backup Recommendations**: Guidance for configuration preservation before deletion
 
 :::warning
 **Critical Operation Warning**: Deleting a target will immediately stop all data flows to that destination. Ensure all dependent pipelines and routes are updated before proceeding with target deletion.
 :::
 
-## Target Operations
+**Deletion Safety Measures:**
+- **Pre-Deletion Analysis**: Detailed analysis of data flows and system dependencies
+- **Alternative Suggestions**: Recommendations for disabling targets instead of deletion
+- **Configuration Export**: Automatic backup of target configuration before deletion
+- **Recovery Planning**: Information about recovery procedures if deletion needs to be reversed
 
-### Connection Status
+## Specialized Target Management
 
-Monitor target connectivity and operational status:
+### Azure Sentinel Target Management
 
-- **Connection Health**: Status indicators showing target connectivity status
+Azure Sentinel targets require specific management considerations due to cloud integration complexity:
 
+**Azure-Specific Operations:**
+- **Subscription Management**: Monitor and manage Azure subscription integration and health
+- **Workspace Integration**: Maintain Log Analytics workspace connections and performance
+- **Security Compliance**: Ensure ongoing compliance with Azure security and governance policies
+- **Cost Monitoring**: Track Azure consumption and optimize for cost efficiency
 
+**Performance Optimization:**
+- **Data Collection Endpoint Optimization**: Configure optimal data collection endpoints for performance
+- **Regional Optimization**: Ensure optimal regional configuration for latency and compliance
+- **Batch Size Optimization**: Tune batch sizes specifically for Azure Log Analytics ingestion
+- **Authentication Optimization**: Optimize authentication methods for security and performance
 
+### Database Target Management
 
-- Implement proper network security measures
-- Monitor target access logs for suspicious activity
-- Keep target systems updated with security patches
+Database targets require specialized management for performance and reliability:
 
-### Operational Management
-- Schedule regular target health checks
-- Maintain backup copies of target configurations
-- Plan for target failover scenarios
-- Document target dependencies and relationships
+**Database-Specific Management:**
+- **Connection Pool Monitoring**: Monitor and optimize database connection pool utilization
+- **Transaction Management**: Ensure proper transaction handling for data integrity
+- **Performance Monitoring**: Track database-specific performance metrics and optimization
+- **Index Management**: Monitor and optimize database indexes for write performance
+
+**Maintenance Operations:**
+- **Connection Health**: Regular monitoring of database connectivity and performance
+- **Schema Evolution**: Manage schema changes and data structure evolution
+- **Backup Coordination**: Coordinate with database backup and maintenance schedules
+- **Capacity Planning**: Monitor database capacity and plan for growth
+
+### File Output Target Management
+
+File-based targets require storage and lifecycle management:
+
+**File Management Operations:**
+- **Storage Monitoring**: Monitor storage utilization and capacity across file systems
+- **Rotation Management**: Manage file rotation policies and archive processes
+- **Access Control**: Maintain appropriate file system permissions and access controls
+- **Compression Optimization**: Monitor and optimize compression settings for efficiency
+
+**Lifecycle Management:**
+- **Archive Policies**: Implement and manage long-term archival policies
+- **Cleanup Procedures**: Regular cleanup of old files based on retention policies
+- **Storage Optimization**: Optimize storage usage through compression and archival
+- **Backup Integration**: Coordinate file backup with organizational backup policies
+
+### Console Target Management
+
+Console targets provide specialized debugging and development management:
+
+**Development Support:**
+- **Real-Time Monitoring**: Live monitoring of data streams for development and debugging
+- **Format Validation**: Real-time validation of data formats and structure
+- **Performance Analysis**: Development-focused performance monitoring and optimization
+- **Quality Assurance**: Support for QA processes and validation procedures
+
+## Performance Monitoring and Optimization
+
+### Target Performance Metrics
+
+Monitor key performance indicators for optimal target operation:
+
+**Connection Metrics:**
+- **Connection Health**: Continuous monitoring of target connectivity and stability
+- **Response Times**: Track response times and latency for performance optimization
+- **Throughput Monitoring**: Monitor data throughput rates and identify bottlenecks
+- **Error Rate Tracking**: Track error frequencies and types for reliability assessment
+
+**Resource Utilization:**
+- **Network Utilization**: Monitor network bandwidth usage and optimization opportunities
+- **Memory Usage**: Track memory consumption patterns for resource planning
+- **CPU Utilization**: Monitor processing resource usage for capacity planning
+- **Storage Impact**: Track storage requirements and growth patterns
+
+### Optimization Strategies
+
+**Performance Tuning:**
+- **Batch Size Optimization**: Continuously optimize batch sizes based on performance data
+- **Connection Optimization**: Tune connection parameters for optimal performance
+- **Buffer Management**: Optimize buffering strategies for reliability and throughput
+- **Compression Optimization**: Balance compression benefits with processing overhead
+
+**Capacity Management:**
+- **Scalability Planning**: Plan for target scaling based on growth projections
+- **Load Distribution**: Optimize load distribution across multiple target instances
+- **Resource Allocation**: Ensure adequate resource allocation for target operations
+- **Performance Forecasting**: Predict future performance requirements based on trends
+
+## Troubleshooting and Maintenance
+
+### Common Management Issues
+
+**Connection Problems:**
+- **Authentication Failures**: Diagnose and resolve authentication and credential issues
+- **Network Connectivity**: Troubleshoot network connectivity and routing problems
+- **Configuration Errors**: Identify and correct configuration inconsistencies
+- **Performance Degradation**: Address performance issues and optimization opportunities
+
+**Operational Challenges:**
+- **Data Flow Interruptions**: Quickly identify and resolve data flow disruptions
+- **Capacity Constraints**: Manage capacity limitations and scaling requirements
+- **Integration Issues**: Resolve integration problems with target systems
+- **Monitoring Gaps**: Identify and address monitoring and alerting gaps
+
+### Maintenance Best Practices
+
+**Regular Maintenance:**
+- **Health Check Reviews**: Regular reviews of target health and performance
+- **Configuration Audits**: Periodic audits of target configurations and settings
+- **Performance Analysis**: Regular analysis of performance trends and optimization opportunities
+- **Security Reviews**: Ongoing security assessments and updates
+
+**Preventive Measures:**
+- **Proactive Monitoring**: Implement comprehensive monitoring for early issue detection
+- **Capacity Planning**: Regular capacity planning and scaling preparation
+- **Documentation Updates**: Maintain current documentation for all target configurations
+- **Change Management**: Implement proper change management procedures for target updates
+
+Target management provides comprehensive control over data output destinations, ensuring reliable and efficient data delivery while maintaining security, performance, and operational excellence across diverse target environments and requirements.

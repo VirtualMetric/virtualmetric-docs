@@ -1,75 +1,184 @@
 # Creating Devices
 
-Creating devices in DataStream involves configuring data input sources that will send logs and telemetry data to your DataStream directors. The platform supports both **Push devices** (which send data to DataStream) and **Pull devices** (Agents that collect data locally). This guide covers the comprehensive device creation process.
+This guide covers the creation and configuration of Push devices, which are network-accessible endpoints that receive incoming log data from external sources. Push devices listen on specified ports and protocols to provide centralized data collection points for your infrastructure.
 
-## Device Types
-
-### Push Devices
-Push devices actively send data to DataStream directors using various protocols:
-- **Syslog**: Standard syslog protocol for system and application logs
-- **HTTP**: Web-based data ingestion for REST API integrations
-- **UDP**: User Datagram Protocol for high-throughput data streams
-- **TCP**: Transmission Control Protocol for reliable data delivery
-- **eStreamer**: Cisco's eStreamer protocol for security event data
-
-### Pull Devices (Agents)
-Pull devices are agents installed on target systems that actively collect and forward data:
-- **Windows Agent**: Collects Windows event logs, system metrics, and application data
-
-## Device Creation Process
-
-The device creation process uses a guided wizard approach that walks you through the complete setup process:
+## Device Creation Wizard
 
 ### Step 1: Device Type Selection and Basic Configuration
 
-The first step establishes the foundation for your device configuration:
+Begin device creation by selecting the appropriate protocol and configuring basic device properties:
 
-- **Choose the appropriate protocol** (Syslog, HTTP, UDP, TCP, eStreamer)
-- **Set device name and description** for identification and management purposes
-- **Configure initial parameters** specific to the selected protocol
-- **Define basic operational settings** that will govern device behavior
+**Device Type Selection:**
+The device creation wizard provides several Push device types:
 
-### Step 2: Advanced Protocol Configuration
+- **Syslog**: Standard protocol for collecting and forwarding log messages from various systems
+- **HTTP**: Enables log data ingestion through HTTP protocol for web-based data transmission
+- **UDP**: Collects logs using User Datagram Protocol for fast, connectionless communication
+- **TCP**: Uses Transmission Control Protocol for reliable, connection-oriented data delivery
+- **eStreamer**: Specialized protocol for network security device integration and event data retrieval
 
-This step provides protocol-specific configuration options tailored to your selected device type, including:
+**Basic Configuration Requirements:**
+- **Device Name**: Unique identifier for the device within your DataStream environment
+- **Description**: Optional descriptive text explaining the device's purpose and usage
+- **Director Assignment**: Select which directors will manage this device for processing and routing
 
-- **Network settings and connection parameters**: Define how the device will communicate with directors
-- **Security parameters and authentication options**: Configure encryption, certificates, and access controls
-- **Data handling preferences and processing rules**: Set up parsing, filtering, and transformation options
+### Step 2: Protocol-Specific Configuration
 
-#### TCP Device Configuration
-For TCP devices, this step includes specific configuration for connection handling:
-- **Timeout settings**: Define connection and read timeout values
-- **Connection limits**: Set maximum concurrent connection limits
-- **Reliability parameters**: Configure retry logic and error handling
-- **TLS Security**: When configuring secure TCP connections with TLS, additional options become available for certificate management, encryption settings, and security validation parameters
+The second step provides configuration options tailored to your selected device type:
 
-#### Network Redundancy
-During configuration, you can specify multiple network addresses for improved accessibility and network redundancy, ensuring your devices remain reachable even if primary network paths experience issues.
+**Common Configuration Elements:**
+- **Network Settings**: Port assignments, IP address bindings, and network interface configuration
+- **Security Parameters**: Authentication requirements, encryption settings, and access controls
+- **Data Handling Preferences**: Buffer sizes, connection limits, and processing parameters
+- **Monitoring Options**: Health check settings and performance monitoring configuration
 
-### Step 3: Final Configuration and Confirmation
+**Protocol-Specific Settings:**
 
-The final step provides a comprehensive configuration summary and confirmation interface before device creation:
+**TCP Device Configuration:**
+- **Connection Management**: Timeout settings, maximum concurrent connections, and connection persistence
+- **Reliability Parameters**: Connection retry logic, acknowledgment settings, and error handling
+- **Buffer Configuration**: Send and receive buffer sizes for optimal performance
 
-- **Configuration Review**: Review all settings including protocol parameters, network configuration, and security options
-- **Final Adjustments**: Make any necessary changes before committing the configuration
-- **Validation Checks**: System performs final validation to ensure configuration integrity
-- **Creation Confirmation**: Confirm device creation and proceed with deployment
+**TCP with TLS Configuration:**
+- **Security Certificates**: SSL/TLS certificate management and validation settings
+- **Encryption Settings**: Cipher suites, protocol versions, and encryption strength requirements
+- **Authentication**: Client certificate validation and mutual authentication configuration
+- **Security Validation Parameters**: Certificate revocation checking and trust store management
 
-## Device Cloning
+**HTTP Device Configuration:**
+- **HTTP Methods**: Supported HTTP methods (POST, PUT) for data submission
+- **URL Routing**: Endpoint paths and routing configuration for incoming requests
+- **Authentication**: HTTP authentication methods including basic auth, tokens, and API keys
+- **Content Handling**: Request size limits, content-type validation, and data format requirements
 
-Device cloning creates a new device based on an existing configuration, significantly streamlining the setup process for similar devices. This feature is particularly useful when deploying multiple devices with similar configurations across different network segments or locations.
+**Syslog Device Configuration:**
+- **Syslog Standards**: RFC compliance settings and message format requirements
+- **Facility and Priority**: Syslog facility mapping and priority level handling
+- **Message Parsing**: Custom parsing rules and field extraction configuration
+- **Protocol Transport**: UDP/TCP selection for syslog message transmission
 
-### Cloning Process
-1. **Select Source Device**: Choose the device to use as a template
-2. **Modify Unique Parameters**: Update device name, network settings, and other unique identifiers
-3. **Port Validation**: Ensure port numbers are unique to avoid conflicts
-4. **Configuration Review**: Verify all settings before creating the cloned device
+### Step 3: Final Configuration and Network Settings
 
-:::caution
-When cloning devices, ensure port numbers are unique to avoid conflicts. The system validates port availability and displays errors for duplicate ports, preventing configuration conflicts that could disrupt data collection.
-:::
+The final configuration step includes advanced settings and network accessibility options:
 
-## Multi-Director Configuration
+**Network Accessibility:**
+- **Single Address Configuration**: Simple setup with one IP address and port combination
+- **Multiple Address Configuration**: Configure multiple network addresses for improved accessibility and redundancy
+- **Load Balancing**: Distribute incoming connections across multiple addresses
+- **Failover Configuration**: Set up redundant network paths for high availability
 
-Devices can be associated with multiple directors for load balancing and redundancy purposes.
+**Advanced Configuration Options:**
+- **Preprocessing Pipeline**: Select data transformation pipelines for incoming log processing
+- **Connection Limits**: Set maximum concurrent connections and rate limiting
+- **Timeout Configuration**: Connection and idle timeout settings
+- **Logging Settings**: Device-specific logging levels and retention policies
+
+## Device Configuration Management
+
+### Multi-Director Support
+
+Devices can be configured with multiple directors for enhanced capabilities:
+
+**Benefits of Multiple Directors:**
+- **Load Distribution**: Spread processing load across multiple directors
+- **High Availability**: Provide failover capability if one director becomes unavailable
+- **Geographic Distribution**: Place directors closer to data sources for optimal performance
+- **Specialized Processing**: Use different directors for different types of data processing
+
+**Configuration Considerations:**
+- **Director Selection**: Choose directors based on capacity, location, and specialization
+- **Load Balancing**: Configure how data is distributed among assigned directors
+- **Failover Behavior**: Define how the system handles director failures
+- **Monitoring**: Track performance across all assigned directors
+
+### Director Selection Interface
+
+The director selection interface provides comprehensive options for associating devices with directors:
+
+**Director Status Verification:**
+- **Operational State**: Ensure selected directors are operational and connected
+- **Capacity Assessment**: Review director capacity and current load
+- **Network Connectivity**: Verify network connectivity between directors and devices
+- **Performance Metrics**: Consider director performance history and capabilities
+
+**Selection Criteria:**
+- **Geographic Proximity**: Choose directors that are geographically close to data sources
+- **Processing Specialization**: Select directors optimized for specific data types
+- **Resource Availability**: Consider director resource availability and capacity
+- **Redundancy Requirements**: Ensure adequate redundancy for critical data flows
+
+## Device Creation Best Practices
+
+### Naming and Documentation
+
+**Device Naming Conventions:**
+- **Descriptive Names**: Use clear, descriptive names that indicate device purpose and location
+- **Consistent Formatting**: Maintain consistent naming patterns across your environment
+- **Environment Indicators**: Include environment identifiers (prod, staging, dev) in device names
+- **Protocol Identification**: Include protocol type in device names for easy identification
+
+**Documentation Standards:**
+- **Purpose Description**: Clearly document what each device is intended to collect
+- **Source Systems**: Document which systems send data to each device
+- **Configuration Details**: Maintain records of special configuration requirements
+- **Contact Information**: Include responsible team or contact information
+
+### Network Configuration
+
+**Port Management:**
+- **Unique Port Assignment**: Ensure each device uses unique ports to avoid conflicts
+- **Port Range Planning**: Plan port ranges for different device types and environments
+- **Firewall Coordination**: Coordinate with network teams for firewall rule updates
+- **Port Documentation**: Maintain comprehensive port assignment documentation
+
+**Security Configuration:**
+- **Encryption Requirements**: Use TLS encryption for sensitive data transmission
+- **Authentication Setup**: Implement appropriate authentication methods for device access
+- **Access Control**: Configure network access controls to restrict device access
+- **Security Monitoring**: Set up monitoring for security-related events and alerts
+
+### Performance Optimization
+
+**Resource Planning:**
+- **Connection Limits**: Set appropriate connection limits based on expected load
+- **Buffer Sizing**: Configure buffer sizes for optimal throughput and memory usage
+- **Timeout Settings**: Balance responsiveness with connection stability
+- **Monitoring Setup**: Implement comprehensive monitoring for performance tracking
+
+**Scalability Considerations:**
+- **Director Distribution**: Plan director assignments for expected growth
+- **Load Testing**: Test device configuration under expected and peak loads
+- **Capacity Monitoring**: Monitor device capacity utilization and growth trends
+- **Expansion Planning**: Plan for device configuration changes as requirements grow
+
+## Common Device Types Configuration
+
+### Syslog Device Setup
+
+Syslog devices are among the most common Push devices, requiring specific configuration:
+
+**Standard Syslog Configuration:**
+- **Protocol Selection**: Choose UDP for high-throughput or TCP for reliability
+- **Port Configuration**: Standard port 514 or custom ports based on network requirements
+- **Message Format**: Configure message parsing for different syslog formats
+- **Facility Mapping**: Set up facility and severity level mapping
+
+### HTTP Device Configuration
+
+HTTP devices provide web-based data ingestion capabilities:
+
+**HTTP Endpoint Configuration:**
+- **URL Structure**: Define endpoint URLs and routing patterns
+- **Request Methods**: Configure supported HTTP methods (POST, PUT)
+- **Content Types**: Specify accepted content types and formats
+- **Rate Limiting**: Implement rate limiting for incoming requests
+
+### Specialized Protocol Devices
+
+**eStreamer Device Configuration:**
+- **Cisco Integration**: Specific configuration for Cisco security appliances
+- **Event Filtering**: Configure event type filtering and selection
+- **Authentication**: Set up certificate-based authentication for secure connections
+- **Data Format**: Configure data format options and parsing requirements
+
+Device creation provides the foundation for comprehensive data ingestion, enabling reliable collection from diverse sources while maintaining security, performance, and operational excellence.

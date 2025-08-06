@@ -1,83 +1,191 @@
 # Creating Agents
 
-Creating **Windows Agents** in DataStream enables local data collection from Windows systems, including event logs, system metrics, and application data. Agents operate as Pull devices, actively collecting data from their host systems and forwarding it to designated directors. This guide covers the complete agent creation and deployment process.
+This guide covers the process of creating and configuring Windows Agent devices for local system log collection. Windows Agents are lightweight Pull devices that install on target Windows systems to collect logs, events, and performance data locally.
 
-## Windows Agent Overview
+## Prerequisites and Requirements
 
-Windows Agents are specialized data collection components that:
-- **Collect local system data** including Windows event logs, performance metrics, and application logs
-- **Forward data** to designated DataStream directors for processing
-- **Operate autonomously** once installed and configured
-- **Provide secure communication** with directors using encrypted channels
+### Director Dependency
 
-## Agent Creation Process
+Windows Agent installation requires an active director connection before beginning the agent creation process:
 
-Windows Agent creation involves a systematic approach to ensure proper deployment and connectivity:
+:::caution
+Windows Agent installation requires an active director connection. Ensure directors are properly configured and connected before attempting agent installation.
+:::
 
-### Step 1: Device Definition and Director Selection
+**Requirements:**
+- At least one director must be configured and operational
+- Director must be in "connected" state
+- Network connectivity between DataStream and target Windows system
+- Appropriate permissions for agent installation
 
-The initial step establishes the foundation for your agent deployment:
+### Agent Limitations
 
-- **Name your Windows device** with a descriptive identifier that clearly indicates the target system
-- **Select which director** will manage this agent from your available directors
-- **Choose Agent deployment type** for local system log collection
-- **Ensure the selected director** is active and connected before proceeding
-- **Verify network connectivity** between the target system and the selected director
+Windows Agent devices have specific characteristics that differ from Push devices:
 
-### Step 2: Log Source Configuration
+- **No Cloning**: Agent devices cannot be cloned due to their system-specific nature
+- **Unique Installation**: Each agent is tied to a specific system and configuration
+- **System Dependencies**: Agents require local system resources and permissions
+- **Director Assignment**: Must be associated with an operational director for data transmission
 
-During agent setup, you must configure which log sources the agent will collect from the target system:
+## Windows Agent Creation Process
 
-#### Predefined Log Source Options
-The system provides common log types including:
-- **Security logs** for audit and security monitoring
-- **System logs** for operational and error information
-- **Application logs** for software-specific events
-- **Other standard Windows event log categories**
+### Step 1: Device Definition
 
-#### Custom Log Source Configuration
-For advanced monitoring requirements, you can specify:
-- **Additional event logs** beyond standard categories
-- **Performance counters** for system metrics collection
-- **Custom log files and sources** for specialized applications
-- **Specific event ID filters** and collection rules for targeted monitoring
+Begin Windows Agent creation with basic device configuration:
 
-The custom log selection process allows detailed specification of monitoring requirements based on your organization's compliance, security, and operational needs.
+**Required Information:**
+- **Device Name**: Unique identifier for the Windows device within DataStream
+- **Director Selection**: Choose from available, connected directors for agent management
+- **Deployment Type**: Agent deployment is automatically selected for Windows devices
+- **System Information**: Target Windows system details for installation
 
-### Step 3: Creation Confirmation and Next Steps
+**Director Selection Criteria:**
+- Directors must be in "connected" operational state
+- Consider geographic proximity for optimal performance
+- Evaluate director load balancing for resource distribution
+- Ensure director has capacity for additional agent management
 
-Successful device creation provides confirmation and guides you through the subsequent steps required for agent installation and configuration.
+### Step 2: Installation Confirmation
 
-**Agent Creation Confirmation** displays comprehensive information including:
-- **Configuration summary** showing selected log sources and director assignment
-- **Next steps** for agent management and monitoring
-- **Installation instructions** for deploying the agent on the target system
-- **Connection verification** steps to ensure proper operation
+The system provides confirmation of successful device creation with guidance for next steps:
 
-## Agent Installation States
+**Creation Confirmation:**
+- **Device Record Created**: Successful device registration in DataStream
+- **Installation Readiness**: Confirmation that the system is ready for agent installation
+- **Next Steps Guidance**: Clear instructions for proceeding with agent installation
+- **Director Assignment**: Verification of director association and connectivity
 
-The Windows Agent installation process involves several distinct states that help you monitor progress and troubleshoot issues:
+## Agent Installation Process
 
-### Loading State
-During agent installation, the system shows installation progress and system activity. This state indicates the agent installation process is actively running.
+### Installation States and Monitoring
 
-### Installation Complete, Connection Pending
-After successful installation, agents may display "installed but not connected" status while establishing communication with their assigned directors. This is normal and typically resolves within a few minutes as the agent:
-- Establishes secure communication channels
-- Registers with the assigned director
-- Begins initial data collection processes
+The agent installation process includes several distinct states that provide visibility into the installation progress:
 
-### Connection Failure
-When connection attempts fail, the system provides:
-- **Diagnostic information** about the specific connection issues
-- **Troubleshooting guidance** to help resolve connectivity problems
-- **Retry options** for attempting reconnection
-- **Support resources** for additional assistance
+**Loading State:**
+- The interface displays loading indicators during agent installation process
+- Real-time progress updates show installation status
+- System validation occurs during this phase
+- Network connectivity and permissions are verified
 
-### Connection Success
-Successful connections confirm:
-- **Agent operational status** and readiness for data collection
-- **Communication establishment** with the assigned director
-- **Data collection readiness** indicating the agent is fully functional
-- **Health indicators** showing ongoing operational status
+**Installation Completion States:**
 
+**Agent Installed - Not Connected:**
+- Agent software has been successfully installed on target system
+- Agent is initializing and establishing communication with assigned director
+- System is preparing for first connection attempt
+- Configuration validation is in progress
+
+**Connection Success:**
+- Successful connection established between agent and director
+- Agent is operational and ready for data collection
+- Data collection can begin based on configured log sources
+- Full monitoring and management capabilities are available
+
+**Connection Failure:**
+- Agent installation completed but connection to director failed
+- Diagnostic information is provided for troubleshooting
+- Troubleshooting guidance is available for resolving connectivity issues
+- Retry options are provided for connection attempts
+
+### Log Source Selection Configuration
+
+During agent setup, configure which data sources the agent will collect:
+
+**Step 3: Log Selection Configuration**
+
+**Predefined Log Options:**
+- **Security Logs**: Windows Security event logs for audit and security monitoring
+- **System Logs**: Windows System event logs for system-level events and errors
+- **Application Logs**: Windows Application event logs for application-specific events
+- **Additional Standard Logs**: Other common Windows event log categories
+
+**Custom Configuration Options:**
+- **Custom Event Logs**: Specify additional or custom Windows event logs
+- **Performance Counters**: Select specific performance counters for system monitoring
+- **File-Based Logs**: Configure collection from specific log files
+- **Advanced Filtering**: Set up filtering criteria for log collection
+
+**Configuration Best Practices:**
+- Select only necessary log sources to optimize performance
+- Consider system resource impact when configuring multiple sources
+- Plan log retention and storage requirements based on selected sources
+- Test configuration with representative log volume
+
+### Installation Success Confirmation
+
+Upon successful agent creation and configuration:
+
+**Success Notifications:**
+- **Agent Created Confirmation**: Visual confirmation of successful agent creation
+- **Configuration Summary**: Review of selected log sources and settings
+- **Connection Status**: Confirmation of agent-director communication
+- **Next Steps**: Guidance for monitoring and managing the installed agent
+
+## Post-Installation Management
+
+### Connection Monitoring
+
+After successful installation, monitor agent connectivity and performance:
+
+**Connection Status Indicators:**
+- **Connected**: Agent is actively communicating with director and collecting data
+- **Disconnected**: Agent has lost connection with director, requires attention
+- **Error State**: Agent encountered errors during operation, troubleshooting needed
+- **Installing**: Agent installation or updates are in progress
+
+### Agent Health Monitoring
+
+Monitor agent health and performance through the management interface:
+
+**Health Indicators:**
+- **Data Collection Status**: Verification that logs are being collected as configured
+- **System Resource Usage**: Monitor agent impact on target system performance
+- **Connection Quality**: Network connectivity metrics between agent and director
+- **Error Reporting**: Automatic detection and reporting of agent issues
+
+### Ongoing Management
+
+**Configuration Updates:**
+- **Log Source Modifications**: Add or remove log sources as requirements change
+- **Performance Tuning**: Adjust collection intervals and resource usage
+- **Director Reassignment**: Change director assignment if needed for load balancing
+- **Agent Updates**: Apply updates to agent software as they become available
+
+**Maintenance Tasks:**
+- **Connection Testing**: Regularly verify agent-director connectivity
+- **Log Review**: Monitor agent logs for errors or performance issues
+- **Capacity Planning**: Monitor data volume and storage requirements
+- **Security Updates**: Keep agent software current with security patches
+
+## Troubleshooting Agent Creation
+
+### Common Creation Issues
+
+**Director Availability:**
+- Ensure selected director is operational and connected
+- Verify network connectivity between DataStream and target system
+- Check that director has capacity for additional agents
+
+**Installation Failures:**
+- Verify appropriate permissions for agent installation
+- Confirm target system meets agent requirements
+- Check for conflicts with existing software or security policies
+
+**Connection Issues:**
+- Validate network connectivity between agent and director
+- Review firewall settings and port configurations
+- Verify authentication and security settings
+
+### Recovery Procedures
+
+**Failed Installation Recovery:**
+- **Cleanup Procedures**: Remove partial installations before retry attempts
+- **Permission Verification**: Ensure proper privileges for installation
+- **System Preparation**: Address system requirements before retry
+
+**Connection Recovery:**
+- **Network Diagnostics**: Test connectivity between agent and director
+- **Configuration Review**: Verify agent and director configuration alignment
+- **Manual Intervention**: Use diagnostic tools for connection troubleshooting
+
+Windows Agent creation provides comprehensive local system monitoring capabilities while maintaining secure communication with the DataStream infrastructure through director management.

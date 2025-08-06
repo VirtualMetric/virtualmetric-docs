@@ -1,228 +1,234 @@
 # Troubleshooting Devices
 
-This guide addresses common issues and problems that may occur when managing devices in DataStream. Devices are the entry points for data collection, so proper troubleshooting is essential for maintaining consistent data flow and system reliability.
+This guide covers common device issues and troubleshooting procedures for both Push devices (network endpoints) and Pull devices (Windows Agents), including diagnostic steps and resolution methods.
 
-## Device Connection Issues
+## Common Device Issues
 
-### Connection Failures
+### Port Conflicts and Network Issues
 
-**Problem:** Device cannot establish or maintain connection with directors.
+Port conflicts are among the most common device configuration problems:
 
-**Symptoms:**
-- Device shows "Connection Failed" or "Error" status
-- Data not flowing from device to directors
-- Intermittent connectivity issues
-- Connection timeouts or dropped connections
+**Port Conflict Detection:**
+- **Automatic Validation**: The system automatically detects port conflicts during device creation and cloning
+- **Error Messages**: Clear error messages identify conflicting ports and affected devices
+- **Resolution Suggestions**: System provides alternative port suggestions when conflicts are detected
+- **Validation During Cloning**: Special attention to port uniqueness during device cloning operations
 
-**Solutions:**
-- **Network Connectivity**: Verify network connectivity between device and directors
-- **Port Availability**: Ensure configured ports are not blocked by firewalls or in use by other services
-- **Authentication**: Verify credentials and certificates are correctly configured
-- **Director Status**: Confirm target directors are active and operational
-- **DNS Resolution**: Check hostname resolution if using domain names
-- **Network Redundancy**: Test alternative network paths if configured
+:::caution
+When cloning devices, ensure port numbers are unique to avoid conflicts. The system validates port availability and displays errors for duplicate ports.
+:::
 
-### Port Conflicts
+**Port Conflict Resolution:**
+- **Alternative Port Selection**: Choose available ports from system-suggested alternatives
+- **Port Range Management**: Implement systematic port range assignments for different device types
+- **Network Coordination**: Work with network teams to reserve appropriate port ranges
+- **Documentation Updates**: Maintain accurate port assignment documentation
 
-**Problem:** Device configuration conflicts with existing port assignments.
+### Network Connectivity Issues
 
-**Symptoms:**
-- System validation errors during device creation or editing
-- "Port already in use" error messages
-- Device fails to start or bind to configured port
+**Connection Problems:**
+- **Network Reachability**: Verify network connectivity between devices and directors
+- **Firewall Restrictions**: Check for firewall rules blocking device communication ports
+- **DNS Resolution**: Ensure proper hostname resolution for device connections
+- **Network Routing**: Verify that network routing allows traffic between components
 
-**Solutions:**
-- **Port Validation**: Use system validation to identify conflicting port assignments
-- **Unique Port Assignment**: Ensure each device uses unique port numbers
-- **Port Scanner**: Check system for active port usage before configuration
-- **Alternative Ports**: Use different port numbers to avoid conflicts
-- **Service Conflicts**: Identify and resolve conflicts with other system services
+**Protocol-Specific Issues:**
+- **UDP Packet Loss**: Monitor for UDP packet loss affecting reliability
+- **TCP Connection Limits**: Address TCP connection limit exhaustion
+- **HTTP Endpoint Accessibility**: Verify HTTP endpoints are accessible and responsive
+- **TLS Certificate Issues**: Address SSL/TLS certificate problems for secure connections
 
-## Windows Agent Issues
+## Windows Agent Troubleshooting
 
-### Agent Installation Problems
+### Agent Installation Issues
 
-**Problem:** Windows Agent installation fails or cannot complete.
+Windows Agents have specific troubleshooting requirements due to their system-specific nature:
 
-**Symptoms:**
-- Installation process stops unexpectedly
-- Agent shows "Loading State" indefinitely
-- Installation complete but agent non-functional
+**Director Dependency Problems:**
+:::caution
+Windows Agent installation requires an active director connection. Ensure directors are properly configured and connected before attempting agent installation.
+:::
 
-**Solutions:**
-- **Administrative Privileges**: Ensure installation account has administrative rights
-- **System Resources**: Verify target system has adequate CPU, memory, and disk space
-- **Windows Version**: Confirm Windows version compatibility with agent requirements
-- **Security Software**: Check if antivirus or security software is blocking installation
-- **Service Dependencies**: Verify required Windows services are running
+**Common Installation Failures:**
+- **Director Unavailability**: Verify that selected director is operational and connected
+- **Network Connectivity**: Ensure connectivity between DataStream and target Windows system
+- **Permission Issues**: Confirm appropriate permissions for agent installation
+- **Resource Constraints**: Check that target system has adequate resources for agent operation
 
-### Agent Connection Issues
+### Agent Connection States
 
-**Problem:** Agent shows "installed but not connected" status.
+**Connection State Troubleshooting:**
 
-**Symptoms:**
-- Installation completes successfully but connection remains pending
-- Agent appears in interface but shows disconnected status
-- Connection failure messages in agent logs
+**Loading State Issues:**
+- **Extended Loading Times**: Long loading periods may indicate network or system issues
+- **Installation Timeout**: Address timeout issues during agent installation process
+- **System Validation Failures**: Resolve system compatibility or permission problems
+- **Network Verification Problems**: Fix connectivity issues discovered during installation
 
-**Solutions:**
-- **Wait Period**: Allow 2-5 minutes for initial connection establishment (this is normal)
-- **Director Connectivity**: Verify network connectivity between agent system and assigned director
-- **Director Status**: Confirm assigned director is active and accepting connections
-- **Firewall Rules**: Check firewall configuration on both agent system and director
-- **Service Status**: Verify agent service is running on target system
-- **Diagnostic Information**: Review system-provided diagnostic information and troubleshooting guidance
+**Agent Installed - Not Connected State:**
+- **Director Communication**: Verify communication path between agent and assigned director
+- **Authentication Issues**: Check authentication credentials and certificate validity
+- **Network Configuration**: Ensure proper network configuration for agent-director communication
+- **Service Status**: Verify that agent services are running properly on target system
 
-### Agent Log Selection Issues
+**Connection Failure Troubleshooting:**
+- **Diagnostic Information Review**: Analyze detailed error messages and diagnostic data
+- **Network Path Testing**: Test network connectivity between agent and director
+- **Firewall Configuration**: Review firewall settings that might block agent communication
+- **Certificate Validation**: Verify SSL/TLS certificates are valid and properly configured
 
-**Problem:** Agent not collecting expected log sources or missing data.
+**Connection Success Validation:**
+- **Data Collection Verification**: Confirm that agent is successfully collecting configured logs
+- **Performance Monitoring**: Check that data transmission performance meets expectations
+- **Resource Usage**: Monitor agent resource usage on target system
+- **Ongoing Connectivity**: Ensure stable ongoing connectivity between agent and director
 
-**Symptoms:**
-- Expected logs not appearing in data streams
-- Partial log collection from configured sources
-- Performance impact from excessive log collection
+### Agent-Specific Limitations
 
-**Solutions:**
-- **Log Source Configuration**: Review and verify selected log sources in agent configuration
-- **Event Log Permissions**: Ensure agent service has permissions to read required event logs
-- **Custom Log Paths**: Verify custom log file paths are accessible and correct
-- **Event ID Filters**: Check event ID filters for accuracy and completeness
-- **Performance Counters**: Validate performance counter configuration and permissions
-- **System Impact**: Monitor system performance impact of extensive log collection
+**Management Constraints:**
+- **No Cloning**: Agents cannot be cloned, requiring individual setup for each system
+- **System Dependency**: Each agent is tied to a specific Windows system configuration
+- **Director Requirements**: Agents require operational directors for all functionality
+- **Unique Configuration**: Each agent requires system-specific configuration adjustments
 
-## Push Device Issues
+### Log Collection Issues
 
-### Protocol-Specific Problems
+**Log Source Configuration Problems:**
+- **Permission Issues**: Verify that agent has appropriate permissions to access configured log sources
+- **Log Source Availability**: Confirm that configured event logs and sources exist on target system
+- **Performance Impact**: Monitor system performance impact of log collection operations
+- **Collection Volume**: Manage log collection volume to prevent system resource exhaustion
 
-#### Syslog Device Issues
-- **Message Format**: Verify syslog message format compliance (RFC 3164/5424)
-- **Facility/Severity**: Check facility and severity level configuration
-- **Character Encoding**: Ensure proper character encoding (UTF-8, ASCII)
-- **Message Size**: Verify message size doesn't exceed configured limits
+**Custom Configuration Troubleshooting:**
+- **Custom Event Logs**: Verify that custom event log paths are correct and accessible
+- **Performance Counters**: Check that specified performance counters exist and are accessible
+- **File-Based Logs**: Ensure file-based log sources are accessible and properly formatted
+- **Filtering Configuration**: Validate that log filtering rules are working as expected
 
-#### HTTP Device Issues
-- **Content Type**: Verify HTTP content type headers are correctly set
-- **Authentication**: Check HTTP authentication methods (Basic, Bearer token)
-- **SSL/TLS**: Validate SSL certificate configuration and trust chains
-- **Request Format**: Ensure HTTP request format matches device expectations
+## Push Device Troubleshooting
 
-#### TCP/UDP Device Issues
-- **Connection Limits**: Check if connection limits are exceeded
-- **Buffer Sizes**: Verify buffer sizes are appropriate for data volume
-- **Timeout Settings**: Adjust timeout values based on network conditions
-- **Connection Persistence**: Configure connection persistence settings appropriately
+### Network Protocol Issues
 
-## Device Performance Issues
+**Syslog Device Problems:**
+- **Message Format Issues**: Address problems with syslog message format parsing
+- **Protocol Selection**: Choose appropriate protocol (UDP vs TCP) based on requirements
+- **Facility and Priority**: Resolve issues with syslog facility and priority handling
+- **Parser Configuration**: Fix preprocessing pipeline issues affecting log parsing
 
-### High Resource Usage
+**HTTP Device Troubleshooting:**
+- **Endpoint Configuration**: Verify HTTP endpoint URLs and routing configuration
+- **Authentication Problems**: Resolve HTTP authentication failures and credential issues
+- **Content Type Issues**: Address problems with unsupported or malformed content types
+- **Rate Limiting**: Manage rate limiting issues affecting data ingestion
 
-**Problem:** Device consuming excessive system resources.
+**TCP Device Issues:**
+- **Connection Management**: Address TCP connection establishment and persistence problems
+- **Buffer Configuration**: Optimize buffer sizes for better performance
+- **TLS Configuration**: Resolve SSL/TLS certificate and encryption issues
+- **Connection Limits**: Manage concurrent connection limit problems
 
-**Symptoms:**
-- High CPU or memory usage on device host
-- System performance degradation
-- Slow data processing
+### eStreamer Device Troubleshooting
 
-**Solutions:**
-- **Buffer Tuning**: Adjust buffer sizes based on data volume and available resources
-- **Connection Limits**: Configure appropriate connection limits for system capacity
-- **Data Volume**: Monitor and potentially limit data volume if exceeding capacity
-- **Resource Monitoring**: Implement monitoring for CPU, memory, and network usage
-- **Performance Optimization**: Review device configuration for optimization opportunities
+**Cisco Integration Issues:**
+- **Authentication Problems**: Resolve certificate-based authentication failures
+- **Connection Stability**: Address connection stability issues with security appliances
+- **Event Filtering**: Fix problems with event type filtering and selection
+- **Data Format**: Resolve data format compliance and parsing issues
 
-### Data Processing Delays
+## Director-Related Device Issues
 
-**Problem:** Significant delays in data processing or transmission.
+### Director Assignment Problems
 
-**Symptoms:**
-- Delayed data appearance in targets
-- Data backlog or queuing issues
-- Inconsistent data flow rates
-
-**Solutions:**
-- **Network Performance**: Check network bandwidth and latency between components
-- **Director Capacity**: Verify assigned directors have adequate processing capacity
-- **Batch Processing**: Optimize batch sizes for better throughput
-- **Load Balancing**: Distribute load across multiple directors if available
-- **Configuration Review**: Review device configuration for performance bottlenecks
-
-## Device Configuration Issues
-
-### Cloning Problems
-
-**Problem:** Device cloning fails or produces incorrect configuration.
-
-**Symptoms:**
-- Cloning process reports errors
-- Cloned device has incorrect settings
-- Port conflicts during cloning
-
-**Solutions:**
-- **Unique Parameters**: Ensure unique parameters (name, ports, IPs) are updated in cloned device
-- **Port Validation**: Use system validation to prevent port conflicts during cloning
-- **Configuration Review**: Verify all configuration parameters in cloned device
-- **Network Settings**: Update network settings for target environment
-- **Agent Limitations**: Remember that Windows Agents cannot be cloned
+**Assignment Conflicts:**
+- **Director Availability**: Ensure assigned directors are operational and have capacity
+- **Load Balancing**: Address uneven load distribution across multiple directors
+- **Director Connectivity**: Resolve connectivity issues between devices and assigned directors
+- **Failover Configuration**: Fix failover behavior when directors become unavailable
 
 ### Multi-Director Configuration Issues
 
-**Problem:** Device multi-director configuration not working properly.
+**Load Balancing Problems:**
+- **Uneven Distribution**: Address uneven load distribution across assigned directors
+- **Director Capacity**: Monitor and manage director capacity limitations
+- **Performance Correlation**: Identify how director health affects device performance
+- **Synchronization Issues**: Resolve configuration synchronization problems across directors
 
-**Symptoms:**
-- Uneven load distribution across directors
-- Failover not functioning as expected
-- Connection issues with specific directors
+## Device Performance Issues
 
-**Solutions:**
-- **Director Status**: Verify all configured directors are active and healthy
-- **Load Balancing**: Check load balancing algorithm configuration
-- **Health Checks**: Implement proper health checks for director availability
-- **Failover Testing**: Test failover scenarios to ensure proper functionality
-- **Configuration Consistency**: Ensure consistent configuration across all directors
+### Performance Monitoring and Optimization
 
-## Monitoring and Diagnostics
+**Throughput Problems:**
+- **Data Volume Handling**: Address issues with high data volume processing
+- **Connection Rate Issues**: Resolve problems with high connection establishment rates
+- **Processing Speed**: Optimize data processing speed and reduce latency
+- **Error Rate Management**: Identify and address high error rates
 
-### Device Status Monitoring
+**Resource Utilization Issues:**
+- **Memory Consumption**: Address excessive memory usage by devices
+- **CPU Utilization**: Resolve high CPU usage affecting device performance
+- **Network Bandwidth**: Manage network bandwidth utilization and bottlenecks
+- **Storage Impact**: Address storage requirements and growth rate issues
 
-- **Status Indicators**: Monitor device status (Enabled, Disabled, Error, Pending)
-- **Connection Health**: Track connection quality and stability
-- **Data Flow Metrics**: Monitor data throughput and processing rates
-- **Error Rates**: Track failed connections or processing errors
-- **Performance Metrics**: Monitor resource usage and performance indicators
+### Configuration Optimization
 
-### Log Analysis
+**Buffer Size Optimization:**
+- **Memory Usage**: Balance buffer sizes with memory consumption
+- **Throughput Performance**: Optimize buffer sizes for maximum data throughput
+- **Latency Reduction**: Configure buffers to minimize data processing latency
+- **System Resources**: Ensure buffer configuration doesn't exceed system resources
 
-- **Device Logs**: Review device-specific logs for error messages and patterns
-- **Director Logs**: Check director logs for device-related issues
-- **System Logs**: Analyze system logs on device host for underlying issues
-- **Network Logs**: Review network logs for connectivity problems
+**Connection Limit Tuning:**
+- **Concurrent Connections**: Set appropriate limits for concurrent connections
+- **Performance Balance**: Balance connection limits with performance requirements
+- **Resource Allocation**: Ensure connection limits don't exceed system resource capacity
+- **Monitoring Setup**: Implement monitoring to track connection limit utilization
 
-## Prevention and Best Practices
+## Diagnostic Tools and Procedures
 
-### Proactive Monitoring
-- **Regular Health Checks**: Schedule routine device health verification
-- **Performance Monitoring**: Track device performance metrics continuously
-- **Alert Configuration**: Set up automated alerts for device issues
-- **Capacity Planning**: Monitor resource utilization and plan for growth
+### System Diagnostics
 
-### Configuration Management
-- **Documentation**: Maintain comprehensive device configuration documentation
-- **Change Control**: Implement proper change management for device modifications
-- **Testing Procedures**: Test device changes in non-production environments first
-- **Backup Configurations**: Keep backups of working device configurations
+**Connection Testing:**
+- **Network Connectivity**: Test basic network connectivity between components
+- **Port Accessibility**: Verify that required ports are open and accessible
+- **Protocol Testing**: Test protocol-specific connectivity and functionality
+- **Authentication Validation**: Verify authentication credentials and certificate validity
 
-### Security and Maintenance
-- **Regular Updates**: Keep device software and configurations updated
-- **Security Audits**: Regular security reviews of device configurations
-- **Access Control**: Implement proper access controls for device management
-- **Credential Management**: Regularly rotate credentials and certificates
+**Log Analysis:**
+- **Error Log Review**: Analyze system and device error logs for problem identification
+- **Performance Log Analysis**: Review performance logs to identify bottlenecks
+- **Connection History**: Examine connection attempt logs and patterns
+- **Event Correlation**: Correlate events across multiple system components
 
-## When to Contact Support
+### Recovery Procedures
 
-Contact support when:
-- Issues persist after following troubleshooting procedures
-- Device hardware or software appears to be malfunctioning
-- Security-related problems are encountered
-- System-wide device issues affect multiple installations
-- Complex multi-device deployment problems occur
-- Agent installation consistently fails on specific systems
+**Device Recovery:**
+- **Configuration Restoration**: Restore device configurations from backups
+- **Connection Re-establishment**: Procedures for re-establishing lost connections
+- **Service Restart**: Safe procedures for restarting device services
+- **Validation Testing**: Test device functionality after recovery procedures
+
+**System Recovery:**
+- **Director Reconnection**: Procedures for reconnecting devices to directors
+- **Network Recovery**: Steps for recovering from network connectivity issues
+- **Performance Recovery**: Methods for restoring optimal device performance
+- **Data Flow Validation**: Verify that data flows resume properly after recovery
+
+## Preventive Measures
+
+### Monitoring and Alerting
+
+**Proactive Monitoring:**
+- **Health Check Configuration**: Set up comprehensive device health monitoring
+- **Performance Threshold Alerts**: Configure alerts for performance degradation
+- **Connection Monitoring**: Monitor device connection status continuously
+- **Resource Usage Tracking**: Track resource usage trends to prevent exhaustion
+
+### Maintenance Best Practices
+
+**Regular Maintenance:**
+- **Configuration Reviews**: Regularly review and validate device configurations
+- **Performance Audits**: Conduct periodic performance assessments
+- **Update Management**: Keep device software and configurations current
+- **Documentation Updates**: Maintain accurate troubleshooting and configuration documentation
+
+Device troubleshooting requires systematic approaches tailored to specific device types while maintaining awareness of the broader system context and interdependencies that affect device operation.
