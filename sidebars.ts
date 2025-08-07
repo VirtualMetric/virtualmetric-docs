@@ -56,16 +56,9 @@ const sidebars: SidebarsConfig = {
       label: "GUI",
       collapsed: false,
       items: [
+        "gui/creating-accounts",
         "gui/home",
-        {
-          type: "category",
-          label: "Accounts",
-          items: [
-            "gui/accounts/overview",
-            "gui/accounts/creating-accounts",
-            "gui/accounts/managing-accounts",
-          ]
-        },
+        "gui/managing-accounts",
         {
           type: "category",
           label: "Fleet Management",
