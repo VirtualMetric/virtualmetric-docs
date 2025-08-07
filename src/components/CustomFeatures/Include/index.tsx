@@ -6,7 +6,7 @@ interface IncludeProps {
 }
 
 // @ts-ignore
-const context = require.context('@site/src/includes', false, /\.tsx$/);
+const context = require.context('@site/src/includes', false, /\.(mdx|tsx)$/);
 
 const Include: React.FC<IncludeProps> = ({ id }) => {
   const [Content, setContent] = useState<React.ComponentType | null>(null);
