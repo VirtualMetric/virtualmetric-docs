@@ -56,6 +56,7 @@ const sidebars: SidebarsConfig = {
       label: "GUI",
       collapsed: false,
       items: [
+        "gui/home",
         {
           type: "category",
           label: "Accounts",
@@ -63,10 +64,8 @@ const sidebars: SidebarsConfig = {
             "gui/accounts/overview",
             "gui/accounts/creating-accounts",
             "gui/accounts/managing-accounts",
-            "gui/accounts/troubleshooting-accounts",
           ]
         },
-        "gui/home",
         {
           type: "category",
           label: "Fleet Management",
@@ -78,7 +77,6 @@ const sidebars: SidebarsConfig = {
                 "gui/fleet-management/directors/overview",
                 "gui/fleet-management/directors/creating-directors",
                 "gui/fleet-management/directors/managing-directors",
-                "gui/fleet-management/directors/troubleshooting-directors",
               ]
             },
             {
@@ -89,7 +87,6 @@ const sidebars: SidebarsConfig = {
                 "gui/fleet-management/devices/creating-devices",
                 "gui/fleet-management/devices/creating-agents",
                 "gui/fleet-management/devices/managing-devices",
-                "gui/fleet-management/devices/troubleshooting-devices",
               ]
             },
             {
