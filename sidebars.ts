@@ -139,24 +139,8 @@ const sidebars: SidebarsConfig = {
           type: "category",
           label: "Organization",
           items: [
-            {
-              type: "category",
-              label: "Users",
-              items: [
-                "gui/organization/users/overview",
-                "gui/organization/users/creating-users",
-                "gui/organization/users/managing-users",
-              ]
-            },
-            {
-              type: "category",
-              label: "Roles",
-              items: [
-                "gui/organization/roles/overview",
-                "gui/organization/roles/creating-roles",
-                "gui/organization/roles/managing-roles",
-              ]
-            },
+            "gui/organization/users",
+            "gui/organization/roles",
             "gui/organization/audit",
           ]
         }
