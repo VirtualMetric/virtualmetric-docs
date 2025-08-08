@@ -1,26 +1,85 @@
 # Roles
 
+The **Roles** view provides administrators with comprehensive control over user roles and permissions within the **DataStream** platform. It enables granular permission management, role assignment tracking, and detailed access control for organizational security and operational efficiency.
+
 ## Overview
 
-## Creating Roles
+To access the **Roles** view 
 
-## Managing Roles
+- Go to the **Home** > **Organiation** pane
+- Click **Manage Roles**
 
+-or-
+
+- Click the hamburger menu on the top left
+- Select **Organization** > **Roles**
+
+### Table
+
+The view contains a table of all available roles in your organization with their key characteristics:
+
+- **Role name** - Human readable name of the role
+- **Description** - Details of the role, including the actions the role has permission to carry out
+- **Permissions** - Permissions assigned to the role, given in Unix-style numeric masks.
+
+  Clicking on this value opens a table with two columns, displaying the details of the abilities or the permission set:
+  - **Permission Title** - Internal constant representing the permission
+  - **Ability** - Internal constant assigned to the permission
+  
+  Click again to close the table.
+
+- **Assigned Users** - Number of users the role has been assigned to in your organization.
+
+  Clicking this opens a list displaying the e-mails and names of the assignees. Click again to close the list.
+
+The **Items per page** dropdown controls pagination settings for role display.
+
+The page navigation shows current page and total pages.
+
+### Actions menu
+
+The **Action** menu&mdash;the vertical ellipsis (&#x22EE;) on the right&mdash;proivdes additional information on the actions the assigned permissions of the role make possible.
+
+### Built-in Role Types
+
+The system provides three fundamental role types with distinct permission levels:
+
+#### User Role
+
+_User_ has read-only access to all files, with no access to edit/delete actions. The permissions mask is `176`.
+
+#### Contributor Role
+
+_Contributor_ has the same abilities as _User_, and plus can edit files and make configurations but cannot delete them. The permissions mask is `340`.
+
+#### Admin Role
+
+_Admin_ has the same abilities with _Owner_ to read, edit and delete all files and make configurations, but cannot change _Owner_ information. The permissions mask is `340`.
+
+#### Owner Role
+
+_Owner_ has the ability to read, edit, and delete all files and make configurations. The permissions mask is `340`.
+
+:::warning
+The built-in _Owner_ type cannot be modified or deleted.
+:::
 
 ### Role Permission Matrix
 
-||User|Admin|Owner|
-|:--|---|---|---|
-|Pipelines|📗|📘|📘|
-|Routes|📗|📘|📘|
-|Devices, Targets|📗|📘|📘|
-|Fleet Management|📗|📘|📘|
-|User Management|🚫|📘|📘|
-|Audit|🚫|📘|📘|
+The following table summarizes the essentials of role the permissions:
 
-#### Permission Legend
+||User|Contributor|Admin|Owner|
+|:--|---|---|---|---|
+|Fleet Management|📗|🟨|📘|📘|
+|Devices, Targets|📗|🟨|📘|📘|
+|Pipelines|📗|🟨|📘|📘|
+|Routes|📗|🟨|📘|📘|
+|User Management|⚪️|🟨|📘|📘|
+|Audit|⚪️|🟨|📘|📘|
 
-- 📗 **Read** - View-only access
-- 📙 **Read + Edit** - View and modify access  
-- 📘 **Read + Edit + Delete** - Full access including deletion
-- 🚫 **None** - No access
+**Permission Legend**
+
+- ⚪️ None: No access
+- 📗 _Read_: View-only access
+- 🟨 _Read_ + _Edit_: View and modify access
+- 📘 _Read_ + _Edit_ + _Delete_: Full access including deletion

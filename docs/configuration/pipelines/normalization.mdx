@@ -113,56 +113,17 @@ normalize:
   target_format: cim
 ```
 
-## Pre-processing
+## Preprocessing
 
-Pre-processing is the stage before routing where pipelines attached to a source prepare the data for downstream work. It helps organizations reduce costs by optimizing data ingestion before reaching the routing stage.
+Fields are standardized with `normalize` for conversion between the ECS, CIM, ASIM, CEF, LEEF and CSL formats (see the [Log Formats](#log-formats) and [Conversion](#conversion) sections above). Values are formatted for uniform casing with `uppercase` and `lowercase` processors when required by the target format's naming conventions.
 
-### Key Operations
+## Postprocessing
 
-Pre-processing involves rendering data suitable for routing operations through:
-
-#### Structural optimization
-
-Fields are optimized by eliminating unnecessary ones with `remove`, and re-mapping relevant ones with `rename` for downstream handling. Strings are optimized for pattern replacement with `gsub`. Events are filtered conditionally using `drop`.
-
-#### Data normalization
-
-Converting diverse log formats into uniform structures using the normalization techniques described above in this document:
-
-Fields are standardized with `normalize` for conversion between the ECS, CIM, ASIM, CEF, LEEF and CSL formats (see the [Log Formats](#log-formats) and [Conversion](#conversion) sections above). They are then restructured with `dot_nester` to flatten or regroup nested objects. Finally, they are parsed to extract structured data with `csv`, `kv`, or `grok`.
-
-Values are formatted for uniform casing with `uppercase` and `lowercase`. Text data is transformed using `gsub` for regex-based substitutions. Fields are broken into arrays with `split`, and array elements are combined with `join`.
-
-#### Enrichment
-
-Multi-layering the context: Location data is adding with `geoip` for geographic information. Data is correlated with lookup tables using `enrich`. URI components are extracted with `uri_parts`. And user agent information is parsed with `user_agent`.
-
-## Post-processing
-
-Post-processing is the stage where pipelines attached to destinations perform final transformations before data reaches storage or analysis systems. These transformations ensure data meets destination-specific requirements and is optimized for storage efficiency.
-
-### Key Operations
-
-Post-processing involves rendering data suitable for destinations through:
-
-- Fields are optimized for storage and queries using removal, renaming, restructuring, and format conversion. The latter two typically involve the use of the `dot_nester` and `normalize` processors (see the [Conversion](#conversion) and [Field Mapping](#field-mapping) sections above).
-
-- Data is directed to multiple destinations with conditional routing logic based on content. Failover scenarios are handled at this stage using the `reroute` processor.
-
-  A typical case is _Microsoft Sentinel Integration_: data is prepared by converting to the ASIM format with `normalize` (see [Log Formats](#log-formats) table), parsing fields with `grok` or `kv`, and applying `network_direction` for traffic analysis.
-
-- Time-related transformations such as timestamps converted with `date`, time-based indexes created with `date_index_name`, and timestamps cleaned with `gsub`.
+Fields are optimized for storage and queries using format conversion with the `normalize` processor (see the [Conversion](#conversion) and [Field Mapping](#field-mapping) sections above). For Microsoft Sentinel integration, data is prepared by converting to the ASIM format with `normalize` (see [Log Formats](#log-formats) table).
 
 :::warning
-Heavy post-processing can impact delivery latency. Monitor and adjust based on performance requirements.
+Complex format conversions may impact processing performance and delivery latency.
 :::
 
-## Best Practices
 
-It is best to keep the following in mind during normalization:
 
-- **Data Integrity** - Always validate transformed logs against originals, keep original fields when possible for debugging, and document format-specific transformations.
-
-- **Performance** - Do the normalization early in the pipeline, cache results for lookup when possible, and monitor transformation overhead.
-
-- **Error Handling** - Use `ignore_failure` and implement fallback mechanisms. Also, do not forget to test with diverse samples.
