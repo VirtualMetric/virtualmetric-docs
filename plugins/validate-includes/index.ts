@@ -62,7 +62,7 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
         for (const match of matches) {
           const id = match[1];
           if (!validIds.has(id)) {
-            errors.push(`❌ Include ID '${id}' is invalid`);
+            errors.push(`❌ Include ID '${id}' is invalid in file '${file}'`);
           }
         }
       }
