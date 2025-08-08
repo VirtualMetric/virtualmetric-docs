@@ -53,6 +53,65 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Microsoft Sentinel",
+      items: [
+        "microsoft-sentinel/overview",
+        {
+          type: "category",
+          label: "Integration",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Integration",
+            description: "The following documents contain detailed information about Sentinel Integration."
+          },
+          items: [
+            "microsoft-sentinel/integration/manual",
+            "microsoft-sentinel/integration/via-autodiscovery",
+          ],
+        },
+        {
+          type: "category",
+          label: "Automation",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Automation",
+            description: "The following documents contain detailed information on this topic."
+          },
+          items: [
+            "microsoft-sentinel/automation/arm-templates",
+            "microsoft-sentinel/automation/bicep-templates",
+          ],
+        },
+        {
+          type: "category",
+          label: "Content Hub",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Content Hub",
+            description: "The following documents contain detailed information on this topic."
+          },
+          items: [
+            "microsoft-sentinel/content-hub/checkpoint",
+            "microsoft-sentinel/content-hub/fortigate",
+          ],
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "Deployment",
+      items: [
+        "deployment/overview",
+        "deployment/on-local",
+        "deployment/as-cluster",
+        "deployment/on-azure-vm",
+        "deployment/on-azure-app-service",
+        "deployment/on-azure-functions",
+        "deployment/via-azure-arc-extension",
+      ],
+    },
+    {
+      type: "category",
       label: "GUI",
       collapsed: false,
       items: [
@@ -148,62 +207,17 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Microsoft Sentinel",
+      label: "CLI",
+      link: {
+        type: "generated-index",
+        title: "Command Line Interface",
+        description: "The following documents contain detailed information about the CLI."
+      },
       items: [
-        "microsoft-sentinel/overview",
-        {
-          type: "category",
-          label: "Integration",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Integration",
-            description: "The following documents contain detailed information on this topic."
-          },
-          items: [
-            "microsoft-sentinel/integration/manual",
-            "microsoft-sentinel/integration/via-autodiscovery",
-          ],
-        },
-        {
-          type: "category",
-          label: "Automation",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Automation",
-            description: "The following documents contain detailed information on this topic."
-          },
-          items: [
-            "microsoft-sentinel/automation/arm-templates",
-            "microsoft-sentinel/automation/bicep-templates",
-          ],
-        },
-        {
-          type: "category",
-          label: "Content Hub",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Content Hub",
-            description: "The following documents contain detailed information on this topic."
-          },
-          items: [
-            "microsoft-sentinel/content-hub/checkpoint",
-            "microsoft-sentinel/content-hub/fortigate",
-          ],
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "Deployment",
-      items: [
-        "deployment/overview",
-        "deployment/on-local",
-        "deployment/as-cluster",
-        "deployment/on-azure-vm",
-        "deployment/on-azure-app-service",
-        "deployment/on-azure-functions",
-        "deployment/via-azure-arc-extension",
-      ],
+        "cli/director",
+        // "cli/generator",
+        "cli/agent",
+      ]
     },
     {
       type: "category",
@@ -427,15 +441,6 @@ const sidebars: SidebarsConfig = {
       },
       items: [
         "appendix/configuration-bnf",
-        {
-          type: "category",
-          label: "CLI",
-          items: [
-            "appendix/cli/director",
-            // "appendix/cli/generator",
-            "appendix/cli/agent",
-          ]
-        },
         {
           type: "category",
           label: "File Formats",
