@@ -5,23 +5,39 @@ import ImageList from './images.json';
 
 interface ImageProps {
   id: keyof typeof ImageList;
-  width: string;
+  maxWidth: string;
   alt?: string;
 }
 
-function Image({ id, width, alt }: ImageProps) {
-  const imagePath = ImageList[id];
+function Image({ id, maxWidth, alt }: ImageProps) {
+  const imagePath = ImageList[id] as string | undefined;
+  
+  if (!imagePath) {
+    console.warn(`[Image] Unknown Image id "${id}"`);
+    return (
+      <img
+        key={id}
+        alt={alt || `Missing image: ${id}`}
+        style={{ maxWidth: maxWidth, border: '2px dashed red' }}
+      />
+    );    
+  }
+
   const imageUrl = useBaseUrl(imagePath);
 
   return (
     <img 
       key={id} // Force re-render when ID changes during development
       src={imageUrl} 
-      style={{maxWidth: width}} 
+      loading="lazy"
+      decoding="async"
+      style={{maxWidth: maxWidth}} 
       alt={alt || `Image ${id}`}
       onError={(e) => {
         console.error(`Failed to load image: ${imageUrl}`);
-        e.currentTarget.style.border = '2px solid red';
+        if (process.env.NODE_ENV != 'production') {
+          e.currentTarget.style.border = '2px solid red';
+        }
         e.currentTarget.alt = `Missing image: ${id}`;
       }}
     />

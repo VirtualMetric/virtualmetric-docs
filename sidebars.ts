@@ -100,6 +100,11 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Deployment",
+      link: {
+        type: "generated-index",
+        title: "Deployment",
+        description: "Guides for deploying DataStream across environments."
+      },
       items: [
         "deployment/overview",
         "deployment/on-local",
