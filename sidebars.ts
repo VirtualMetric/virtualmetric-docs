@@ -189,16 +189,22 @@ const sidebars: SidebarsConfig = {
           label: "Content Hub",
           items: [
             "gui/content-hub/overview",
-            "gui/content-hub/azure-sentinel-integration",
-            "gui/content-hub/installing-solutions",
-            "gui/content-hub/managing-solutions",
+            "gui/content-hub/managing-templates",
           ]
         },
         {
           type: "category",
           label: "Organization",
           items: [
-            "gui/organization/users",
+            {
+              type: "category",
+              label: "Users",
+              items: [
+                "gui/organization/users/overview",
+                "gui/organization/users/creating-users",
+                "gui/organization/users/managing-users",
+              ]
+            },
             "gui/organization/roles",
             "gui/organization/audit",
           ]

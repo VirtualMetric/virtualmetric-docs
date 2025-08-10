@@ -15,6 +15,7 @@ function Image({ id, width, alt }: ImageProps) {
 
   return (
     <img 
+      key={id} // Force re-render when ID changes during development
       src={imageUrl} 
       style={{maxWidth: width}} 
       alt={alt || `Image ${id}`}
