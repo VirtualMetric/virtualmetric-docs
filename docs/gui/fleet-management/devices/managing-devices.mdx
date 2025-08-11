@@ -1,231 +1,65 @@
 # Managing Devices
 
-This guide covers comprehensive device management operations including monitoring, editing, cloning, and maintaining both Push devices and Pull devices (Agents) within your DataStream environment.
+To manage devices, go to **Home** → **Fleet Management** → **Devices**. Select a device type from the sidebar to see its table, where you can monitor status and perform operations.
 
-## Device Table Management
+## Search and Filter
 
-### Device List Interface
+- **Search devices** - Filter by device name
+- **Directors filter** - Show devices for specific directors  
+- **Status filter** - Filter by Enabled/Disabled status
 
-The device management interface provides organized access to all configured devices through comprehensive table views:
+## Edit
 
-**Table Features:**
-- **Device Identification**: Name, description, and type columns for easy device recognition
-- **Status Indicators**: Real-time operational status showing enabled/disabled/error states
-- **Director Information**: Display of associated directors for each device
-- **Protocol Details**: Port numbers, protocols, and network configuration summary
-- **Action Buttons**: Quick access to edit, clone, and delete functions
+To edit a device:
 
-### Search and Filtering Capabilities
+- Click the **Actions** menu (&#x22EE;) on the device row
+- Select **Edit device details**
 
-Efficiently locate and manage devices using advanced search and filtering options:
+This takes you through the same configuration steps as creation, where you can modify:
 
-**Search Functionality:**
-- **Text-Based Search**: Filter devices by name, description, or configuration parameters
-- **Real-Time Filtering**: Instant results as you type search terms providing immediate feedback
-- **Case-Insensitive Matching**: Flexible search without exact case requirements
-- **Multi-Field Search**: Search across device names, descriptions, and configuration details
+- Device name and description
+- Director assignments  
+- Network settings (ports, protocols)
+- Advanced configuration options
 
-**Filter Options:**
+## Clone
 
-**Director-Based Filtering:**
-- **Single Director Filter**: View only devices managed by a specific director
-- **Multi-Director View**: See devices associated with multiple directors
-- **Unassigned Devices**: Identify devices without director assignments
-- **Load Balancing Review**: Assess device distribution across directors
+To create a copy of an existing device:
 
-**Status-Based Filtering:**
-- **Enabled Devices**: View only operational devices accepting data
-- **Disabled Devices**: See devices that have been temporarily disabled
-- **Error State Devices**: Quickly identify devices requiring attention
-- **Connection Status**: Filter agents by their connection state to directors
+- Click the **Actions** menu (&#x22EE;) on the device row
+- Select **Clone device**
 
-## Device Actions and Operations
+:::note
+Windows agents cannot be cloned since they're tied to specific systems.
+:::
 
-### Device Action Menu
+The cloned device inherits all settings but gets:
 
-Each device provides comprehensive management options through context-sensitive action menus:
-
-**Standard Device Actions:**
-- **Edit**: Modify device configuration, network settings, and director assignments
-- **Clone**: Create duplicate devices with similar configurations for scaling
-- **Delete**: Remove devices with proper validation and impact assessment
-- **Enable/Disable**: Toggle device operational state without configuration loss
-
-### Device Editing Process
-
-Device editing follows a structured, step-by-step approach tailored to device types:
-
-**Step 1 - Basic Settings Modification:**
-- **Name and Description**: Update device identification and documentation
-- **Director Assignment**: Modify which directors manage the device
-- **Basic Parameters**: Adjust fundamental device operation parameters
-- **Environment Settings**: Update environment-specific configurations
-
-**Step 2 - Protocol and Network Configuration:**
-- **Network Settings**: Modify IP addresses, ports, and network interfaces
-- **Protocol Parameters**: Adjust protocol-specific settings and options
-- **Connection Limits**: Update concurrent connection and rate limiting settings
-- **Security Settings**: Modify authentication and encryption configuration
-
-**Step 3 - Advanced Configuration and Confirmation:**
-- **Performance Tuning**: Adjust buffer sizes, timeouts, and optimization settings
-- **Monitoring Configuration**: Update health check intervals and alert thresholds
-- **Preprocessing Pipelines**: Modify data transformation settings
-- **Change Confirmation**: Review and confirm all configuration modifications
-
-### Device Cloning Operations
-
-Device cloning streamlines the setup process for similar devices while ensuring unique configurations:
-
-**Cloning Process:**
-- **Configuration Inheritance**: Copy all settings from the source device
-- **Unique Identifier Assignment**: System generates unique names and identifiers
-- **Port Conflict Resolution**: Automatic detection and resolution of port conflicts
-- **Director Assignment**: Option to maintain or modify director associations
-
-**Cloning Validation:**
+- A new unique name
+- A new unique port (if port conflicts exist)
+- Same director assignments (unless changed)
 
 :::caution
-When cloning devices, ensure port numbers are unique to avoid conflicts. The system validates port availability and displays errors for duplicate port assignments.
+Ensure port numbers are unique when cloning to avoid conflicts.
 :::
 
-**Conflict Resolution:**
-- **Port Uniqueness**: Automatic checking for port conflicts with suggestions for alternatives
-- **Name Validation**: Ensure cloned devices have unique names within the system
-- **Resource Validation**: Verify that cloned devices don't exceed system resource limits
-- **Configuration Validation**: Check that cloned configurations are valid and complete
+## Status
 
-## Device Status Management
+To enable or disable a device:
 
-### Operational State Control
+- Click the **Actions** menu (&#x22EE;) on the device row
+- Select **Enable device** or **Disable device**
 
-Manage device operational states to control data collection without losing configuration:
+Disabling a device stops data collection but preserves all configuration settings.
 
-**Enable/Disable Operations:**
-- **Graceful State Changes**: Smooth transitions between enabled and disabled states
-- **Connection Preservation**: Maintain connection settings during state changes
-- **Configuration Retention**: Preserve all device settings during operational state changes
-- **Impact Assessment**: Understand data flow implications of state changes
+## Delete
 
-**Status Monitoring:**
-- **Real-Time Status Updates**: Live monitoring of device operational states
-- **Health Indicators**: Visual representation of device health and performance
-- **Connection Quality**: Monitor connection stability and performance metrics
-- **Error Detection**: Automatic identification and notification of device issues
+To remove a device:
 
-### Push Device Management
-
-**Network Device Operations:**
-- **Port Management**: Monitor port usage and resolve conflicts
-- **Connection Monitoring**: Track active connections and connection history
-- **Protocol Performance**: Monitor protocol-specific performance metrics
-- **Load Distribution**: Balance traffic across multiple directors
-
-**Multi-Director Device Management:**
-- **Director Load Balancing**: Distribute processing load across assigned directors
-- **Failover Configuration**: Ensure proper failover behavior when directors become unavailable
-- **Performance Monitoring**: Track performance across all assigned directors
-- **Director Health Correlation**: Monitor how director health affects device performance
-
-### Pull Device (Agent) Management
-
-**Agent-Specific Operations:**
-- **Connection Status Monitoring**: Track agent-to-director connectivity
-- **Data Collection Verification**: Ensure agents are collecting configured data sources
-- **Resource Usage Monitoring**: Monitor agent impact on target systems
-- **Update Management**: Manage agent software updates and configuration changes
-
-**Agent Limitations:**
-Windows Agent devices have specific management characteristics:
-- **No Cloning Support**: Agents cannot be cloned due to system-specific installations
-- **System Dependency**: Each agent is tied to a specific Windows system
-- **Director Dependency**: Agents require operational directors for functionality
-- **Unique Configuration**: Each agent has system-specific configuration requirements
-
-## Device Deletion and Cleanup
-
-### Safe Device Removal Process
-
-Device deletion includes comprehensive safety measures to prevent data loss and system disruption:
-
-**Deletion Confirmation Process:**
-- **Impact Assessment**: Analysis of data flows and dependent systems
-- **Warning Display**: Clear indication of deletion consequences and affected components
-- **Multi-Step Confirmation**: Multiple validation steps to prevent accidental deletion
-- **Alternative Options**: Suggestions for disabling devices instead of deletion
-
-**Safety Validations:**
-- **Data Flow Analysis**: Identify all data flows that will be affected by device deletion
-- **Dependency Checking**: Review all systems and processes that depend on the device
-- **Backup Recommendations**: Suggest configuration export before deletion
-- **Recovery Options**: Provide information about recovery procedures if needed
+- Click the **Actions** menu (&#x22EE;) on the device row  
+- Select **Delete**
+- Confirm the deletion in the modal prompt
 
 :::warning
-Device deletion is irreversible and will stop all data collection for the deleted device. Ensure you have proper backups and understand the impact before proceeding with deletion.
+Device deletion is permanent and removes all configuration data.
 :::
-
-## Specialized Device Management
-
-### Syslog Device Management
-
-Syslog devices require specific management considerations:
-
-**Configuration Monitoring:**
-- **Message Format Validation**: Ensure incoming messages conform to expected formats
-- **Facility and Priority Tracking**: Monitor syslog facility and priority distributions
-- **Protocol Performance**: Compare UDP vs TCP performance for syslog transmission
-- **Parser Effectiveness**: Monitor preprocessing pipeline effectiveness
-
-### HTTP Device Management
-
-HTTP devices provide unique management requirements:
-
-**Endpoint Management:**
-- **URL Pattern Monitoring**: Track which URL patterns receive the most traffic
-- **HTTP Method Usage**: Monitor usage of different HTTP methods (POST, PUT)
-- **Authentication Monitoring**: Track authentication success rates and failures
-- **Content Type Analysis**: Monitor incoming content types and formats
-
-### eStreamer Device Management
-
-eStreamer devices require specialized monitoring:
-
-**Network Security Integration:**
-- **Connection Stability**: Monitor connections to security appliances
-- **Event Filtering Effectiveness**: Track event filtering and selection performance
-- **Authentication Status**: Monitor certificate-based authentication health
-- **Data Format Compliance**: Ensure data format consistency and parsing accuracy
-
-## Performance Monitoring and Optimization
-
-### Device Performance Metrics
-
-Monitor key performance indicators for all device types:
-
-**Throughput Metrics:**
-- **Data Volume**: Monitor incoming data volume trends and patterns
-- **Connection Rates**: Track connection establishment and termination rates
-- **Processing Speed**: Monitor data processing speed and latency
-- **Error Rates**: Track error frequencies and types
-
-**Resource Utilization:**
-- **Memory Usage**: Monitor device memory consumption and growth
-- **CPU Utilization**: Track processing resource usage
-- **Network Bandwidth**: Monitor network bandwidth utilization
-- **Storage Impact**: Track log storage requirements and growth
-
-### Optimization Strategies
-
-**Performance Tuning:**
-- **Buffer Size Optimization**: Adjust buffer sizes for optimal throughput and memory usage
-- **Connection Limit Tuning**: Balance connection limits with performance requirements
-- **Timeout Configuration**: Optimize timeout settings for reliability and performance
-- **Director Distribution**: Optimize device distribution across available directors
-
-**Scalability Planning:**
-- **Capacity Monitoring**: Track device capacity utilization and growth trends
-- **Load Testing**: Regular testing under expected and peak load conditions
-- **Expansion Planning**: Plan for device scaling and configuration changes
-- **Resource Forecasting**: Predict future resource requirements based on trends
-
-Device management provides comprehensive control over data collection infrastructure, ensuring reliable operation while maintaining flexibility for changing requirements and optimal performance across diverse deployment scenarios.

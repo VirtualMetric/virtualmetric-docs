@@ -38,10 +38,12 @@ function Image({ id, maxWidth = '100%', alt }: ImageProps) {
       alt={alt || `Image ${id}`}
       onError={(e) => {
         console.error(`Failed to load image: ${imageUrl}`);
-        if (process.env.NODE_ENV != 'production') {
+        if (process.env.NODE_ENV !== 'production') {
           e.currentTarget.style.border = '2px solid red';
         }
         e.currentTarget.alt = `Missing image: ${id}`;
+        // Prevent broken-image icon
+        e.currentTarget.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
       }}
     />
   );

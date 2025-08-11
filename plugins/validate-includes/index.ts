@@ -31,7 +31,8 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
         const fullPath = path.resolve(includesRoot, includePath);
         
         // Disallow traversal escaping includesRoot
-        if (!fullPath.startsWith(includesRoot + path.sep) && fullPath !== includesRoot) {
+        const relativePath = path.relative(includesRoot, fullPath);
+        if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
           pathErrors.push(`❌ Include ID '${id}' path escapes 'src/includes': '${includePath}'`);
           continue;
         }
