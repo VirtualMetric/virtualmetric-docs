@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import includesConfig from './includes.json';
+import includesConfig from '@site/includes.json';
 
 interface IncludeProps {
   id: string;

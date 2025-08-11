@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Link from '@docusaurus/Link';
-import TopicList from './topics.json';
+import TopicList from '@site/topics.json';
 
 interface TopicProps {
   id: keyof typeof TopicList;

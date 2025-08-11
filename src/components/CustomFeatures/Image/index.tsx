@@ -1,7 +1,7 @@
 import React from 'react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-import ImageList from './images.json';
+import ImageList from '@site/images.json';
 
 interface ImageProps {
   id: keyof typeof ImageList;
@@ -11,19 +11,21 @@ interface ImageProps {
 
 function Image({ id, maxWidth, alt }: ImageProps) {
   const imagePath = ImageList[id] as string | undefined;
-  
+  // Call hook unconditionally to satisfy Rules of Hooks
+  const imageUrl = useBaseUrl(imagePath ?? '');
+
   if (!imagePath) {
     console.warn(`[Image] Unknown Image id "${id}"`);
     return (
       <img
         key={id}
         alt={alt || `Missing image: ${id}`}
-        style={{ maxWidth: maxWidth, border: '2px dashed red' }}
+        style={{ maxWidth, border: '2px dashed red' }}
       />
     );    
   }
 
-  const imageUrl = useBaseUrl(imagePath);
+  // imagePath is defined here; imageUrl computed above
 
   return (
     <img 
