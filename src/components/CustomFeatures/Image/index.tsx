@@ -9,7 +9,7 @@ interface ImageProps {
   alt?: string;
 }
 
-function Image({ id, maxWidth, alt }: ImageProps) {
+function Image({ id, maxWidth = '100%', alt }: ImageProps) {
   const imagePath = ImageList[id] as string | undefined;
   // Call hook unconditionally to satisfy Rules of Hooks
   const imageUrl = useBaseUrl(imagePath ?? '');

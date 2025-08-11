@@ -13,11 +13,11 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
       const includesPath = path.join(rootDir, 'includes.json');
 
       // Read includes.json
-      let includes;
+      let includes: Record<string, string>;
       try {
         includes = JSON.parse(await fs.promises.readFile(includesPath, 'utf-8'));
       } catch (error) {
-        throw new Error(`Failed to read includes.json: ${error.message}`);
+        throw new Error(`Failed to read includes.json at ${includesPath}: ${error instanceof Error ? error.message : String(error)}`);
       }
       const validIds = new Set(Object.keys(includes));
 
@@ -35,10 +35,11 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
           pathErrors.push(`❌ Include ID '${id}' points to non-existent path '${includePath}' (resolved to '${fullPath}')`);
         }
 
-        // Validate naming convention: ID should match filename (without .mdx extension)
+        // Validate naming convention: ID should match filename (basename without path)
         const expectedFilename = `${id}.mdx`;
-        if (includePath !== expectedFilename) {
-          namingErrors.push(`❌ Include ID '${id}' should point to '${expectedFilename}'`);
+        const actualFilename = path.basename(includePath as string);
+        if (actualFilename !== expectedFilename) {
+          namingErrors.push(`❌ Include ID '${id}' should map to a file named '${expectedFilename}' (got '${includePath}')`);
         }
       }
 
@@ -56,13 +57,13 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
           continue;
         }
 
-        // Match Include components: <Include id="some-id" />
-        const matches = [...content.matchAll(/<Include\s+id=["']([\w\-]+)["']/g)];
+        // Match Include components: <Include ... id="some-id" ... />
+        const matches = [...content.matchAll(/<Include\b[^>]*\bid=["']([\w\-]+)["']/g)];
 
         for (const match of matches) {
           const id = match[1];
           if (!validIds.has(id)) {
-            errors.push(`❌ Include ID '${id}' is invalid in file '${file}'`);
+            errors.push(`❌ Include ID '${id}' is invalid in file '${path.relative(rootDir, file)}'`);
           }
         }
       }
@@ -73,10 +74,10 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
       if (allErrors.length > 0) {
         console.error('\nInclude Validation Errors:\n');
         allErrors.forEach(err => console.error(err));
-        console.error('\nFix invalid Include IDs, update includes.json, or add missing include files.\n');
-        throw new Error('Include validation failed. Fix invalid Include IDs, update includes.json, or add missing include files.');
+        console.error('\nFix invalid Include IDs, update includes.json, add missing include files, or fix naming mismatches.\n');
+        throw new Error('Include validation failed. Fix invalid Include IDs, update includes.json, add missing include files, or fix naming mismatches.');
       } else {
-        console.log('✅ All Include IDs and paths are valid.');
+        console.log('✅ All Include IDs, paths, and filenames are valid.');
       }
     },
   };
