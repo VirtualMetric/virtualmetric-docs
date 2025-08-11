@@ -10,7 +10,7 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
     async loadContent() {
       const rootDir = context.siteDir;
       const docsDir = path.join(rootDir, 'docs');
-      const imagesPath = path.join(rootDir, 'src', 'components', 'CustomFeatures', 'Image', 'images.json');
+      const imagesPath = path.join(rootDir, 'images.json');
 
       // Read images.json
       let images;

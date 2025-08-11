@@ -10,7 +10,7 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
     async loadContent() {
       const rootDir = context.siteDir;
       const docsDir = path.join(rootDir, 'docs');
-      const includesPath = path.join(rootDir, 'src', 'components', 'CustomFeatures', 'Include', 'includes.json');
+      const includesPath = path.join(rootDir, 'includes.json');
 
       // Read includes.json
       let includes;
