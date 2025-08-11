@@ -24,10 +24,17 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
       // Validate that all paths in includes.json point to existing files
       const pathErrors: string[] = [];
       const namingErrors: string[] = [];
+      const includesRoot = path.join(rootDir, 'src', 'includes');
       
       for (const [id, includePath] of Object.entries(includes)) {
-        // Convert include path to file system path (includes are in src/includes/ directory)
-        const fullPath = path.join(rootDir, 'src', 'includes', includePath as string);
+        // Normalize to an absolute path and ensure it lives under includesRoot
+        const fullPath = path.resolve(includesRoot, includePath);
+        
+        // Disallow traversal escaping includesRoot
+        if (!fullPath.startsWith(includesRoot + path.sep) && fullPath !== includesRoot) {
+          pathErrors.push(`❌ Include ID '${id}' path escapes 'src/includes': '${includePath}'`);
+          continue;
+        }
         
         try {
           await fs.promises.access(fullPath);
@@ -37,7 +44,7 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
 
         // Validate naming convention: ID should match filename (basename without path)
         const expectedFilename = `${id}.mdx`;
-        const actualFilename = path.basename(includePath as string);
+        const actualFilename = path.basename(includePath);
         if (actualFilename !== expectedFilename) {
           namingErrors.push(`❌ Include ID '${id}' should map to a file named '${expectedFilename}' (got '${includePath}')`);
         }

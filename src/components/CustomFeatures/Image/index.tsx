@@ -5,7 +5,7 @@ import ImageList from '@site/images.json';
 
 interface ImageProps {
   id: keyof typeof ImageList;
-  maxWidth: string;
+  maxWidth?: React.CSSProperties['maxWidth'];
   alt?: string;
 }
 
@@ -19,6 +19,7 @@ function Image({ id, maxWidth = '100%', alt }: ImageProps) {
     return (
       <img
         key={id}
+        src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
         alt={alt || `Missing image: ${id}`}
         style={{ maxWidth, border: '2px dashed red' }}
       />
@@ -33,7 +34,7 @@ function Image({ id, maxWidth = '100%', alt }: ImageProps) {
       src={imageUrl} 
       loading="lazy"
       decoding="async"
-      style={{maxWidth: maxWidth}} 
+      style={{ maxWidth }} 
       alt={alt || `Image ${id}`}
       onError={(e) => {
         console.error(`Failed to load image: ${imageUrl}`);
