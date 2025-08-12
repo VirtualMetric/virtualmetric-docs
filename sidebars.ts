@@ -141,8 +141,8 @@ const sidebars: SidebarsConfig = {
               label: "Devices",
               items: [
                 "gui/fleet-management/devices/overview",
-                "gui/fleet-management/devices/creating-devices",
-                "gui/fleet-management/devices/creating-agents",
+                "gui/fleet-management/devices/creating-push-devices",
+                "gui/fleet-management/devices/creating-pull-devices",
                 "gui/fleet-management/devices/managing-devices",
               ]
             },
@@ -159,11 +159,11 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: "category",
-          label: "Pipelines",
+          label: "My Pipelines",
           items: [
-            "gui/pipelines/overview",
-            "gui/pipelines/creating-pipelines",
-            "gui/pipelines/managing-pipelines",
+            "gui/my-pipelines/overview",
+            "gui/my-pipelines/creating-pipelines",
+            "gui/my-pipelines/managing-pipelines",
           ]
         },
         {

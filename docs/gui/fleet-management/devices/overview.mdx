@@ -4,31 +4,52 @@ sidebar_label: Overview
 
 # Devices: Overview
 
-This is where you manage all your data ingestion devices.
+This is where you configure and manage all your data ingestion devices.
 
-The main view shows devices organized into two categories:
+The view contains the following elements:
 
-- **Push Devices** - Network endpoints that receive incoming data (Syslog, HTTP, UDP, TCP, eStreamer)
-- **Pull Devices** - Local agents that collect data from systems (Windows Agent)
+- **Search box** - A text box where you can type the name of the device you are looking for.
 
-## Device Categories
+- **Push** - The cards for network endpoints that receive incoming data (e.g., Syslog, HTTP, UDP, TCP, or eStreamer). These listen on specified ports and receive data from external sources. Each category shows enabled/disabled counters.
 
-**Push Devices** listen on specified ports and receive data from external sources. Each category shows enabled/disabled counters.
+- **Pull** - The cards for local agents that communicate with **Director** to propogate ingestion logic (e.g., a _Windows_ device). These are installed on target systems to collect logs locally. They require an **Agent** installation and a valid and active connection to run.
 
-**Pull Devices** are agents installed on target systems to collect logs locally. These require agent installation and show connection status.
+The three buttons on the left; **All**, **Push**, and **Pull**  can also be used to filter device types, along with displaying the total number in each category.
 
-## Interface
+The cards also display the number of devices of that type that have been _enabled_ and _disabled_ on your **DataStream** environment.
 
-The sidebar on the left categorizes device types with:
+## Configuration view
 
-- **Device type names** with enabled/disabled counts
-- **Quick navigation** to each device category
-- **Visual status indicators** for operational states
+Clicking on any of the cards takes you to the configuration view of that device type.
 
-The main area contains:
+In this view, you will see the following elements:
 
-- **Create device** button at the top right
-- **Device list table** showing all devices of the selected type
-- **Search devices** text box to filter by name
-- **Status filter** dropdown to filter by operational state
-- **Actions menu** (&#x22EE;) for each device with edit, enable/disable, and delete options
+- A **sidebar** enlisting the devices types found as cards on the **Devices** view
+
+- A **search box** to type the name of a device to filter the list
+
+- A **Director(s)** dropdown that enlists the various directors that devices of the current type created are attached to
+
+- A **status** filter to select All, Enabled, Disabled devices
+
+- The number of devices to view at a time
+
+- A pagination control to select the page of the list to view
+
+On the right, there is a blue **Add new device** button used to create new devices of that type.
+
+In the main viewing area, you will find a table enlisting devices of the selected type. The table displays the properties of that device type as columns.
+
+:::note
+Since the table columns change based on the selected device type, we will describe the columns of _Syslog_ below.
+:::
+
+The table will have the following columns:
+
+- **Name** - The name used to identify the device
+- **Description** - A note about the device, frequently the purpose that it is created for
+- **Director(s)** - The directors that the device is connected to to ingest data
+**- Preprocessing pipeline** - The pipeline attached to the device to preprocess that incoming data. See <Topic id="normalization">Normalization</Topic> for details
+- **Port** - The port number that the device is listening on
+- **Protocol** - The transfer protocol the device is using to ingest data
+- **Status** - Whether the device is _Enabled_/_Disabled_

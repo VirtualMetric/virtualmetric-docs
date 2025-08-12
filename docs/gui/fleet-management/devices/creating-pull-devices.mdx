@@ -1,0 +1,117 @@
+# Creating Pull Devices
+
+To create a pull device:
+
+- In the **Home** view, click **Fleet Management**&nbsp;>&nbsp;**Devices**
+
+-or-
+
+- From the hamburger menu on the top left, select **Fleet Management**&nbsp;>&nbsp;**Devices**
+
+Then, in the **Devices** view, click the card of your pull device type (Windows or Linux).
+
+:::note
+Since only specific devices can be created, we will discuss a _Windows_ device below.
+:::
+
+This takes you to the configuration view of the selected pull device type.
+
+To create a new device, click the blue **Add new device** button on the top right.
+
+This takes you to the configuration view.
+
+## Choose Setup Method for Device
+
+This tab contains the following sections:
+
+### Define Device Details
+
+- **Name** (Required) - The name of your device. Must be unique
+- **Director** (Required) - The director that the device will be attached to. Pick one from the dropdown
+
+### Choose Deployment Type
+
+There are two deployment types:
+
+  - **Agent**
+  - **Agentless**
+
+See below for the details of each card.
+
+---
+
+### Agent
+
+Installs a lightweight **Agent** that sets up the device in your environment.
+
+Selecting this turns the blue button to **Create device**. Clicking the button takes you to the [**Install and Connect**](#install-and-connect) tab.
+
+On this tab, we will find a box containing an API key and a script. You will use this to install **Agent**.
+
+<Include id="admin-for-installation-script" />
+
+- Open a terminal window with admin access
+- Copy the above-mentioned key and script
+- Paste it in the prompt
+- Press <kb-short>Enter</kb-short> to start running the script
+
+This will take a few minutes to complete.
+
+To the right, you will see a **Verify connection** button. Clicking this button starts sending a request to check whether a **Agent** has been installed.
+
+Once the connection is verified, you will be prompted with a **Connection succesful** message.
+
+<Include id="connection-verification-failure" />
+
+If the connection is not verified, you can use the **Connect Later** button to defer this installation step. However, the not-yet-enabled agent will still appear on the agents list.
+
+Clicking this button takes you to the [**Next step**](#view-and-configure).
+
+### Agentless
+
+Uses autodetect to set up the device in your environment. Selecting this requires you to go to the [**Next step**](#setup-device) with the blue button.
+
+---
+
+## View and Configure
+
+This optional step's view has the following section.
+
+#### Select Log Types
+
+- **Windows Security Events** - Enable/disable log collection. Used to select what type of data will be collected. There are three choices:
+
+  - **All** - Collects all **Windows** security and **AppLocker** event. The most comprehensive option
+  - **Common** - Collects the standard event set for audit purposes. Sufficient for general security monitorin
+  - **Minimal** - Collects a small subset of events that may reveal potential threats
+  - **Custom** - The user specifies their own filters using XML-based filter definitions.
+
+---
+
+## Connect Agentless
+
+This view has the following tabs:
+
+### Setup Device
+
+### Install and Connect
+
+This tab contains the following section:
+
+#### Configure Remote Access
+
+- **IP Address** - Enter an IP address for the agent to use
+- **Port** - Enter a port number for the agent to use
+- **Active Directory Authentication** - **AD** authentication settings.
+
+  When disabled, three fields are displayed:
+
+  - **Username** (Required) - **AD** username
+  - **Password** (Required) - **AD** password
+  - **Domain** (Optional) - **AD** domain
+
+  Your director will access the IP address specified above with these account credentials to install an agent. The account must have the privileges to install agents on that domain server.
+
+  When enabled, authentication is handled automatically by **DataStream** with the user's organiation credentials.
+
+The **Check access** button verifies that the authentication credentials are valid.
