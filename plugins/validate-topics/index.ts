@@ -10,7 +10,7 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
     async loadContent() {
       const rootDir = context.siteDir;
       const docsDir = path.join(rootDir, 'docs');
-      const topicsPath = path.join(rootDir, 'src', 'components', 'CustomFeatures', 'Topic', 'topics.json');
+      const topicsPath = path.join(rootDir, 'topics.json');
 
       // Read topics.json
       let topics;

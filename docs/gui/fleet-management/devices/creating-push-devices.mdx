@@ -1,0 +1,77 @@
+# Creating Push Devices
+
+To create a push device:
+
+- In the **Home** view, click **Fleet Management**&nbsp;>&nbsp;**Devices**
+
+-or-
+
+- From the hamburger menu on the top left, select **Fleet Management**&nbsp;>&nbsp;**Devices**
+
+Then, in the **Devices** view, click the card of your push device type (Syslog, HTTP, UDP, TCP, or eStreamer).
+
+:::note
+Since only specific devices can be created, we will discuss a _Syslog_ device below.
+:::
+
+This takes you to the configuration view of the selected push device type.
+
+To create a new device, click the blue **Add new device** button on the top right.
+
+## Add New Device
+
+On the first tab of this view, you will find the **General Settings** of the device.
+
+:::info
+These fields are present on all device types, and they correspond to their basic YAML configuration. See <Topic id="devices-overview-config">**this section**</Topic> for details.
+:::
+
+### General Settings
+
+The elements on this tab:
+
+- **Name** (Required) - Enter a name for the device. Must be unique
+- **Description** (Optional) - Add a description for the device's purpose
+- **Tags** (Optional) - Place labels for documentation and filtering purposes
+- **Device Status** - Toggle button to enable/disable the device
+- **Director(s) for the Device** (Required) - Select one or more directors to attach the device. The number of selected directors is displayed
+- **Preprocessing pipeline** (Optional) - Seleect a pipeline to preprocess the ingested data (See <Topic id="normalization">**this section**</Topic> for more details.)
+
+To exit device creation, click **Cancel**, to continue click **Next step**.
+
+### Device Protocol Settings
+
+The elements on this tab:
+
+- **Authentication Protocol** - The protocol used to authenticate the device&mdash;e.g., UDP or TCP for _Syslog_
+- **IP Address** (Optional) - Enter a standart IP address for the device to listen on incoming data. By default `0.0.0.0`
+- **Port** - The port number the devices listens on the incoming data. The default is device type-specific. Must be unique.
+
+To return to the previous step click **Back**, to continue click **Next step**.
+
+### Advanced Device Configuration
+
+The elements on this tab are grouped in three sections:
+
+#### Performance
+
+- **Socket address reuse** - Enable/disable socket address reuse
+- **Workers** (Optional) - Number of worker processes when reuse is enabled. By default 0 for maximum
+- **Max Connections** (Optional) - Maximum number of concurrent connections using the selected protocol. By default 1000
+- **Timeout** (optional) - Connection timeout in seconds. By default, 300
+- **Max Message Size** (Optional) - Maximum size of message in MB. By default, 20 MB
+- **Buffer Size** (Optional) - Network read buffer size in bytes. By default, 9000
+
+#### Messages
+
+- **Flush Interval** - Message flush interval in seconds (optional). By default, 1
+- **Queue Interval** - Queue processing interval in seconds (optional). By default, 1
+- **Batch Size** - Number of messages to batch before flushing (optional). By default, 1000
+
+#### Forwarding
+
+- **Forward Messages** - Enable/disable forwarding messages
+
+---
+
+After making the required settings, click **Add device** to complete the process.

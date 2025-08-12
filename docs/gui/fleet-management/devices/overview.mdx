@@ -4,87 +4,68 @@ sidebar_label: Overview
 
 # Devices: Overview
 
-The Devices View is your central management interface for configuring and monitoring all data ingestion sources in your VirtualMetric DataStream environment. This interface provides comprehensive device management capabilities for both Push devices (which receive data) and Pull devices (Agents that collect data from local systems).
+This is where you configure and manage all your data ingestion devices.
 
-## Main Overview
+The view contains the following elements:
 
-The main view displays devices organized into two distinct categories, providing a clear overview of your data collection infrastructure and the ability to quickly assess your device configuration state.
+- **Search box** - A text box where you can type the name of the device you are looking for.
 
-### Push Devices
+- **Push** - The cards for network endpoints that receive incoming data (e.g., Syslog, HTTP, UDP, TCP, or eStreamer). These listen on specified ports and receive data from external sources. Each category shows enabled/disabled counters.
 
-Push devices are network-accessible endpoints that receive incoming log data from external sources. These devices listen on specified ports and protocols:
+Currently available push devices:
 
-- **Syslog**: Standard protocol for collecting and forwarding log messages from various devices to a centralized server
-- **HTTP**: Enables log data ingestion through HTTP protocol for efficient data transmission
-- **UDP**: Allows log data collection using the User Datagram Protocol (UDP) for faster but less reliable transmission
-- **TCP**: Collects logs using the Transmission Control Protocol (TCP) for reliable and ordered data delivery
-- **eStreamer**: A protocol designed for retrieving detailed event and log data from network and security devices
+- <Topic id="devices-syslog">**Syslog**</Topic> devices receive system logs and events from network devices, servers, and applications using the standard syslog protocol.
 
-Each Push device displays enabled/disabled status counters, allowing you to quickly assess your device configuration state and monitor the operational status of your data collection endpoints.
+- <Topic id="devices-http">**HTTP**</Topic> devices accept data submissions through HTTP/HTTPS endpoints for web-based log collection and API integrations.
 
-### Pull Devices (Agents)
+- <Topic id="devices-udp">**UDP**</Topic> devices listen for connectionless data transmissions over UDP protocol for high-throughput, low-latency log ingestion.
 
-Pull devices are lightweight agents installed on target systems to collect logs locally. These agents actively gather data from the systems they're installed on:
+- <Topic id="devices-tcp">**TCP**</Topic> devices establish reliable connection-based data streams over TCP protocol for guaranteed data delivery.
 
-- **Windows**: The Windows agent collects logs from Windows systems including event logs, performance data, and security information
-- **Linux**: Linux agent support (marked as "Coming Soon" in current interface)
+- <Topic id="devices-estreamer">**eStreamer**</Topic> devices integrate with Cisco security appliances to receive real-time event data and security intelligence feeds.
 
-Pull devices require agent installation and display connection status to help you monitor agent health and connectivity with their assigned directors.
+- **Pull** - The cards for local agents that communicate with **Director** to propagate ingestion logic (for example, a _Windows_ device). These are installed on target systems to collect logs locally. They require an **Agent** installation and a valid, active connection to run.
 
-## Device Type Specific Views
+Currently available pull devices:
 
-### Syslog Device Management
+- <Topic id="devices-windows">**Windows**</Topic> devices deploy local agents on Windows systems to collect logs, events, and performance metrics directly from the operating system.
 
-The Syslog device management interface provides a comprehensive view of all configured Syslog devices with a navigation sidebar that categorizes device types. The interface displays device counts for each category, helping you understand your current configuration distribution and manage large deployments effectively.
+The three buttons on the left; **All**, **Push**, and **Pull**  can also be used to filter device types, along with displaying the total number in each category.
 
-The main Syslog device management table displays detailed information for each configured device:
-- **Name**: Device identifier for easy reference and organization
-- **Description**: Optional descriptive text explaining the device purpose or source
-- **Director(s)**: Associated directors responsible for managing this device
-- **Preprocessing Pipeline**: Data transformation pipeline applied to incoming logs
-- **Port**: Network port configured for incoming connections
-- **Protocol**: Transport protocol used (UDP/TCP)
-- **Status**: Current operational state (Enabled/Disabled)
+The cards also display the number of devices of that type that have been _enabled_ and _disabled_ on your **DataStream** environment.
 
-#### Search and Filtering
+## Configuration view
 
-The search functionality allows you to quickly locate specific devices by name or description. The search box provides real-time filtering of the device list, making it easy to find devices in large deployments.
+Clicking on any of the cards takes you to the configuration view of that device type.
 
-You can filter devices by director assignment to view only devices managed by specific directors. This filtering capability helps organize large deployments by management responsibility and simplifies troubleshooting when issues are director-specific.
+In this view, you will see the following elements:
 
-Status filtering enables you to quickly identify enabled or disabled devices, which is particularly useful for troubleshooting and conducting configuration audits. This filter helps you understand which devices are actively collecting data and which may need attention.
+- A **sidebar** listing the same device types shown as cards on the **Devices** view
 
-#### Device Actions
+- A **search box** to type the name of a device to filter the list
 
-Each device row in the management table provides action options accessible through a context menu system:
-- **Edit**: Modify device configuration settings
-- **Clone**: Create a copy of the device with similar settings for rapid deployment
-- **Delete**: Remove the device from the configuration entirely
-- **Enable/Disable**: Toggle device operational state without full reconfiguration
+- A **Director(s)** dropdown to filter by the director(s) that devices of this type are attached to
 
-Devices can be associated with multiple directors for load balancing and redundancy purposes. This multi-director configuration ensures high availability and distributed processing capabilities, preventing single points of failure in your data collection infrastructure.
+- A **Status** filter to select _All_, _Enabled_, or _Disabled_
 
-## Windows Agent (Pull Device) Management
+- A **Page size** selector
 
-### Agent Limitations and Requirements
+- A pagination control to select the page of the list to view
 
-Windows Agent devices have different management characteristics compared to Push devices due to their system-specific nature:
+On the right, there is a blue **Add new device** button used to create new devices of that type.
 
-- **No Cloning**: Agent devices cannot be cloned because each agent is uniquely tied to a specific system and configuration
-- **Unique Installation**: Each agent requires individual installation and configuration on its target system
-- **Director Dependency**: Agent functionality requires active director connections for management and data transmission
+In the main viewing area, you will find a table enlisting devices of the selected type. The table displays the properties of that device type as columns.
 
-:::caution
-Windows Agent installation requires an active director connection. Ensure directors are properly configured and connected before attempting agent installation. Without proper director connectivity, agents cannot be deployed or managed effectively.
+:::note
+Since the table columns change based on the selected device type, we will describe the columns of _Syslog_ below.
 :::
 
-## eStreamer Device Management
+The table will have the following columns:
 
-eStreamer devices provide specialized configuration options designed for network security device integration. These devices require specific configuration parameters including:
-
-- **Connection Parameters**: Network settings for connecting to eStreamer-enabled security devices
-- **Authentication Settings**: Credentials and certificates required for secure communication
-- **Data Filtering Options**: Rules for selecting which events and data types to collect
-- **Protocol-Specific Settings**: eStreamer-specific configuration options for optimal data collection
-
-The eStreamer protocol is specifically designed for retrieving detailed event and log data from network and security devices, making it essential for comprehensive security monitoring and compliance reporting in enterprise environments.
+- **Name** - The name used to identify the device
+- **Description** - A note about the device, frequently the purpose that it is created for
+- **Director(s)** - The directors that the device is connected to to ingest data
+- ** Preprocessing pipeline** - The pipeline attached to the device to preprocess that incoming data. See <Topic id="normalization">Normalization</Topic> for details
+- **Port** - The port number that the device is listening on
+- **Protocol** - The transfer protocol the device is using to ingest data
+- **Status** - Whether the device is _Enabled_/_Disabled_

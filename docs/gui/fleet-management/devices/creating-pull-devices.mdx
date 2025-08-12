@@ -1,0 +1,104 @@
+# Creating Pull Devices
+
+To create a pull device:
+
+- In the **Home** view, click **Fleet Management**&nbsp;>&nbsp;**Devices**
+
+-or-
+
+- From the hamburger menu on the top left, select **Fleet Management**&nbsp;>&nbsp;**Devices**
+
+Then, in the **Devices** view, click the **Windows** pull device card.
+
+:::note
+Currently, only Windows pull devices can be created. The example below uses Windows.
+:::
+
+This takes you to the configuration view of the selected pull device type.
+
+To create a new device, click the blue **Add new device** button on the top right.
+
+This takes you to the first tab of the creation process.
+
+## Setup Device
+
+On this tab, you will find the following sections:
+
+### Choose Setup Method for Device
+
+#### Define Device Details
+
+- **Name** (Required) - The name of your device. Must be unique.
+- **Director** (Required) - The director to attach the device to. Select from the dropdown.
+
+### Choose Deployment Type
+
+There are two deployment types:
+
+  - **Agent** - Installs a lightweight **Agent** that sets up the device in your environment.
+
+    Selecting this changes the primary button label to **Create device**. Clicking the button takes you directly to the [**Install and Connect**](#install-and-connect---agent) tab for Agent.
+
+  - **Agentless** - Uses auto-detection to set up the device in your environment.
+  
+    Selecting this changes the primary button label to **Next step**. Clicking the button takes you to the [**Install and Connect**](#install-and-connect---agentless) tab for Agentless.
+
+## Install and Connect - Agent
+
+On this tab, we will find a box containing an API key and a script. You will use this to install **Agent**.
+
+<Include id="admin-for-installation-script" />
+
+- Open a terminal window with administrator privileges.
+- Copy the key and script above.
+- Paste them into the terminal.
+- Press <kb-short>Enter</kb-short> to run the script.
+
+This will take a few minutes to complete.
+
+To the right, you will see a **Verify connection** button. Clicking this button starts sending a request to check whether a **Agent** has been installed.
+
+Once the connection is verified, a **Connection successful** message is displayed.
+
+<Include id="connection-verification-failure" />
+
+If the connection is not verified, you can use the **Connect Later** button to defer this installation step. However, the not-yet-enabled agent will still appear on the devices list.
+
+Clicking this button takes you to the [**Review and Configure**](#review-and-configure) tab.
+
+## Install and Connect - Agentless
+
+This view has the following sections:
+
+#### Configure Remote Access
+
+- **IP Address** - Enter the IP address of the target system
+- **Port** - Enter the port used for remote access
+- **Active Directory Authentication** - **AD** authentication settings
+
+  When this option is disabled, three fields are displayed:
+
+  - **Username** (Required) - **AD** username
+  - **Password** (Required) - **AD** password
+  - **Domain** (Optional) - **AD** domain
+
+  The director will access the target system at the specified IP address using these credentials to validate remote access and permissions. No agent is deployed in this method.
+
+  When enabled, authentication is handled automatically by **DataStream** with your organization’s credentials.
+
+The **Check Access** button verifies that the authentication credentials are valid.
+
+Clicking the blue **Create Device** button takes you to the [**Review and Configure**](#review-and-configure) tab.
+
+## Review and Configure
+
+This optional step's view has the following section.
+
+#### Select Log Types
+
+- **Windows Security Events** - Enable/disable log collection. Used to select what type of data will be collected. There are three choices:
+
+  - **All** - Collects all **Windows** security and **AppLocker** event. The most comprehensive option.
+  - **Common** - Collects the standard event set for audit purposes. Sufficient for general security monitoring.
+  - **Minimal** - Collects a small subset of events that may reveal potential threats.
+  - **Custom** - The user specifies their own filters using XML-based filter definitions.

@@ -10,7 +10,7 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
     async loadContent() {
       const rootDir = context.siteDir;
       const docsDir = path.join(rootDir, 'docs');
-      const imagesPath = path.join(rootDir, 'src', 'components', 'CustomFeatures', 'Image', 'images.json');
+      const imagesPath = path.join(rootDir, 'images.json');
 
       // Read images.json
       let images;
@@ -25,7 +25,9 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
       const pathErrors: string[] = [];
       for (const [id, imagePath] of Object.entries(images)) {
         // Convert image path to file system path (images are in static/ directory)
-        const fullPath = path.join(rootDir, 'static', imagePath as string);
+        // Strip leading "/" so path.join doesn't drop the preceding segments
+        const relPath = (imagePath as string).replace(/^\//, '');
+        const fullPath = path.join(rootDir, 'static', relPath);
         
         try {
           await fs.promises.access(fullPath);

@@ -1,235 +1,71 @@
 ---
 sidebar_label: Overview
+pagination_prev: null
 ---
 
 # Content Hub: Overview
 
-:::info
-**Content Hub** is a centralized platform within **Microsoft Sentinel** that allows teams to discover, deploy, and manage out-of-the-box (OOTB) content and solutions to enhance their operations.
-:::
+The **Content Hub** page is organized into distinct upper, middle, and lower sections with clear visual divisions.
 
-The **Content Hub** is **DataStream**'s centralized repository for pre-built data processing templates and integrations. It provides ready-to-use pipeline templates that help you quickly set up data collection, processing, and monitoring for various platforms and services.
+On the left, there is a sidebar where you can filter the content based on **Device type**, **Target**, and **Device vendor**.
 
-This is the working area where you manage your **Content Hub**-related assets. The interface is organized into several distinct sections to help you efficiently browse, filter, and deploy templates.
+These categories can be used to filter the content you see in the viewing area.
 
-The upper section contains navigation controls and filtering options, while the main content area displays preconfigured solutions with specific features that **VirtualMetric** offers.
+## Filtering Behavior
 
-Browse and discover a wide range of templates, ready to use - allowing users to rapidly deploy proven data pipeline configurations without starting from scratch.
+**Device type** is single select, **Target** and **Device vendor** are multi-select.
 
-The content display area presents available templates as detailed information cards showing:
+When you select a filter:
 
-- **Template Names**: Clear identification of each available solution
-- **Vendor Information**: Source organization or technology provider
-- **Template Categories**: Classification by function (Security, Network, Microsoft, etc.)
-- **Installation Status**: Indicators showing which templates are already deployed
+- The selected item becomes highlighted with visual feedback
+- Count indicators show how many templates match each filter option
+- The main viewing area updates to show only matching templates
+- Selected filters remain visible with clear selection states
 
-## Content Organization Views
+To clear a device type filter, click the `x` next to the selected item.
 
-The Content Hub provides multiple ways to view and organize available templates:
+For multi-select filters (**Target** and **Device vendor**), uncheck items to remove them from the filter.
 
-### Accessed Content Tabs
+## Search and Display
 
-The Content Hub interface includes multiple tabs for organizing content:
+At the top of the page, there is a **search field** where you can search for templates by name.
 
-The first tab displays recently accessed or featured content templates, showing the most commonly used solutions for quick access to popular configurations.
+The main viewing area displays template cards arranged in a grid layout.
 
-The second tab organizes content by specific categories or vendor classifications, making it easy to find templates from particular technology providers.
+Each template card shows the template name, basic information about what it contains, and visual indicators for installation status.
 
-The third tab shows additional content views, including specialized templates and advanced configurations for more complex deployment scenarios.
+## Templates
 
-### Installed Content Management
+The templates displayed on this page are prepared by **VirtualMetric**.
 
-The installed content section provides comprehensive management of deployed templates:
+They contain pipelines designed to receive logs from various device types and vendors, parse those logs to extract data, and transform and enrich the extracted data.
 
-- **Deployed Templates**: Complete list of currently installed pipeline templates
-- **Installation Dates**: When each template was deployed to your environment
-- **Template Status**: Active status and health indicators for installed content
-- **Management Options**: Update, modify, or remove installed templates
+Users cannot directly modify these templates from this view.
 
-## Filtering the Content
+To edit a template, users must first install it.
 
-You can filter the content using the left-hand side panel with several filter categories:
+After installation, the template content appears as a pipeline in **DataStream**. See <Topic id="gui-managing-templates">Managing Templates</Topic> for installation and management steps.
 
-- **Device Types**:
+## Accessing Templates
 
-  Use the **Device Type** drop-down list to select specific device types like **Windows**. When selected, the device type name replaces the drop-down label, and the content area filters to show only solutions for that device type.
+Clicking on a template card takes you to the **Template Details** page.
 
-  To remove a device type filter, click the X button on the right side of the selected device type, which will restore the **Device Type** drop-down list.
+This page contains three tabs that display different aspects of the selected template.
 
-  :::note
-  Clicking on the drop-down lists folds them to make room for the items below them.
-  :::
+The **General Overview** tab shows general information on the left side and device information on the right side.
 
-- **Target Systems**:
+On the right side, you can also see the processors used in the template, with a **See Docs** link for each processor, and a **See all processors** link at the bottom.
 
-  Use the **Target** drop-down list to filter by destination systems. For example, selecting **Elasticsearch** will filter the content to display only solutions that output to Elasticsearch targets.
+The **Pipeline Overview** tab displays the pipeline name on the left sidebar.
 
-  Each target option has a checkbox that can be ticked to apply the filter. Multiple targets can be selected simultaneously to broaden the filter scope.
+If the parent pipeline uses child pipelines, these appear as selectable options in the main area.
 
-- **Device Vendors**:
+The pipelines included in this template are shown, but the pipeline content is read-only and cannot be edited.
 
-  The **Device vendor** drop-down list allows filtering by technology vendors. Selecting **Fortinet**, for instance, will show only solutions designed for Fortinet devices and services.
+The **Log Transformation Overview** tab shows a list of selectable examples on the left sidebar under **Examples**.
 
-  Like target filters, vendor filters use checkboxes and support multiple selections for comprehensive filtering.
+In the main area, there is a **Raw Data** box containing sample data, which is read-only.
 
-## Accessing the Content
+Below that is the **Log Transformed** section showing the output of the pipeline from the sample data, which is also read-only.
 
-In the main viewing area, content access panes display prominent features of each template. Each solution pane shows key integration capabilities, such as **Microsoft Sentinel** compatibility, along with vendor information and template categories.
-
-To access detailed information about any template, simply click on its content pane. This will navigate you to the comprehensive **Details** view for that specific solution.
-
-### Detailed Content View
-
-The detailed view provides comprehensive information about the selected template, organized into two main sections:
-
-- **Left Panel**: Contains a comprehensive description of what the pipeline does, what inputs it can handle, what outputs are to be expected, and implementation requirements. This section serves as your primary reference for understanding the template's functionality.
-
-- **Right Panel**: Displays a summary of the pipeline's technical details including device type and target system, device vendor information, and a list of processors used in the pipeline with links to their respective documentation.
-
-### Enhanced Content Presentation
-
-The full page view provides complete details about the selected template including:
-
-- **Implementation Guide**: Step-by-step instructions for deployment and configuration
-- **Configuration Requirements**: Prerequisites and system requirements needed before installation
-- **Integration Details**: How the template connects with existing infrastructure components
-- **Documentation Links**: Access to related configuration guides and best practices
-
-To see the complete list of processors used by the pipeline, click the **See all processors** drop-down list button, which will expand to show all processing components.
-
-:::info Installing the Solution
-To install the pipeline solution, click the **Install this pipeline template** button located in the top right corner. Once the solution is successfully installed, you will see a confirmation summary displaying the installation status and next steps.
-:::
-
-### Dependency Management
-
-When installing content that requires additional components, the system will present a dependency modal dialog. This modal lists all required dependencies and allows you to review what will be installed alongside your selected template.
-
-### Installation Restrictions
-
-The system includes built-in protection against duplicate installations. When you attempt to install content that has already been deployed to your environment, you will encounter restrictions designed to maintain system integrity.
-
-If you try to install a template that is already present, the system will display a notification indicating that the content is already installed and preventing the duplicate installation attempt.
-
-This protection mechanism ensures:
-
-- **Content Integrity**: Prevents conflicts from duplicate installations
-- **System Stability**: Maintains consistent pipeline configurations
-- **Resource Efficiency**: Avoids redundant content storage
-
----
-
-## Additional Resources
-
-At the bottom of the Content Hub interface, you'll find the **Can't find what you're looking for?** section, which provides additional options for users who need templates not currently available in the hub. This section includes a link to comprehensive pipeline documentation and a button to initiate creating a custom pipeline from scratch.
-
----
-
-## Navigation and Interface
-
-### Left Sidebar
-
-The sidebar provides organized browsing options:
-
-**By Category:**
-
-- **All Templates** - View the complete template library
-- **Featured (2)** - Highlighted and recommended templates
-- **Microsoft (13)** - Microsoft ecosystem integrations
-- **Network (8)** - Network monitoring and management templates
-- **Security (6)** - Security-focused data collection templates
-- **VMware (4)** - VMware virtualization platform templates
-- **Web Application Firewall (1)** - WAF monitoring templates
-- **Storage (7)** - Storage system monitoring templates
-
-**By Technology:**
-
-- **Elasticsearch (4)**
-- **Grafana (9)** 
-- **InfluxDB (1)**
-- **Kafka (1)**
-- **PowerBI (3)**
-- **Splunk (3)**
-
-### Search Functionality
-
-- **Search Templates**: Located at the top of the interface for quick template discovery
-- **Filtering**: Use the sidebar categories to narrow down results by technology or use case
-
-## Available Templates
-
-The Content Hub features templates for major enterprise platforms and services:
-
-### Microsoft Ecosystem
-
-- **Azure ZTA Pack for Microsoft Sentinel** - Zero Trust Architecture monitoring
-- **Microsoft Windows Event Log Pack** - Comprehensive Windows event collection
-- **WindowsOnPremise Pack** - On-premises Windows monitoring
-- **Microsoft Windows Security Event Pack** - Security-focused Windows monitoring
-- **Microsoft Sentinel Insider Threat Pack** - Insider threat detection
-- **Forcepoint Firewall Pack** - Forcepoint security integration
-- **Palo Alto Networks Policy Pack** - Palo Alto firewall monitoring
-
-### Network Monitoring
-
-- **Palo Alto Networks** - Firewall and security monitoring
-- **Cisco** - Network device monitoring and management
-- **Arista** - Network switch monitoring
-- **Various networking vendors** - Comprehensive network infrastructure coverage
-
-### Security Platforms
-
-- **Forcepoint** - Web security and firewall monitoring
-- **Palo Alto Networks** - Next-generation firewall integration
-- **Microsoft Sentinel** - Cloud-native SIEM integration
-- **Various security tools** - Endpoint protection and threat detection
-
-### Virtualization
-
-- **VMware** - vSphere and virtual infrastructure monitoring
-- **Microsoft Hyper-V** - Windows virtualization platform
-- **Various hypervisors** - Multi-platform virtualization support
-
-## Template Features
-
-Each template includes:
-
-- **Pre-configured Data Sources** - Ready-to-use data collection configurations
-- **Processing Pipelines** - Established data transformation and enrichment rules
-- **Output Integrations** - Connections to popular analytics and monitoring platforms
-- **Documentation** - Setup guides and configuration instructions
-- **Best Practices** - Industry-standard monitoring and alerting configurations
-
-## Getting Started
-
-### Finding Templates
-
-1. **Browse by Category** - Use the left sidebar to explore templates by technology or use case
-2. **Search** - Use the search bar to find specific vendor or technology templates
-3. **Featured Section** - Check featured templates for recommended starting points
-
-### Using Templates
-
-1. **Select a Template** - Click on any template card to view details
-2. **Review Configuration** - Examine the template's data sources and outputs
-3. **Deploy** - Follow the template's setup instructions to implement in your environment
-4. **Customize** - Modify the template to match your specific requirements
-
-### Need Help?
-
-If you can't find what you're looking for, use the **"Can't find what you are looking for?"** section at the bottom of the page to:
-
-- **Create new pipeline** - Build a custom solution from scratch
-- **Request templates** - Submit requests for additional integrations
-
-## Template Categories Explained
-
-**Microsoft (13 templates)**: Comprehensive coverage of Microsoft technologies including Windows, Azure, and Microsoft Sentinel for security monitoring.
-
-**Network (8 templates)**: Network infrastructure monitoring for switches, routers, firewalls, and other network devices from major vendors.
-
-**Security (6 templates)**: Security-focused templates for SIEM integration, threat detection, and compliance monitoring.
-
-**VMware (4 templates)**: Virtualization platform monitoring for performance, capacity, and operational insights.
-
-The Content Hub serves as your starting point for rapid deployment of proven data collection and monitoring solutions across your enterprise infrastructure.
+Users cannot test the pipeline by replacing the data in the **Raw Data** box.

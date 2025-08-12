@@ -52,6 +52,10 @@ const config: Config = {
           routeBasePath: "/",
           lastVersion: "current",
           includeCurrentVersion: true,
+          exclude: [
+            '**/CLAUDE.md',
+            '**/DEFERRED_TASKS.md',
+          ],
           versions: {
             current: {
               label: package_json.version,
