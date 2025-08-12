@@ -242,6 +242,7 @@ const sidebars: SidebarsConfig = {
             "configuration/devices/overview",
             "configuration/devices/azure-monitor",
             "configuration/devices/estreamer",
+            "configuration/devices/eventhubs",
             "configuration/devices/http",
             "configuration/devices/ipfix",
             "configuration/devices/kafka",
