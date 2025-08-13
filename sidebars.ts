@@ -274,6 +274,7 @@ const sidebars: SidebarsConfig = {
             "configuration/targets/console",
             "configuration/targets/discard",
             "configuration/targets/elasticsearch",
+            "configuration/targets/eventhubs",
             "configuration/targets/file",
             "configuration/targets/microsoft-sentinel",
             "configuration/targets/splunk-hec",
