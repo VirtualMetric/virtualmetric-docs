@@ -240,6 +240,7 @@ const sidebars: SidebarsConfig = {
           label: "Devices",
           items: [
             "configuration/devices/overview",
+            "configuration/devices/azure-blob-storage",
             "configuration/devices/azure-monitor",
             "configuration/devices/estreamer",
             "configuration/devices/eventhubs",
