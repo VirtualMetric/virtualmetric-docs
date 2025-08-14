@@ -15,7 +15,7 @@ Creates a target that writes log messages to _Azure Blob Storage_ with support f
   pipelines: <pipeline[]>
   status: <boolean>
   properties:
-    account: <string>
+    storage_account: <string>
     tenant_id: <string>
     client_id: <string>
     client_secret: <string>
@@ -53,13 +53,13 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`account`|Y||Azure storage account name|
+|`storage_account`|Y||Azure storage account name|
 |`tenant_id`|N*|-|Azure tenant ID (required unless using managed identity)|
 |`client_id`|N*|-|Azure client ID (required unless using managed identity)|
 |`client_secret`|N*|-|Azure client secret (required unless using managed identity)|
 |`container`|N|`"vmetric"`|Blob container name|
 
-\* = Conditionally required (see authentication methods above)
+\* = Conditionally required (see notes in the Azure section above)
 
 ### Connection
 
@@ -161,7 +161,7 @@ targets:
   - name: basic_blob
     type: azblob
     properties:
-      account: "mystorageaccount"
+      storage_account: "mystorageaccount"
       tenant_id: "00000000-0000-0000-0000-000000000000"
       client_id: "00000000-0000-0000-0000-000000000000"
       client_secret: "your-client-secret"
@@ -176,7 +176,7 @@ targets:
     - name: parquet_blob
       type: azblob
       properties:
-        account: "mystorageaccount"
+        storage_account: "mystorageaccount"
         tenant_id: "00000000-0000-0000-0000-000000000000"
         client_id: "00000000-0000-0000-0000-000000000000"
         client_secret: "your-client-secret"
@@ -198,7 +198,7 @@ targets:
       pipelines:
         - checkpoint
       properties:
-        account: "mystorageaccount"
+        storage_account: "mystorageaccount"
         tenant_id: "00000000-0000-0000-0000-000000000000"
         client_id: "00000000-0000-0000-0000-000000000000"
         client_secret: "your-client-secret"
@@ -217,7 +217,7 @@ targets:
     - name: debug_blob
       type: azblob
       properties:
-        account: "mystorageaccount"
+        storage_account: "mystorageaccount"
         tenant_id: "00000000-0000-0000-0000-000000000000"
         client_id: "00000000-0000-0000-0000-000000000000"
         client_secret: "your-client-secret"
