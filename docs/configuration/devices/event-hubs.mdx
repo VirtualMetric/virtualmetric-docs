@@ -53,7 +53,7 @@ The following fields are used to define the device:
 
 ### Connection
 
-EventHubs supports two authentication methods:
+Event Hubs supports two authentication methods:
 
 **Method 1: Connection String Authentication**
 |Field|Required|Default|Description|
@@ -86,6 +86,8 @@ EventHubs requires checkpoint storage. Choose one method:
 |`container_connection_string`|Y*||Azure Storage connection string|
 |`container_name`|Y*||Blob container name for checkpoints|
 
+\* = Conditionally required (see authentication methods above)
+
 **Method 2: Storage Account URL**
 |Field|Required|Default|Description|
 |---|---|---|---|
@@ -96,8 +98,10 @@ EventHubs requires checkpoint storage. Choose one method:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`tls.status`|N|`false`|Enable TLS encryption|
-|`tls.cert_name`|Y||TLS certificate file path (required if TLS enabled)|
-|`tls.key_name`|Y||TLS private key file path (required if TLS enabled)|
+|`tls.cert_name`|N*||TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|N*||TLS private key file path (required if TLS enabled)|
+
+\* = Conditionally required (only when `tls.status: true`)
 
 :::note
 TLS certificate and key files must be placed in the service root directory.

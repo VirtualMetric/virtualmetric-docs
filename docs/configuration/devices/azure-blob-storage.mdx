@@ -10,16 +10,21 @@ Azure Blob Storage device reads and processes files from Azure storage container
 
 ## Schema
 
-```yaml {2-4}
-- name: <string>
+```yaml {1,2,4}
+- id: <numeric>
+  name: <string>
+  description: <string>
   type: azblob
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
   properties:
     connection_string: <string>
     container_name: <string>
     tenant_id: <string>
     client_id: <string>
     client_secret: <string>
-    storage_account: <string>
+    account: <string>
     path_prefix: <string>
     file_format: <string>
     batch_size: <number>
@@ -32,23 +37,32 @@ Azure Blob Storage device reads and processes files from Azure storage container
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
+|`id`|numeric|Y|-|Unique numeric identifier|
+|`name`|string|Y|-|Device name|
+|`description`|string|N|-|Optional description of the device's purpose|
+|`type`|string|Y|-|Device type identifier (must be `azblob`)|
+|`tags`|string[]|N|-|Array of labels for categorization|
+|`pipelines`|pipeline[]|N|-|Array of preprocessing pipeline references|
+|`status`|boolean|N|true|Boolean flag to enable/disable the device|
 |`connection_string`|string|Y*|-|Azure storage account connection string for authentication|
 |`container_name`|string|Y|-|Name of the Azure Blob Storage container to read from|
 |`tenant_id`|string|Y*|-|Azure tenant ID for service principal authentication|
 |`client_id`|string|Y*|-|Azure client ID for service principal authentication|
 |`client_secret`|string|Y*|-|Azure client secret for service principal authentication|
-|`storage_account`|string|Y*|-|Azure storage account name for service principal authentication|
-|`path_prefix`|string|-|""|Path prefix filter to limit which files are processed|
-|`file_format`|string|-|json|File format to expect: `json`, `jsonl`, or `parquet`|
-|`batch_size`|number|-|1000|Number of records to process in each batch|
-|`poll_interval`|number|-|60|Interval in seconds between container polling cycles|
-|`delete_after_processing`|boolean|-|false|Whether to delete files after successful processing|
-|`max_concurrent_files`|number|-|5|Maximum number of files to process concurrently|
+|`account`|string|Y*|-|Azure storage account name for service principal authentication|
+|`path_prefix`|string|N|""|Path prefix filter to limit which files are processed|
+|`file_format`|string|N|json|File format to expect: `json`, `jsonl`, or `parquet`|
+|`batch_size`|number|N|1000|Number of records to process in each batch|
+|`poll_interval`|number|N|60|Interval in seconds between container polling cycles|
+|`delete_after_processing`|boolean|N|false|Whether to delete files after successful processing|
+|`max_concurrent_files`|number|N|5|Maximum number of files to process concurrently|
+
+\* = Conditionally required (see authentication methods below)
 
 :::note Authentication Methods
 Choose either connection string OR service principal authentication:
 - **Connection String**: Requires `connection_string` and `container_name`
-- **Service Principal**: Requires `tenant_id`, `client_id`, `client_secret`, `storage_account`, and `container_name`
+- **Service Principal**: Requires `tenant_id`, `client_id`, `client_secret`, `account`, and `container_name`
 :::
 
 :::caution Secrets management
@@ -77,7 +91,8 @@ The Azure Blob Storage device operates as a pull-type data source that periodica
   </CommentCol>
   <CodeCol>
     ```yaml
-    - name: blob-json-processor
+    - id: 1
+      name: blob-json-processor
       type: azblob
       properties:
         connection_string: "DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=key123;EndpointSuffix=core.windows.net"
@@ -110,13 +125,14 @@ The Azure Blob Storage device operates as a pull-type data source that periodica
   </CommentCol>
   <CodeCol>
     ```yaml
-    - name: enterprise-blob-reader
+    - id: 2
+      name: enterprise-blob-reader
       type: azblob
       properties:
         tenant_id: "12345678-1234-1234-1234-123456789abc"
         client_id: "87654321-4321-4321-4321-cba987654321"
         client_secret: "your-client-secret"
-        storage_account: "enterprisestorage"
+        account: "enterprisestorage"
         container_name: "security-logs"
         file_format: "jsonl"
         path_prefix: "prod/"
@@ -145,7 +161,8 @@ The Azure Blob Storage device operates as a pull-type data source that periodica
   </CommentCol>
   <CodeCol>
     ```yaml
-    - name: parquet-bulk-processor
+    - id: 3
+      name: parquet-bulk-processor
       type: azblob
       properties:
         connection_string: "DefaultEndpointsProtocol=https;AccountName=datawarehouse;AccountKey=key456"
@@ -183,15 +200,19 @@ The Azure Blob Storage device operates as a pull-type data source that periodica
   </CommentCol>
   <CodeCol>
     ```yaml
-    - name: blob-with-pipeline
+    - id: 4
+      name: blob-with-pipeline
       type: azblob
+      tags:
+        - "azure_storage"
+        - "raw_data"
+      pipelines:
+        - timestamp-normalization
+        - field-enrichment
       properties:
         connection_string: "DefaultEndpointsProtocol=https;AccountName=rawdata;AccountKey=key789"
         container_name: "raw-logs"
         file_format: "json"
-      pipelines:
-        - timestamp-normalization
-        - field-enrichment
     ```
   </CodeCol>
   <CommentCol>
@@ -221,7 +242,8 @@ The Azure Blob Storage device operates as a pull-type data source that periodica
   </CommentCol>
   <CodeCol>
     ```yaml
-    - name: organized-blob-reader
+    - id: 5
+      name: organized-blob-reader
       type: azblob
       properties:
         connection_string: "DefaultEndpointsProtocol=https;AccountName=organized;AccountKey=keyABC"
@@ -259,7 +281,8 @@ The Azure Blob Storage device operates as a pull-type data source that periodica
   </CommentCol>
   <CodeCol>
     ```yaml
-    - name: resilient-blob-reader
+    - id: 6
+      name: resilient-blob-reader
       type: azblob
       properties:
         connection_string: "DefaultEndpointsProtocol=https;AccountName=resilient;AccountKey=keyXYZ"

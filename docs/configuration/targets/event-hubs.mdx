@@ -51,12 +51,14 @@ The following fields are used to define the target:
 EventHubs target supports two authentication methods:
 
 **Method 1: Connection String Authentication**
+
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`client_connection_string`|Y*||Event Hubs connection string (required if not using method 2)|
 |`event_hub`|Y||Event hub name to send messages to|
 
 **Method 2: Service Principal Authentication**
+
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`tenant_id`|Y*||Azure tenant ID (required if not using connection string)|
@@ -64,6 +66,8 @@ EventHubs target supports two authentication methods:
 |`client_secret`|Y*||Azure service principal client secret|
 |`namespace`|Y*||Event Hubs namespace (required if not using connection string)|
 |`event_hub`|Y||Event hub name to send messages to|
+
+\* = Conditionally required (see authentication methods above)
 
 ### Message Configuration
 
@@ -87,8 +91,10 @@ EventHubs target supports two authentication methods:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`tls.status`|N|`false`|Enable TLS encryption|
-|`tls.cert_name`|Y||TLS certificate file path (required if TLS enabled)|
-|`tls.key_name`|Y||TLS private key file path (required if TLS enabled)|
+|`tls.cert_name`|N*||TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|N*||TLS private key file path (required if TLS enabled)|
+
+\* = Conditionally required (only when `tls.status: true`)
 
 :::note
 TLS certificate and key files must be placed in the service root directory.
