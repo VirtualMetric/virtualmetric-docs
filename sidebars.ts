@@ -171,22 +171,8 @@ const sidebars: SidebarsConfig = {
           label: "Routes",
           items: [
             "gui/routes/overview",
-            {
-              type: "category",
-              label: "Quick Routes",
-              items: [
-                "gui/routes/quick-routes/creating-quick-routes",
-                "gui/routes/quick-routes/managing-quick-routes",
-              ]
-            },
-            {
-              type: "category",
-              label: "Advanced Routes",
-              items: [
-                "gui/routes/advanced-routes/creating-advanced-routes",
-                "gui/routes/advanced-routes/managing-advanced-routes",
-              ]
-            }
+            "gui/routes/managing-quick-routes",
+            "gui/routes/managing-advanced-routes",
           ]
         },
         {
