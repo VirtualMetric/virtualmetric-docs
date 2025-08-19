@@ -47,28 +47,45 @@ We recommend that you keep all **VirtualMetric** executables in the same directo
 	</TabItem>
 </Tabs>
 
-Throughout the documentation, we will refer to this folder as `<vm_root>`. Once you have created your installation folder, you can deploy the applications.
+Throughout the documentation, we will refer to this folder as `<vm_root>`. With the new architecture, **Director** and **Agent** services have separate installation structures:
+
+- `<vm_root>/Director/` - Director installation with full package structure
+- `<vm_root>/Agent/` - Agent installation with minimal structure
+
+Once you have created your installation folder, you can deploy the applications.
 
 ## Downloads
 
 - <Topic id="single-node-director">Download and install **Director**</Topic>.
 
-	If you chose to deploy manually, make sure to create the following folders under `<vm_root>`:
+	If you chose to deploy manually, make sure to create the following folder structures for the service you're installing:
 
 	<Tabs>
 		<TabItem value="windows" label="Windows" default>
 		```PowerShell
-		New-Item -Path "<vm_root>\config\devices","<vm_root>\config\targets","<vm_root>\config\routes" -ItemType Directory -Force
+		# For Director installation
+		New-Item -Path "<vm_root>\Director\config\devices","<vm_root>\Director\config\targets","<vm_root>\Director\config\routes" -ItemType Directory -Force
+
+		# For Agent installation  
+		New-Item -Path "<vm_root>\Agent\config" -ItemType Directory -Force
 		```
 		</TabItem>
 		<TabItem value="linux" label="Linux">
 		```bash
-		mkdir -p <vm_root>/config/{devices,targets,routes}
+		# For Director installation
+		mkdir -p <vm_root>/Director/config/{devices,targets,routes}
+
+		# For Agent installation
+		mkdir -p <vm_root>/Agent/config
 		```
 		</TabItem>
 		<TabItem value="macos" label="macOS">
 		```bash
-		mkdir -p <vm_root>/config/{devices,targets,routes}
+		# For Director installation
+		mkdir -p <vm_root>/Director/config/{devices,targets,routes}
+
+		# For Agent installation
+		mkdir -p <vm_root>/Agent/config
 		```
 		</TabItem>
 	</Tabs>
@@ -78,24 +95,24 @@ Throughout the documentation, we will refer to this folder as `<vm_root>`. Once 
 - <Topic id="single-node-agent">Download and install **Agent**</Topic>.
 
 :::info
-To access the executables from any directory, make sure to add `<vm_root>` to your `$PATH` environment variable.
+To access the executables from any directory, make sure to add both Director and Agent paths to your `$PATH` environment variable.
 
 To add only for the current session:
 
 <Tabs>
 	<TabItem value="windows" label="Windows" default>
 	```PowerShell
-	$Env:PATH += ";<vm_root>"
+	$Env:PATH += ";<vm_root>\Director;<vm_root>\Agent"
 	```
 	</TabItem>
 	<TabItem value="linux" label="Linux">
 	```bash
-	export PATH=$PATH:<vm_root>
+	export PATH=$PATH:<vm_root>/Director:<vm_root>/Agent
 	```
 	</TabItem>
 	<TabItem value="macos" label="macOS">
 	```bash
-	export PATH=$PATH:<vm_root>
+	export PATH=$PATH:<vm_root>/Director:<vm_root>/Agent
 	```
 	</TabItem>
 </Tabs>
@@ -108,7 +125,7 @@ To add for all sessions:
 		- Go to **System > About**, scroll down to click the link **Advanced system settings**.
 		- Click the button **Environment Variables** at the bottom of the dialog box.
 		- On the lower pane labelled **System variables**, click the variable **Path**.
-		- Go to the bottom of the list, and add the full path of `<vm_root>`.
+		- Go to the bottom of the list, and add both paths: `<vm_root>\Director` and `<vm_root>\Agent`.
 		- Click **OK** to close the box and apply the updated settings.
 	</TabItem>
 	<TabItem value="linux" label="Linux">
@@ -119,7 +136,7 @@ To add for all sessions:
 			```
 		- Add the following line at the bottom of the file:
 			```bash
-			export PATH=$PATH:<vm_root>
+			export PATH=$PATH:<vm_root>/Director:<vm_root>/Agent
 			```
 		- Save and close the file.
 	</TabItem>
@@ -132,7 +149,7 @@ To add for all sessions:
 			```
 		- Add the following line at the bottom of the file:
 			```bash
-			export PATH=$PATH:<vm_root>
+			export PATH=$PATH:<vm_root>/Director:<vm_root>/Agent
 			```
 		- Save and close the file.
 	</TabItem>

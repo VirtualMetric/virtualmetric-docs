@@ -40,13 +40,12 @@ const sidebars: SidebarsConfig = {
           collapsed: false,
           items: [
             "getting-started/examples/user-notes",
-            "getting-started/examples/example-ingesting-data",
-            "getting-started/examples/example-secure-ingestion",
-            "getting-started/examples/example-forwarding-data",
-            "getting-started/examples/example-reading-json-with-a-pipeline",
-            "getting-started/examples/example-a-syslog-to-json-data-stream",
-            "getting-started/examples/example-centralized-log-collection-with-agent",
-            "getting-started/examples/example-service-management-with-supervisor",
+            "getting-started/examples/ingesting-data",
+            "getting-started/examples/secure-ingestion",
+            "getting-started/examples/forwarding-data",
+            "getting-started/examples/reading-json-with-a-pipeline",
+            "getting-started/examples/a-syslog-to-json-data-stream",
+            "getting-started/examples/log-collection-with-agents",
           ]
         },
       ],
@@ -490,7 +489,7 @@ const sidebars: SidebarsConfig = {
             "appendix/protocols/tftp",
           ],
         },
-        "appendix/agent-names",
+        "appendix/windows-event-ids",
       ],
     },
     "glossary"
