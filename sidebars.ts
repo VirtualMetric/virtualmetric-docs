@@ -45,7 +45,7 @@ const sidebars: SidebarsConfig = {
             "getting-started/examples/forwarding-data",
             "getting-started/examples/reading-json-with-a-pipeline",
             "getting-started/examples/a-syslog-to-json-data-stream",
-            "getting-started/examples/log-collection-with-agent",
+            "getting-started/examples/log-collection-with-agents",
           ]
         },
       ],
@@ -489,7 +489,7 @@ const sidebars: SidebarsConfig = {
             "appendix/protocols/tftp",
           ],
         },
-        "appendix/agent-names",
+        "appendix/windows-event-ids",
       ],
     },
     "glossary"
