@@ -6,13 +6,13 @@ pagination_next: null
 
 ## Synopsis
 
-Learn how to deploy **Agent** endpoints for collecting Windows Event logs from remote computers and sending them to a centralized **Director** for processing. This example demonstrates basic Agent-Director coordination using websocket communication.
+Learn how to deploy **Agent** endpoints for collecting _Windows Event_ logs from remote computers and sending them to a centralized **Director** for processing. This example demonstrates basic Agent-Director coordination using websocket communication.
 
-**What You'll Learn:**
+What You'll Learn:
 
 - Deploy **Agent** on a **Windows** client machine
 - Configure **Director** to receive **Agent** connections
-- Collect Windows Event logs remotely
+- Collect _Windows Event_ logs remotely
 - Verify log collection is working
 
 **Prerequisites:** **Director** running on a server
@@ -21,12 +21,12 @@ Learn how to deploy **Agent** endpoints for collecting Windows Event logs from r
 
 ## Scenario
 
-You have a **Windows** server running **Director** and want to collect Windows Event logs from multiple **Windows** client machines across your network. Rather than installing **Director** on every machine, you deploy lightweight **Agent** endpoints that collect logs locally and send them to the centralized **Director**.
+You have a **Windows** server running **Director** and want to collect _Windows Event_ logs from multiple **Windows** client machines across your network. Rather than installing **Director** on every machine, you deploy lightweight **Agent** endpoints that collect logs locally and send them to the centralized **Director**.
 
 **Architecture:**
 
 - **Director**: Server-side telemetry processor (receives and processes logs)
-- **Agent**: Client-side log collector (collects Windows Events, sends to Director)
+- **Agent**: Client-side log collector (collects _Windows Events_, sends to **Director**)
 - **Communication**: Websocket connection from **Agent** to **Director**
 
 The **Agent** uses a websocket connection because it provides reliable, persistent communication that can handle network interruptions gracefully. When the **Agent** starts, it identifies itself using a device ID, and the **Director** sends back the appropriate configuration for that specific endpoint.
@@ -85,7 +85,7 @@ collector:
 
 This configuration tells the **Agent** where to find your **Director** server (replace `192.168.1.100` with your actual **Director** server IP address). The `device_id` must match exactly what you configured in the **Director**'s device configuration.
 
-The **Agent** will collect Windows Security events, specifically focusing on login-related activities. Event ID `4624` captures successful logins, `4625` captures failed login attempts, and `4648` captures logins using explicit credentials (like "Run as" operations). The **Agent** will check for new events every `5` seconds and send them in batches of up to `100` events at a time for efficiency.
+The **Agent** will collect _Windows Security_ events, specifically focusing on login-related activities. Event ID `4624` captures successful logins, `4625` captures failed login attempts, and `4648` captures logins using explicit credentials (like "Run as" operations). The **Agent** will check for new events every `5` seconds and send them in batches of up to `100` events at a time for efficiency.
 
 :::note
 Replace `192.168.1.100` with the actual IP address of your **Director** server. If you're testing on the same machine, you can use `127.0.0.1`.
@@ -154,13 +154,13 @@ You should see output similar to this in the **Director** logs:
 [INFO] Windows Event collector started for Security channel
 ```
 
-These messages confirm that your **Agent** has successfully connected to the **Director** and the Windows Event collector is running. The websocket connection is established and ready to receive log data.
+These messages confirm that your **Agent** has successfully connected to the **Director** and the _Windows Event_ collector is running. The websocket connection is established and ready to receive log data.
 
 :::warning
 If you don't see these messages, check that:
 - The **Director** is actually running
 - The IP address and port in your **Agent** configuration are correct
-- Windows Firewall isn't blocking the connection
+- **Windows Firewall** isn't blocking the connection
 - The device_id matches in both configurations
 :::
 
@@ -185,7 +185,7 @@ Now let's test the setup by generating some **Windows** login events on the clie
   </TabItem>
 </Tabs>
 
-You should see queue files containing collected _Windows Event logs_. These files have names like `queue.001.vmfl` or similar. The presence of these files means your **Agent** is successfully collecting and sending Windows Events to the **Director**.
+You should see queue files containing collected _Windows Event logs_. These files have names like `queue.001.vmfl` or similar. The presence of these files means your **Agent** is successfully collecting and sending _Windows Events_ to the **Director**.
 
 :::note
 VMFL (_VirtualMetric File Format_) is **DataStream**'s efficient binary format for storing telemetry data. Don't worry if you can't read these files directly - they're processed by the **Director** automatically.
@@ -225,7 +225,7 @@ Events Collected: 47
 Last Collection: 2025-01-19 14:30:15
 ```
 
-This status shows your **Agent** is healthy and working properly. The "Running" service status and "Connected" connection status mean it has an active websocket connection to the **Director**. The "Events Collected" number will increase as the **Agent** finds new Windows Events to send.
+This status shows your **Agent** is healthy and working properly. The "`Running`" service status and "`Connected`" connection status mean it has an active websocket connection to the **Director**. The "Events Collected" number will increase as the **Agent** finds new _Windows Events_ to send.
 
 :::warning
 If the connection status shows "`Disconnected`" or "`Error`", check your network connection and make sure the **Director** is still running.
@@ -285,7 +285,7 @@ You should see general statistics output that includes information about active 
   </TabItem>
 </Tabs>
 
-This confirms the **Director** is receiving data from your **Agent**. The "Active" device status and recent "Last Activity" timestamp indicate everything is working correctly. The "Events Received" count should match (or be close to) the "Events Collected" count from the **Agent** status.
+This confirms the **Director** is receiving data from your **Agent**. The "`Active`" device status and recent "`Last Activity`" timestamp indicate everything is working correctly. The "Events Received" count should match (or be close to) the "Events Collected" count from the **Agent** status.
 
 :::note
 If "`Events Received`" is much lower than "`Events Collected`", there might be a network issue or the **Director** might be busy processing other data.
@@ -312,8 +312,8 @@ Check specific event IDs are being collected by examining a queue file:
   </TabItem>
 </Tabs>
 
-You should see _Windows Event_ entries with Event IDs `4624`, `4625`, and `4648` displayed in a readable format. This confirms that your **Agent** is successfully collecting the specific Windows security events we configured and the **Director** is processing them correctly.
+You should see _Windows Event_ entries with Event IDs `4624`, `4625`, and `4648` displayed in a readable format. This confirms that your **Agent** is successfully collecting the specific **Windows** security events we configured and the **Director** is processing them correctly.
 
 :::tip
-The Event IDs correspond to different types of Windows login activities. If you only see some of these Event IDs, that's normal - it depends on what login activities have occurred on the client machine since you started the **Agent**.
+The Event IDs correspond to different types of **Windows** login activities. If you only see some of these Event IDs, that's normal - it depends on what login activities have occurred on the client machine since you started the **Agent**.
 :::
