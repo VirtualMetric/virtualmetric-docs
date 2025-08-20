@@ -32,7 +32,7 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
         try {
           await fs.promises.access(fullPath);
         } catch (error) {
-          pathErrors.push(`The ${id} in images.json points to ${imagePath} which does not exist!`);
+          pathErrors.push(`The '${id}' ID in 'images.json' points to '${imagePath}' which does not exist!`);
         }
       }
 
@@ -59,23 +59,16 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
         for (const match of matches) {
           const id = match[1];
           if (!validIds.has(id)) {
-            // Check if the id exists in images.json but points to a non-existent file
-            if (images[id]) {
-              const imagePath = images[id];
-              const relPath = imagePath.replace(/^\//, '');
-              const fullPath = path.join(rootDir, 'static', relPath);
-              
-              try {
-                await fs.promises.access(fullPath);
-                // If we reach here, the file exists but the ID validation failed for some other reason
-                errors.push(`The ${id} in ${relativePath} does not exist!`);
-              } catch (error) {
-                // The file the image points to doesn't exist
-                errors.push(`The ${id} in ${relativePath} points to ${imagePath} which does not exist!`);
-              }
-            } else {
-              // The id doesn't exist in images.json at all
-              errors.push(`The ${id} in ${relativePath} does not exist!`);
+            errors.push(`The '${id}' ID in '${relativePath}' does not exist in images.json!`);
+          } else {
+            // Check if the file exists for this image
+            const imagePath = images[id];
+            const relPath = imagePath.replace(/^\//, '');
+            const fullPath = path.join(rootDir, 'static', relPath);
+            try {
+              await fs.promises.access(fullPath);
+            } catch (error) {
+              errors.push(`The '${id}' ID in '${relativePath}' points to '${imagePath}' which does not exist!`);
             }
           }
         }

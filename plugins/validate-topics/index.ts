@@ -31,7 +31,7 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
         try {
           await fs.promises.access(fullPath);
         } catch (error) {
-          pathErrors.push(`The ${id} in topics.json points to ${topicPath} which does not exist!`);
+          pathErrors.push(`The '${id}' ID in 'topics.json' points to '${topicPath}' which does not exist!`);
         }
       }
 
@@ -58,23 +58,16 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
         for (const match of matches) {
           const id = match[1];
           if (!validIds.has(id)) {
-            // Check if the id exists in topics.json but points to a non-existent file
-            if (topics[id]) {
-              const topicPath = topics[id];
-              const cleanPath = topicPath.replace(/^\//, '').replace(/#.*$/, '');
-              const fullPath = path.join(docsDir, `${cleanPath}.mdx`);
-              
-              try {
-                await fs.promises.access(fullPath);
-                // If we reach here, the file exists but the ID validation failed for some other reason
-                errors.push(`The ${id} in ${relativePath} does not exist!`);
-              } catch (error) {
-                // The file the topic points to doesn't exist
-                errors.push(`The ${id} in ${relativePath} points to ${topicPath} which does not exist!`);
-              }
-            } else {
-              // The id doesn't exist in topics.json at all
-              errors.push(`The ${id} in ${relativePath} does not exist!`);
+            errors.push(`The '${id}' ID in '${relativePath}' does not exist in topics.json!`);
+          } else {
+            // Check if the file exists for this topic
+            const topicPath = topics[id];
+            const cleanPath = topicPath.replace(/^\//, '').replace(/#.*$/, '');
+            const fullPath = path.join(docsDir, `${cleanPath}.mdx`);
+            try {
+              await fs.promises.access(fullPath);
+            } catch (error) {
+              errors.push(`The '${id}' ID in '${relativePath}' points to '${topicPath}' which does not exist!`);
             }
           }
         }
