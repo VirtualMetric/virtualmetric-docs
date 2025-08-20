@@ -40,7 +40,7 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
         try {
           await fs.promises.access(fullPath);
         } catch (error) {
-          pathErrors.push(`❌ Include ID '${id}' points to non-existent path '${includePath}' (resolved to '${fullPath}')`);
+          pathErrors.push(`The ${id} in includes.json points to ${includePath} which does not exist!`);
         }
 
         // Validate naming convention: ID should match filename (basename without path)
@@ -65,13 +65,33 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
           continue;
         }
 
+        // Get the relative path for cleaner error messages
+        const relativePath = path.relative(docsDir, file);
+
         // Match Include components: <Include ... id="some-id" ... />
         const matches = [...content.matchAll(/<Include\b[^>]*\bid=["']([\w\-]+)["']/g)];
 
         for (const match of matches) {
           const id = match[1];
           if (!validIds.has(id)) {
-            errors.push(`❌ Include ID '${id}' is invalid in file '${path.relative(rootDir, file)}'`);
+            // Check if the id exists in includes.json but points to a non-existent file
+            if (includes[id]) {
+              const includePath = includes[id];
+              const includesRoot = path.join(rootDir, 'src', 'includes');
+              const fullPath = path.resolve(includesRoot, includePath);
+              
+              try {
+                await fs.promises.access(fullPath);
+                // If we reach here, the file exists but the ID validation failed for some other reason
+                errors.push(`The ${id} in ${relativePath} does not exist!`);
+              } catch (error) {
+                // The file the include points to doesn't exist
+                errors.push(`The ${id} in ${relativePath} points to ${includePath} which does not exist!`);
+              }
+            } else {
+              // The id doesn't exist in includes.json at all
+              errors.push(`The ${id} in ${relativePath} does not exist!`);
+            }
           }
         }
       }

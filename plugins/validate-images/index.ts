@@ -32,7 +32,7 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
         try {
           await fs.promises.access(fullPath);
         } catch (error) {
-          pathErrors.push(`❌ Image ID '${id}' points to non-existent path '${imagePath}' (resolved to '${fullPath}')`);
+          pathErrors.push(`The ${id} in images.json points to ${imagePath} which does not exist!`);
         }
       }
 
@@ -50,13 +50,33 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
           continue;
         }
 
+        // Get the relative path for cleaner error messages
+        const relativePath = path.relative(docsDir, file);
+
         // Naive Image match: <Image id="some-id"
         const matches = [...content.matchAll(/<Image\s+id=["']([\w\-]+)["']/g)];
 
         for (const match of matches) {
           const id = match[1];
           if (!validIds.has(id)) {
-            errors.push(`❌ Invalid Image ID '${id}' in file: ${file}`);
+            // Check if the id exists in images.json but points to a non-existent file
+            if (images[id]) {
+              const imagePath = images[id];
+              const relPath = imagePath.replace(/^\//, '');
+              const fullPath = path.join(rootDir, 'static', relPath);
+              
+              try {
+                await fs.promises.access(fullPath);
+                // If we reach here, the file exists but the ID validation failed for some other reason
+                errors.push(`The ${id} in ${relativePath} does not exist!`);
+              } catch (error) {
+                // The file the image points to doesn't exist
+                errors.push(`The ${id} in ${relativePath} points to ${imagePath} which does not exist!`);
+              }
+            } else {
+              // The id doesn't exist in images.json at all
+              errors.push(`The ${id} in ${relativePath} does not exist!`);
+            }
           }
         }
       }

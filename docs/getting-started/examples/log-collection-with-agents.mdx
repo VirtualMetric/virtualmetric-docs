@@ -2,36 +2,153 @@
 pagination_next: null
 ---
 
-# Example: [TITLE TBD - Agent Configuration Management]
+# Example: Log Collection with Agents
 
-**TODO: Implement the following after working out the details with team meeting**
+## Synopsis
 
-## Basic Plan for Agent Configuration Management Example
+Learn how to deploy **Agent** endpoints for collecting Windows Event logs from remote computers and sending them to a centralized **Director** for processing. This example demonstrates basic Agent-Director coordination using websocket communication.
 
-### Purpose
-Demonstrate **Agent**'s primary function as a configuration management helper that coordinates with **Director** for metadata/pipeline configuration tasks across large networks.
+**What You'll Learn:**
+- Deploy Agent on a Windows client machine
+- Configure Director to receive Agent connections
+- Collect Windows Event logs remotely
+- Verify log collection is working
 
-### Planned Structure
+**Prerequisites:** Director running on a server
+**Time Estimate:** 15 minutes
+**Files Created:** 2 configuration files
 
-#### Scenario
-- **Real-world problem**: Managing DataStream configurations across large networks (hundreds/thousands of machines)
-- **Agent's role**: Configuration coordination with Director (not data transmission)
-- **Value proposition**: Saves manual configuration work across enterprise networks
+## Scenario
 
-#### Setup and Trial (To be detailed)
-- Agent configuration for cluster/manager sync capabilities
-- Director coordination setup 
-- Configuration propagation demonstration
-- Verification of coordination functionality
+You have a Windows server running **Director** and want to collect Windows Event logs from multiple Windows client machines across your network. Rather than installing Director on every machine, you deploy lightweight **Agent** endpoints that collect logs locally and send them to the centralized Director.
 
-#### Monitoring (To be detailed)
-- How to verify Agent-Director coordination is working
-- What to look for in logs
-- Troubleshooting coordination issues
+**Architecture:**
+- **Director**: Server-side telemetry processor (receives and processes logs)
+- **Agent**: Client-side log collector (collects Windows Events, sends to Director)
+- **Communication**: Websocket connection from Agent to Director
 
-### Notes from Behavior Map Analysis
-- Agent is a "configuration management helper"
-- Supports cluster/manager synchronization modes
-- Coordinates with Directors for metadata/pipeline configuration tasks
-- Does NOT send telemetry data to Director for processing
-- Value: Saves manual configuration work across hundreds/thousands of network machines
+## Setup
+
+### Step 1: Configure Director for Agent Connections
+
+Create a device configuration on your Director server to accept Agent connections.
+
+**File:** `Director/config/windows-agent-device.yml`
+
+```yaml
+devices:
+  1001:
+    id: 1001
+    type: "agent"
+    name: "Windows Agent Collector"
+    enabled: true
+    properties:
+      port: 8080
+      device_id: "win-client-001"
+```
+
+### Step 2: Configure Agent on Windows Client
+
+Install Agent on the Windows client machine and configure it to connect to Director.
+
+**File:** `Agent/vmetric.yml`
+
+```yaml
+director:
+  address: "192.168.1.100:8080"  # Your Director server IP
+  device_id: "win-client-001"
+
+windows_events:
+  enabled: true
+  event_ids:
+    - 4624  # Successful logon
+    - 4625  # Failed logon
+    - 4648  # Logon using explicit credentials
+```
+
+### Step 3: Start Services
+
+**On Director server:**
+```bash
+vmetric-director.exe start
+```
+
+**On Windows client:**
+```bash
+vmetric-agent.exe start
+```
+
+## Trial
+
+### Verify Agent Connection
+
+Check Director logs for Agent connection:
+
+```bash
+# On Director server
+tail -f storage/logs/director.log
+```
+
+Expected output:
+```
+Agent win-client-001 connected successfully
+Device 1001 activated for agent collection
+```
+
+### Verify Event Collection
+
+Generate Windows login events on the client machine (login/logout) and check if they appear in Director's processing queue:
+
+```bash
+# On Director server
+ls storage/queue/
+```
+
+You should see queue files containing collected Windows Event logs.
+
+## Monitoring
+
+### Agent Status
+
+Check Agent connection status:
+
+```bash
+# On Windows client
+vmetric-agent.exe status
+```
+
+Expected output:
+```
+Agent Status: Connected
+Director: 192.168.1.100:8080
+Device ID: win-client-001
+Events Collected: 47
+```
+
+### Director Device Status
+
+Verify the device is receiving data:
+
+```bash
+# On Director server
+vmetric-director.exe device status 1001
+```
+
+Expected output:
+```
+Device 1001: Active
+Type: agent
+Events Received: 47
+Last Activity: 2025-01-19 14:30:15
+```
+
+### Event Log Verification
+
+Check specific event IDs are being collected by examining a queue file:
+
+```bash
+# On Director server (example file)
+vmetric-director.exe debug queue storage/queue/queue.eventlog.*.vmfl
+```
+
+You should see Windows Event entries with Event IDs 4624, 4625, and 4648.
