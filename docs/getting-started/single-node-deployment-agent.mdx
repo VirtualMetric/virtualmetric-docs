@@ -21,7 +21,7 @@ To download, install, and test run the **VirtualMetric Agent** binary, follow th
 
 ---
 
-**Agent** is a single binary that requires no dependencies, so you can easily download and place it anywhere on your system. It can be installed on a traditional server, on an on-premises virtual machine, or in the cloud. It can also be deployed as an <Topic id="deployment-azure-app-service">**Azure App**</Topic> for a serverless configuration.
+**Agent** is a single binary that requires no dependencies, so you can easily download and place it anywhere on your system. It can be installed on a traditional server, on an on-premises virtual machine, or in the cloud. It can also be deployed as an <Topic id="deployment-on-azure-app-service">**Azure App Service**</Topic> for a serverless configuration.
 
 ### Installation
 
@@ -56,14 +56,14 @@ If your system has internet access, you can use our automated installation scrip
     To install as a background process:
 
     ```PowerShell
-    Invoke-WebRequrest dl.vget.me | Invoke-Expression
+    Invoke-WebRequest dl.vget.me | Invoke-Expression
     ```
 
     To install as a service:
 
     ```PowerShell
     $p="C:\Program Files\VirtualMetric"
-    Invoke-WebRequrest dl.vget.me | Invoke-Expression
+    Invoke-WebRequest dl.vget.me | Invoke-Expression
     ```
   </TabItem>
   <TabItem value="linux" label="Linux">  
@@ -97,35 +97,6 @@ If your system has internet access, you can use our automated installation scrip
 :::note
 The `dl.vget.me` file contains our official installation script that performs the steps listed below.
 :::
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>  
-    To install as a background process:
-
-    ```PowerShell
-    Invoke-WebRequrest dl.vget.me | Invoke-Expression
-    ```
-
-    To install as a service:
-
-    ```PowerShell
-    $p="C:\Program Files\VirtualMetric"; Invoke-WebRequrest dl.vget.me | Invoke-Expression
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">  
-    To run as a background process:
-
-    ```bash
-    curl -sL dl.vget.me | bash
-    ```
-
-    To install as a service:
-
-    ```bash
-    curl -sL dl.vget.me | p="/opt/virtualmetric" bash
-    ```
-  </TabItem>
-</Tabs>
 
 The script will
 
@@ -162,7 +133,7 @@ Once you have downloaded the binary, open a terminal with admin privileges. Choo
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```PowerShell
-    Copy-Item -Path C:\Users\%USERPROFILE%\Downloads\vmetric-agent.exe -Destination "C:\Program Files\VirtualMetric"
+    Copy-Item -Path %USERPROFILE%\Downloads\vmetric-agent.exe -Destination "C:\Program Files\VirtualMetric"
     Set-Location "C:\Program Files\VirtualMetric"
     ```
   </TabItem>
@@ -179,8 +150,8 @@ Once you have downloaded the binary, open a terminal with admin privileges. Choo
     On **macOS**:
 
     ```bash
-    mkdir /Applications/VirtualMetric
-    cp ./virtualmetric-agent /Applications/VirtualMetric
+    mkdir /Applications/virtualmetric
+    cp ./virtualmetric-agent /Applications/virtualmetric
     cd /Applications/virtualmetric
     ```
   </TabItem>
@@ -205,7 +176,7 @@ As a regular user, you can run **Agent** as a background process:
   </TabItem>
 </Tabs>
 
-If you _do_ have the required (i.e. administrative) privileges, you can install/uninstall **Agent** as a service with the the following command:
+If you _do_ have the required (i.e. administrative) privileges, you can install/uninstall **Agent** as a service with the following command:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
