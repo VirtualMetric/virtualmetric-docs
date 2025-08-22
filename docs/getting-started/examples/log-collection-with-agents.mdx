@@ -15,15 +15,11 @@ What You'll Learn:
 - Collect _Windows Event_ logs remotely
 - Verify log collection is working
 
-**Prerequisites:** **Director** running on a server
-**Time Estimate:** 15 minutes
-**Files Created:** 2 configuration files
-
 ## Scenario
 
 You have a **Windows** server running **Director** and want to collect _Windows Event_ logs from multiple **Windows** client machines across your network. Rather than installing **Director** on every machine, you deploy lightweight **Agent** endpoints that collect logs locally and send them to the centralized **Director**.
 
-**Architecture:**
+Architecture:
 
 - **Director**: Server-side telemetry processor (receives and processes logs)
 - **Agent**: Client-side log collector (collects _Windows Events_, sends to **Director**)
@@ -33,65 +29,53 @@ The **Agent** uses a WebSocket connection because it provides reliable, persiste
 
 ## Setup
 
-### Step 1: Configure Director for Agent Connections
+### Configure the Director for Agent connections
 
-Create a device configuration on your **Director** server to accept **Agent** connections.
+Create a device configuration on your **Director** server that defines what your **Agent** should collect.
 
-```yaml title="<vm_root>/Director/config/Examples/windows-agent.yml"
+```yaml title="<vm_root>/Director/config/windows-log-collector.yml"
 devices:
-  1001:
-    id: 1001
-    type: "agent"
-    name: "Windows Agent Collector"
-    enabled: true
+  - id: 2
+    name: "Windows Server"
+    type: windows
+    status: true
     properties:
-      port: 8080
-      bind: "0.0.0.0"
-      device_id: "win-client-001"
-      tls:
-        enabled: false
+      type: agent
+      address: 192.168.1.15
+      debug:
+        level: 4
+        console:
+          status: true
+    definitions: 
+      - name: windows_security_log_collector_minimal_example
 ```
 
-This configuration tells the **Director** to listen on port `8080` for **Agent** connections. The `bind: "0.0.0.0"` means it will accept connections from any network interface. We're using `device_id: "win-client-001"` to identify this specific client machine. For this example, TLS is disabled to keep things simple, but in production environments you would enable TLS for secure communication.
+This configuration tells the **Director** that there's a **Windows** **Agent** at IP address `192.168.1.15` with device ID `2`. The **Agent** will use the `windows_security_log_collector_minimal_example` definition to collect essential **Windows Security** events. Debug level `4` provides detailed logging to help monitor the collection process.
 
 :::note
-If port `8080` is already in use on your system, change it to another port like `8081` or `9090`. Just make sure to use the same port in both the device and agent configurations.
+Replace `192.168.1.15` with the actual IP address of your **Windows** client machine where the **Agent** will run. The predefined `windows_security_log_collector_minimal_example` collects 30+ essential security events including logons, account changes, and system events.
 :::
 
-### Step 2: Configure Agent on Windows Client
+### Configure the Agent on the Windows client
 
-<Topic id="single-node-deployment-agent">Deploy **Agent**</Topic> on the **Windows** client machine, and configure it to connect to **Director**.
+<Topic id="single-node-deployment-agent">Deploy **Agent**</Topic> on the **Windows** client machine, and create a simple configuration that connects to **Director**.
 
 ```yaml title="<vm_root>/Agent/config/vmetric.yml"
+device:
+    id: 2
 director:
-  host: "192.168.1.100"
-  port: 8080
-  device_id: "win-client-001"
-  tls:
-    enabled: false
-
-collector:
-  windows_events:
-    enabled: true
-    channels:
-      - "Security"
-    event_ids:
-      - 4624  # Successful logon
-      - 4625  # Failed logon
-      - 4648  # Logon using explicit credentials
-    batch_size: 100
-    interval: "5s"
+    address: 192.168.1.100
 ```
 
-This configuration tells the **Agent** where to find your **Director** server (replace `192.168.1.100` with your actual **Director** server IP address). The `device_id` must match exactly what you configured in the **Director**'s device configuration.
+This simple configuration goes in the **Agent**'s `vmetric.yml` file and tells it two things: its device ID (`2`) and where to find the **Director** server (`192.168.1.100`). The **Agent** connects to the **Director** using websocket communication and receives its collection instructions, which are then stored in the `vmetric.vmf` binary file automatically.
 
-The **Agent** will collect _Windows Security_ events, specifically focusing on login-related activities. Event ID `4624` captures successful logins, `4625` captures failed login attempts, and `4648` captures logins using explicit credentials (like "Run as" operations). The **Agent** will check for new events every `5` seconds and send them in batches of up to `100` events at a time for efficiency.
+The **Agent** will automatically start collecting **Windows Security** events according to the `windows_security_log_collector_minimal_example` definition, which includes essential events like successful logons (4624), failed logons (4625), account changes (4720-4740), and system events (1102, 4688, 4719).
 
 :::note
-Replace `192.168.1.100` with the actual IP address of your **Director** server. If you're testing on the same machine, you can use `127.0.0.1`.
+Replace `192.168.1.100` with the actual IP address of your **Director** server. The device ID (`2`) must match exactly what you configured in the **Director**'s device configuration. The **Agent** gets all collection details from the **Director** - no local event configuration needed.
 :::
 
-### Step 3: Start Services
+### Start the services
 
 On **Director**'s machine:
 
@@ -125,7 +109,7 @@ On the client machine:
 
 ## Trial
 
-### Verify Agent Connection
+### Verify the Agent connection
 
 Check **Director** logs for **Agent** connection:
 
@@ -149,22 +133,24 @@ Check **Director** logs for **Agent** connection:
 You should see output similar to this in the **Director** logs:
 
 ```
-[INFO] Agent device win-client-001 connected via websocket
-[INFO] Device 1001 (Windows Agent Collector) activated
+[INFO] Agent device 2 (Windows Server) connected via websocket from 192.168.1.15
+[INFO] Device 2 activated with definitions: windows_security_log_collector_minimal_example
 [INFO] Windows Event collector started for Security channel
+[INFO] Collection started: 30 event IDs configured
 ```
 
-These messages confirm that your **Agent** has successfully connected to the **Director** and the _Windows Event_ collector is running. The websocket connection is established and ready to receive log data.
+These messages confirm that your **Agent** has successfully connected to the **Director** and is receiving configuration. The websocket connection is established and the **Agent** is actively collecting **Windows Security** events using the predefined definition.
 
 :::warning
 If you don't see these messages, check that:
 - The **Director** is actually running
-- The IP address and port in your **Agent** configuration are correct
-- **Windows Firewall** isn't blocking the connection
-- The device_id matches in both configurations
+- The IP address in your **Agent** configuration matches the **Director**'s IP
+- The device ID (`2`) matches in both configurations
+- **Windows Firewall** isn't blocking the websocket connection
+- The **Agent** has permissions to read **Windows Security** logs
 :::
 
-### Verify Event Collection
+### Verify the event collection
 
 Now let's test the setup by generating some **Windows** login events on the client machine. You can simply lock and unlock your screen, or log out and log back in. Then check if these events appear in the **Director**'s processing queue:
 
@@ -185,135 +171,17 @@ Now let's test the setup by generating some **Windows** login events on the clie
   </TabItem>
 </Tabs>
 
-You should see queue files containing collected _Windows Event logs_. These files have names like `queue.001.vmfl` or similar. The presence of these files means your **Agent** is successfully collecting and sending _Windows Events_ to the **Director**.
+You should see queue files containing collected _Windows Event logs_. These files have names like `eventlog.queue.001.vmfl` or similar in the `<vm_root>/Director/storage/queue/eventlog/` directory. The presence of these files means your **Agent** is successfully collecting **Windows Security** events and sending them to the **Director**.
 
 :::note
-VMFL (_VirtualMetric File Format_) is **DataStream**'s efficient binary format for storing telemetry data. Don't worry if you can't read these files directly - they're processed by the **Director** automatically.
+VMFL (_VirtualMetric File Format_) is **DataStream**'s efficient binary format for storing telemetry data. The files are organized by log type - **Windows Events** go to the `eventlog` queue directory. These files are processed by the **Director** automatically.
 :::
 
 ## Monitoring
 
-### Agent Status
+Your **Agent** setup is working correctly if:
 
-Check **Agent** connection status:
+- **Director logs** show Agent connection messages in `<vm_root>/Director/storage/logs/director.log`
+- **Queue files** appear in `<vm_root>/Director/storage/queue/eventlog/` directory
 
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-  On client:
-
-  ```powershell
-  vmetric-agent -info
-  ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-  On client:
-
-  ```bash
-  vmetric-agent -info
-  ```
-  </TabItem>
-</Tabs>
-
-You should see output similar to this:
-```
-Service Status: Running
-Mode: Agent
-Configuration: <vm_root>/Agent/config/vmetric.yml
-Director Connection: 192.168.1.100:8080
-Connection Status: Connected
-Events Collected: 47
-Last Collection: 2025-01-19 14:30:15
-```
-
-This status shows your **Agent** is healthy and working properly. The "`Running`" service status and "`Connected`" connection status mean it has an active websocket connection to the **Director**. The "Events Collected" number will increase as the **Agent** finds new _Windows Events_ to send.
-
-:::warning
-If the connection status shows "`Disconnected`" or "`Error`", check your network connection and make sure the **Director** is still running.
-:::
-
-### Director Device Status
-
-Verify the device is receiving data:
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-  On **Director**'s machine:
-  
-  ```powershell
-  vmetric-director -stats
-  ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-  On **Director**'s machine:
-  
-  ```bash
-  vmetric-director -stats
-  ```
-  </TabItem>
-</Tabs>
-
-You should see general statistics output that includes information about active devices and data processing:
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-    ```powershell
-    === Director Statistics ===
-    Active Devices: 1
-    Total Events Processed: 47
-    Uptime: 2h 15m 30s
-    Last Activity: 2025-01-19 14:30:15
-
-    === Device Statistics ===
-    Device 1001 (Windows Agent Collector): Active
-    Connection Type: agent/websocket
-    Events Received: 47
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```powershell
-    === Director Statistics ===
-    Active Devices: 1
-    Total Events Processed: 47
-    Uptime: 2h 15m 30s
-    Last Activity: 2025-01-19 14:30:15
-
-    === Device Statistics ===
-    Device 1001 (Windows Agent Collector): Active
-    Connection Type: agent/websocket
-    Events Received: 47
-    ```
-  </TabItem>
-</Tabs>
-
-This confirms the **Director** is receiving data from your **Agent**. The "`Active`" device status and recent "`Last Activity`" timestamp indicate everything is working correctly. The "Events Received" count should match (or be close to) the "Events Collected" count from the **Agent** status.
-
-:::note
-If "`Events Received`" is much lower than "`Events Collected`", there might be a network issue or the **Director** might be busy processing other data.
-:::
-
-### Event Log Verification
-
-Check specific event IDs are being collected by examining a queue file:
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-  On **Director**'s machine (example file):
-  
-  ```powershell
-  vmetric-director -mode pipeline -input <vm_root>\Director\storage\queue\eventlog\queue.*.vmfl -visualize
-  ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-  On **Director**'s machine (example file):
-
-  ```bash
-  vmetric-director -mode pipeline -input <vm_root>/Director/storage/queue/eventlog/queue.*.vmfl -visualize
-  ```
-  </TabItem>
-</Tabs>
-
-You should see _Windows Event_ entries with Event IDs `4624`, `4625`, and `4648` displayed in a readable format. This confirms that your **Agent** is successfully collecting the specific **Windows** security events we configured and the **Director** is processing them correctly.
-
-:::tip
-The Event IDs correspond to different types of **Windows** login activities. If you only see some of these Event IDs, that's normal - it depends on what login activities have occurred on the client machine since you started the **Agent**.
-:::
+Generate test events by locking/unlocking your Windows screen, then check for new queue files. If you see new `.vmfl` files appearing, the **Agent** is successfully collecting **Windows Security** events and sending them to the **Director** for processing.

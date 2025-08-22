@@ -90,7 +90,7 @@ We will create a TLS-enabled device to ingest data over TCP securely. We will be
 
 We can now proceed to our scenario.
 
-### Step 1. Prepare certificates
+### Prepare the certificates
 
 First, we have to prepare TLS certificates for the secure connection. The following procedure is platform-specific, so please follow it through:
 
@@ -154,7 +154,7 @@ First, we have to prepare TLS certificates for the secure connection. The follow
   </TabItem>
 </Tabs>
 
-### Step 2. Place certificates
+### Place the certificates
 
 Now we have to convert this  PFX file to the <Topic id="appendix-pem">PEM</Topic> format that **Director** uses. To do that, we first have to copy the `cert.pfx` file to `<vm_root>` and navigate there:
 
@@ -216,7 +216,7 @@ Check your current directory to verify that they are there:
 - The certificate file (`cert.pem`) can be world-readable
 :::
 
-### Step 3. Create secure configuration
+### Create the secure configuration
 
 We will now prepare a secure configuration by creating another file named `from-syslog-tcp.yml` in our working directory:
 
@@ -240,7 +240,7 @@ Note that we have specified the `*.pem` files we have created in the previous st
 
 Also, port `6514` is the one commonly used for _Syslog_ over TLS ([RFC 5425](https://www.rfc-editor.org/rfc/rfc5425)).
 
-### Step 4. Run listener
+### Run the listener
 
 Open a terminal and enter the following in the command line to start **Director**:
 
@@ -281,7 +281,7 @@ After you press <kb-short>Enter</kb-short>, you will see a stream of initializat
 
 Now it is waiting to receive messages from _Syslog_.
 
-### Step 5. Test configuration
+### Test the configuration
 
 Time to test the secure connection configuration. But first we have to make sure that our connection is working.
 
@@ -386,7 +386,13 @@ You can now exit the process on both terminals by pressing <kb-short>Ctrl+C</kb-
 
 ## Monitoring
 
-Check **Director**'s logs to see if there was any errors. If there were no errors, no log file will be created.
+Check that secure ingestion worked by verifying:
+
+- TLS connection established successfully (no connection errors)
+- Encrypted messages appeared in **Director**'s console output
+- No error files in `<vm_root>/Director/storage/logs/`
+
+If you see the test messages displayed and no TLS connection errors, secure data ingestion is working correctly.
 
 ---
 
