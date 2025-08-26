@@ -57,6 +57,43 @@ export function persistDetailsState() {
         summaryElement.removeEventListener('click', handleStateChange);
         summaryElement.addEventListener('click', handleStateChange);
       }
+
+      // Handle Tabs persistence within this Details element
+      persistTabsInDetails(element, key);
+    });
+  };
+
+  const persistTabsInDetails = (detailsElement: Element, detailsKey: string) => {
+    const tabsContainers = detailsElement.querySelectorAll('[role="tablist"], [class*="tabs"]');
+    
+    tabsContainers.forEach((tabsContainer, tabsIndex) => {
+      const tabsKey = `${detailsKey}-tabs-${tabsIndex}`;
+      
+      // Find all tab buttons
+      const tabButtons = tabsContainer.querySelectorAll('[role="tab"], [class*="tabItem"]');
+      
+      // Restore saved tab state
+      const savedTabIndex = sessionStorage.getItem(tabsKey);
+      if (savedTabIndex !== null) {
+        const tabIndex = parseInt(savedTabIndex, 10);
+        if (tabButtons[tabIndex]) {
+          setTimeout(() => {
+            (tabButtons[tabIndex] as HTMLElement).click();
+            console.log(`Restored tab state for ${tabsKey}: tab ${tabIndex}`);
+          }, 100);
+        }
+      }
+      
+      // Set up event listeners for tab changes
+      tabButtons.forEach((tabButton, buttonIndex) => {
+        const handleTabClick = () => {
+          sessionStorage.setItem(tabsKey, String(buttonIndex));
+          console.log(`Saved tab state for ${tabsKey}: tab ${buttonIndex}`);
+        };
+        
+        tabButton.removeEventListener('click', handleTabClick);
+        tabButton.addEventListener('click', handleTabClick);
+      });
     });
   };
 
