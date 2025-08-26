@@ -29,7 +29,7 @@ We assume by now you understand the underlying logic of a pipeline since you hav
 
 For convenience, we will place all our configurations in a single file named `syslog-to-json.yml` which we will again place in our working directory.
 
-### Step 1: Configure the device
+### Configure the device
 
 First, we have to define a device that will receive the log data. We will use the configuration in our <Topic id="examples-ingesting-data">ingesting data</Topic> example since that will adequately serve our needs:
 
@@ -53,7 +53,7 @@ On some operating systems, binding to port `514` may require elevated privileges
 
 Put this device configuration in our file.
 
-### Step 2: Configure the target
+### Configure the target
 
 Next, we will define a target for the _JSON_ file storage:
 
@@ -79,7 +79,7 @@ With this configuration, we are setting up a _JSON_ file target that will store 
 
 Put this target configuration in our file.
 
-### Step 3: Configure the pipeline
+### Configure the pipeline
 
 We are now ready to configure our pipeline:
 
@@ -116,7 +116,7 @@ To avoid raising an exception, we chose to ignore missing fields.
 
 Put this pipeline configuration in our file.
 
-### Step 4: Configure the route
+### Configure the route
 
 Finally, we have to create a route to connect our device to the pipeline and then to our target. Put the following definition in our configuration file:
 
@@ -139,7 +139,7 @@ This configuration will
 
 Put this route configuration in our file.
 
-### Step 5: Run the data stream
+### Run the data stream
 
 Let's put it all together: we have defined a device, a target, and a pipeline, and specified a route that will link the device to the pipeline and the target. At this point we have everything ready.
 
@@ -210,4 +210,10 @@ Now go to the directory we have specified in `location` above, and check to see 
 
 ## Monitoring
 
-Check the logs in the <Topic id="examples-logging-setup">logs directory</Topic>. If there were no errors, it should be blank.
+Check that the complete data stream worked by verifying:
+
+- Output file `syslog-event-data.json` was created
+- File contains JSON entries with transformed syslog data
+- Logs in the <Topic id="examples-logging-setup">logs directory</Topic> show no errors
+
+If the output file exists and contains the expected JSON format, your end-to-end data stream is working correctly.
