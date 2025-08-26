@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { LoadContext, Plugin } from '@docusaurus/types';
-import glob from 'fast-glob';
+import { validationConfig, reportValidationErrors, reportValidationSuccess } from '../shared/validation-config';
 
 export default function validateIncludesPlugin(context: LoadContext): Plugin<void> {
   return {
@@ -9,7 +9,6 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
 
     async loadContent() {
       const rootDir = context.siteDir;
-      const docsDir = path.join(rootDir, 'docs');
       const includesPath = path.join(rootDir, 'includes.json');
 
       // Read includes.json
@@ -51,8 +50,8 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
         }
       }
 
-      // Find all MDX files in the docs directory
-      const mdxFiles = await glob('**/*.mdx', { cwd: docsDir, absolute: true });
+      // Get all MDX files using shared configuration
+      const mdxFiles = await validationConfig.getAllMdxFiles(rootDir);
 
       const errors: string[] = [];
 
@@ -61,12 +60,12 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
         try {
           content = await fs.promises.readFile(file, 'utf-8');
         } catch (error) {
-          console.warn(`Warning: Could not read file ${file}: ${error.message}`);
+          console.warn(`Warning: Could not read file ${file}: ${error instanceof Error ? error.message : String(error)}`);
           continue;
         }
 
-        // Get the relative path for cleaner error messages
-        const relativePath = path.relative(docsDir, file);
+        // Get the relative path using shared configuration
+        const relativePath = validationConfig.getRelativePath(rootDir, file);
 
         // Match Include components: <Include ... id="some-id" ... />
         const matches = [...content.matchAll(/<Include\b[^>]*\bid=["']([\w\-]+)["']/g)];
@@ -78,7 +77,6 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
           } else {
             // Check if the file exists for this include
             const includePath = includes[id];
-            const includesRoot = path.join(rootDir, 'src', 'includes');
             const fullPath = path.resolve(includesRoot, includePath);
             try {
               await fs.promises.access(fullPath);
@@ -93,12 +91,13 @@ export default function validateIncludesPlugin(context: LoadContext): Plugin<voi
       const allErrors = [...pathErrors, ...namingErrors, ...errors];
 
       if (allErrors.length > 0) {
-        console.error('\nInclude Validation Errors:\n');
-        allErrors.forEach(err => console.error(err));
-        console.error('\nFix invalid Include IDs, update includes.json, add missing include files, or fix naming mismatches.\n');
-        throw new Error('Include validation failed. Fix invalid Include IDs, update includes.json, add missing include files, or fix naming mismatches.');
+        reportValidationErrors(
+          allErrors,
+          'Include',
+          'Fix invalid Include IDs, update includes.json, add missing include files, or fix naming mismatches.'
+        );
       } else {
-        console.log('✅ All Include IDs, paths, and filenames are valid.');
+        reportValidationSuccess('Include', 'filenames');
       }
     },
   };
