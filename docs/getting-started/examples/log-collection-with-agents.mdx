@@ -41,20 +41,23 @@ devices:
     status: true
     properties:
       type: agent
-      address: 192.168.1.15
       debug:
         level: 4
         console:
           status: true
     definitions: 
-      - name: windows_security_log_collector_minimal_example
+      - name: windows_main_log_collector
+      - name: windows_security_log_collector
 ```
 
-This configuration tells the **Director** that there's a **Windows** **Agent** at IP address `192.168.1.15` with device ID `2`. The **Agent** will use the `windows_security_log_collector_minimal_example` definition to collect essential **Windows Security** events. Debug level `4` provides detailed logging to help monitor the collection process.
+This configuration tells the **Agent** `windows_main_log_collector` to enable event log collection and with `windows_security_log_collector` definition to collect all following logs events. 
 
-:::note
-Replace `192.168.1.15` with the actual IP address of your **Windows** client machine where the **Agent** will run. The predefined `windows_security_log_collector_minimal_example` collects 30+ essential security events including logons, account changes, and system events.
-:::
+"Microsoft-Windows-AppLocker/EXE and DLL"
+"Microsoft-Windows-AppLocker/MSI and Script"
+"Security"
+
+Debug level `4` provides detailed logging to help monitor the collection process.
+ 
 
 ### Configure the Agent on the Windows client
 
@@ -67,27 +70,27 @@ director:
     address: 192.168.1.100
 ```
 
-This simple configuration goes in the **Agent**'s `vmetric.yml` file and tells it two things: its device ID (`2`) and where to find the **Director** server (`192.168.1.100`). The **Agent** connects to the **Director** using websocket communication and receives its collection instructions, which are then stored in the `vmetric.vmf` binary file automatically.
+This simple configuration goes in the **Agent**'s `vmetric.yml` file and tells it two things: its device ID (`2`) and where to find the **Director** server (`192.168.1.100`). The **Agent** connects to the **Director** using websocket communication and receives its collection instructions, which are then stored in a vmf file with `vmetric.vmf`  binary file name in config folder automatically.
 
-The **Agent** will automatically start collecting **Windows Security** events according to the `windows_security_log_collector_minimal_example` definition, which includes essential events like successful logons (4624), failed logons (4625), account changes (4720-4740), and system events (1102, 4688, 4719).
+The **Agent** will automatically start collecting **Windows Security** events according to the `windows_security_log_collector` definition, which includes essential events like successful logons (4624), failed logons (4625), account changes (4720-4740), and system events (1102, 4688, 4719).
 
 :::note
 Replace `192.168.1.100` with the actual IP address of your **Director** server. The device ID (`2`) must match exactly what you configured in the **Director**'s device configuration. The **Agent** gets all collection details from the **Director** - no local event configuration needed.
 :::
 
-### Start the services
+### Install the services
 
 On **Director**'s machine:
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    vmetric-director
+    vmetric-director.exe -service install
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-director
+    vmetric-director -service install
     ```
   </TabItem>
 </Tabs>
@@ -97,12 +100,45 @@ On the client machine:
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    vmetric-agent
+    vmetric-agent.exe -service install
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    vmetric-agent
+    vmetric-agent -service install
+    ```
+  </TabItem>
+</Tabs>
+
+
+### Start the services
+
+On **Director**'s machine:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    vmetric-director.exe -service start
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    vmetric-director -service start
+    ```
+  </TabItem>
+</Tabs>
+
+On the client machine:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    vmetric-agent.exe -service start
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    vmetric-agent -service start
     ```
   </TabItem>
 </Tabs>
@@ -133,11 +169,9 @@ Check **Director** logs for **Agent** connection:
 You should see output similar to this in the **Director** logs:
 
 ```
-[INFO] Agent device 2 (Windows Server) connected via websocket from 192.168.1.15
-[INFO] Device 2 activated with definitions: windows_security_log_collector_minimal_example
-[INFO] Windows Event collector started for Security channel
-[INFO] Collection started: 30 event IDs configured
+[2025-08-26 10:07:17] [Information] [vmetric-director] Received logs from Device:Windows Server (2). Number of logs 73
 ```
+Device name `Windows Server` and Device ID `2` and the number of logs collected from the agent device `73`.
 
 These messages confirm that your **Agent** has successfully connected to the **Director** and is receiving configuration. The websocket connection is established and the **Agent** is actively collecting **Windows Security** events using the predefined definition.
 
