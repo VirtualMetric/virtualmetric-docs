@@ -86,6 +86,7 @@ const config: Config = {
     require.resolve('./plugins/validate-topics'),
     require.resolve('./plugins/validate-images'),
     require.resolve('./plugins/validate-includes'),
+    require.resolve('./plugins/validate-quotes'),
   ],
   themeConfig: {
     image: "telemetry-color.jpg",

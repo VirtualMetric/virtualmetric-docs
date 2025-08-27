@@ -17,7 +17,7 @@ export interface ValidationConfig {
 
 export const validationConfig: ValidationConfig = {
   // Single source of truth for which directories contain MDX files
-  // that may have Topic, Image, or Include component references
+  // that may have Topic, Image, Include, or Quote component references
   scanDirectories: ['docs', 'src/includes'],
   
   /**
