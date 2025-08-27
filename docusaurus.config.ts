@@ -86,7 +86,10 @@ const config: Config = {
     require.resolve('./plugins/validate-topics'),
     require.resolve('./plugins/validate-images'),
     require.resolve('./plugins/validate-includes'),
-    require.resolve('./plugins/validate-quotes'),
+    // DISABLED: Quote plugin was causing hot reload issues in development
+    // The getPathsToWatch() method was interfering with Docusaurus native file watching
+    // See PROJECT_CONTEXT.md for details and future re-enablement
+    // require.resolve('./plugins/validate-quotes'),
   ],
   themeConfig: {
     image: "telemetry-color.jpg",
