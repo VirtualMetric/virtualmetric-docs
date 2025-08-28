@@ -85,7 +85,6 @@ The **Microsoft Sentinel** target ingests log messages into workspace tables usi
     - **Cache timeout** (Optional) - Stream cache timeout in seconds. By default, 300
     - **Format** (Optional) - Dropdown for field normalization format for the forwarded data. By default, _ASIM_.
   </TabItem>
-
 </Tabs>
 
 Click **Add target** to complete the target creation process.
@@ -99,11 +98,34 @@ For complete configuration details, see <Topic id="targets-microsoft-sentinel">*
 <Tabs>
   <TabItem value="azure-properties" label="Azure Properties" default>
   ### Authentication
+
+  - **Managed Identity for Azure** - Toggle to enable/disable Azure managed identity. If disabled
+    - **Tenant ID** - Azure tenant ID required to be used if managed identity is disabled
+    - **Client ID** - Azure client ID required to be used if managed identity is disabled
+    - **Client Secret** - Azure client secret required to be used if managed identity is disabled
+
   ### Azure Properties
+
+  - **Account** - Azure storage account name
+  - **Container** (Optional) - Blob container name. By default, `vmetric`
+
   ### Connection
+  
+  - **Connection configuration** - Toggle to enable/disable connection settings. When enabled:
+    - **Max retry** (Optional) - Maximum number of upload retries. By default, `5`
+    - **Retry interval** (Optional) - Base interval between retries in seconds. By default, `10`
+    - **Timeout** (Optional) - Connection timeout in seconds. By default, `10`
+    - **Max size** (Optional) - Maximum file size in bytes. By default, `0`
   </TabItem>
   <TabItem value="file-properties" label="File Properties">
   ### File Properties
+
+  - **File name** (Optional) - File name template. By default, `vmetric.{{.Timestamp}}.{{.Extension}}`
+  - **Type** (Optional) - File format. By default, `json`
+  - **Compression** (Optional) - Compression algorithm. Available option: `zstd`
+  - **Schema** (Optional) - Data schema for Avro/OCF/Parquet formats
+  - **No Buffer** - Toggle to enable/disable unbuffered upload
+  - **Format** (Optional) - Field normalization format (e.g., `ECS`, `CIM`, `ASIM`)
   </TabItem>
 </Tabs>
 
@@ -114,7 +136,23 @@ For complete configuration details, see <Topic id="targets-azure-blob-storage">*
 <Tabs>
   <TabItem value="azure-properties" label="Azure Properties" default>
   ### Authentication
+
+  - **Managed Identity for Azure** - Toggle to enable/disable Azure managed identity. If disabled
+    - **Tenant ID** - Azure tenant ID required to be used if managed identity is disabled
+    - **Client ID** - Azure client ID required to be used if managed identity is disabled
+    - **Client Secret** - Azure client secret required to be used if managed identity is disabled
+  - **Endpoint** - Azure Data Explorer cluster endpoint name
+  - **Database** (Optional) - Target database name. By default, `vmetric`
+  - **Table** (Optional) - Target table name. By default, `vmetric`
+  - **Type** (Optional) - Data format type (e.g., `parquet`, `json`, `ocf`)). By default, `parquet`
+
   ### Connection
+  
+  - **Connection configuration** - Toggle to enable/disable connection settings. When enabled:
+    - **Max retry** (Optional) - Maximum number of upload retries. By default, `5`
+    - **Retry interval** (Optional) - Base interval between retries in seconds. By default, `10`
+    - **Timeout** (Optional) - Connection timeout in seconds. By default, `10`
+    - **Max size** (Optional) - Maximum file size in bytes. By default, `0`
   </TabItem>
 </Tabs>
 
