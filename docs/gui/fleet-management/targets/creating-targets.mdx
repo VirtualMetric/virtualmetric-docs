@@ -42,7 +42,17 @@ For complete configuration details, see <Topic id="targets-console">**this chapt
 
 The File target writes log messages to destination files and supports field normalization to various logging standards.
 
-<Include id="gui-targets-config-file"/>
+<Tabs>
+  <TabItem value="file-properties" label="File Properties">
+    - **Location** (Optional) - File output directory
+    - **File name** (Optional) - File name template. By default, `vmetric.{{.Timestamp}}.{{.Extension}}` 
+    - **Type** (Optional) - File format. By default, `json`
+    - **Compression** (Optional) - Compression algorithm. By default, `zstd`
+    - **Schema** - Data schema for Avro/OCF/Parquet formats
+    - **No Buffer** - Toggle to enable/disable buffering. By default, disabled
+    - **Format** - Field normalization format (ECS, CIM, ASIM, LEEF, etc.)
+  </TabItem>
+</Tabs>
 
 For complete configuration details, see <Topic id="targets-console">**this chapter**</Topic>.
 </Details>
@@ -51,16 +61,62 @@ For complete configuration details, see <Topic id="targets-console">**this chapt
 
 The **Microsoft Sentinel** target ingests log messages into workspace tables using Data Collection Rules (DCRs) with automatic table selection and field normalization.
 
-<Include id="gui-targets-config-sentinel" />
+<Tabs>
+  <TabItem value="azure-properties" label="Azure Properties" default>
+    ### Authentication
+
+    - **Managed Identity for Azure** (Conditional) - Enable/disable toggle. If disabled, the user has to specify the following:
+
+    - **Tenant ID** - The unique identifier for your **Azure Active Directory** tenant that contains the Microsoft Sentinel workspace.
+    - **Client ID** -  The application (client) identifier for the **Azure AD** app registration used to authenticate with **Microsoft Sentinel** APIs.
+    - **Client secret** - The secret key or password for the registered application that provides secure authentication to access Microsoft Sentinel resources.
+
+    Click **Back** to return to the previous step, or **Next step** to go to the final tab.
+  </TabItem>
+
+  <TabItem value="stream-properties" label="Stream Properties">
+    ### Target Stream Properties
+
+    - **Endpoint** - The Data Collection Rule endpoint URL where log data is sent for processing and routing within **Microsoft Sentinel**
+    - **Streams** (Optional) - Dropdown for selecting whether data collection rule streams are automatically detected from incoming data (_Auto_) or manually specified in the configuration (_Manual_)
+    - **Buffer Size** (Optional) - Buffer size in bytes. By default, 1 MB
+    - **Keep phantom fields** - Toggle for preserving fields that exist in the data but are not explicitly defined in the target schema or mapping configuration. By default, disabled
+    - **Drop unknown stream events** - Toggle. By default, disabled
+    - **Cache timeout** (Optional) - Stream cache timeout in seconds. By default, 300
+    - **Format** (Optional) - Dropdown for field normalization format for the forwarded data. By default, _ASIM_.
+  </TabItem>
+
+</Tabs>
+
+Click **Add target** to complete the target creation process.
+
+You are taken back to the list of **Sentinel** targets, notified that the target is created, and you can see the target added to the table.
 
 For complete configuration details, see <Topic id="targets-microsoft-sentinel">**this chapter**</Topic>.
-
 </Details>
 
 <Details summary="Azure Blob Storage">
-...
+<Tabs>
+  <TabItem value="azure-properties" label="Azure Properties" default>
+  ### Authentication
+  ### Azure Properties
+  ### Connection
+  </TabItem>
+  <TabItem value="file-properties" label="File Properties">
+  ### File Properties
+  </TabItem>
+</Tabs>
+
+For complete configuration details, see <Topic id="targets-azure-blob-storage">**this chapter**</Topic>.
 </Details>
 
 <Details summary="Azure Data Explorer">
-...
+<Tabs>
+  <TabItem value="azure-properties" label="Azure Properties" default>
+  ### Authentication
+  ### Connection
+  </TabItem>
+</Tabs>
+
+For complete configuration details, see <Topic id="targets-azure-data-explorer">**this chapter**</Topic>.
 </Details>
