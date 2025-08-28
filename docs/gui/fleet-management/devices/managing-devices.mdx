@@ -8,26 +8,94 @@ To manage a device:
 
 - From the hamburger menu on the top left, select **Fleet Management**&nbsp;>&nbsp;**Devices**
 
-Then, on the **Devices** view, click your device type from among the cards (Syslog, HTTP, UDP, TCP, or eStreamer).
+Then, on the **Devices** view, click on your push/pull device type's card.
 
-This takes you to the configuration view of that device type.
+This takes you to a configuration view with the following elements:
 
-## Search and Filter
+- On the left, a **sidebar** listing the same device types as the cards shown on the **Devices** view. The device type card you have clicked on will be selected with blue.
+- On the right, a table listing all the available devices created previously, if any.
 
-- **Search devices** - Filter by device name
-- **Directors filter** - Show devices for specific directors
-- **Status filter** - Filter by _Enabled_/_Disabled_ status
+At the first row of that table, you will see:
 
-## Edit
+- A **Search devices** box to type the name of a device to filter the list
+- A **Director(s)** dropdown to filter the list by the director(s) that devices of this type are attached to
+- A **Status** filter to select _All_, _Enabled_, or _Disabled_
+- A blue **Add new device** button used to create new devices of the type you have currently selected.
+
+At the bottom of the table you will see:
+
+- A **Page size** selector
+- A pagination control to select the page of the list to view
+
+The table displays the properties of the selected device type as columns. The listed devices will display the values assigned to its fields either initially at creation time or afterwards at editing time.
+
+## Editing
+
+The editing steps available differs based on the device's push/pull functionality, and the settings to be edited are device-specific.
 
 To edit a device:
 
 - Click the **Actions** menu (&#x22EE;) on the device row
 - Select **Edit device details**
 
-This takes you through the same configuration steps as creation.
+### Push Devices
 
-## Clone (Push devices only)
+For push devices, the procedure takes you through the same configuration steps as found at the initial <Topic id="gui-push-device-specific">device creation</Topic>.
+
+### Pull Devices
+
+For pull devices, the procedure contains configuration steps not found at the initial device creation. See below.
+
+<Details summary="Windows">
+The **Actions** dropdown on the top right offers the _Delete device_ and _Disable device_ options.
+
+<Tabs>
+  <TabItem value="device-configuration" label="Device Configuration" default>
+    #### Device Details
+
+    - **Device Name** - The unique name used to identify the device
+    - **Device Type** (Read-Only) - Type of device: `Pull - Windows`
+    - **Director** (Read-Only) - The existing director the device is attached to
+    - **Deployment Type** (Read-Only) - How the device is deployed: `Agent`
+  </TabItem>
+
+  <TabItem value="device-deployment" label="Device Deployment">
+    #### Installed Device Details
+    
+    - **Deployment Type** (Read-Only) - How the device is deployed: `Agent`
+    - **Connection Status** (Read-Only) - Whether the device is `Connected` or `Not connected`
+  </TabItem>
+
+  <TabItem value="data-configuration" label="Data Configuration">
+    #### Installed Device Details
+
+    - **Seleected Log Types** - Multiple log types can be selected for the device to collect. Selecting this opens a list of options:
+
+    - **All** - 	All Windows security and AppLocker events
+    - **Common** - A standard set of events for auditing purposes
+    - **Minimal** - A small set of events that might indicate potential threats
+    - **Custom** - A set of events determined by you using XPath queries
+
+  </TabItem>
+
+  <TabItem value="activity-logs" label="Activity Logs">
+    This tab offers a table view of the activity logs for the device.
+    
+    At the top row of the table:
+
+    - **Search action or object** - Search box to filter the table based on the actions listed on the **Actions** or **ObjectType** table columns
+    - **Action Type** - Dropdown listing actions types
+    - **Timeframe** - Dropdown to pick a time period option: By default: `Last 24 hours`
+
+    At the bottom row of the table:
+
+    - **Items per page** - Number of items listed on each table page
+    - **Navigation dropdown** - Select the page to display
+  </TabItem>
+</Tabs>
+</Details>
+
+## Cloning (Push devices only)
 
 To create a copy of an existing device:
 
@@ -35,7 +103,7 @@ To create a copy of an existing device:
 - Select **Clone device**
 
 :::note
-Windows agents cannot be cloned since they're tied to specific systems.
+Agents cannot be cloned since they're tied to specific systems.
 :::
 
 The cloned device inherits all settings but gets:
@@ -48,16 +116,20 @@ The cloned device inherits all settings but gets:
 Ensure port numbers are unique when cloning to avoid conflicts.
 :::
 
-## Status
+## Status Change
 
 To enable or disable a device:
 
 - Click the **Actions** menu (&#x22EE;) on the device row
 - Select **Enable device** or **Disable device**
 
+:::note
+The action menu shows "`Disable device`" for enabled devices and "`Enable device`" for disabled devices.
+:::
+
 Disabling a device stops data collection but preserves all configuration settings.
 
-## Delete
+## Deleting
 
 Before attempting to delete a device, make sure that it is not a dependency for any routes.
 
@@ -72,5 +144,5 @@ To remove a device:
 - Confirm the deletion in the modal prompt
 
 :::warning
-Device deletion is permanent and removes all configuration data.
+Device deletion is permanent and immediately stops all data flows from the device's source on that pipeline.
 :::

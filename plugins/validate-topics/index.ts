@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { LoadContext, Plugin } from '@docusaurus/types';
-import glob from 'fast-glob';
+import { validationConfig, reportValidationErrors, reportValidationSuccess } from '../shared/validation-config';
 
 export default function validateTopicsPlugin(context: LoadContext): Plugin<void> {
   return {
@@ -17,7 +17,7 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
       try {
         topics = JSON.parse(await fs.promises.readFile(topicsPath, 'utf-8'));
       } catch (error) {
-        throw new Error(`Failed to read topics.json: ${error.message}`);
+        throw new Error(`Failed to read topics.json: ${error instanceof Error ? error.message : String(error)}`);
       }
       const validIds = new Set(Object.keys(topics));
 
@@ -35,8 +35,8 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
         }
       }
 
-      // Find all MDX files in the docs directory
-      const mdxFiles = await glob('**/*.mdx', { cwd: docsDir, absolute: true });
+      // Get all MDX files using shared configuration
+      const mdxFiles = await validationConfig.getAllMdxFiles(rootDir);
 
       const errors: string[] = [];
 
@@ -45,12 +45,12 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
         try {
           content = await fs.promises.readFile(file, 'utf-8');
         } catch (error) {
-          console.warn(`Warning: Could not read file ${file}: ${error.message}`);
+          console.warn(`Warning: Could not read file ${file}: ${error instanceof Error ? error.message : String(error)}`);
           continue;
         }
 
-        // Get the relative path for cleaner error messages
-        const relativePath = path.relative(docsDir, file);
+        // Get the relative path using shared configuration
+        const relativePath = validationConfig.getRelativePath(rootDir, file);
 
         // Naive Topic match: <Topic id="some-id">
         const matches = [...content.matchAll(/<Topic\s+id=["']([\w\-]+)["']/g)];
@@ -63,7 +63,7 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
             // Check if the file exists for this topic
             const topicPath = topics[id];
             const cleanPath = topicPath.replace(/^\//, '').replace(/#.*$/, '');
-            const fullPath = path.join(docsDir, `${cleanPath}.mdx`);
+            const fullPath = path.join(rootDir, 'docs', `${cleanPath}.mdx`);
             try {
               await fs.promises.access(fullPath);
             } catch (error) {
@@ -77,12 +77,13 @@ export default function validateTopicsPlugin(context: LoadContext): Plugin<void>
       const allErrors = [...pathErrors, ...errors];
 
       if (allErrors.length > 0) {
-        console.error('\nTopic Validation Errors:\n');
-        allErrors.forEach(err => console.error(err));
-        console.error('\nFix invalid Topic IDs, update topics.json, or create missing files.\n');
-        throw new Error('Topic validation failed. Fix invalid Topic IDs, update topics.json, or create missing files.');
+        reportValidationErrors(
+          allErrors,
+          'Topic',
+          'Fix invalid Topic IDs, update topics.json, or create missing files.'
+        );
       } else {
-        console.log('✅ All Topic IDs and paths are valid.');
+        reportValidationSuccess('Topic');
       }
     },
   };

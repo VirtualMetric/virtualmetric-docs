@@ -6,37 +6,33 @@ graph dirTree {
       node [shape="folder" style="filled" fillcolor="#bbdefb" fontname="Calibri" fontsize="10"]
 
       root[label="&lt;vm_root&gt;"]
+      
+      director[label="Director"]
+      agent[label="Agent"]
 
-      config[label="config"]
-      devices[label="devices"]
-      routes[label="routes"]
-      targets[label="targets"]
+      directorConfig[label="config"]
+      directorDevices[label="devices"]
+      directorRoutes[label="routes"]
+      directorTargets[label="targets"]
 
-      package[label="package"]
+      directorPackage[label="package"]
+      directorDatabase[label="database"]      
+      directorDefinitions[label="definitions"]
+      directorLookups[label="lookups"]
+      directorMibs[label="mibs"]
+      directorAgentBuilds[label="agent"]
 
-      agent[label="agent"]
-      database[label="database"]      
+      directorStorage[label="storage"]
 
-      packageDefinitions[label="definitions"]
-      packageDefinitionsModule[label="module"]
-      packageDefinitionsPipelines[label="pipelines"]
-
-      lookups[label="lookups"]
-      mibs[label="mibs"]
-
-      user[label="user"]
-      userDefinitions[label="definitions"]
-      userDefinitionsModule[label="module"]
-      userDefinitionsPipelines[label="pipelines"]
+      agentConfig[label="config"]
+      agentStorage[label="storage"]
    }
 
-   root -- {config package user}
+   root -- {director agent}
    
-   config -- {devices routes targets}
+   director -- {directorConfig directorPackage directorStorage}
+   directorConfig -- {directorDevices directorRoutes directorTargets}
+   directorPackage -- {directorDatabase directorDefinitions directorLookups directorMibs directorAgentBuilds}
    
-   package -- {agent database packageDefinitions lookups mibs}
-   packageDefinitions -- {packageDefinitionsModule packageDefinitionsPipelines}
-   
-   user -- {userDefinitions}
-   userDefinitions -- {userDefinitionsModule userDefinitionsPipelines}
+   agent -- {agentConfig agentStorage}
 }

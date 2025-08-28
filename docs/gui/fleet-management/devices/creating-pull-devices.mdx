@@ -4,108 +4,112 @@ To create a pull device:
 
 - In the **Home** view, click **Fleet Management**&nbsp;>&nbsp;**Devices**
 
--or-
+  -or-
 
 - From the hamburger menu on the top left, select **Fleet Management**&nbsp;>&nbsp;**Devices**
 
-Then, in the **Devices** view, click the **Windows** pull device card.
+- Then, in the **Devices** view, click the **Windows** pull device card.
 
-:::note
-Currently, only Windows pull devices can be created. The example below uses Windows.
-:::
+  This takes you to the table view for devices, with the pull device you have clicked selected in blue on the left sidebar.
 
-This takes you to the configuration view of the selected pull device type.
+- To create a new device, click the blue **Add new device** button on the top right.
 
-To create a new device, click the blue **Add new device** button on the top right.
+  This takes you to the first step of the pull device creation procedure.
 
-This takes you to the first tab of the creation process.
+### Specific Settings
 
-## Setup Device
+You can find the instructions for the available pull device types below.
 
-On this tab, you will find the following sections:
+<Details summary="Windows">
+<Tabs>
+  <TabItem value="setup-device" label="Setup Device" default>
+    ### Choose Setup Method for Device
+    
+    #### Define Device Details
 
-### Choose Setup Method for Device
+    - **Name** (Required) - The name of your device. Must be unique.
+    - **Director** (Required) - The director to attach the device to. Select from the dropdown.
 
-#### Define Device Details
+    #### Choose Deployment Type
 
-- **Name** (Required) - The name of your device. Must be unique.
-- **Director** (Required) - The director to attach the device to. Select from the dropdown.
+    There are two deployment types:
 
-### Choose Deployment Type
+      - **Agent** - Installs a lightweight **Agent** that sets up the device in your environment.
 
-There are two deployment types:
+        Selecting this changes the primary button label to **Create device**. Clicking the button takes you directly to the **Install and Connect** tab for Agent.
 
-  - **Agent** - Installs a lightweight **Agent** that sets up the device in your environment.
+      - **Agentless** - Uses auto-detection to set up the device in your environment.
 
-    Selecting this changes the primary button label to **Create device**. Clicking the button takes you directly to the [**Install and Connect**](#install-and-connect---agent) tab for Agent.
+        Selecting this changes the primary button label to **Next step**. Clicking the button takes you to the **Install and Connect** tab for Agentless.
+  </TabItem>
 
-  - **Agentless** - Uses auto-detection to set up the device in your environment.
-  
-    Selecting this changes the primary button label to **Next step**. Clicking the button takes you to the [**Install and Connect**](#install-and-connect---agentless) tab for Agentless.
+  <TabItem value="install-and-connect" label="Install and Connect">
+      ## Agent
 
-## Install and Connect - Agent
+      On this tab, we will find a box containing an API key and a script. You will use this to install **Agent**.
 
-On this tab, we will find a box containing an API key and a script. You will use this to install **Agent**.
+      <Include id="admin-for-installation-script" />
 
-<Include id="admin-for-installation-script" />
+      - Open a terminal window with administrator privileges.
+      - Copy the key and script above.
+      - Paste them into the terminal.
+      - Press <kb-short>Enter</kb-short> to run the script.
 
-- Open a terminal window with administrator privileges.
-- Copy the key and script above.
-- Paste them into the terminal.
-- Press <kb-short>Enter</kb-short> to run the script.
+      This will take a few minutes to complete.
 
-This will take a few minutes to complete.
+      :::info Important
+      At this point, for the connection between the agent and the director to work, make sure that the default port `80` is open. If that port is being used for another purpose, then
 
-:::info Important
-At this point, for the connection between the agent and the director to work, make sure that the default port `80` is open. If that port is being used for another purpose, then
+      - Open the `vmetric.yml` file under `<vm_root>`
+      - Change the `http_config_port` setting with the port number you want to dedicate to this connection
+      :::
 
-- Open the `vmetric.yml` file under `<vm_root>`
-- Change the `http_config_port` setting with the port number you want to dedicate to this connection
-:::
+      To the right, you will see a **Verify connection** button. Clicking this button starts sending a request to check whether a **Agent** has been installed.
 
-To the right, you will see a **Verify connection** button. Clicking this button starts sending a request to check whether a **Agent** has been installed.
+      Once the connection is verified, a **Connection successful** message is displayed.
 
-Once the connection is verified, a **Connection successful** message is displayed.
+      <Include id="connection-verification-failure" />
 
-<Include id="connection-verification-failure" />
+      If the connection is not verified, you can use the **Connect later** button to defer this step. The not-yet-enabled agent will still appear on the devices list.
 
-If the connection is not verified, you can use the **Connect Later** button to defer this installation step. However, the not-yet-enabled agent will still appear on the devices list.
+      Clicking this button takes you to the **Review and Configure** tab.
 
-Clicking this button takes you to the [**Review and Configure**](#review-and-configure) tab.
+      ---
 
-## Install and Connect - Agentless
+      ## Agentless
 
-This view has the following sections:
+      ### Configure Remote Access
 
-#### Configure Remote Access
+      - **IP Address** - Enter the IP address of the target system
+      - **Port** - Enter the port used for remote access
+      - **Active Directory Authentication** - **AD** authentication settings
 
-- **IP Address** - Enter the IP address of the target system
-- **Port** - Enter the port used for remote access
-- **Active Directory Authentication** - **AD** authentication settings
+        When this option is disabled, three fields are displayed:
 
-  When this option is disabled, three fields are displayed:
+        - **Username** (Required) - **AD** username
+        - **Password** (Required) - **AD** password
+        - **Domain** (Optional) - **AD** domain
 
-  - **Username** (Required) - **AD** username
-  - **Password** (Required) - **AD** password
-  - **Domain** (Optional) - **AD** domain
+        The director will access the target system at the specified IP address using these credentials to validate remote access and permissions. No agent is deployed in this method.
 
-  The director will access the target system at the specified IP address using these credentials to validate remote access and permissions. No agent is deployed in this method.
+        When enabled, authentication is handled automatically by **DataStream** with your organization’s credentials.
 
-  When enabled, authentication is handled automatically by **DataStream** with your organization’s credentials.
+      The **Check Access** button verifies that the authentication credentials are valid.
 
-The **Check Access** button verifies that the authentication credentials are valid.
+      Clicking the blue **Create Device** button takes you to the **Review and Configure** tab.
+  </TabItem>
 
-Clicking the blue **Create Device** button takes you to the [**Review and Configure**](#review-and-configure) tab.
+  <TabItem value="review-and-configure" label="Review and Configure">
+    This is an optional tab.
 
-## Review and Configure
+    ### Select Log Types
 
-This optional step's view has the following section.
+    - **Windows Security Events** - Enable/disable log collection. Used to select what type of data will be collected. There are three choices:
 
-#### Select Log Types
-
-- **Windows Security Events** - Enable/disable log collection. Used to select what type of data will be collected. There are three choices:
-
-  - **All** - Collects all **Windows** security and **AppLocker** event. The most comprehensive option.
-  - **Common** - Collects the standard event set for audit purposes. Sufficient for general security monitoring.
-  - **Minimal** - Collects a small subset of events that may reveal potential threats.
-  - **Custom** - The user specifies their own filters using XML-based filter definitions.
+      - **All** - Collects all **Windows** security and **AppLocker** event. The most comprehensive option.
+      - **Common** - Collects the standard event set for audit purposes. Sufficient for general security monitoring.
+      - **Minimal** - Collects a small subset of events that may reveal potential threats.
+      - **Custom** - The user specifies their own filters using XML-based filter definitions.
+  </TabItem>
+</Tabs>
+</Details>

@@ -8,13 +8,11 @@ To create a new target,
 
 - From the hamburger menu on the top left, select **Fleet Management**&nbsp;>&nbsp;**Targets**
 
-This will take you to the **Targets** view.
+  This will take you to the **Targets** view.
 
-Click the **Add new target** button, then select the desired target type by clicking its card. This opens the first tab of the target-creation flow for that type.
+- Click the **Add new target** button, then select the desired target type by clicking its card.
 
-:::note
-Since only specific targets can be created, we will discuss a _Microsoft Sentinel_ target below.
-:::
+  This opens the first tab of the target-creation flow for that type.
 
 ## General Settings
 
@@ -25,32 +23,138 @@ Since only specific targets can be created, we will discuss a _Microsoft Sentine
 
 Click **Cancel** to exit without creating a target, or **Next step** to go to the next tab.
 
-## Azure Properties
+Other tabs contain settings that are target-specific. You can find their details below:
 
-Since we are creating a _Microsoft Sentinel_ target, this tab will contain the properties specific to that target type.
+<Details summary="Console">
 
-The elements in this view:
+The Console target writes log messages to standard output and supports field normalization to various logging standards.
 
-### Authentication
+<Tabs>
+  <TabItem value="console-properties" label="Console Properties">
+    - **Format** - Data normalization format (ECS, CIM, ASIM, LEEF, etc.)
+  </TabItem>
+</Tabs>
 
-- **Managed Identity for Azure** (Conditional) - Enable/disable toggle. If disabled, the user has to specify the following:
+For complete configuration details, see <Topic id="targets-console">**this chapter**</Topic>.
+</Details>
 
-- **Tenant ID** - The unique identifier for your **Azure Active Directory** tenant that contains the Microsoft Sentinel workspace.
-- **Client ID** -  The application (client) identifier for the **Azure AD** app registration used to authenticate with **Microsoft Sentinel** APIs.
-- **Client secret** - The secret key or password for the registered application that provides secure authentication to access Microsoft Sentinel resources.
+<Details summary="File">
 
-Click **Back** to go back to the previous step, or **Next step** to go to the final tab.
+The File target writes log messages to destination files and supports field normalization to various logging standards.
 
-## Stream Properties
+<Tabs>
+  <TabItem value="file-properties" label="File Properties">
+    - **Location** (Optional) - File output directory
+    - **File name** (Optional) - File name template. By default, `vmetric.{{.Timestamp}}.{{.Extension}}` 
+    - **Type** (Optional) - File format. By default, `json`
+    - **Compression** (Optional) - Compression algorithm. By default, `zstd`
+    - **Schema** - Data schema for Avro/OCF/Parquet formats
+    - **No Buffer** - Toggle to enable/disable buffering. By default, disabled
+    - **Format** - Field normalization format (ECS, CIM, ASIM, LEEF, etc.)
+  </TabItem>
+</Tabs>
 
-- **Endpoint** - The Data Collection Rule endpoint URL where log data is sent for processing and routing within **Microsoft Sentinel**
-- **Streams** (Optional) - Dropdown for selecting whether data collection rule streams are automatically detected from incoming data (_Auto_) or manually specified in the configuration (_Manual_)
-- **Buffer Size** (Optional) - Buffer size in bytes. By default, 1 MB
-- **Keep phantom fields** - Toggle for preserving fields that exist in the data but are not explicitly defined in the target schema or mapping configuration. By default, disabled
-- **Drop unknown stream events** - Toggle. By default, disabled
-- **Cache timeout** (Optional) - Stream cache timeout in seconds. By default, 300
-- **Format** (Optional) - Dropdown for field normalization format for the forwarded data. By default, _ASIM_.
+For complete configuration details, see <Topic id="targets-console">**this chapter**</Topic>.
+</Details>
+
+<Details summary="Microsoft Sentinel">
+
+The **Microsoft Sentinel** target ingests log messages into workspace tables using Data Collection Rules (DCRs) with automatic table selection and field normalization.
+
+<Tabs>
+  <TabItem value="azure-properties" label="Azure Properties" default>
+    ### Authentication
+
+    - **Managed Identity for Azure** (Conditional) - Enable/disable toggle. If disabled, the user has to specify the following:
+
+    - **Tenant ID** - The unique identifier for your **Azure Active Directory** tenant that contains the Microsoft Sentinel workspace.
+    - **Client ID** -  The application (client) identifier for the **Azure AD** app registration used to authenticate with **Microsoft Sentinel** APIs.
+    - **Client secret** - The secret key or password for the registered application that provides secure authentication to access Microsoft Sentinel resources.
+
+    Click **Back** to return to the previous step, or **Next step** to go to the final tab.
+  </TabItem>
+
+  <TabItem value="stream-properties" label="Stream Properties">
+    ### Target Stream Properties
+
+    - **Endpoint** - The Data Collection Rule endpoint URL where log data is sent for processing and routing within **Microsoft Sentinel**
+    - **Streams** (Optional) - Dropdown for selecting whether data collection rule streams are automatically detected from incoming data (_Auto_) or manually specified in the configuration (_Manual_)
+    - **Buffer Size** (Optional) - Buffer size in bytes. By default, 1 MB
+    - **Keep phantom fields** - Toggle for preserving fields that exist in the data but are not explicitly defined in the target schema or mapping configuration. By default, disabled
+    - **Drop unknown stream events** - Toggle. By default, disabled
+    - **Cache timeout** (Optional) - Stream cache timeout in seconds. By default, 300
+    - **Format** (Optional) - Dropdown for field normalization format for the forwarded data. By default, _ASIM_.
+  </TabItem>
+</Tabs>
 
 Click **Add target** to complete the target creation process.
 
 You are taken back to the list of **Sentinel** targets, notified that the target is created, and you can see the target added to the table.
+
+For complete configuration details, see <Topic id="targets-microsoft-sentinel">**this chapter**</Topic>.
+</Details>
+
+<Details summary="Azure Blob Storage">
+<Tabs>
+  <TabItem value="azure-properties" label="Azure Properties" default>
+  ### Authentication
+
+  - **Managed Identity for Azure** - Toggle to enable/disable Azure managed identity. If disabled
+    - **Tenant ID** - Azure tenant ID required to be used if managed identity is disabled
+    - **Client ID** - Azure client ID required to be used if managed identity is disabled
+    - **Client Secret** - Azure client secret required to be used if managed identity is disabled
+
+  ### Azure Properties
+
+  - **Account** - Azure storage account name
+  - **Container** (Optional) - Blob container name. By default, `vmetric`
+
+  ### Connection
+  
+  - **Connection configuration** - Toggle to enable/disable connection settings. When enabled:
+    - **Max retry** (Optional) - Maximum number of upload retries. By default, `5`
+    - **Retry interval** (Optional) - Base interval between retries in seconds. By default, `10`
+    - **Timeout** (Optional) - Connection timeout in seconds. By default, `10`
+    - **Max size** (Optional) - Maximum file size in bytes. By default, `0`
+  </TabItem>
+  <TabItem value="file-properties" label="File Properties">
+  ### File Properties
+
+  - **File name** (Optional) - File name template. By default, `vmetric.{{.Timestamp}}.{{.Extension}}`
+  - **Type** (Optional) - File format. By default, `json`
+  - **Compression** (Optional) - Compression algorithm. Available option: `zstd`
+  - **Schema** (Optional) - Data schema for Avro/OCF/Parquet formats
+  - **No Buffer** - Toggle to enable/disable unbuffered upload
+  - **Format** (Optional) - Field normalization format (e.g., `ECS`, `CIM`, `ASIM`)
+  </TabItem>
+</Tabs>
+
+For complete configuration details, see <Topic id="targets-azure-blob-storage">**this chapter**</Topic>.
+</Details>
+
+<Details summary="Azure Data Explorer">
+<Tabs>
+  <TabItem value="azure-properties" label="Azure Properties" default>
+  ### Authentication
+
+  - **Managed Identity for Azure** - Toggle to enable/disable Azure managed identity. If disabled
+    - **Tenant ID** - Azure tenant ID required to be used if managed identity is disabled
+    - **Client ID** - Azure client ID required to be used if managed identity is disabled
+    - **Client Secret** - Azure client secret required to be used if managed identity is disabled
+  - **Endpoint** - Azure Data Explorer cluster endpoint name
+  - **Database** (Optional) - Target database name. By default, `vmetric`
+  - **Table** (Optional) - Target table name. By default, `vmetric`
+  - **Type** (Optional) - Data format type (e.g., `parquet`, `json`, `ocf`)). By default, `parquet`
+
+  ### Connection
+  
+  - **Connection configuration** - Toggle to enable/disable connection settings. When enabled:
+    - **Max retry** (Optional) - Maximum number of upload retries. By default, `5`
+    - **Retry interval** (Optional) - Base interval between retries in seconds. By default, `10`
+    - **Timeout** (Optional) - Connection timeout in seconds. By default, `10`
+    - **Max size** (Optional) - Maximum file size in bytes. By default, `0`
+  </TabItem>
+</Tabs>
+
+For complete configuration details, see <Topic id="targets-azure-data-explorer">**this chapter**</Topic>.
+</Details>

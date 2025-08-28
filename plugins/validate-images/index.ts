@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { LoadContext, Plugin } from '@docusaurus/types';
-import glob from 'fast-glob';
+import { validationConfig, reportValidationErrors, reportValidationSuccess } from '../shared/validation-config';
 
 export default function validateImagesPlugin(context: LoadContext): Plugin<void> {
   return {
@@ -9,7 +9,6 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
 
     async loadContent() {
       const rootDir = context.siteDir;
-      const docsDir = path.join(rootDir, 'docs');
       const imagesPath = path.join(rootDir, 'images.json');
 
       // Read images.json
@@ -17,7 +16,7 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
       try {
         images = JSON.parse(await fs.promises.readFile(imagesPath, 'utf-8'));
       } catch (error) {
-        throw new Error(`Failed to read images.json: ${error.message}`);
+        throw new Error(`Failed to read images.json: ${error instanceof Error ? error.message : String(error)}`);
       }
       const validIds = new Set(Object.keys(images));
 
@@ -36,8 +35,8 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
         }
       }
 
-      // Find all MDX files in the docs directory
-      const mdxFiles = await glob('**/*.mdx', { cwd: docsDir, absolute: true });
+      // Get all MDX files using shared configuration
+      const mdxFiles = await validationConfig.getAllMdxFiles(rootDir);
 
       const errors: string[] = [];
 
@@ -46,12 +45,12 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
         try {
           content = await fs.promises.readFile(file, 'utf-8');
         } catch (error) {
-          console.warn(`Warning: Could not read file ${file}: ${error.message}`);
+          console.warn(`Warning: Could not read file ${file}: ${error instanceof Error ? error.message : String(error)}`);
           continue;
         }
 
-        // Get the relative path for cleaner error messages
-        const relativePath = path.relative(docsDir, file);
+        // Get the relative path using shared configuration
+        const relativePath = validationConfig.getRelativePath(rootDir, file);
 
         // Naive Image match: <Image id="some-id"
         const matches = [...content.matchAll(/<Image\s+id=["']([\w\-]+)["']/g)];
@@ -78,12 +77,13 @@ export default function validateImagesPlugin(context: LoadContext): Plugin<void>
       const allErrors = [...pathErrors, ...errors];
 
       if (allErrors.length > 0) {
-        console.error('\nImage Validation Errors:\n');
-        allErrors.forEach(err => console.error(err));
-        console.error('\nFix invalid Image IDs, update images.json, or add missing image files.\n');
-        throw new Error('Image validation failed. Fix invalid Image IDs, update images.json, or add missing image files.');
+        reportValidationErrors(
+          allErrors,
+          'Image',
+          'Fix invalid Image IDs, update images.json, or add missing image files.'
+        );
       } else {
-        console.log('✅ All Image IDs and paths are valid.');
+        reportValidationSuccess('Image');
       }
     },
   };

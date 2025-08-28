@@ -37,24 +37,26 @@ By using these dedicated components, you can design powerful and efficient telem
 
 The default installation includes the following key directories and configuration files:
 
-- `config/` - Main configuration directory containing user-customizable settings
-  - `config/devices/` - Input source configurations (syslog, kafka, http, etc.)
-  - `config/routes/` - Data routing and flow control definitions  
-  - `config/targets/` - Output destination configurations (elasticsearch, sentinel, etc.)
-  - `config/vmetric.yml` - Primary system configuration file
-  - `config/Examples/from-syslog-tcp.yml` - Sample configuration demonstrating basic setup
-- `package/` - System-provided templates and resources (read-only)
-  - `package/database/GeoLite2-*.mmdb` - GeoIP databases for geographic enrichment
-  - `package/definitions/` - Pre-built pipeline and module definitions
-  - `package/lookups/` - Reference tables for protocol, application, and vendor identification
-  - `package/mibs/` - SNMP MIB files for network device monitoring
-  - `package/snmp/custom-oids.csv` - Custom SNMP OID definitions
-- `user/` - User-customizable copies of package definitions
-- `storage/` - Runtime data and system state
-  - `storage/data/` - Message queues and database partitions
-  - `storage/logs/` - System and application logs
-  - `storage/cache/` - Temporary processing cache
-- `cert.pem` and `key.pem` - TLS certificates for secure communications
+- `Director/` - Director application installation
+  - `Director/config/` - Main configuration directory containing user-customizable settings
+    - `Director/config/devices/` - Input source configurations (syslog, kafka, http, etc.)
+    - `Director/config/routes/` - Data routing and flow control definitions  
+    - `Director/config/targets/` - Output destination configurations (elasticsearch, sentinel, etc.)
+    - `Director/config/vmetric.yml` - Primary system configuration file
+    - `Director/config/Examples/from-syslog-tcp.yml` - Sample configuration demonstrating basic setup
+  - `Director/package/` - System-provided templates and resources (read-only)
+    - `Director/package/database/` - GeoIP databases for geographic enrichment
+    - `Director/package/definitions/` - Pre-built pipeline and module definitions
+    - `Director/package/lookups/` - Reference tables for protocol, application, and vendor identification
+    - `Director/package/mibs/` - SNMP MIB files for network device monitoring
+    - `Director/package/agent/` - Cross-platform agent builds
+  - `Director/storage/` - Director runtime data and system state
+  - `Director/cert.pem` and `Director/key.pem` - TLS certificates for secure communications
+- `Agent/` - Agent application installation  
+  - `Agent/config/` - Agent-specific configuration
+    - `Agent/config/vmetric.yml` - Director connection configuration (text file)
+    - `Agent/config/vmetric.vmf` - Device configuration received from Director (binary file)
+  - `Agent/storage/` - Agent runtime data
 
 All configuration files needed to define and run telemetry streams can be found&mdash;and are placed in&mdash;specific folders under this tree.
 
