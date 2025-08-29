@@ -126,12 +126,18 @@ const config: Config = {
           position: "left",
           label: "Docs",
         },        
+        {
+          type: "docSidebar",
+          sidebarId: "releaseDocs",
+          position: "left",
+          label: "Release Notes",
+        },        
         // {
         //   type: "docSidebar",
         //   sidebarId: "tutorDocs",
         //   position: "left",
         //   label: "Tutorials",
-        // },        
+        // },
         {
           to: "https://community.virtualmetric.com/",
           position: "left",
