@@ -1,10 +1,8 @@
 ---
-sidebar_label: Release Notes v1.3.0
 authors: team
 tags: [release]
 pinned: true
 ---
-
 
 # Release Notes for v1.3.0
 
