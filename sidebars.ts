@@ -505,6 +505,16 @@ const sidebars: SidebarsConfig = {
     "tutorials/advanced-netflow-processing",
     "tutorials/ai-powered-log-analysis",
   ],  
+  releaseDocs: [
+    {
+      type: 'category',
+      label: 'Release Notes',
+      collapsible: false,
+      items: [
+        "release-notes/v1.3.0"
+      ],
+    }
+  ],  
 };
 
 export default sidebars;

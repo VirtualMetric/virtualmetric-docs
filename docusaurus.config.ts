@@ -127,10 +127,11 @@ const config: Config = {
           label: "Docs",
         },        
         {
-          to: '/blog/release-notes',
-          position: 'left',
-          label: 'Release Notes',
-        },
+          type: "docSidebar",
+          sidebarId: "releaseDocs",
+          position: "left",
+          label: "Release Notes",
+        },        
         // {
         //   type: "docSidebar",
         //   sidebarId: "tutorDocs",
