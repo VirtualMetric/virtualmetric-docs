@@ -1,12 +1,14 @@
 ---
+pagination_next: null
+sidebar_label: Release Notes
 slug: /release-notes
 tags: [release]
 pinned: true
 ---
 
-# Release Notes
+# Release Notes 
 
-### Version 1.3.0 - August 28, 2025
+## Version 1.3.0
 
 This release introduces major enterprise-focused features, along with important improvements in content management. With **Single Sign-On**, **RBAC**, and the first phase of the **MSSP** module, our platform becomes more secure, flexible, and enterprise-ready than ever before. We’ve also added more vendors to the **Content Hub**, and introduced **Auto Syslog Discovery** to simplify log management.
 
