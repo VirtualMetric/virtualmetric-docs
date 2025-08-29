@@ -1,11 +1,16 @@
 ---
-pagination_next: null
-sidebar_label: Release Notes
+sidebar_label: Release Notes v1.3.0
+authors: team
+tags: [release]
+pinned: true
 ---
 
-# Release Notes
+
+# Release Notes for v1.3.0
 
 This release introduces major enterprise-focused features, along with important improvements in content management. With Single Sign-On, RBAC, and the first phase of the MSSP module, our platform becomes more secure, flexible, and enterprise-ready than ever before. We’ve also added more vendors to the Content Hub and introduced Auto Syslog Discovery to simplify log management.
+
+<!-- truncate --> 
 
 ## :rocket: New Features
 
