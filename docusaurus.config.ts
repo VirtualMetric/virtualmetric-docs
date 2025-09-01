@@ -131,7 +131,12 @@ const config: Config = {
           sidebarId: "releaseDocs",
           position: "left",
           label: "Release Notes",
-        },        
+        },
+        {
+          to: "/blog",
+          label: "Blog",
+          position: "left"
+        },
         // {
         //   type: "docSidebar",
         //   sidebarId: "tutorDocs",
