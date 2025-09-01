@@ -54,7 +54,7 @@ const config: Config = {
           includeCurrentVersion: true,
           exclude: [
             '**/CLAUDE.md',
-            '**/DEFERRED_TASKS.md',
+            '**/BACKLOG.md',
           ],
           versions: {
             current: {
@@ -74,6 +74,10 @@ const config: Config = {
           onInlineTags: "warn",
           onInlineAuthors: "warn",
           onUntruncatedBlogPosts: "warn",
+          exclude: [
+            '**/CLAUDE.md',
+            '**/BACKLOG.md',
+          ],
         },
         theme: {
           customCss: "./src/css/custom.css",
