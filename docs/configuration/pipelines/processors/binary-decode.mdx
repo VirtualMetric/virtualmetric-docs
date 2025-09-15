@@ -1,0 +1,236 @@
+---
+description: Decodes binary strings (e.g., "01000001") to ASCII (e.g., "A")
+sidebar_custom_props:
+  customCategory: Parse
+  customIcon: 🔢
+---
+
+# Binary Decode
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Data Analysis</span>
+
+## Synopsis
+
+Decodes binary strings (e.g., "01000001") to ASCII (e.g., "A").
+
+## Schema
+
+```yaml {2-3}
+- binary_decode:
+    field: <ident>
+    target_field: <string>
+    input_format: <string>
+    output_format: <string>
+    encoding: <string>
+    bits_per_char: <integer>
+    delimiter: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing binary data to decode|
+|`target_field`|N|Same as `field`|Target field to store decoded result|
+|`input_format`|N|`binary`|Input data format: `binary`, `hex`, `decimal`, `octal`|
+|`output_format`|N|`string`|Output format: `string`, `hex`, `decimal`, `bytes`|
+|`encoding`|N|`utf8`|Character encoding: `utf8`, `ascii`, `utf16le`, `utf16be`|
+|`bits_per_char`|N|`8` (or `7` for ASCII)|Number of bits per character|
+|`delimiter`|N|-|Custom delimiter for binary string separation|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if decoding fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Converts binary data from various input formats to specified output formats. The processor supports multiple input formats including binary strings, hexadecimal, decimal, and octal representations.
+
+The processor automatically handles common separators in binary strings (spaces, commas, dashes, underscores) and can process both individual strings and arrays of strings.
+
+:::note
+When processing binary strings, the processor automatically pads input with leading zeros if the string length is not a multiple of `bits_per_char`. This ensures proper character alignment.
+:::
+
+The `encoding` parameter determines how the decoded bytes are interpreted as characters. UTF-8 is the default and most common encoding, while ASCII is limited to 7-bit characters.
+
+:::warning
+If the input contains invalid characters for the specified format (e.g., non-binary digits in binary format), the processor will fail unless `ignore_failure` is set to `true`.
+:::
+
+## Examples
+
+### Basic Binary to ASCII
+
+<ExampleGrid>
+  <CommentCol>
+    Converting binary string to ASCII text...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "binary_data": "0100100001100101011011000110110001101111"
+    }
+    ```
+    ```yaml
+    - binary_decode:
+        field: binary_data
+        target_field: text_result
+    ```
+  </CodeCol>
+  <CommentCol>
+    decodes to readable text:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "binary_data": "0100100001100101011011000110110001101111",
+      "text_result": "Hello"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Hexadecimal Input
+
+<ExampleGrid>
+  <CommentCol>
+    Converting hexadecimal to ASCII string...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hex_value": "48656C6C6F20576F726C64"
+    }
+    ```
+    ```yaml
+    - binary_decode:
+        field: hex_value
+        input_format: hex
+        target_field: decoded_text
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts hex to readable text:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hex_value": "48656C6C6F20576F726C64",
+      "decoded_text": "Hello World"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Spaced Binary String
+
+<ExampleGrid>
+  <CommentCol>
+    Processing binary with space separators...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "spaced_binary": "01000001 01000010 01000011"
+    }
+    ```
+    ```yaml
+    - binary_decode:
+        field: spaced_binary
+        target_field: letters
+    ```
+  </CodeCol>
+  <CommentCol>
+    automatically handles separators:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "spaced_binary": "01000001 01000010 01000011",
+      "letters": "ABC"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Decoding multiple binary strings from array...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "binary_array": [
+        "0100100001101001",
+        "01000010011110010110010101110100"
+      ]
+    }
+    ```
+    ```yaml
+    - binary_decode:
+        field: binary_array
+        target_field: decoded_array
+    ```
+  </CodeCol>
+  <CommentCol>
+    processes each array element:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "binary_array": [...],
+      "decoded_array": [
+        "Hi",
+        "Bye"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Output to Hex Format
+
+<ExampleGrid>
+  <CommentCol>
+    Converting binary input to hex output...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "binary_input": "0100100001100101011011000110110001101111"
+    }
+    ```
+    ```yaml
+    - binary_decode:
+        field: binary_input
+        output_format: hex
+        target_field: hex_output
+    ```
+  </CodeCol>
+  <CommentCol>
+    outputs in hexadecimal format:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "binary_input": "0100100001100101011011000110110001101111",
+      "hex_output": "48656c6c6f"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
