@@ -1,0 +1,191 @@
+---
+description: Converts strings to kebab-case format
+sidebar_custom_props:
+  customCategory: Text Processing
+  customIcon: 🍖
+---
+
+# Kebab Case
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">String Manipulation</span>
+
+## Synopsis
+
+Converts strings to kebab-case format.
+
+## Schema
+
+```yaml {2-3}
+- kebabcase:
+    field: <ident>
+    target_field: <string>
+    fields: <array>
+    exclude: <array>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|N|-|Single field to convert to kebab-case|
+|`target_field`|N|Same as `field`|Target field to store kebab-case result|
+|`fields`|N|-|Array of fields to convert to kebab-case|
+|`exclude`|N|-|Array of fields to exclude from conversion|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Converts string values to kebab-case format by replacing spaces, underscores, dots, and other separators with hyphens, then converting all characters to lowercase. This format is commonly used in URLs, CSS classes, file names, and command-line parameters.
+
+The processor handles various input formats and normalizes them to the consistent kebab-case style with lowercase letters separated by hyphens.
+
+:::note
+kebab-case format uses hyphens as separators and converts all text to lowercase, resulting in format like "user-name", "api-response-data", or "system-config-value". It's called kebab-case because the hyphens look like skewers.
+:::
+
+The processor preserves the logical word boundaries from the input while standardizing the format for consistent usage in web development and system naming.
+
+:::warning
+Consecutive separators in the input may result in multiple consecutive hyphens in the output. The processor does not automatically clean up redundant separators.
+:::
+
+## Examples
+
+### Basic Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Converting field to kebab-case format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "component_name": "UserAccountSettings"
+    }
+    ```
+    ```yaml
+    - kebabcase:
+        field: component_name
+        target_field: kebab_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to kebab-case:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "component_name": "UserAccountSettings",
+      "kebab_name": "user-account-settings"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URL Slug Generation
+
+<ExampleGrid>
+  <CommentCol>
+    Creating URL-friendly slug from title...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "page_title": "Getting Started with DataStream"
+    }
+    ```
+    ```yaml
+    - kebabcase:
+        field: page_title
+        target_field: url_slug
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates URL-friendly identifier:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "page_title": "Getting Started with DataStream",
+      "url_slug": "getting-started-with-datastream"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Format Input
+
+<ExampleGrid>
+  <CommentCol>
+    Normalizing mixed separators to kebab-case...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "field_name": "api_response.data_with spaces"
+    }
+    ```
+    ```yaml
+    - kebabcase:
+        field: field_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    standardizes all separators to hyphens:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "field_name": "api-response-data-with-spaces"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Converting multiple fields to kebab-case...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "css_class": "MainNavigation",
+      "element_id": "user_profile_section",
+      "data_attribute": "click.handler.name"
+    }
+    ```
+    ```yaml
+    - kebabcase:
+        fields: ["css_class", "element_id", "data_attribute"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    processes all specified fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "css_class": "main-navigation",
+      "element_id": "user-profile-section",
+      "data_attribute": "click-handler-name"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

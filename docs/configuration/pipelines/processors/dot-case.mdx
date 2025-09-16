@@ -1,0 +1,191 @@
+---
+description: Converts strings to dot.case format
+sidebar_custom_props:
+  customCategory: Text Processing
+  customIcon: 🔅
+---
+
+# Dot Case
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">String Manipulation</span>
+
+## Synopsis
+
+Converts strings to dot.case format.
+
+## Schema
+
+```yaml {2-3}
+- dotcase:
+    field: <ident>
+    target_field: <string>
+    fields: <array>
+    exclude: <array>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|N|-|Single field to convert to dot.case|
+|`target_field`|N|Same as `field`|Target field to store dot.case result|
+|`fields`|N|-|Array of fields to convert to dot.case|
+|`exclude`|N|-|Array of fields to exclude from conversion|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Converts string values to dot.case format by replacing spaces, hyphens, underscores, and other separators with dots, then converting all characters to lowercase. This format is commonly used in configuration files, namespacing, and object notation.
+
+The processor handles various input formats and normalizes them to the consistent dot.case style with lowercase letters separated by dots.
+
+:::note
+dot.case format uses dots as separators and converts all text to lowercase, resulting in format like "user.name", "api.response.data", or "system.config.value".
+:::
+
+The processor preserves the logical word boundaries from the input while standardizing the format for consistent usage in configuration systems or hierarchical naming.
+
+:::warning
+Excessive dots or special characters in the input may result in multiple consecutive dots in the output. The processor does not automatically clean up redundant separators.
+:::
+
+## Examples
+
+### Basic Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Converting field name to dot.case...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "field_name": "user_account_settings"
+    }
+    ```
+    ```yaml
+    - dotcase:
+        field: field_name
+        target_field: dot_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to dot notation:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "field_name": "user_account_settings",
+      "dot_name": "user.account.settings"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Separators
+
+<ExampleGrid>
+  <CommentCol>
+    Normalizing mixed separators to dots...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "config_key": "api-response_data with spaces"
+    }
+    ```
+    ```yaml
+    - dotcase:
+        field: config_key
+    ```
+  </CodeCol>
+  <CommentCol>
+    standardizes all separators to dots:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "config_key": "api.response.data.with.spaces"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Configuration Namespace
+
+<ExampleGrid>
+  <CommentCol>
+    Creating configuration namespace format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service_name": "User Authentication Service"
+    }
+    ```
+    ```yaml
+    - dotcase:
+        field: service_name
+        target_field: namespace
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates namespace-style identifier:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service_name": "User Authentication Service",
+      "namespace": "user.authentication.service"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Converting multiple fields to dot.case...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "module_name": "data_processor",
+      "component_type": "log-parser",
+      "version_info": "v1_2_3"
+    }
+    ```
+    ```yaml
+    - dotcase:
+        fields: ["module_name", "component_type", "version_info"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    processes all specified fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "module_name": "data.processor",
+      "component_type": "log.parser",
+      "version_info": "v1.2.3"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
