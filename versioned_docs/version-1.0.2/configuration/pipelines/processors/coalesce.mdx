@@ -1,0 +1,312 @@
+---
+description: Returns the first non-null, non-empty value from a list of fields
+sidebar_custom_props:
+  customCategory: Transform
+  customIcon: 🔗
+---
+
+# Coalesce
+
+<span className="theme-doc-version-badge badge badge--primary">Transform</span><span className="theme-doc-version-badge badge badge--secondary">Field Selection</span>
+
+Returns the first non-null, non-empty value from a list of fields, similar to SQL COALESCE function.
+
+## Schema
+
+```yaml {2-3}
+- coalesce:
+    fields: <ident[]>
+    target_field: <ident>
+    ignore_empty_string: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`fields`|Y|-|Array of field names to check in order|
+|`target_field`|Y|-|Target field to store the first non-null value|
+|`ignore_empty_string`|N|`false`|Skip empty strings when finding first value|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run processor|
+|`ignore_failure`|N|`false`|Continue if processor fails|
+|`ignore_missing`|N|`false`|Continue if all fields are missing|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`tag`|N|-|Processor identifier|
+
+## Details
+
+The processor skips `null` values automatically and by default treats empty strings as valid values, though this can be changed using `ignore_empty_string: true` to skip them as well. Fields are evaluated in the order specified in the array, with missing fields automatically skipped. 
+
+The processor preserves the original data type of the selected value and fails if all fields are missing or empty unless `ignore_missing: true` is configured.
+
+This processor is particularly useful for field prioritization when multiple options are available, providing fallback values when primary fields might be missing. It excels at data consolidation by merging similar fields from different log sources, such as finding the best contact email from multiple possibilities or choosing the most appropriate client IP from various network fields. 
+
+The processor also helps with message standardization by selecting the best message field from different formats across diverse log sources.
+
+## Examples
+
+### Basic Usage
+
+<ExampleGrid>
+  <CommentCol>
+    Finding first non-null value from user fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "name": null,
+        "username": "john_doe",
+        "id": "12345"
+      }
+    }
+    ```
+    ```yaml
+    - coalesce:
+        fields: ["user.name", "user.username", "user.id"]
+        target_field: display_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    selects first available value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "name": null,
+        "username": "john_doe",
+        "id": "12345"
+      },
+      "display_name": "john_doe"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Email Fallback
+
+<ExampleGrid>
+  <CommentCol>
+    Default behavior treats empty strings as valid values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "primary_email": "",
+        "work_email": "john@company.com",
+        "personal_email": "john@gmail.com"
+      }
+    }
+    ```
+    ```yaml
+    - coalesce:
+        fields: ["user.primary_email", "user.work_email", "user.personal_email"]
+        target_field: contact_email
+    ```
+  </CodeCol>
+  <CommentCol>
+    returns first value (empty string):
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "primary_email": "",
+        "work_email": "john@company.com", 
+        "personal_email": "john@gmail.com"
+      },
+      "contact_email": ""
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Empty Strings
+
+<ExampleGrid>
+  <CommentCol>
+    Using `ignore_empty_string` to skip empty values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "primary_email": "",
+        "work_email": "john@company.com",
+        "personal_email": "john@gmail.com"
+      }
+    }
+    ```
+    ```yaml
+    - coalesce:
+        fields: ["user.primary_email", "user.work_email", "user.personal_email"]
+        target_field: contact_email
+        ignore_empty_string: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    skips empty string, finds next value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "primary_email": "",
+        "work_email": "john@company.com",
+        "personal_email": "john@gmail.com"
+      },
+      "contact_email": "john@company.com"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### IP Resolution
+
+<ExampleGrid>
+  <CommentCol>
+    Selecting best available IP address from multiple sources...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "client_ip": null,
+        "forwarded_ip": "",
+        "remote_ip": "192.168.1.100"
+      },
+      "source": {
+        "ip": "10.0.0.50"
+      }
+    }
+    ```
+    ```yaml
+    - coalesce:
+        fields: ["network.client_ip", "network.forwarded_ip", "network.remote_ip", "source.ip"]
+        target_field: client_address
+        ignore_empty_string: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    skips null/empty, finds first valid IP:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "client_ip": null,
+        "forwarded_ip": "",
+        "remote_ip": "192.168.1.100"
+      },
+      "source": {
+        "ip": "10.0.0.50"
+      },
+      "client_address": "192.168.1.100"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Message Fallback
+
+<ExampleGrid>
+  <CommentCol>
+    Finding message from various log format fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "original": null
+      },
+      "message": null,
+      "log": {
+        "message": "User login successful"
+      },
+      "raw_message": "Login event"
+    }
+    ```
+    ```yaml
+    - coalesce:
+        fields: ["event.original", "message", "log.message", "raw_message"]
+        target_field: processed_message
+    ```
+  </CodeCol>
+  <CommentCol>
+    selects first available message:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "original": null
+      },
+      "message": null,
+      "log": {
+        "message": "User login successful"
+      },
+      "raw_message": "Login event",
+      "processed_message": "User login successful"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Timestamps
+
+<ExampleGrid>
+  <CommentCol>
+    Selecting best timestamp from multiple time fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "@timestamp": null,
+      "event": {
+        "created": "2023-12-01T10:30:00Z"
+      },
+      "log": {
+        "timestamp": "2023-12-01T10:29:55Z"
+      },
+      "received_at": "2023-12-01T10:30:05Z"
+    }
+    ```
+    ```yaml
+    - coalesce:
+        fields: ["@timestamp", "event.created", "log.timestamp", "received_at"]
+        target_field: event_time
+    ```
+  </CodeCol>
+  <CommentCol>
+    chooses first non-null timestamp:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "@timestamp": null,
+      "event": {
+        "created": "2023-12-01T10:30:00Z"
+      },
+      "log": {
+        "timestamp": "2023-12-01T10:29:55Z"
+      },
+      "received_at": "2023-12-01T10:30:05Z",
+      "event_time": "2023-12-01T10:30:00Z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+

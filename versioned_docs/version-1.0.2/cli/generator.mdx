@@ -1,0 +1,357 @@
+---
+description: Command-line options
+pagination_prev: null
+pagination_next: null
+sidebar_label: Generator
+---
+
+# CLI: Generator
+
+## Overview
+
+**VirtualMetric Generator&trade;** is a powerful testing tool designed to generate various types of network data for testing and validation purposes. It supports multiple protocols including Syslog, TCP, UDP, HTTP, Netflow, and VMF, making it an essential companion tool for testing DataStream configurations and device setups.
+
+## Synopsis
+
+```bash
+vmetric-generator [OPTIONS]
+```
+
+## Options
+
+The following command line options are available.
+
+### General Options
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-example`|-|Show usage examples|
+|`-version`|-|Display version information|
+
+### Protocol Configuration
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-address`|`127.0.0.1:514`|Target address and port|
+|`-protocol`|`syslog`|Protocol to use (`syslog`, `tcp`, `udp`, `http`, `netflow`, `vmf`)|
+|`-severity`|`Error`|Syslog severity level|
+
+### Message Configuration
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-message`|`VirtualMetric Test Message`|Message content to send|
+|`-count`|`1000`|Number of messages to generate|
+|`-file-path`|-|Path to file containing messages|
+
+### Timing Configuration
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-duration`|`300`|Total duration to generate messages (seconds)|
+|`-interval`|`1`|Interval between messages (seconds)|
+|`-now`|`false`|Generate messages immediately without timing delays|
+
+## Protocol-Specific Usage
+
+### Syslog Generator
+
+The default protocol for generating RFC3164 and RFC5424 compliant syslog messages.
+
+* Basic Usage:
+
+  ```bash
+  vmetric-generator
+  ```
+
+* With Custom Parameters:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=192.168.1.100:514 -severity=Info -message="Custom syslog message" -count=500
+  ```
+
+* Supported Severity Levels:
+
+  - Emergency
+  - Alert
+  - Critical
+  - Error (default)
+  - Warning
+  - Notice
+  - Info
+  - Debug
+
+### TCP Generator
+
+Generates raw TCP messages for testing TCP-based log collectors.
+
+* Basic Usage:
+
+  ```bash
+  vmetric-generator -protocol=tcp -address=127.0.0.1:1514
+  ```
+
+* With File Input:
+
+  ```bash
+  vmetric-generator -protocol=tcp -address=127.0.0.1:1514 -file-path=./test-messages.txt -count=100
+  ```
+
+### UDP Generator
+
+Generates UDP messages for testing UDP-based collectors and parsers.
+
+* Basic Usage:
+
+  ```bash
+  vmetric-generator -protocol=udp -address=127.0.0.1:514
+  ```
+
+* High-Volume Testing:
+
+  ```bash
+  vmetric-generator -protocol=udp -address=127.0.0.1:514 -count=10000 -interval=0 -duration=60
+  ```
+
+### HTTP Generator
+
+Generates HTTP POST requests for testing HTTP endpoints and APIs.
+
+* Basic Usage:
+
+  ```bash
+  vmetric-generator -protocol=http -address=http://127.0.0.1:8080/logs
+  ```
+
+* With JSON Payload:
+
+  ```bash
+  vmetric-generator -protocol=http -address=http://127.0.0.1:8080/api/logs -message='{"level":"info","source":"test"}' -count=200
+  ```
+
+### Netflow Generator
+
+Generates Netflow v5 records for testing network flow collectors.
+
+* Basic Usage:
+
+  ```bash
+  vmetric-generator -protocol=netflow -address=127.0.0.1:2055
+  ```
+
+* Continuous Flow Generation:
+
+  ```bash
+  vmetric-generator -protocol=netflow -address=127.0.0.1:2055 -count=5000 -interval=2 -duration=600
+  ```
+
+### VMF Generator
+
+Generates VirtualMetric Format (VMF) messages for internal testing.
+
+* Basic Usage:
+
+  ```bash
+  vmetric-generator -protocol=vmf -file-path=./output.vmf
+  ```
+
+* With Custom Content:
+
+  ```bash
+  vmetric-generator -protocol=vmf -file-path=./metrics.vmf -message="Custom VMF data" -count=1000
+  ```
+
+## Common Usage Patterns
+
+### Performance Testing
+
+* High-Volume Syslog Testing:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -count=50000 -interval=0 -now
+  ```
+
+* Sustained Load Testing:
+
+  ```bash
+  vmetric-generator -protocol=tcp -address=127.0.0.1:1514 -count=10000 -interval=1 -duration=3600
+  ```
+
+### Device Configuration Testing
+
+* Test UDP Syslog Device:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -message="Test UDP syslog device" -count=10
+  ```
+
+* Test TCP Device with Custom Port:
+
+  ```bash
+  vmetric-generator -protocol=tcp -address=127.0.0.1:1514 -message="Test TCP device" -count=5
+  ```
+
+* Test HTTP Endpoint:
+
+  ```bash
+  vmetric-generator -protocol=http -address=http://127.0.0.1:8080/ingest -message='{"test": "data"}' -count=1
+  ```
+
+### File-Based Testing
+
+* Using Message Files:
+
+  ```bash
+  vmetric-generator -protocol=tcp -address=127.0.0.1:1514 -file-path=./sample-logs.txt -count=100
+  ```
+
+  Create a file `sample-logs.txt` with different message formats:
+  ```
+  2024-01-15 10:30:45 server01 nginx: Connection established
+  2024-01-15 10:30:46 server01 nginx: Request processed in 120ms
+  2024-01-15 10:30:47 server01 nginx: Connection closed
+  ```
+
+### Timing Control
+
+* Immediate Generation:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -now -count=100
+  ```
+
+* Controlled Rate:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -interval=5 -count=60 -duration=300
+  ```
+
+## Integration with DataStream
+
+### Testing Device Configurations
+
+* Test Basic Syslog Device:
+
+  Start your syslog device first
+  
+  ```bash
+  vmetric-director -path=<vm_root>/Director/config/syslog-config.yml
+  ```
+
+  Then generate test data
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -count=10
+  ```
+
+* Test Pipeline Processing:
+
+  Generate structured data for pipeline testing
+  
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -message="Jan 15 14:23:12 webserver01 apache: User login successful" -count=5
+  ```
+
+### Load Testing
+
+* Device Performance Testing:
+
+  Test device under load
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -count=10000 -interval=0 -duration=60
+  ```
+
+* Network Capacity Testing:
+
+  Test network handling capacity
+
+  ```bash
+  vmetric-generator -protocol=tcp -address=192.168.1.100:1514 -count=50000 -interval=0
+  ```
+
+## Troubleshooting
+
+### Connection Issues
+
+* Test Connectivity:
+
+  ```bash
+  vmetric-generator -protocol=tcp -address=target-server:1514 -count=1 -message="Connection test"
+  ```
+
+* Verify UDP Reception:
+
+  ```bash
+  vmetric-generator -protocol=udp -address=127.0.0.1:514 -count=1 -message="UDP connectivity test"
+  ```
+
+### Performance Issues
+
+* Low-Rate Testing:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -count=10 -interval=10
+  ```
+
+* Immediate Burst Testing:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -count=1000 -now
+  ```
+
+## Examples and Use Cases
+
+### Basic Testing Scenarios
+
+* Validate Syslog Collection:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -message="Basic validation test" -count=1
+  ```
+
+* Test Multiple Severity Levels:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -severity=Info -count=5
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -severity=Error -count=5
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -severity=Debug -count=5
+  ```
+
+### Advanced Testing Scenarios
+
+* Simulate Network Flow Data:
+
+  ```bash
+  vmetric-generator -protocol=netflow -address=127.0.0.1:2055 -count=1000 -interval=1 -duration=300
+  ```
+
+* HTTP API Load Testing:
+
+  ```bash
+  vmetric-generator -protocol=http -address=http://api.example.com/logs -count=1000 -interval=1
+  ```
+
+### Continuous Monitoring Setup
+
+* Long-Running Test:
+
+  ```bash
+  vmetric-generator -protocol=syslog -address=127.0.0.1:514 -count=86400 -interval=1 -duration=86400
+  ```
+
+This generates one message per second for 24 hours, useful for long-term stability testing.
+
+## Version Information
+
+To check the current version:
+
+```bash
+vmetric-generator -version
+```
+
+To see usage examples:
+
+```bash
+vmetric-generator -example
+```

@@ -1,0 +1,223 @@
+---
+description: Calculates the maximum value
+sidebar_custom_props:
+  customCategory: Arithmetic
+  customIcon: 🔼
+---
+
+# Max
+
+<span className="theme-doc-version-badge badge badge--primary">Arithmetic</span><span className="theme-doc-version-badge badge badge--secondary">Data Analysis</span>
+
+## Synopsis
+
+Calculates the maximum value between two numeric operands.
+
+## Schema
+
+```yaml {2-4}
+- max:
+    field: <ident>
+    left_operand: <string>
+    right_operand: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the maximum value|
+|`left_operand`|Y|-|First value to compare - can be a literal value or field reference|
+|`right_operand`|Y|-|Second value to compare - can be a literal value or field reference|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if comparison fails|
+|`ignore_missing`|N|`false`|Skip if referenced fields don't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Compares two numeric values and stores the larger value in the target field. The processor can use literal values or extract values from existing fields in the log entry.
+
+:::note
+Numeric values are automatically converted to appropriate types for comparison. The processor accepts both literal values and field references for operands.
+:::
+
+The processor is useful for finding maximum values, implementing ceiling functions, and ensuring values don't fall below thresholds.
+
+:::warning
+If either operand cannot be converted to a number, the processor will fail unless `ignore_failure` is set to `true`. Always ensure inputs are valid numbers or provide proper error handling.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Comparing two literal values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": {}
+    }
+    ```
+    ```yaml
+    - max:
+        field: values.max_value
+        left_operand: "42"
+        right_operand: "17"
+    ```
+  </CodeCol>
+  <CommentCol>
+    stores the larger value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": {
+        "max_value": 42
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Field-Based
+
+<ExampleGrid>
+  <CommentCol>
+    Finding maximum between field values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": {
+        "morning": 15.2,
+        "afternoon": 23.8,
+        "evening": 18.5
+      }
+    }
+    ```
+    ```yaml
+    - max:
+        field: temperature.max_morning_afternoon
+        left_operand: "temperature.morning"
+        right_operand: "temperature.afternoon"
+    - max:
+        field: temperature.daily_max
+        left_operand: "temperature.max_morning_afternoon"
+        right_operand: "temperature.evening"
+    ```
+  </CodeCol>
+  <CommentCol>
+    compares multiple values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": {
+        "morning": 15.2,
+        "afternoon": 23.8,
+        "evening": 18.5,
+        "max_morning_afternoon": 23.8,
+        "daily_max": 23.8
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Thresholds
+
+<ExampleGrid>
+  <CommentCol>
+    Ensuring value doesn't fall below threshold...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "memory": {
+        "allocation": 512
+      },
+      "defaults": {
+        "min_memory": 1024
+      }
+    }
+    ```
+    ```yaml
+    - max:
+        field: memory.allocation
+        left_operand: "memory.allocation"
+        right_operand: "defaults.min_memory"
+    ```
+  </CodeCol>
+  <CommentCol>
+    enforces minimum allocation:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "memory": {
+        "allocation": 1024
+      },
+      "defaults": {
+        "min_memory": 1024
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Types
+
+<ExampleGrid>
+  <CommentCol>
+    Comparing values of different types...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request": {
+        "timeout": "30"
+      },
+      "system": {
+        "max_timeout": 60
+      }
+    }
+    ```
+    ```yaml
+    - max:
+        field: request.timeout
+        left_operand: "request.timeout"
+        right_operand: "system.max_timeout"
+    ```
+  </CodeCol>
+  <CommentCol>
+    handles automatic type conversion:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request": {
+        "timeout": 60
+      },
+      "system": {
+        "max_timeout": 60
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

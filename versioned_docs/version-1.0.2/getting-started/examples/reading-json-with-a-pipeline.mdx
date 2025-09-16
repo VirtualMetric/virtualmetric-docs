@@ -1,0 +1,189 @@
+
+# Example: Reading JSON With a Pipeline
+
+This section will help you get started with configuring and running a very simple pipeline, walking you through a common use case.
+
+:::info
+For a detailed discussion of pipelines, see <Topic id="pipelines-overview-config">this section</Topic>.
+:::
+
+In this example, we will use a feature of **Director** that facilitates designing and testing pipelines.
+
+## Scenario
+
+To understand how a pipeline works at the very basic level, we will create a very simple input file in JSON format and a very simple pipeline that does only one transformation. Afterwards, we will write the transformed data to another JSON file.
+
+Using **Director**'s pipeline validation and testing functionality, we will see the pipeline in action.
+
+## Setup and Trial
+
+<Include id="config-files-execution" />
+
+### Create the test data
+
+First, create a JSON file named `sample-data.json` in our working directory, and put the following sample data in it:
+
+```json title="sample-data.json"
+{
+  "raw_data": "{\"words\": \"hello world\"}"
+}
+```
+
+### Define the pipeline logic
+
+Then, create a YAML file in our working directory named `convert-words.yml`, and put the following pipeline definition in it:
+
+```yaml title="convert-words.yml"
+pipelines:
+  - name: convert_words
+    processors:
+      - json:
+          field: raw_data
+          add_to_root: true
+      - uppercase:
+          field: words
+          target_field: converted_words
+```
+
+:::tip
+When configuring a pipeline, we use the identifiers in the `name` fields of the components.
+:::
+
+Here is what this pipeline will do:
+
+- Look for the field named `raw_data` in the JSON file we will feed it.
+- Using the <Topic id="processors-json">`json`</Topic> processor, grab its contents and&mdash;since we turned on its `add_to_root` setting&mdash;move the `words` field one level up.
+- Using the <Topic id="processors-uppercase">`uppercase`</Topic> processor, convert the words to uppercase and write them to a field named `converted_words`.
+
+### Validate the pipeline
+
+To see whether our pipeline is valid, we enter the following command in the terminal:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell">
+    ```PowerShell
+    .\vmetric-director -validate -path=".\config\Examples\convert-words.yml"
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -validate -path="./config/Examples/convert-words.yml"
+    ```
+  </TabItem>
+</Tabs>
+
+:::info[important]
+Note that we have to specify the paths and names of the files we are using. This is specific to the _pipeline_ mode.
+:::
+
+If our pipeline is valid, this command will return:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell">
+    ```PowerShell
+    [OK] No issues found.
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    [OK] No issues found.
+    ```
+  </TabItem>
+</Tabs>
+
+And that is indeed the case. Now, to `visualize` the output, enter the following command:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell">
+    ```PowerShell
+    .\vmetric-director -pipeline -path=".\config\Examples\convert-words.yml" -name=convert_words -visualize
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -pipeline -path="./config/Examples/convert-words.yml" -name=convert_words -visualize
+    ```
+  </TabItem>
+</Tabs>
+
+This should return the following:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell">
+    ```PowerShell
+    {
+      "converted_words": "HELLO WORLD",
+      "raw_data": "{\"words\": \"hello world\"}",
+      "words": "hello world"
+    }
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    {
+      "converted_words": "HELLO WORLD",
+      "raw_data": "{\"words\": \"hello world\"}",
+      "words": "hello world"
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+This means, **Director** is able to recognize the pipeline we have defined by its name and generate the expected output.
+
+Now we can test our pipeline.
+
+### Test the pipeline
+
+To see our pipeline in action, enter the following in the terminal and check its status message:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell">
+    ```PowerShell
+    .\vmetric-director -pipeline -path=".\config\Examples\convert-words.yml" -name convert_words -input ".\config\Examples\sample-data.json" -output ".\config\Examples\processed-sample-data.json"
+    Successfully exported to .\config\Examples\processed-sample-data.json
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -pipeline -path="./config/Examples/convert-words.yml" -name convert_words -input "./config/Examples/sample-data.json" -output "./config/Examples/processed-sample-data.json"
+    Successfully exported to ./config/Examples/processed-sample-data.json
+    ```
+  </TabItem>
+</Tabs>
+
+Here is what this test does:
+
+* Consume the data in the input file named `sample-data.json` in our working directory
+* Using the pipeline we named `convert_words`, extract and convert the words in the `words` field to `uppercase`
+* Write the converted names to a new field named `converted_words`
+* Save the results, along with the original `raw_data`, to an output file named `processed-sample-data.json` in our working directory.
+
+:::note
+The output file should be created when the test is run.
+:::
+
+### Check the processed data
+
+Now open the file named `processed-sample-data.json` to see the results. It should appear like this:
+
+```json title="processed-sample-data.json"
+{
+    "converted_words": "HELLO WORLD",
+    "raw_data": "{\"words\": \"hello world\"}",
+    "words": "hello world"
+}
+```
+
+## Monitoring
+
+Verify the pipeline processed correctly:
+
+- Output file `processed-sample-data.json` was created
+- File contains the expected `converted_words` field with "HELLO WORLD"
+
+If both conditions are met, your pipeline is functioning properly.
+
+---
+
+Now we can proceed to designing an end-to-end _data stream_.

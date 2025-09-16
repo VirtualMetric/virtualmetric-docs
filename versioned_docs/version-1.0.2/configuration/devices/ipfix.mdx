@@ -1,0 +1,168 @@
+import AppProtocols from "./_app-protocols.mdx";
+
+# IPFix
+
+<span className="theme-doc-version-badge badge badge--secondary">Push</span>
+
+## Synopsis
+
+Creates an IPFix collector that accepts flow data over UDP connections. Supports High-Volume collection with multiple worker processes and configurable buffer sizes.
+
+For details, see <Topic id="appendix-ipfix">Appendix</Topic>.
+
+## Schema
+
+```yaml {1,2,4}
+id: <numeric>
+name: <string>
+description: <string>
+type: ipfix
+tags: <string[]>
+pipelines: <pipeline[]>
+status: <boolean>
+properties:
+  address: <string>
+  port: <numeric>
+  reuse: <boolean>
+  buffer_size: <numeric>
+```
+
+## Configuration
+
+The following fields are used to define the device:
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `ipfix`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|N|`4739`|Listen port|
+|`reuse`|N|`true`|Enable socket address reuse|
+
+### Performance
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`buffer_size`|N|`9000`|Network read buffer size in bytes|
+
+## Key Features
+
+The following are unique features that **Director** offers.
+
+### Multiple Workers
+
+When `reuse` is enabled, the collector automatically scales to use multiple workers based on available CPU cores. Each worker maintains its own UDP listener, processes flows independently, and writes to a dedicated queue file.
+
+### Flows
+
+The collector supports template management for NetFlow v9/IPFix, application identification, port-based protocol mapping, flow state tracking, and statistical aggregation.
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic
+
+The minimum required configuration using defaults:
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple IPFix collector...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 1
+        name: basic_ipfix
+        type: ipfix
+        properties:
+          port: 4739
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+Performance can be enhanced for high volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high message volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 2
+        name: performant_ipfix
+        type: ipfix
+        properties:
+          address: "0.0.0.0"
+          port: 4739
+          reuse: true
+          buffer_size: 32768
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When `reuse` is enabled, the collector automatically scales up to use all available CPU cores.
+:::
+
+### Multiple Flows
+
+Multiple flow types can be collected through a single device:
+
+<ExampleGrid>
+  <CommentCol>
+    Collecting multiple flow types...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 3
+        name: multi_flow
+        type: ipfix
+        properties:
+          address: "0.0.0.0"
+          port: 4739
+          reuse: true
+          buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+Each flow type requires its own port. Ensure no port conflicts exist between different collectors.
+:::
+
+<AppProtocols />
+
+<ExampleGrid>
+  <CommentCol>
+    Using application identification...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 4
+        name: app_aware_ipfix
+        type: ipfix
+        properties:
+          port: 4739
+          reuse: true
+          buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>

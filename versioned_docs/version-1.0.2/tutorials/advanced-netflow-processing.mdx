@@ -1,0 +1,382 @@
+---
+sidebar_label: Advanced NetFlow Processing
+---
+
+# Advanced NetFlow Processing with Geographic Enrichment
+
+## Synopsis
+
+This tutorial demonstrates advanced NetFlow data processing using DataStream's network flow capabilities. You'll learn to ingest NetFlow v5/v9 data, enrich it with geographic and threat intelligence information, apply network direction classification, and export enriched data for security analysis.
+
+**Prerequisites:**
+
+- Completed basic DataStream tutorials
+- Access to NetFlow data source or sample files
+- Internet connectivity for GeoIP and threat intelligence lookups
+
+**Configuration files used:**
+
+- `netflow-enrichment.yml` - Main configuration
+- Sample NetFlow data files
+
+**Sample data:**
+
+- NetFlow v5 sample data
+- GeoIP database (automatically downloaded)
+
+## Scenario
+
+Network security teams need to analyze NetFlow data for threat detection and traffic pattern analysis. This tutorial implements a comprehensive NetFlow processing pipeline that:
+
+- **Ingests NetFlow data** - Collects NetFlow v5/v9 records from network devices
+- **Enriches with geography** - Adds country, city, and ASN information for source/destination IPs
+- **Classifies traffic direction** - Determines internal vs external traffic patterns
+- **Applies threat intelligence** - Checks IPs against threat feeds
+- **Calculates network metrics** - Adds bandwidth utilization and session duration
+- **Exports for analysis** - Outputs enriched data in JSON format for SIEM consumption
+
+**Data flow:**
+
+NetFlow Data → Geographic Enrichment → Network Classification → Threat Intelligence → Metrics Calculation → JSON Export
+
+**Techniques demonstrated:**
+
+- NetFlow protocol handling
+- GeoIP enrichment
+- Network direction analysis
+- Threat intelligence integration
+- Mathematical processors for metrics
+
+## Setup
+
+### Key Configuration Components
+
+- **Device**: NetFlow collector listening on UDP port 2055
+- **Pipeline**: Multi-stage enrichment with geo, threat, and network processors
+- **Target**: JSON file output with compression
+
+### Quick Reference of Processors Used
+
+|Processor|Purpose|Key Parameters|
+|---|---|---|
+|`geoip`|Geographic enrichment|`source_ip`, `target_field`, `database_type`|
+|`network_direction`|Traffic direction classification|`source_ip`, `destination_ip`, `internal_networks`|
+|`virustotal`|Threat intelligence lookup|`field`, `api_key`, `cache_ttl`|
+|`math`|Bandwidth calculation|`operation`, `operands`|
+|`add`|Duration calculation|`left_operand`, `right_operand`|
+
+### Expected Input/Output Formats
+
+**Input**: NetFlow v5/v9 binary records
+**Output**: Enriched JSON with geographic, threat, and network classification data
+
+## Trial
+
+<Include id="config-files-execution" />
+
+Create a configuration file named `netflow-enrichment.yml` in your working directory.
+
+### Step 1: Configure the NetFlow Device
+
+```yml title="netflow-enrichment.yml"
+devices:
+  - id: 1
+    name: netflow_collector
+    type: netflow
+    status: true
+    properties:
+      protocol: udp
+      address: 0.0.0.0
+      port: 2055
+      version: 5
+      template_timeout: 1800
+      buffer_size: 65536
+```
+
+This configuration creates a NetFlow collector that:
+
+- Listens on all interfaces (`0.0.0.0`) on port 2055
+- Supports NetFlow v5 (most common version)
+- Uses 1800-second template timeout for v9/v10
+- Allocates 64KB buffer for high-throughput scenarios
+
+### Step 2: Configure the JSON Target
+
+```yml title="netflow-enrichment.yml"
+targets:
+  - name: enriched_netflow
+    type: file
+    status: true
+    properties:
+      location: C:\Users\<username>\Documents\Logs
+      name: netflow-enriched-{date}.json
+      compression: zstd
+      format: json
+      rotation: daily
+      max_size: 100MB
+```
+
+:::caution
+Ensure the target directory exists and you have write permissions. NetFlow data can generate significant volume.
+:::
+
+### Step 3: Configure the Enrichment Pipeline
+
+```yml title="netflow-enrichment.yml"
+pipelines:
+  - name: netflow_enrichment_pipeline
+    processors:
+      # Geographic enrichment for source IP
+      - geoip:
+          field: src_addr
+          target_field: src_geo
+          database_type: city
+          ignore_missing: true
+          if: "src_addr != null"
+      
+      # Geographic enrichment for destination IP
+      - geoip:
+          field: dst_addr
+          target_field: dst_geo
+          database_type: city
+          ignore_missing: true
+          if: "dst_addr != null"
+      
+      # ASN enrichment for source IP
+      - geoip:
+          field: src_addr
+          target_field: src_asn
+          database_type: asn
+          ignore_missing: true
+          if: "src_addr != null"
+      
+      # ASN enrichment for destination IP
+      - geoip:
+          field: dst_addr
+          target_field: dst_asn
+          database_type: asn
+          ignore_missing: true
+          if: "dst_addr != null"
+      
+      # Network direction classification
+      - network_direction:
+          source_ip: src_addr
+          destination_ip: dst_addr
+          target_field: traffic_direction
+          internal_networks:
+            - "10.0.0.0/8"
+            - "172.16.0.0/12"
+            - "192.168.0.0/16"
+      
+      # Threat intelligence for source IP
+      - virustotal:
+          field: src_addr
+          target_field: src_threat_intel
+          api_key: "your_virustotal_api_key"
+          cache_ttl: 3600
+          ignore_failure: true
+          if: "traffic_direction == 'outbound' or traffic_direction == 'external'"
+      
+      # Threat intelligence for destination IP
+      - virustotal:
+          field: dst_addr
+          target_field: dst_threat_intel
+          api_key: "your_virustotal_api_key"
+          cache_ttl: 3600
+          ignore_failure: true
+          if: "traffic_direction == 'inbound' or traffic_direction == 'external'"
+      
+      # Calculate bandwidth (bytes per second)
+      - math:
+          operation: divide
+          operands:
+            - in_bytes
+            - duration
+          target_field: bandwidth_bps
+          ignore_missing: true
+          if: "duration > 0"
+      
+      # Calculate packets per second
+      - math:
+          operation: divide
+          operands:
+            - in_pkts
+            - duration
+          target_field: packets_per_second
+          ignore_missing: true
+          if: "duration > 0"
+      
+      # Add flow classification
+      - set:
+          field: flow_type
+          value: "high_volume"
+          if: "in_bytes > 1048576"  # > 1MB
+      
+      - set:
+          field: flow_type
+          value: "long_duration"
+          if: "duration > 300 and flow_type == null"  # > 5 minutes
+      
+      - set:
+          field: flow_type
+          value: "normal"
+          if: "flow_type == null"
+      
+      # Add timestamp for analysis
+      - set:
+          field: processed_at
+          value: "{{_timestamp}}"
+      
+      # Clean up unnecessary fields
+      - remove:
+          field: template_id
+          ignore_missing: true
+```
+
+:::note
+Replace `your_virustotal_api_key` with your actual VirusTotal API key. You can obtain one free at [virustotal.com](https://www.virustotal.com/gui/join-us).
+:::
+
+### Step 4: Configure the Route
+
+```yml title="netflow-enrichment.yml"
+routes:
+  - name: netflow_enrichment_route
+    devices:
+      - name: netflow_collector
+    pipelines:
+      - name: netflow_enrichment_pipeline
+    targets:
+      - name: enriched_netflow
+```
+
+### Step 5: Test with Sample Data
+
+First, start Director in console mode to monitor processing:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    .\vmetric-director -console
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -console
+    ```
+  </TabItem>
+</Tabs>
+
+If you have access to real NetFlow data, configure your network devices to send NetFlow records to your DataStream instance at port 2055.
+
+To test with sample data, you can use the built-in generator:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    .\vmetric-director -generator -protocol netflow -count 10 -address "127.0.0.1:2055"
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -generator -protocol netflow -count 10 -address "127.0.0.1:2055"
+    ```
+  </TabItem>
+</Tabs>
+
+<Include id="generator-usage" />
+
+### Step 6: Verify Enriched Output
+
+Check the output file in your logs directory. The enriched NetFlow data should look like this:
+
+```json
+{
+  "src_addr": "192.168.1.100",
+  "dst_addr": "8.8.8.8",
+  "src_port": 51234,
+  "dst_port": 53,
+  "protocol": 17,
+  "in_bytes": 156,
+  "in_pkts": 2,
+  "duration": 0.145,
+  "src_geo": {
+    "country": "US",
+    "city": "Mountain View",
+    "latitude": 37.4056,
+    "longitude": -122.0775
+  },
+  "dst_geo": {
+    "country": "US",
+    "city": "Mountain View",
+    "latitude": 37.4056,
+    "longitude": -122.0775
+  },
+  "src_asn": {
+    "number": 15169,
+    "organization": "Google LLC"
+  },
+  "dst_asn": {
+    "number": 15169,
+    "organization": "Google LLC"
+  },
+  "traffic_direction": "outbound",
+  "dst_threat_intel": {
+    "malicious": false,
+    "reputation": "clean"
+  },
+  "bandwidth_bps": 1075.86,
+  "packets_per_second": 13.79,
+  "flow_type": "normal",
+  "processed_at": "2025-01-12T10:30:45Z"
+}
+```
+
+## Monitoring
+
+### Key Metrics to Observe
+
+Monitor these important metrics during processing:
+
+1. **Flow Processing Rate**: Check logs for flows processed per second
+2. **Enrichment Success Rate**: Monitor GeoIP and threat intelligence lookup success
+3. **Memory Usage**: NetFlow can be memory intensive with high volumes
+4. **API Rate Limits**: Watch for VirusTotal API quota warnings
+
+### Performance Considerations
+
+- **GeoIP Database**: Downloads automatically but requires ~100MB disk space
+- **Threat Intelligence**: VirusTotal has rate limits (4 requests/minute for free accounts)
+- **Buffer Sizing**: Increase `buffer_size` for high-volume environments
+- **Caching**: Enable caching for repeated IP lookups to improve performance
+
+### Common Troubleshooting
+
+**Issue**: NetFlow data not appearing in output
+- Verify UDP port 2055 is accessible
+- Check firewall settings
+- Confirm NetFlow version compatibility
+
+**Issue**: GeoIP enrichment failing
+- Ensure internet connectivity for database downloads
+- Check disk space in temp directory
+- Verify GeoIP database updates
+
+**Issue**: Threat intelligence lookups failing
+- Verify VirusTotal API key is valid
+- Check API quota limits
+- Monitor network connectivity to VirusTotal
+
+### Log Analysis Techniques
+
+Monitor these log patterns:
+
+```console
+[2025-01-12 10:30:45] [Information] [netflow-2055] Processing NetFlow messages.. Number of Messages: 150
+[2025-01-12 10:30:46] [Information] [geoip] GeoIP database loaded successfully: GeoLite2-City.mmdb
+[2025-01-12 10:30:47] [Information] [virustotal] API quota remaining: 3950/4000
+```
+
+:::caution
+This tutorial configuration is for learning purposes. For production environments, consider implementing additional security measures, rate limiting, and monitoring.
+:::

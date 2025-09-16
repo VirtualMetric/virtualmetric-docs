@@ -1,0 +1,162 @@
+# ClickHouse
+
+<span className="theme-doc-version-badge badge badge--secondary">Databases</span><span className="theme-doc-version-badge badge badge--secondary">Analytics</span>
+
+## Synopsis
+
+Creates a ClickHouse target that sends log data to a ClickHouse database server for analytics and storage. Supports batch processing and field normalization.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: clickhouse
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <integer>
+    username: <string>
+    password: <string>
+    database: <string>
+    table: <string>
+    batch_size: <integer>
+    field_format: <string>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `clickhouse`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|Y|-|ClickHouse server address|
+|`port`|N|`9000`|ClickHouse server port (native protocol)|
+|`username`|Y|-|ClickHouse username|
+|`password`|Y|-|ClickHouse password|
+|`database`|Y|-|ClickHouse database name|
+|`table`|Y|-|ClickHouse table name|
+
+### Processing
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|-|Number of log entries to batch before sending|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+## Details
+
+The ClickHouse target uses the native ClickHouse protocol to efficiently send log data in batches. Logs are accumulated until the batch size is reached, then sent to the server. The default batch size is defined by the service configuration, but can be overridden.
+
+The target supports field normalization to convert log data into standard formats like Elastic Common Schema (ECS), Common Information Model (CIM), or Advanced Security Information Model (ASIM) before sending it to ClickHouse.
+
+### Prerequisites
+
+1. A running ClickHouse server
+2. A database and table already created in ClickHouse
+3. A user with write permissions to the specified table
+
+:::note
+The ClickHouse table should have a schema compatible with the log data being sent. At minimum, it should include columns for timestamp and message fields.
+:::
+
+:::warning
+For high-volume logging, ensure your ClickHouse server is properly configured for performance, including appropriate settings for inserts, memory usage, and disk I/O.
+:::
+
+## Examples
+
+### Basic
+
+Minimum configuration for sending logs to ClickHouse:
+
+```yaml
+targets:
+  - name: basic_clickhouse
+    type: clickhouse
+    properties:
+      address: "192.168.1.100"
+      username: "default"
+      password: "password"
+      database: "logs"
+      table: "system_logs"
+```
+
+### Custom Port
+
+Configuration with a non-default port:
+
+```yaml
+targets:
+  - name: custom_port_clickhouse
+    type: clickhouse
+    properties:
+      address: "clickhouse.example.com"
+      port: 9440
+      username: "logger"
+      password: "secure_password"
+      database: "logs"
+      table: "application_logs"
+```
+
+### With Normalization
+
+Configuration using field normalization:
+
+```yaml
+targets:
+  - name: normalized_clickhouse
+    type: clickhouse
+    properties:
+      address: "clickhouse.example.com"
+      username: "logger"
+      password: "secure_password"
+      database: "logs"
+      table: "security_logs"
+      field_format: "ecs"
+```
+
+### With Pipeline
+
+Using a pipeline for additional log processing:
+
+```yaml
+targets:
+  - name: pipeline_clickhouse
+    type: clickhouse
+    pipelines:
+      - enrich_logs
+    properties:
+      address: "clickhouse.example.com"
+      username: "logger"
+      password: "secure_password"
+      database: "logs"
+      table: "enriched_logs"
+```
+
+### Secure Configuration
+
+Using environment variables for credentials:
+
+```yaml
+targets:
+  - name: secure_clickhouse
+    type: clickhouse
+    properties:
+      address: "${CLICKHOUSE_ADDRESS}"
+      username: "${CLICKHOUSE_USER}"
+      password: "${CLICKHOUSE_PASSWORD}"
+      database: "logs"
+      table: "security_logs"
+```
