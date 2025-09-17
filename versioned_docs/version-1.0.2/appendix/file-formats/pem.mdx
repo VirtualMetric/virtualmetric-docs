@@ -1,0 +1,52 @@
+---
+pagination_prev: null
+pagination_next: null
+---
+
+# PEM
+
+**Privacy Enhanced Mail (PEM)** is a Base64-encoded format for storing cryptographic keys, certificates, and other security-related data. Despite its name, PEM is widely used beyond email applications for various cryptographic purposes.
+
+## Structure Format
+
+|Component|Description|Example|
+|--:|:--|:--|
+|**Begin Marker**|Header identifying content type|`-----BEGIN CERTIFICATE-----`|
+|**Headers**|Optional key-value metadata pairs|`Proc-Type: 4,ENCRYPTED`|
+|**Encoded Data**|Base64-encoded binary content|`MIIHzTCCBbWgAwIBAgIQaBYE3/M08XHYCnNVmcFBcjANBgkqhkiG9w0BAQsFADBy...`|
+|**End Marker**|Footer matching the begin marker|`-----END CERTIFICATE-----`|
+
+## Common PEM Types
+
+|Type|Begin/End Label|Description|Use Case|
+|--:|:-:|:--|:--|
+|Certificate|`CERTIFICATE`|X.509 public key certificate|SSL/TLS, code signing|
+|Private Key|`PRIVATE KEY`|PKCS#8 private key|General-purpose private key storage|
+|RSA Private Key|`RSA PRIVATE KEY`|PKCS#1 RSA private key|RSA-specific private keys|
+|Public Key|`PUBLIC KEY`|X.509 SubjectPublicKeyInfo|Public key distribution|
+|Certificate Request|`CERTIFICATE REQUEST`|PKCS#10 certificate signing request|Certificate authority requests|
+|DH Parameters|`DH PARAMETERS`|Diffie-Hellman parameters|Key exchange configuration|
+|EC Private Key|`EC PRIVATE KEY`|Elliptic Curve private key|EC cryptography|
+
+## Encrypted PEM Format
+
+|Field|Description|Example|
+|--:|:--|:--|
+|**Proc-Type**|Processing type and encryption flag|`Proc-Type: 4,ENCRYPTED`|
+|**DEK-Info**|Encryption algorithm and IV|`DEK-Info: AES-256-CBC,A1B2C3D4E5F6...`|
+|**Encrypted Data**|Base64-encoded encrypted content|`Encrypted binary data...`|
+
+## Example Structure
+
+```encoding
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-256-CBC,A1B2C3D4E5F67890A1B2C3D4E5F67890
+
+MIIEpAIBAAKCAQEA2Z3QX0KZVE9I+sLlmEUKkYgJiEQSvfNF6JUVNBQdHPvs
+kNkRFWGLQQEjLXPOCjGhvQZZLvbPjVZGKlnTJ1yJQvzjhvnP0zJhExFmKWz8
+...
+-----END RSA PRIVATE KEY-----
+```
+
+PEM files are text-based, human-readable, and can contain multiple objects separated by blank lines. They're commonly used in web servers, email systems, and various security applications.

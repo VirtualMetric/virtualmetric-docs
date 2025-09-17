@@ -1,0 +1,199 @@
+---
+description: Expands dot notation field names into nested object structures
+sidebar_custom_props: 
+  customIcon: 🌳
+  customCategory: Transform
+---
+
+# Dot Expander
+
+<span className="theme-doc-version-badge badge badge--primary">Transform</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Expands fields containing dots in their names into nested objects.
+
+## Schema
+
+```yaml {2}
+- dot_expander:
+    field: <ident>
+    path: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing dot-separated names to expand|
+|`path`|N|-|Target location for expanded structure|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Continue processing on errors|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`tag`|N|-|Identifier for logging|
+
+## Details
+
+The processor converts flat field names with dot notation into nested object structures. This is particularly useful for transforming flattened data into hierarchical formats, improving data readability and standardizing field structures for nested processing.
+
+:::note
+The field must contain at least one dot. Also, nested expansions create complex object structures.
+:::
+
+By default, the processor automatically creates intermediate objects as needed, preserving original field values while removing the original dot-separated field. It also supports custom target paths for expanded structures.
+
+:::warning
+Deeply nested fields can lead to performance issues.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Expanding a dotted field into nested objects...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo.bar.baz": 123
+    }
+    ```
+    ```yaml
+    - dot_expander:
+        field: foo.bar.baz
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a nested structure:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo": {
+        "bar": {
+          "baz": 123
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Path Expansion
+
+<ExampleGrid>
+  <CommentCol>
+    Placing an expanded structure on a specific path...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source.field.value": 123
+    }
+    ```
+    ```yaml
+    - dot_expander:
+        field: source.field.value
+        path: target
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates the structure at specified location:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "target": {
+        "source": {
+          "field": {
+            "value": 123
+          }
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Expand only when a condition is met...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo.bar.baz": 123,
+      "condition": true
+    }
+    ```
+    ```yaml
+    - dot_expander:
+        field: foo.bar.baz
+        if: ctx.condition == true
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "condition": true,
+      "foo": {
+        "bar": {
+          "baz": 123
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    When a field doesn't contain any dots...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo": 123
+    }
+    ```
+    ```yaml
+    - dot_expander:
+        field: foo
+        ignore_failure: true
+        on_failure:
+          - set:
+              field: error
+              value: "No dots in field name"
+    ```
+  </CodeCol>
+  <CommentCol>
+    handle the error:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "foo": 123,
+      "error": "No dots in field name"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

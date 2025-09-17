@@ -1,0 +1,155 @@
+---
+description: Sorts values in a field
+sidebar_custom_props: 
+  customIcon: 🔀
+  customCategory: Mutate
+---
+
+# Sort
+
+<span className="theme-doc-version-badge badge badge--primary">Mutate</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Sorts the elements of an array in ascending or descending order.
+
+## Schema
+
+```yaml {2}
+- sort:
+    field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    order: <enum>
+    tag: <string>
+    target_field: <ident>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the array to be sorted|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`order`|N|`asc`|Sort order: `asc` or `desc`|
+|`tag`|N|-|Identifier|
+|`target_field`|N|`field`|Field to store the sorted array|
+
+## Details
+
+Arrays of numbers will be sorted numerically, whereas string arrays will be sorted lexicographically. When dealing with mixed arrays containing both strings and numbers, the sorting is performed lexicographically.
+
+The processor raises an exception if the specified field is not an array.
+
+:::warning
+The processor will fail if the specified field does not exist or is not an array. Set `ignore_failure` to `true` to handle such cases.
+:::
+
+## Examples
+
+### String Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Sorting a string array in ascending order...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "types": ["z", "b", "k"]
+      }
+    }
+    ```
+    ```yaml
+    - sort:
+        field: source.types
+    ```
+  </CodeCol>
+  <CommentCol>
+    orders strings lexicographically:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "types": ["b", "k", "z"]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Numeric Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Sorting numeric arrays in ascending order...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "destination": {
+        "types": [9, 3, 7]
+      }
+    }
+    ```
+    ```yaml
+    - sort:
+        field: destination.types
+        order: asc
+    ```
+  </CodeCol>
+  <CommentCol>
+    orders numbers numerically:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "destination": {
+        "types": [3, 7, 9]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keep Original
+
+<ExampleGrid>
+  <CommentCol>
+    Sorting the array into a new field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": [5, 2, 8, 1]
+    }
+    ```
+    ```yaml
+    - sort:
+        field: values
+        target_field: sorted_values
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves the original array:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": [5, 2, 8, 1],
+      "sorted_values": [1, 2, 5, 8]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

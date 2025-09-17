@@ -1,0 +1,283 @@
+---
+sidebar_label: Checkpoint
+---
+
+# Microsoft Sentinel Content Hub: Checkpoint
+
+**VirtualMetric Director** provides comprehensive integration with **Checkpoint** firewalls and security appliances through specialized content packs for **Microsoft Sentinel**. These content packs enable seamless ingestion, normalization, and analysis of **Checkpoint** security logs within your Sentinel environment.
+
+## Overview
+
+**Checkpoint** integration delivers real-time security monitoring capabilities by transforming **Checkpoint** log formats into Microsoft Sentinel-compatible schemas. The integration supports both traditional syslog ingestion and modern DCR-based data collection methods.
+
+## Supported **Checkpoint** Products
+
+The integration supports the following **Checkpoint** products:
+
+- **Checkpoint Firewall** - Network security appliances
+- **Checkpoint Endpoint Security** - Endpoint protection platforms
+- **Checkpoint CloudGuard** - Cloud security solutions
+- **Checkpoint Harmony** - Unified security platform
+- **Checkpoint Quantum** - Next-generation firewalls
+
+## Data Collection Methods
+
+* **_Syslog_ Integration** - **Checkpoint** devices can send logs directly to **Director** via syslog:
+
+  ```yaml
+  devices:
+    - id: 1
+      name: checkpoint_syslog
+      type: syslog
+      tags:
+        - "checkpoint"
+        - "firewall"
+      pipelines:
+        - checkpoint
+      properties:
+        protocol: udp
+        port: 514
+        address: "0.0.0.0"
+  ```
+
+  The `checkpoint` pipeline automatically processes and enriches **Checkpoint** log formats, extracting key security fields and normalizing data for Sentinel consumption.
+
+* **High-Volume Deployment** - For environments with high log volumes:
+
+  ```yaml
+  devices:
+    - id: 2
+      name: checkpoint_enterprise
+      type: syslog
+      tags:
+        - "checkpoint"
+        - "enterprise"
+      pipelines:
+        - checkpoint
+      properties:
+        protocol: udp
+        port: 514
+        reuse: true
+        workers: 4
+        buffer_size: 32768
+        batch_size: 5000
+        flush_interval: 5
+  ```
+
+## Content Pack Features
+
+### Security Event Normalization
+
+The **Checkpoint** content pack provides:
+
+- **Threat Detection Events** - Malware, intrusion attempts, and suspicious activities
+- **Network Traffic Analysis** - Connection logs, bandwidth utilization, and protocol analysis
+- **Authentication Events** - VPN connections, user logins, and access control
+- **Policy Violations** - Firewall rule violations and security policy breaches
+- **System Events** - Device health, configuration changes, and administrative activities
+
+### ASIM Compliance
+
+All **Checkpoint** data is normalized to _Advanced Security Information Model_ (<Topic id="appendix-asim">ASIM</Topic>) standards.
+
+**Example** - ASIM-compliant output:
+
+  ```yaml
+  {
+    "TimeGenerated": "2024-01-15T10:30:00Z",
+    "EventType": "NetworkSession",
+    "SrcIpAddr": "192.168.1.100",
+    "DstIpAddr": "10.0.0.50", 
+    "SrcPortNumber": 1234,
+    "DstPortNumber": 80,
+    "NetworkProtocol": "TCP",
+    "NetworkDirection": "Outbound",
+    "DeviceVendor": "**Checkpoint**",
+    "DeviceProduct": "Firewall",
+    "EventSeverity": "Informational"
+  }
+  ```
+
+### Custom Field Mapping
+
+The integration includes intelligent field mapping for **Checkpoint**-specific attributes:
+
+- **Checkpoint Log Types** - Mapped to ASIM event categories
+- **Security Policies** - Normalized policy identifiers and actions
+- **Geo-location Data** - IP-based geographic enrichment
+- **Threat Intelligence** - Integration with **Checkpoint** threat feeds
+- **User Context** - Authentication and authorization details
+
+## Microsoft Sentinel Integration
+
+### Analytics Rules
+
+Pre-configured analytics rules for common **Checkpoint** security scenarios:
+
+- **Multiple Failed VPN Attempts** - Detects brute force VPN attacks
+- **Suspicious Outbound Connections** - Identifies potential data exfiltration
+- **Policy Bypass Attempts** - Monitors unauthorized access attempts
+- **Malware Detection Events** - Aggregates threat prevention alerts
+- **Administrative Changes** - Tracks configuration modifications
+
+### Workbooks
+
+Interactive dashboards for **Checkpoint** security monitoring:
+
+- **Network Security Overview** - Traffic patterns and threat landscape
+- **VPN Access Analysis** - Remote access patterns and anomalies
+- **Threat Prevention Dashboard** - Real-time threat detection metrics
+- **Policy Compliance Report** - Firewall rule effectiveness analysis
+- **User Activity Monitoring** - Authentication and access trends
+
+### Hunting Queries
+
+Advanced _KQL_ queries for proactive threat hunting.
+
+**Example** - Detect **Checkpoint** policy violations:
+
+  ```kql
+  CommonSecurityLog
+  | where DeviceVendor == "**Checkpoint**"
+  | where DeviceAction == "drop" or DeviceAction == "reject"
+  | where TimeGenerated > ago(24h)
+  | summarize Count=count() by SourceIP, DestinationIP, DeviceCustomString1
+  | where Count > 10
+  | order by Count desc
+```
+
+## Configuration Examples
+
+* Basic **Checkpoint** Integration
+
+  ```yaml
+  devices:
+    - id: 1
+      name: checkpoint_firewall
+      type: syslog
+      pipelines:
+        - checkpoint
+      properties:
+        port: 514
+
+  targets:
+    - name: sentinel
+      type: sentinel
+      properties:
+        tenant_id: "${AZURE_TENANT_ID}"
+        client_id: "${AZURE_CLIENT_ID}" 
+        client_secret: "${AZURE_CLIENT_SECRET}"
+        endpoint: "https://your-dce.monitor.azure.com"
+        streams:
+          - name: "Custom-CommonSecurityLog"
+            rule_id: "dcr-checkpoint-logs"
+  ```
+
+* Multi-Site Deployment 
+
+  For organizations with multiple **Checkpoint** deployments:
+
+  ```yaml
+  devices:
+    - id: 1
+      name: checkpoint_hq
+      type: syslog
+      tags: ["headquarters", "checkpoint"]
+      pipelines:
+        - checkpoint
+      properties:
+        port: 514
+        address: "10.1.0.100"
+        
+    - id: 2  
+      name: checkpoint_branch
+      type: syslog
+      tags: ["branch_office", "checkpoint"]
+      pipelines:
+        - checkpoint
+      properties:
+        port: 515
+        address: "10.2.0.100"
+  ```
+
+## Troubleshooting
+
+### Common issues
+
+#### Log Format Recognition
+
+- Ensure **Checkpoint** devices are configured for standard syslog format
+- Verify syslog facility and severity settings match Director configuration
+- Check for custom log templates that might affect parsing
+
+#### Performance Optimization
+
+- Increase worker processes for high-volume environments
+- Adjust batch sizes based on log velocity
+- Monitor memory usage during peak traffic periods
+
+#### Field Mapping Issues
+
+  - Review pipeline configuration for custom **Checkpoint** fields
+  - Validate ASIM compliance using sample data
+  - Test field extraction with representative log samples
+
+### Validation Steps
+
+1. **Verify Log Reception**
+
+    ```bash
+    # Check if logs are being received
+    tail -f /var/log/director/checkpoint.log
+    ```
+
+2. **Test Pipeline Processing**
+
+    ```yaml
+    # Enable debug mode for detailed processing logs  
+    debug:
+      enabled: true
+      level: "trace"
+      pipelines: ["checkpoint"]
+    ```
+
+3. **Validate Sentinel Integration**
+
+    ```kql
+    // Query Sentinel to verify data ingestion
+    CommonSecurityLog
+    | where DeviceVendor == "**Checkpoint**"
+    | where TimeGenerated > ago(5m)
+    | limit 10
+    ```
+
+## Best Practices
+
+### Security Configuration
+
+- **Network Segmentation** - Isolate log collection traffic
+- **Encryption** - Use TLS for sensitive log transmission  
+- **Access Control** - Restrict Director access to authorized personnel
+- **Log Retention** - Configure appropriate retention policies
+
+### Performance Tuning
+
+- **Resource Allocation** - Size Director infrastructure for peak loads
+- **Log Filtering** - Filter unnecessary logs at the source
+- **Batch Processing** - Optimize batch sizes for throughput
+- **Monitoring** - Implement health checks and alerting
+
+### Operational Excellence
+
+- **Documentation** - Maintain current network diagrams and log flows
+- **Testing** - Regular validation of log processing and alerting
+- **Updates** - Keep **Checkpoint** and Director versions current
+- **Backup** - Maintain configuration backups and recovery procedures
+
+## Support Resources
+
+For additional assistance with **Checkpoint** integration:
+
+- **VirtualMetric Support** - Technical support for Director and pipeline configuration
+- **Checkpoint Documentation** - Vendor-specific logging configuration guides  
+- **Microsoft Sentinel Community** - Best practices and troubleshooting resources
