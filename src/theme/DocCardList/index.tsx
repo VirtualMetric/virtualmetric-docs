@@ -23,7 +23,16 @@ export default function DocCardList({ items, className, category }: DocCardListP
   }
 
   const filteredItems = filterDocCardListItems(items).filter((item) => {
-    return !category || item.customProps?.customCategory === category; // Filter by category if provided
+    if (!category) return true;
+
+    // Support comma-separated categories and cross-category tags
+    const categories = category.split(',').map(c => c.trim());
+    const itemCategory = item.customProps?.customCategory;
+    const itemTags = item.customProps?.customTags || [];
+
+    return categories.some(cat =>
+      itemCategory === cat || itemTags.includes(cat)
+    );
   });
 
   return (
