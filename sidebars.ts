@@ -23,7 +23,6 @@ const sidebars: SidebarsConfig = {
         //   ]
         // },
         "about/licensing",
-        // 'about/release-notes',
       ],
     },
     {
