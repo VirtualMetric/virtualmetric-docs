@@ -9,8 +9,9 @@ const sidebars: SidebarsConfig = {
       items: [
         "about/product",
         "about/applications",
+        "about/architecture",
         "about/key-features",
-        "about/benchmarks",
+        // "about/benchmarks",
         // {
         //   type: "category",
         //   label: "Comparisons",
