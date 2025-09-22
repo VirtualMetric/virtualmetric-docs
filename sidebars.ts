@@ -210,7 +210,6 @@ const sidebars: SidebarsConfig = {
       },
       items: [
         "cli/director",
-        // "cli/generator",
         "cli/agent",
       ]
     },
