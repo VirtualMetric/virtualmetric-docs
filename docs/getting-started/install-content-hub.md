@@ -1,0 +1,164 @@
+# Install Content from Content Hub
+
+## What is Content Hub?
+
+Content Hub contains pre-built pipeline templates created by VirtualMetric's security and data engineering experts. These templates include sophisticated processing logic that can:
+
+- **Parse logs** from popular devices and vendors (Cisco, Palo Alto, Microsoft, etc.)
+- **Extract structured data** from unstructured log messages
+- **Transform data** into standardized formats (ECS, ASIM, CIM, LEEF)
+- **Enrich data** with additional context (GeoIP, threat intelligence, user lookups)
+- **Normalize fields** for consistent analysis across different log sources
+
+Instead of spending hours building pipelines from scratch, you can install proven templates and customize them for your needs.
+
+## Browse Content Hub
+
+1. **Navigate to Content Hub**
+   - From Home: **Pipelines** → **Content Hub**
+   - Or hamburger menu → **Content Hub**
+
+2. **Understand the Layout**
+   - **Left sidebar**: Filters for Device type, Target, and Device vendor
+   - **Search box**: Find templates by name or keyword  
+   - **Main area**: Template cards showing available pipelines
+   - **Template cards**: Show name, description, and installation status
+
+3. **Filter Templates for Your Setup**
+   Since you created a Syslog device and File target, filter accordingly:
+   - **Device type**: Select "Syslog" (single select)
+   - **Target**: Check "File" (multi-select)
+   - **Device vendor**: Choose your device manufacturer if available
+
+## Find the Right Template
+
+1. **Review Available Templates**
+   - Look for templates that match your syslog source
+   - Common options include:
+     - Generic Syslog Parser
+     - Network Device Templates (Cisco, Juniper, etc.)
+     - Security Device Templates (Palo Alto, Fortinet, etc.)
+     - Server Log Templates (Linux, Unix systems)
+
+2. **Examine Template Details**
+   - Click on a template card to view details
+   - Review three tabs:
+     - **General Overview**: What the template does
+     - **Pipeline Overview**: Processing logic and steps
+     - **Log Transformation Overview**: Before/after examples
+
+## Install Your First Template
+
+1. **Select a Template**
+   - For getting started, choose a "Generic Syslog" or "Network Device" template
+   - Click on the template card to view details
+
+2. **Review Template Information**
+   
+   **General Overview Tab:**
+   - Read the description to understand what the template does
+   - Check supported device types and vendors
+   - Review the processors used (with links to documentation)
+
+   **Pipeline Overview Tab:**
+   - See the main pipeline and any child pipelines
+   - Understand the processing flow
+   - Note that content is read-only (you can edit after installation)
+
+   **Log Transformation Overview Tab:**
+   - View example raw data and transformed output
+   - Understand what fields will be extracted
+   - See the standardized format that will be produced
+
+3. **Install the Template**
+   - Click **Install pipeline template** (top right)
+   - If dependencies exist, a modal appears
+
+4. **Handle Dependencies** (if prompted)
+   
+   **Required Dependencies:**
+   - These are automatically included
+   - Cannot be deselected
+   - Essential for the template to function
+
+   **Optional Dependencies:**
+   - Review the list of optional components
+   - Check boxes for optional dependencies you want
+   - Leave unchecked if you don't need them
+   - Click **Install** to proceed
+
+5. **Verify Installation**
+   - You'll be redirected to **My Pipelines**
+   - Your installed template appears as a new pipeline
+   - The template card now shows "installed" status
+   - The install button changes to "See installed pipeline"
+
+## Understanding What You Installed
+
+Your installed template typically includes:
+
+**Main Pipeline:**
+- Parses syslog structure (timestamp, hostname, message)
+- Extracts key-value pairs from log messages
+- Normalizes field names to standard formats
+- Handles different syslog formats and variations
+
+**Processing Steps:**
+- **Input validation**: Ensures data quality
+- **Parsing**: Extracts structured data from raw logs
+- **Field mapping**: Converts to standard field names
+- **Data enrichment**: Adds contextual information
+- **Output formatting**: Prepares data for your target
+
+**Output Fields (typical):**
+- `@timestamp`: When the event occurred
+- `host.name`: Source system identifier  
+- `message`: Original log message
+- `log.level`: Severity level (info, warning, error)
+- `event.category`: Type of event (network, security, system)
+- Additional fields specific to your log source
+
+## Customization Options
+
+After installation, you can customize your pipeline:
+
+1. **Access Your Pipeline**
+   - Go to **My Pipelines**
+   - Click on your installed template
+   - Switch to **Pipeline Overview** tab
+
+2. **Common Customizations**
+   - **Add field mappings** for custom log formats
+   - **Include filters** to drop unnecessary events  
+   - **Add enrichment** with GeoIP or threat intelligence
+   - **Modify parsing** for unique message structures
+   - **Change output format** for specific target requirements
+
+3. **Edit Pipeline Configuration**
+   - Click the edit (pencil) icon
+   - Modify the YAML configuration directly
+   - Save changes when complete
+
+:::caution
+Only edit pipeline YAML if you're familiar with the syntax and processor options. Incorrect configuration can break data processing.
+:::
+
+## Alternative Approaches
+
+**No suitable template?**
+- Install a generic syslog template and customize it
+- Create a custom pipeline from scratch in **My Pipelines**
+- Contact support for help finding the right template
+
+**Multiple log sources?**
+- Install templates for each device type
+- Use different pipelines for different log formats
+- Create routing logic to direct logs to appropriate pipelines
+
+**Learn More**: For detailed pipeline configuration and customization, see our [Pipeline Configuration Guide](/configuration/pipelines/overview).
+
+## What's Next?
+
+Your processing pipeline is now ready to transform raw syslog data into structured, standardized format. Next, we need to connect everything together so data can flow from your device through your pipeline to your target.
+
+**Next:** [Connect Everything with Routes](connect-with-routes) to create the data flow path.

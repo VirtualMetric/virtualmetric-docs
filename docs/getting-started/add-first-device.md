@@ -1,0 +1,109 @@
+# Add Your First Device
+
+## What is a Device?
+
+A Device represents your data source in DataStream. It defines how DataStream receives data from systems like:
+- **Syslog servers** - Network devices, firewalls, routers, switches
+- **Windows Event Logs** - Security events, system logs from Windows servers
+- **HTTP endpoints** - Webhook data from applications and services
+- **TCP/UDP streams** - Custom protocols and data feeds
+- **Cisco eStreamer** - Real-time security intelligence from Cisco devices
+
+Devices are categorized as either **Push** (they listen for incoming data) or **Pull** (they actively collect data using agents).
+
+## Choosing Your Device Type
+
+For this getting started guide, we'll create a **Syslog Device** because:
+- Most network infrastructure supports syslog
+- It's easy to test with common tools
+- Many security devices use syslog by default
+- It demonstrates the core concepts clearly
+
+## Create Your Syslog Device
+
+1. **Navigate to Devices**
+   - From Home dashboard: **Fleet Management** → **Devices**
+   - Click the **Syslog** card under **Push** devices
+
+2. **Start Device Creation**
+   - Click **Add new device**
+   - You'll see the device creation form with multiple tabs
+
+3. **Configure General Settings** (First Tab)
+   - **Name**: "My First Syslog Device"
+   - **Description**: "Learning syslog collection"
+   - **Tags**: Leave blank for now
+   - **Device Status**: Ensure the toggle is **enabled** (blue)
+   - **Director(s) for the Device**: Select the Director you created earlier
+   - **Preprocessing pipeline**: Leave blank for now
+   - Click **Next step**
+
+4. **Configure Protocol Settings** (Second Tab)
+   - **Authentication Protocol**: UDP (default - most common)
+   - **IP Address**: 0.0.0.0 (listens on all network interfaces)
+   - **Port**: 514 (standard syslog port)
+   - Click **Next step**
+
+:::info Important
+Make sure port 514 is open for inbound traffic on your network and firewall. This allows syslog sources to send data to your DataStream device.
+:::
+
+5. **Advanced Configuration** (Third Tab)
+   - You can accept all the default values for now:
+     - **Socket address reuse**: Enabled
+     - **Max Connections**: 1000
+     - **Timeout**: 300 seconds
+     - **Max Message Size**: 20 MB
+     - **Buffer Size**: 9000 bytes
+   - Click **Add device**
+
+## Verify Your Device
+
+Your device should now appear in the Syslog devices table with:
+- **Status**: Enabled
+- **Port**: 514
+- **Protocol**: UDP
+- **Director**: Your Director's name
+
+## Test Your Device (Optional)
+
+Want to verify your device is working? You can send a test syslog message:
+
+**Linux/macOS:**
+```bash
+logger -n <your-server-ip> -P 514 "Test message from DataStream setup"
+```
+
+**Windows PowerShell (requires syslog client):**
+```powershell
+# Use your preferred syslog testing tool or install one like "Posh-Syslog"
+```
+
+You won't see the processed data yet because we haven't set up a Target or Route, but your Director logs should show the message was received.
+
+## Alternative Device Types
+
+**Need to collect different data?**
+
+- **Windows Event Logs**: 
+  - Choose **Windows** under Pull devices
+  - Requires installing an Agent on Windows machines
+  - Great for security monitoring and system diagnostics
+
+- **HTTP Webhook Data**:
+  - Choose **HTTP** under Push devices  
+  - Perfect for application logs and API integrations
+  - Supports JSON payloads and authentication
+
+- **Other Network Protocols**:
+  - **TCP**: For reliable, connection-based data streams
+  - **UDP**: For high-throughput, low-latency data collection
+  - **eStreamer**: For Cisco security appliance integration
+
+**Learn More**: For detailed configuration of all device types, see our [Device Configuration Guide](/configuration/devices/overview).
+
+## What's Next?
+
+Your device is now listening for data. Next, we need to configure where that data should go by creating a Target.
+
+**Next:** [Configure Your First Target](configure-first-target) to define where your processed data will be stored.

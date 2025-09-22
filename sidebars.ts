@@ -32,23 +32,20 @@ const sidebars: SidebarsConfig = {
       label: "Getting Started",
       collapsed: false,
       items: [
-        "getting-started/introduction",
-        "getting-started/single-node-deployment-director",
-        "getting-started/single-node-deployment-agent",
+        "getting-started/create-your-account", // This opens first when clicking "Getting Started"
         {
-          type: "category",
-          label: "Examples",
-          collapsed: false,
+          type: "category", 
+          label: "Set Up Your First Data Collection",
           items: [
-            "getting-started/examples/user-notes",
-            "getting-started/examples/ingesting-data",
-            "getting-started/examples/secure-ingestion",
-            "getting-started/examples/forwarding-data",
-            "getting-started/examples/reading-json-with-a-pipeline",
-            "getting-started/examples/a-syslog-to-json-data-stream",
-            "getting-started/examples/log-collection-with-agents",
+            "getting-started/create-director",
+            "getting-started/add-first-device", 
+            "getting-started/configure-first-target",
+            "getting-started/install-content-hub"
           ]
         },
+        "getting-started/connect-with-routes",
+        "getting-started/monitor-and-verify", 
+        "getting-started/next-steps"
       ],
     },
     {
