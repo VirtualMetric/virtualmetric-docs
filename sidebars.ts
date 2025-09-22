@@ -115,12 +115,12 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "GUI",
+      label: "Administration",
       collapsed: false,
       items: [
-        "gui/creating-accounts",
-        "gui/home",
-        "gui/managing-accounts",
+        "administration/creating-accounts",
+        "administration/home",
+        "administration/managing-accounts",
         {
           type: "category",
           label: "Fleet Management",
@@ -129,28 +129,28 @@ const sidebars: SidebarsConfig = {
               type: "category",
               label: "Directors",
               items: [
-                "gui/fleet-management/directors/overview",
-                "gui/fleet-management/directors/creating-directors",
-                "gui/fleet-management/directors/managing-directors",
+                "administration/fleet-management/directors/overview",
+                "administration/fleet-management/directors/creating-directors",
+                "administration/fleet-management/directors/managing-directors",
               ]
             },
             {
               type: "category",
               label: "Devices",
               items: [
-                "gui/fleet-management/devices/overview",
-                "gui/fleet-management/devices/creating-push-devices",
-                "gui/fleet-management/devices/creating-pull-devices",
-                "gui/fleet-management/devices/managing-devices",
+                "administration/fleet-management/devices/overview",
+                "administration/fleet-management/devices/creating-push-devices",
+                "administration/fleet-management/devices/creating-pull-devices",
+                "administration/fleet-management/devices/managing-devices",
               ]
             },
             {
               type: "category",
               label: "Targets",
               items: [
-                "gui/fleet-management/targets/overview",
-                "gui/fleet-management/targets/creating-targets",
-                "gui/fleet-management/targets/managing-targets",
+                "administration/fleet-management/targets/overview",
+                "administration/fleet-management/targets/creating-targets",
+                "administration/fleet-management/targets/managing-targets",
               ]
             }
           ]
@@ -159,26 +159,26 @@ const sidebars: SidebarsConfig = {
           type: "category",
           label: "My Pipelines",
           items: [
-            "gui/my-pipelines/overview",
-            "gui/my-pipelines/creating-pipelines",
-            "gui/my-pipelines/managing-pipelines",
+            "administration/my-pipelines/overview",
+            "administration/my-pipelines/creating-pipelines",
+            "administration/my-pipelines/managing-pipelines",
           ]
         },
         {
           type: "category",
           label: "Routes",
           items: [
-            "gui/routes/overview",
-            "gui/routes/managing-quick-routes",
-            "gui/routes/managing-advanced-routes",
+            "administration/routes/overview",
+            "administration/routes/managing-quick-routes",
+            "administration/routes/managing-advanced-routes",
           ]
         },
         {
           type: "category",
           label: "Content Hub",
           items: [
-            "gui/content-hub/overview",
-            "gui/content-hub/managing-templates",
+            "administration/content-hub/overview",
+            "administration/content-hub/managing-templates",
           ]
         },
         {
@@ -189,13 +189,13 @@ const sidebars: SidebarsConfig = {
               type: "category",
               label: "Users",
               items: [
-                "gui/organization/users/overview",
-                "gui/organization/users/creating-users",
-                "gui/organization/users/managing-users",
+                "administration/organization/users/overview",
+                "administration/organization/users/creating-users",
+                "administration/organization/users/managing-users",
               ]
             },
-            "gui/organization/roles",
-            "gui/organization/audit",
+            "administration/organization/roles",
+            "administration/organization/audit",
           ]
         }
       ]
