@@ -39,6 +39,7 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Organization",
       items: [
+        "organization/overview",
         "organization/users",
         "organization/roles",
         "organization/audit",
@@ -48,12 +49,12 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Configuration",
       items: [
-        "configuration/overview",
+        "configuration/quick-start",
         {
           type: "category",
           label: "Directors",
           items: [
-            "configuration/directors/overview",
+            "configuration/directors/introduction",
             "configuration/directors/configuration",
             "configuration/directors/deployment",
             "configuration/directors/troubleshooting",
