@@ -284,8 +284,7 @@ const sidebars: SidebarsConfig = {
       label: "Content Hub",
       items: [
         "content-hub/overview",
-        "content-hub/template-management",
-        "content-hub/contributing-templates",
+        "content-hub/licensing",
       ]
     },
     {
