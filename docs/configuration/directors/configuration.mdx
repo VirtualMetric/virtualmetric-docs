@@ -1,0 +1,310 @@
+# Configuration
+
+The Directors configuration interface provides comprehensive tools for creating, managing, and monitoring Director instances throughout their lifecycle. This centralized management system allows administrators to deploy new Directors, modify existing configurations, and maintain operational oversight across your entire Director fleet.
+
+## Accessing Director Configuration
+
+The Directors configuration interface is accessible through the Fleet Management section:
+
+**Navigation Path:**
+- Go to **Home** page
+- Find the **Fleet Management** pane
+- Click the **Directors** link
+
+This takes you to the main Directors dashboard where you can view existing Directors and initiate new deployments.
+
+## Directors Management Dashboard
+
+The main interface provides a comprehensive view of your Director infrastructure with essential monitoring and management capabilities.
+
+### Directors Table
+
+The central table displays all Director instances with key operational information:
+
+- **Name** - Unique identifier assigned during Director creation
+- **Platform Type** - Management model (Self-managed by default)
+- **Installation Type** - Architecture type (Standalone by default)
+- **Status** - Current operational state (Enabled/Disabled)
+- **Connection Status** - Real-time connectivity to cloud platform
+  - *Connected* (green) - Director successfully communicating with cloud platform
+  - *Not Connected* (red) - Director unable to establish or maintain connection
+
+### Interface Controls
+
+**Search and Filtering:**
+- **Search directors** - Text field to quickly locate Directors by name
+- **Status filter** - Dropdown to filter by Director status (All/Enabled/Disabled)
+- **Pagination controls** - Navigate through multiple pages of Directors
+
+**Management Actions:**
+- **Create director** - Primary button to initiate new Director deployment
+- **Actions menu (&#x22EE;)** - Per-Director operations available from dropdown
+
+### Actions Menu Operations
+
+Each Director row includes a vertical ellipsis (&#x22EE;) providing access to management operations:
+
+- **Edit director** - Access Director configuration and settings
+- **Enable/Disable director** - Toggle operational status
+- **Delete director** - Remove Director from fleet (with dependency checks)
+
+## Creating New Directors
+
+The Director creation process guides you through deployment setup and installation verification.
+
+### Initial Setup
+
+1. **Access Creation Interface**
+   - Click the **Create director** button from the main Directors dashboard
+   - This opens the **Director Setup** configuration area
+
+2. **Configure Director Properties**
+   - **Name**: Enter a unique identifier for the Director
+     - Must be unique across your organization
+     - Cannot be changed after creation
+     - Validation prevents duplicate names
+   
+   - **Installation Type**: Select deployment architecture
+     - **Standalone** (default): Single Director instance
+     - Provides basic functionality without redundancy
+     - Suitable for most standard deployments
+
+### Installation Process
+
+3. **Generate Installation Scripts**
+   - After configuration, click **Create director**
+   - System creates Director record and generates unique API key
+   - Platform-specific installation scripts are provided:
+     - **PowerShell** button (Windows environments)
+     - **Bash** button (Linux/Unix environments)
+
+4. **Execute Installation**
+   - Copy the generated API key (displayed in dedicated box)
+   - Open terminal with administrator privileges on target system
+   - Copy and paste the installation script
+   - Execute script and wait for completion (typically several minutes)
+
+### Network Requirements
+
+**Critical Configuration:**
+- Ensure port **443** is open for outbound HTTPS connections
+- Director requires access to VirtualMetric service endpoints
+- If operating in restricted network environment, allow documented domains/IP ranges
+
+**Firewall Configuration:**
+- Only outbound connections required (no inbound firewall rules needed)
+- Director initiates all communication with cloud platform
+- Encrypted HTTPS for all cloud platform interactions
+
+### Connection Verification
+
+5. **Verify Deployment**
+   - Click **Verify connection** button to test Director connectivity
+   - System sends requests to confirm Director installation and operation
+   - Connection verification may take several attempts during initial setup
+
+6. **Handle Verification Results**
+   - **Successful Connection**: Continue to completion process
+   - **Connection Failure**: Review network configuration and troubleshooting steps
+   - **Deferred Verification**: Use **Connect Later** to skip verification
+
+7. **Complete Setup**
+   - Once connection is verified, **Complete setup** button becomes enabled
+   - Click to finalize Director creation and return to Directors dashboard
+   - New Director appears in table with *Enabled* and *Connected* status
+   - Success notification confirms Director creation and connectivity
+
+## Managing Existing Directors
+
+The Director management system provides comprehensive tools for ongoing configuration and monitoring.
+
+### Accessing Director Management
+
+**From Directors Table:**
+- Click **Actions** menu (&#x22EE;) for specific Director
+- Select **Edit director** from dropdown options
+
+This provides access to detailed Director configuration and monitoring interfaces.
+
+### Director Details Configuration
+
+The Director management interface includes multiple sections for comprehensive oversight:
+
+#### Basic Configuration Management
+
+**Editing Director Details:**
+1. **Access Configuration**
+   - Navigate to **Director Details** view from Actions menu
+   - All management options available via **Actions** dropdown (top right)
+
+2. **Modify Director Settings**
+   - Click **Manage director details** to enable editing
+   - **Name field** becomes editable (primary configurable setting)
+   - **Cancel** and **Save changes** buttons appear for modification control
+
+3. **Apply Changes**
+   - Make necessary modifications to Director name
+   - Click **Save changes** to apply updates
+   - Changes take effect immediately across the platform
+
+#### Connection Details Management
+
+**Monitoring Connectivity:**
+- **Connection Details** tab provides real-time connectivity information
+- **Connection Status** indicator shows current state:
+  - *Not connected* (red) - Director unable to communicate with platform
+  - *Connected* (green) - Normal operational connectivity
+- **IP Address** display shows Director's network location
+- **Connection History** provides historical connectivity tracking
+
+**Reinstallation Procedures:**
+When Director connectivity or configuration issues require reinstallation:
+
+1. **Initiate Reinstallation**
+   - Click **Re-install director** button in Connection Details
+   - System presents confirmation modal with security warning
+   - **Important**: This action revokes current API key and generates new one
+
+2. **Confirm Reinstallation**
+   - Review warning about API key revocation
+   - Click **Continue** to proceed with reinstallation process
+   - New API key and installation script are generated
+
+3. **Execute New Installation**
+   - Follow same installation procedures as initial Director setup
+   - Use new API key and installation script provided
+   - Verify successful connection and operation
+
+#### Activity Monitoring
+
+**Comprehensive Audit Trail:**
+The **Activity logs** tab maintains detailed operational history:
+
+**Activity Information:**
+- **User** - Email address of administrator who performed action
+- **User IP** - Source IP address for the administrative action
+- **Object Type** - Resource type being managed (typically "Director")
+- **Object** - Specific Director identifier (using unique name)
+- **Action** - Type of operation performed on Director
+- **Action Description** - Detailed explanation of the activity
+- **Date** - Timestamp when action was executed
+
+**Use Cases for Activity Monitoring:**
+- Security auditing and compliance reporting
+- Troubleshooting operational issues
+- Change management and approval workflows
+- Performance analysis and optimization planning
+
+## Director Status Management
+
+Directors can be enabled or disabled to control their operational state without deletion.
+
+### Enabling and Disabling Directors
+
+**Status Toggle Operations:**
+1. **Access Status Controls**
+   - From Directors table: Click **Actions** menu (&#x22EE;) for target Director
+   - Select **Enable director** or **Disable director** from dropdown
+
+2. **Status Change Effects**
+   - **Disabling Director**: Halts all data ingestion and processing
+     - Stops data collection from all configured sources
+     - Prevents data routing to all target destinations
+     - Maintains Director configuration and connection to cloud platform
+   - **Enabling Director**: Resumes normal data processing operations
+     - Restores data ingestion from configured sources
+     - Re-establishes data routing to target destinations
+     - Returns Director to full operational status
+
+### Status Use Cases
+
+**Temporary Suspension:**
+- Maintenance windows for source or destination systems
+- Troubleshooting data quality or processing issues
+- Resource conservation during low-activity periods
+
+**Operational Control:**
+- Staged deployment and testing procedures
+- Capacity management during peak processing periods
+- Emergency response for security or compliance incidents
+
+## Director Deletion
+
+Director deletion provides permanent removal of Director instances with comprehensive dependency checking.
+
+### Deletion Process
+
+1. **Initiate Deletion**
+   - From Directors table: Click **Actions** menu (&#x22EE;) for target Director
+   - Select **Delete director** from dropdown options
+
+2. **Dependency Verification**
+   - System checks for attached devices and targets
+   - If dependencies exist, warning modal displays:
+     - Lists all components managed by the Director
+     - Prevents deletion until dependencies are removed
+     - Provides guidance on required cleanup actions
+
+3. **Confirm Deletion**
+   - For Directors without dependencies, deletion proceeds immediately
+   - Director is permanently removed from organization
+   - All associated configuration and history are deleted
+   - Action cannot be undone
+
+### Pre-Deletion Requirements
+
+**Mandatory Cleanup:**
+Before Director deletion, you must remove all associated components:
+
+- **Data Sources**: Disconnect all devices sending data to Director
+- **Target Destinations**: Remove all routing configurations to external systems
+- **Processing Pipelines**: Clear all active data transformation configurations
+- **Integration Points**: Update any systems referencing the Director
+
+**Verification Steps:**
+1. Review warning modal for complete dependency list
+2. Systematically remove or reassign each listed component
+3. Return to deletion process once all dependencies are cleared
+4. Confirm final deletion when system verifies no remaining dependencies
+
+## Best Practices for Director Configuration
+
+### Naming Conventions
+
+**Effective Director Naming:**
+- Use descriptive names reflecting deployment purpose or location
+- Include environment indicators (prod, dev, test) where applicable
+- Consider organizational structure (department, region, function)
+- Maintain consistency across Director fleet for easier management
+
+### Configuration Management
+
+**Change Control:**
+- Document all configuration changes in activity logs
+- Test configuration changes in development environment first
+- Coordinate changes with dependent system administrators
+- Maintain backup procedures for critical configuration data
+
+### Monitoring and Maintenance
+
+**Operational Oversight:**
+- Regularly review Director status and connectivity
+- Monitor activity logs for unusual or unauthorized changes
+- Establish alerting for connection failures or status changes
+- Plan regular maintenance windows for updates and optimization
+
+### Security Considerations
+
+**Access Control:**
+- Limit Director management permissions to authorized administrators
+- Regularly review and audit administrative access
+- Implement approval processes for critical operations (deletion, reinstallation)
+- Monitor activity logs for security and compliance requirements
+
+**API Key Management:**
+- Treat API keys as sensitive credentials requiring secure handling
+- Rotate API keys regularly or when security incidents occur
+- Ensure secure storage and transmission of installation scripts
+- Implement procedures for compromised credential response
+
+This comprehensive configuration management approach ensures reliable, secure, and well-governed Director operations across your security telemetry infrastructure.

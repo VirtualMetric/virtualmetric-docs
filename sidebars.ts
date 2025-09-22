@@ -11,20 +11,7 @@ const sidebars: SidebarsConfig = {
         "about/applications",
         "about/architecture",
         "about/key-features",
-        // "about/benchmarks",
-        // {
-        //   type: "category",
-        //   label: "Comparisons",
-        //   items: [
-        //     "about/comparisons/overview",
-        //     "about/comparisons/cribl",
-        //     "about/comparisons/logstash",
-        //     "about/comparisons/tenzir",
-        //     "about/comparisons/vector",
-        //   ]
-        // },
         "about/licensing",
-        // 'about/release-notes',
       ],
     },
     {
@@ -32,7 +19,7 @@ const sidebars: SidebarsConfig = {
       label: "Getting Started",
       collapsed: false,
       items: [
-        "getting-started/create-your-account", // This opens first when clicking "Getting Started"
+        "getting-started/create-your-account",
         {
           type: "category", 
           label: "Set Up Your First Data Collection",
@@ -50,167 +37,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Microsoft Sentinel",
+      label: "Organization",
       items: [
-        "microsoft-sentinel/overview",
-        {
-          type: "category",
-          label: "Integration",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Integration",
-            description: "The following documents contain detailed information about Sentinel Integration."
-          },
-          items: [
-            "microsoft-sentinel/integration/manual",
-            "microsoft-sentinel/integration/via-autodiscovery",
-          ],
-        },
-        {
-          type: "category",
-          label: "Automation",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Automation",
-            description: "The following documents contain detailed information on this topic."
-          },
-          items: [
-            "microsoft-sentinel/automation/arm-templates",
-            "microsoft-sentinel/automation/bicep-templates",
-          ],
-        },
-        {
-          type: "category",
-          label: "Content Hub",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Content Hub",
-            description: "The following documents contain detailed information on this topic."
-          },
-          items: [
-            "microsoft-sentinel/content-hub/checkpoint",
-            "microsoft-sentinel/content-hub/fortigate",
-          ],
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "Deployment",
-      link: {
-        type: "generated-index",
-        title: "Deployment",
-        description: "Guides for deploying DataStream across environments."
-      },
-      items: [
-        "deployment/overview",
-        "deployment/on-local",
-        "deployment/as-cluster",
-        "deployment/on-azure-vm",
-        "deployment/on-azure-app-service",
-        "deployment/on-azure-functions",
-        "deployment/via-azure-arc-extension",
-      ],
-    },
-    {
-      type: "category",
-      label: "GUI",
-      collapsed: false,
-      items: [
-        "gui/creating-accounts",
-        "gui/home",
-        "gui/managing-accounts",
-        {
-          type: "category",
-          label: "Fleet Management",
-          items: [
-            {
-              type: "category",
-              label: "Directors",
-              items: [
-                "gui/fleet-management/directors/overview",
-                "gui/fleet-management/directors/creating-directors",
-                "gui/fleet-management/directors/managing-directors",
-              ]
-            },
-            {
-              type: "category",
-              label: "Devices",
-              items: [
-                "gui/fleet-management/devices/overview",
-                "gui/fleet-management/devices/creating-push-devices",
-                "gui/fleet-management/devices/creating-pull-devices",
-                "gui/fleet-management/devices/managing-devices",
-              ]
-            },
-            {
-              type: "category",
-              label: "Targets",
-              items: [
-                "gui/fleet-management/targets/overview",
-                "gui/fleet-management/targets/creating-targets",
-                "gui/fleet-management/targets/managing-targets",
-              ]
-            }
-          ]
-        },
-        {
-          type: "category",
-          label: "My Pipelines",
-          items: [
-            "gui/my-pipelines/overview",
-            "gui/my-pipelines/creating-pipelines",
-            "gui/my-pipelines/managing-pipelines",
-          ]
-        },
-        {
-          type: "category",
-          label: "Routes",
-          items: [
-            "gui/routes/overview",
-            "gui/routes/managing-quick-routes",
-            "gui/routes/managing-advanced-routes",
-          ]
-        },
-        {
-          type: "category",
-          label: "Content Hub",
-          items: [
-            "gui/content-hub/overview",
-            "gui/content-hub/managing-templates",
-          ]
-        },
-        {
-          type: "category",
-          label: "Organization",
-          items: [
-            {
-              type: "category",
-              label: "Users",
-              items: [
-                "gui/organization/users/overview",
-                "gui/organization/users/creating-users",
-                "gui/organization/users/managing-users",
-              ]
-            },
-            "gui/organization/roles",
-            "gui/organization/audit",
-          ]
-        }
-      ]
-    },
-    {
-      type: "category",
-      label: "CLI",
-      link: {
-        type: "generated-index",
-        title: "Command Line Interface",
-        description: "The following documents contain detailed information about the CLI."
-      },
-      items: [
-        "cli/director",
-        // "cli/generator",
-        "cli/agent",
+        "organization/users",
+        "organization/roles",
+        "organization/audit",
       ]
     },
     {
@@ -218,6 +49,16 @@ const sidebars: SidebarsConfig = {
       label: "Configuration",
       items: [
         "configuration/overview",
+        {
+          type: "category",
+          label: "Directors",
+          items: [
+            "configuration/directors/overview",
+            "configuration/directors/configuration",
+            "configuration/directors/deployment",
+            "configuration/directors/troubleshooting",
+          ]
+        },
         {
           type: "category",
           label: "Devices",
@@ -438,28 +279,58 @@ const sidebars: SidebarsConfig = {
         'configuration/routes',
       ],
     },
-    // {
-    //   type: "category",
-    //   label: "Architecture",
-    //   items: [
-    //     "architecture/overview",
-    //     "architecture/clustering",
-    //     "architecture/file-system",
-    //     "architecture/persistency",
-    //     "architecture/zero-trust",
-    //   ],
-    // },
-    // {
-    //   type: "category",
-    //   label: "Migration",
-    //   link: {type: "doc", id: "migration/index"},
-    //   items: [
-    //     "migration/cribl",
-    //     "migration/logstash",
-    //     "migration/tenzir",
-    //     "migration/vector",
-    //   ],
-    // },
+    {
+      type: "category",
+      label: "Content Hub",
+      items: [
+        "content-hub/overview",
+        "content-hub/template-management",
+        "content-hub/contributing-templates",
+      ]
+    },
+    {
+      type: "category",
+      label: "Multi-Tenancy",
+      items: [
+        "multi-tenancy/getting-started",
+        "multi-tenancy/create-first-subtenant",
+        "multi-tenancy/tenant-usage-monitoring",
+        "multi-tenancy/access-permissions",
+      ]
+    },
+    {
+      type: "category",
+      label: "Microsoft Sentinel",
+      items: [
+        "microsoft-sentinel/overview",
+        {
+          type: "category",
+          label: "Integration",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Integration",
+            description: "The following documents contain detailed information about Sentinel Integration."
+          },
+          items: [
+            "microsoft-sentinel/integration/manual",
+            "microsoft-sentinel/integration/via-autodiscovery",
+          ],
+        },
+        {
+          type: "category",
+          label: "Automation",
+          link: {
+            type: "generated-index",
+            title: "Microsoft Sentinel: Automation",
+            description: "The following documents contain detailed information on this topic."
+          },
+          items: [
+            "microsoft-sentinel/automation/arm-templates",
+            "microsoft-sentinel/automation/bicep-templates",
+          ],
+        },
+      ],
+    },
     {
       type: "category",
       label: "Appendix",
