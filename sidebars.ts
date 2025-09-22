@@ -54,19 +54,7 @@ const sidebars: SidebarsConfig = {
       label: "Microsoft Sentinel",
       items: [
         "microsoft-sentinel/overview",
-        {
-          type: "category",
-          label: "Integration",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Integration",
-            description: "The following documents contain detailed information about Sentinel Integration."
-          },
-          items: [
-            "microsoft-sentinel/integration/manual",
-            "microsoft-sentinel/integration/via-autodiscovery",
-          ],
-        },
+        "microsoft-sentinel/integration",
         {
           type: "category",
           label: "Automation",
