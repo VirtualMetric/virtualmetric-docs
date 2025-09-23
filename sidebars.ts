@@ -48,6 +48,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Configuration",
+      collapsed: false,
       items: [
         "configuration/quick-start",
         {
@@ -286,6 +287,22 @@ const sidebars: SidebarsConfig = {
       items: [
         "content-hub/overview",
         "content-hub/licensing",
+      ]
+    },
+    {
+      type: "category",
+      label: "Microsoft Sentinel",
+      items: [
+        "microsoft-sentinel/overview",
+        "microsoft-sentinel/integration",
+        {
+          type: "category",
+          label: "Automation",
+          items: [
+            "microsoft-sentinel/automation/bicep-templates",
+            "microsoft-sentinel/automation/arm-templates",
+          ]
+        }
       ]
     },
     {
