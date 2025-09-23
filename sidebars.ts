@@ -353,13 +353,14 @@ const sidebars: SidebarsConfig = {
     "glossary"
   ],
   tutorDocs: [
-    "tutorials/user-notes",
-    "tutorials/ingesting-data",
-    "tutorials/secure-ingestion",
-    "tutorials/forwarding-data",
-    "tutorials/reading-json-with-a-pipeline",
-    "tutorials/a-syslog-to-json-data-stream",
-    "tutorials/log-collection-with-agents",
+    "tutorials/a-local-pipeline",
+    // "tutorials/user-notes",
+    // "tutorials/ingesting-data",
+    // "tutorials/secure-ingestion",
+    // "tutorials/forwarding-data",
+    // "tutorials/reading-json-with-a-pipeline",
+    // "tutorials/a-syslog-to-json-data-stream",
+    // "tutorials/log-collection-with-agents",
   ],  
   releaseDocs: [
     {
