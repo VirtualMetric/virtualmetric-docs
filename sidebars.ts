@@ -290,39 +290,6 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Microsoft Sentinel",
-      items: [
-        "microsoft-sentinel/overview",
-        {
-          type: "category",
-          label: "Integration",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Integration",
-            description: "The following documents contain detailed information about Sentinel Integration."
-          },
-          items: [
-            "microsoft-sentinel/integration/manual",
-            "microsoft-sentinel/integration/via-autodiscovery",
-          ],
-        },
-        {
-          type: "category",
-          label: "Automation",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Automation",
-            description: "The following documents contain detailed information on this topic."
-          },
-          items: [
-            "microsoft-sentinel/automation/arm-templates",
-            "microsoft-sentinel/automation/bicep-templates",
-          ],
-        },
-      ],
-    },
-    {
-      type: "category",
       label: "Appendix",
       link: {
         type: "generated-index",
