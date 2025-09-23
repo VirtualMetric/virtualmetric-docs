@@ -290,16 +290,6 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Multi-Tenancy",
-      items: [
-        "multi-tenancy/getting-started",
-        "multi-tenancy/create-first-subtenant",
-        "multi-tenancy/tenant-usage-monitoring",
-        "multi-tenancy/access-permissions",
-      ]
-    },
-    {
-      type: "category",
       label: "Microsoft Sentinel",
       items: [
         "microsoft-sentinel/overview",
