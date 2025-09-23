@@ -1,99 +1,126 @@
 ---
+pagination_prev: null
 sidebar_label: User Notes
 ---
 
-# Tutorials: User Notes
+# Examples: User Notes
 
-This guide contains demonstrations of various uses of **DataStream** applications.
+This chapter is intended to introduce you to the functionality of **Directory** by way providing of simple, illustrative examples.
 
-## Organization
+The use cases provided are indeed simple in order not to confuse the uninitiated. However, there are a few details you have be aware of or keep in mind while carrying out the step-by-step procedures.
 
-The tutorials are structured with the same subsections to facilitate ease-of-use and learning.
+## Configuration Files
 
-### Working Directory
+To configure telemetry streams, **DataStream** uses YAML files.
 
-You can place your configuration files anywhere under the `config` folder.
+:::caution
+On **Windows**, make sure file extensions are visible. To check this, go to **File Explorer** and select **View > Show > File name extensions**.
 
-:::note
-By default, the tutorials will assume the configuration files are placed under a dedicated place which we will refer to as our _working directory_. For convenience, we suggest that you create and use the same folder.
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-    ```PowerShell
-    New-Item -Path <vm_root>\Director\config\Tutorials -ItemType Folder
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    mkdir <vm_root>/Director/config/Tutorials
-    ```
-  </TabItem>
-</Tabs>
+This is to avoid surprises like the system adding another extension to your YAML file's extension, e.g. `file.yml.txt`, in which case **VirtualMetric** applications will not be able to recognize them.
 :::
 
-Store all YAML configuration files within this subdirectory to maintain organization and avoid conflicts with production configurations.
-
-### Sample Data
-
-The tutorials frequently make use of sample data which are be provided as downloads. Make sure you place them in an accessible directory.
+**Director** parses all YAML files found under the `<vm_root>/Director/config` folder and runs them. It ignores the filenames you use since that is only for your convenience: i.e. to organize your components as you see fit.
 
 :::note
-By default, the tutorials will use the following directory to access the sample data. For convenience, we suggest that you create the same directory with the same path and download the sample data files to that directory.
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-    ```PowerShell
-    New-Item -Path <vm_root>\SampleData -ItemType Folder
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    mkdir <vm_root>/SampleData
-    ```
-  </TabItem>
-</Tabs>
+For more details of the management of configuration files, review <Topic id="configuration-overview-yaml-files">**this section**</Topic>.
 :::
 
-## Common Sections
+## Working Directory 
 
-### Synopsis
+For our purposes, and to keep things simple, we will be using the following folder as our working directory:
 
-Each tutorial begins with a brief statement explaining what the tutorial covers, what will be illustrated, and what the user is expected to learn through it.
+<Tabs>
+<TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    New-Item -Path <vm_root>\Director\config\Examples -ItemType Folder
+    ```
+</TabItem>    
+<TabItem value="bash" label="Bash">
+    ```bash
+    mkdir <vm_root>/Director/config/Examples
+    ```
+</TabItem>
+</Tabs>
 
-It will also mention:
+We will be placing all our configuration and data source files needed for the examples in this folder. We will also specify our output files to be created here.
 
-- Prerequisites and dependencies, if any
-- Configuration files used
-- Sample data for testing
+:::caution
+For the sanity of the example runs, make sure there are no YAML files under **Director**'s `config` directory (except for `vmetric.yml`) and its subfolders. 
 
-### Scenario
+There will be files placed under the `config` directory by default during an automated installation. Make a backup of the `config` folder, and then remove those files.
 
-Next comes the **Scenario** section which
+The only YAML files present throughout each example section should be those we deliberately create and place under our working directory.
+:::
 
-- Describes the business use case or problem being solved
-- Explains the data flow and expected outcomes
-- Identifies the techniques demonstrated
+## Message Sender
 
-### Setup
+In our examples, we will be handling log emssages, and we will have to send those messages by some mechanism. For that purpose, we will be using the generator mode of **Director**.
 
-This section includes:
+The generator mode needs to be run on a separate terminal, and is called like this:
 
-- Key configuration components
-- Quick reference of processors used, if any
-- Expected input/output formats
+> `.\vmetric-director -generator -now -count 10 -address ...`
 
-### Trial
+You are of course free to use some other traditional tool&mdash;such as `logger` for **Unix**-based on platforms. Only make sure that it is not invasive, and only sends messages to the listeners on specific ports.
 
-This section includes:
+## Logging Setup
 
-- Step-by-step configuration instructions
-- Command examples for running the configured components
+Finally, a simple logging setup is in order for you to be able to check the status of your runs.
 
-### Monitoring
+* Go to `<vm_root>`, i.e. the path leading to the **VirtualMetric** folder
+* Find **Director**'s `config` directory, which is directly under it
+* Open the file named `vmetric.yml`, -or- create it if it doesn't exist
+* Make sure the settings in it match the following, -or- add them to the newly created one:
 
-This section covers:
+    ```yaml
+    debug:
+      log:
+        status: true
+      level: 4
+      console:
+        status: true
+    ```
 
-- Key metrics to observe during processing
-- Common troubleshooting steps
-- Performance considerations
-- Log analysis techniques
+:::info
+Level `4` indicates that only error messages will be logged.
+:::
+
+**Director** will generate the log of your runs and place it in the following directory:
+
+<Tabs>
+<TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    <vm_root>\Director\storage\logs\
+    ```
+</TabItem>
+<TabItem value="bash" label="Bash">
+    ```bash
+    <vm_root>/Director/storage/logs/
+    ```
+</TabItem>
+</Tabs>
+
+:::note
+Deleting the generated file is harmless. So long as the above debugging setting remains, it will be re-created with each run if there are any errors.
+:::
+
+---
+
+## Examples
+
+You can now proceed to the examples to explore the basics of configuring telemetry flows with **DataStream** applications.
+
+See **Director** in action:
+
+- <Topic id="examples-ingesting-data">**Example: Ingesting Data**</Topic> - Configure your first device to receive streaming data
+
+- <Topic id="examples-secure-ingestion">**Example: Secure Ingestion**</Topic> - Reconfigure your device to receive streaming data securely
+
+- <Topic id="examples-forwarding-data">**Example: Forwarding Data**</Topic> - Configure your first target to send streaming data
+
+- <Topic id="examples-reading-json-with-a-pipeline">**Example: Reading JSON With a Pipeline**</Topic> - Configure your first pipeline to receive and process data
+
+- <Topic id="examples-a-syslog-to-json-data-stream">**Example: A Syslog-To-JSON Data Stream**</Topic> - A full, end-to-end data stream in action
+
+See **Agent** in action:
+
+- <Topic id="examples-log-collection-with-agents">**Example: Log Collection with Agents**</Topic> - Configure your first **Agent** to collect log data from another machine

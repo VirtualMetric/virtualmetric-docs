@@ -354,14 +354,12 @@ const sidebars: SidebarsConfig = {
   ],
   tutorDocs: [
     "tutorials/user-notes",
-    "tutorials/a-local-pipeline",
-    "tutorials/kafka-to-parquet-pipeline",
-    "tutorials/microsoft-sentinel-advanced-integration",
-    "tutorials/rabbitmq-threat-intelligence",
-    "tutorials/multi-source-log-correlation",
-    "tutorials/high-volume-sampling-strategies",
-    "tutorials/advanced-netflow-processing",
-    "tutorials/ai-powered-log-analysis",
+    "tutorials/ingesting-data",
+    "tutorials/secure-ingestion",
+    "tutorials/forwarding-data",
+    "tutorials/reading-json-with-a-pipeline",
+    "tutorials/a-syslog-to-json-data-stream",
+    "tutorials/log-collection-with-agents",
   ],  
   releaseDocs: [
     {
