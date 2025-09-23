@@ -9,19 +9,8 @@ const sidebars: SidebarsConfig = {
       items: [
         "about/product",
         "about/applications",
+        "about/architecture",
         "about/key-features",
-        "about/benchmarks",
-        // {
-        //   type: "category",
-        //   label: "Comparisons",
-        //   items: [
-        //     "about/comparisons/overview",
-        //     "about/comparisons/cribl",
-        //     "about/comparisons/logstash",
-        //     "about/comparisons/tenzir",
-        //     "about/comparisons/vector",
-        //   ]
-        // },
         "about/licensing",
       ],
     },
@@ -30,182 +19,47 @@ const sidebars: SidebarsConfig = {
       label: "Getting Started",
       collapsed: false,
       items: [
-        "getting-started/introduction",
-        "getting-started/single-node-deployment-director",
-        "getting-started/single-node-deployment-agent",
+        "getting-started/create-your-account",
         {
-          type: "category",
-          label: "Examples",
-          collapsed: false,
+          type: "category", 
+          label: "Set Up Your First Data Collection",
           items: [
-            "getting-started/examples/user-notes",
-            "getting-started/examples/ingesting-data",
-            "getting-started/examples/secure-ingestion",
-            "getting-started/examples/forwarding-data",
-            "getting-started/examples/reading-json-with-a-pipeline",
-            "getting-started/examples/a-syslog-to-json-data-stream",
-            "getting-started/examples/log-collection-with-agents",
+            "getting-started/create-director",
+            "getting-started/add-first-device", 
+            "getting-started/configure-first-target",
+            "getting-started/install-content-hub"
           ]
         },
+        "getting-started/connect-with-routes",
+        "getting-started/monitor-and-verify", 
+        "getting-started/next-steps"
       ],
     },
     {
       type: "category",
-      label: "Microsoft Sentinel",
+      label: "Organization",
       items: [
-        "microsoft-sentinel/overview",
-        "microsoft-sentinel/integration",
-        {
-          type: "category",
-          label: "Automation",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Automation",
-            description: "The following documents contain detailed information on this topic."
-          },
-          items: [
-            "microsoft-sentinel/automation/arm-templates",
-            "microsoft-sentinel/automation/bicep-templates",
-          ],
-        },
-        {
-          type: "category",
-          label: "Content Hub",
-          link: {
-            type: "generated-index",
-            title: "Microsoft Sentinel: Content Hub",
-            description: "The following documents contain detailed information on this topic."
-          },
-          items: [
-            "microsoft-sentinel/content-hub/checkpoint",
-            "microsoft-sentinel/content-hub/fortigate",
-          ],
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "Deployment",
-      link: {
-        type: "generated-index",
-        title: "Deployment",
-        description: "Guides for deploying DataStream across environments."
-      },
-      items: [
-        "deployment/overview",
-        "deployment/on-local",
-        "deployment/as-cluster",
-        "deployment/on-azure-vm",
-        "deployment/on-azure-app-service",
-        "deployment/on-azure-functions",
-        "deployment/via-azure-arc-extension",
-      ],
-    },
-    {
-      type: "category",
-      label: "Administration",
-      collapsed: false,
-      items: [
-        "administration/creating-accounts",
-        "administration/home",
-        "administration/managing-accounts",
-        {
-          type: "category",
-          label: "Fleet Management",
-          items: [
-            {
-              type: "category",
-              label: "Directors",
-              items: [
-                "administration/fleet-management/directors/overview",
-                "administration/fleet-management/directors/creating-directors",
-                "administration/fleet-management/directors/managing-directors",
-              ]
-            },
-            {
-              type: "category",
-              label: "Devices",
-              items: [
-                "administration/fleet-management/devices/overview",
-                "administration/fleet-management/devices/creating-push-devices",
-                "administration/fleet-management/devices/creating-pull-devices",
-                "administration/fleet-management/devices/managing-devices",
-              ]
-            },
-            {
-              type: "category",
-              label: "Targets",
-              items: [
-                "administration/fleet-management/targets/overview",
-                "administration/fleet-management/targets/creating-targets",
-                "administration/fleet-management/targets/managing-targets",
-              ]
-            }
-          ]
-        },
-        {
-          type: "category",
-          label: "My Pipelines",
-          items: [
-            "administration/my-pipelines/overview",
-            "administration/my-pipelines/creating-pipelines",
-            "administration/my-pipelines/managing-pipelines",
-          ]
-        },
-        {
-          type: "category",
-          label: "Routes",
-          items: [
-            "administration/routes/overview",
-            "administration/routes/managing-quick-routes",
-            "administration/routes/managing-advanced-routes",
-          ]
-        },
-        {
-          type: "category",
-          label: "Content Hub",
-          items: [
-            "administration/content-hub/overview",
-            "administration/content-hub/managing-templates",
-          ]
-        },
-        {
-          type: "category",
-          label: "Organization",
-          items: [
-            {
-              type: "category",
-              label: "Users",
-              items: [
-                "administration/organization/users/overview",
-                "administration/organization/users/creating-users",
-                "administration/organization/users/managing-users",
-              ]
-            },
-            "administration/organization/roles",
-            "administration/organization/audit",
-          ]
-        }
-      ]
-    },
-    {
-      type: "category",
-      label: "CLI",
-      link: {
-        type: "generated-index",
-        title: "Command Line Interface",
-        description: "The following documents contain detailed information about the CLI."
-      },
-      items: [
-        "cli/director",
-        "cli/agent",
+        "organization/overview",
+        "organization/users",
+        "organization/roles",
+        "organization/audit",
       ]
     },
     {
       type: "category",
       label: "Configuration",
       items: [
-        "configuration/overview",
+        "configuration/quick-start",
+        {
+          type: "category",
+          label: "Directors",
+          items: [
+            "configuration/directors/introduction",
+            "configuration/directors/configuration",
+            "configuration/directors/deployment",
+            "configuration/directors/troubleshooting",
+          ]
+        },
         {
           type: "category",
           label: "Devices",
@@ -426,28 +280,14 @@ const sidebars: SidebarsConfig = {
         'configuration/routes',
       ],
     },
-    // {
-    //   type: "category",
-    //   label: "Architecture",
-    //   items: [
-    //     "architecture/overview",
-    //     "architecture/clustering",
-    //     "architecture/file-system",
-    //     "architecture/persistency",
-    //     "architecture/zero-trust",
-    //   ],
-    // },
-    // {
-    //   type: "category",
-    //   label: "Migration",
-    //   link: {type: "doc", id: "migration/index"},
-    //   items: [
-    //     "migration/cribl",
-    //     "migration/logstash",
-    //     "migration/tenzir",
-    //     "migration/vector",
-    //   ],
-    // },
+    {
+      type: "category",
+      label: "Content Hub",
+      items: [
+        "content-hub/overview",
+        "content-hub/licensing",
+      ]
+    },
     {
       type: "category",
       label: "Appendix",
