@@ -1,0 +1,255 @@
+---
+sidebar_label: From Cribl
+---
+
+# Migrating from Cribl to DataStream
+
+This guide provides step-by-step instructions for migrating your existing Cribl Stream or Cribl Edge deployment to DataStream.
+
+## Feature Comparison
+
+|Feature|Cribl|DataStream|
+|---|---|---|
+|Configuration Format|YAML/JSON|YAML|
+|Functions/Pipelines|Functions, Pipelines, Routes|Processors, Pipelines|
+|Sources|Sources|Devices|
+|Destinations|Destinations|Targets|
+|Deployment Model|Leader/Worker or Standalone|Distributed or Standalone|
+|Management|Leader UI or API|Configuration Files or API|
+
+## Configuration Mapping
+
+### Sources to Devices
+
+**Cribl** sources can be mapped to **DataStream** devices as follows:
+
+|Cribl Source|DataStream Device|
+|---|---|
+|`HTTP`|`http`|
+|`Syslog`|`syslog`|
+|`TCP`|`tcp`|
+|`UDP`|`udp`|
+|`Kafka`|`kafka`|
+|Windows Event Logs|Windows|
+|Azure Monitor|Azure Monitor|
+
+### Functions to Processors
+
+**Cribl** functions can be mapped to **DataStream** processors:
+
+|Cribl Function|DataStream Processor|
+|---|---|
+|`Eval`|`script`|
+|`Rename`|`rename`|
+|`Drop`|`remove`|
+|Parser (CSV)|`csv`|
+|Parser (JSON)|`json`|
+|Parser (Regex)|`grok`|
+|Parser (Key-Value)|`kv`|
+
+### Routes to Pipelines
+
+**Cribl** routes are conceptually similar to **DataStream** pipelines. In **DataStream**, define clear processing paths with conditional branching where needed.
+
+### Destinations to Targets
+
+**Cribl** destinations can be mapped to **DataStream** targets:
+
+|Cribl Destination|DataStream Target|
+|---|---|
+|`AWS S3`|`s3`|
+|`Elasticsearch`|`elasticsearch`|
+|`Splunk`|`splunk`|
+|`HTTP`|`http`|
+|`Kafka`|`kafka`|
+
+## Migration Steps
+
+1. **Inventory Your Cribl Deployment** - Document all sources, destinations, and pipelines. Note any custom JavaScript functions or expressions.
+
+2. **Create Device Configurations** - Convert **Cribl** sources to DataStream devices, e.g.
+  
+    <ExampleGrid>
+    <CommentCol>
+      **Cribl** _HTTP_ source:
+    </CommentCol>
+    <CodeCol>
+      ```json title="JSON"
+      {
+        "id": "http_in",
+        "type": "http",
+        "host": "0.0.0.0",
+        "port": 10080,
+        "authType": "none"
+      }
+      ```
+    </CodeCol>
+    <CommentCol>
+      **DataStream** _HTTP_ device:
+    </CommentCol>
+    <CodeCol>
+      ```yaml title="YAML"
+      devices:
+        - id: 1
+          name: http_in
+          type: http
+          properties:
+            address: "0.0.0.0"
+            port: 10080
+    ```
+    </CodeCol>
+    </ExampleGrid>
+
+3. **Create Processor Configurations** - Map **Cribl** functions to **DataStream** processors, e.g.
+  
+    <ExampleGrid>
+    <CommentCol>
+      **Cribl** _Eval_ function:
+    </CommentCol>
+    <CodeCol>
+      ```json title="JSON"
+      {
+        "id": "set_source",
+        "filter": "true",
+        "disabled": false,
+        "conf": {
+          "add": [
+            {
+              "name": "source",
+              "value": "'cribl_http'"
+            }
+          ]
+        }
+      }
+      ```
+    </CodeCol>
+    <CommentCol>
+      **DataStream** _Script_ processor:
+    </CommentCol>
+    <CodeCol>
+      ```yaml title="YAML"
+      processors:
+        - set:
+            field: source
+            value: "cribl_http"
+      ```
+    </CodeCol>
+    </ExampleGrid>
+
+4. **Create Target Configurations**
+  
+    - Convert **Cribl** destinations to **DataStream** targets
+    - Adapt any routing logic to **DataStream**'s pipeline model
+
+5. **Test Configuration**
+  
+    - Deploy configuration in a test environment
+    - Validate data flows through the system as expected
+    - Compare output with original **Cribl** deployment
+
+6. **Deploy in Production**
+  
+    - Set up parallel ingestion to both systems
+    - Gradually shift traffic to **DataStream**
+    - Verify metrics and logs are properly processed
+
+## Configuration Examples
+
+A Complex pipeline conversion:
+
+<ExampleGrid>
+  <CommentCol>
+    **Cribl** pipeline:
+  </CommentCol>
+  <CodeCol>
+    ```json title="JSON"
+    {
+      "id": "main",
+      "functions": [
+        {
+          "id": "eval",
+          "conf": {
+            "add": [{"name": "meta_source", "value": "'cribl'"}]
+          }
+        },
+        {
+          "id": "parser",
+          "filter": "true",
+          "conf": {
+            "type": "kv",
+            "srcField": "message"
+          }
+        }
+      ]
+    }
+    ```
+  </CodeCol>
+  <CommentCol>
+    **DataStream** pipeline:
+  </CommentCol>
+  <CodeCol>
+    ```yaml title="YAML"
+    pipelines:
+      - name: main
+        processors:
+          - set:
+              field: meta_source
+              value: "cribl"
+          - kv:
+              field: message
+              field_split: " "
+              value_split: "="
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Advanced Considerations
+
+### JavaScript Functions
+
+For custom JavaScript functions in **Cribl**, use **DataStream**'s Script processor with `lang: golang`:
+
+```yaml title="YAML"
+processors:
+  - script:
+      lang: golang
+      source: |
+        package main
+          
+        func main() {
+          // Your conversion of the JavaScript logic
+          if val, ok := logEntry["field"].(string); ok {
+            logEntry["processed"] = processField(val)
+          }
+        }
+          
+        func processField(input string) string {
+          // Processing logic here
+          return input
+        }
+```
+
+### Lookup Tables
+
+Convert **Cribl** lookup tables to **DataStream**'s equivalent format and reference them in your processors.
+
+### Event Breakers
+
+For custom event breaking in **Cribl**, use **DataStream**'s appropriate framing options in TCP/UDP devices.
+
+## Performance Tuning
+
+After migration, optimize your **DataStream** deployment:
+
+1. Adjust batch sizes and flush intervals based on throughput requirements
+2. Configure appropriate worker counts for devices
+3. Enable TLS where security is required
+4. Use pipelines to filter data early in the processing chain
+
+## Additional Resources
+
+Contact **DataStream** support for assistance with your migration:
+
+- Submit a support ticket
+- Join our community forum
+- Schedule a migration consultation with our experts

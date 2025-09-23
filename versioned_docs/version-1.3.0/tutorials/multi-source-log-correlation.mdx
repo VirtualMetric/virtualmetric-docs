@@ -1,0 +1,664 @@
+---
+sidebar_label: Multi-Source Log Correlation
+---
+
+# Multi-Source Log Correlation and Enrichment
+
+## Synopsis
+
+This tutorial demonstrates advanced log correlation techniques by ingesting data from multiple sources (Syslog, Windows Events, and HTTP logs), correlating events using session IDs and temporal analysis, and enriching with contextual information. You'll learn to implement complex routing logic, session-based correlation, and multi-stage enrichment pipelines.
+
+**Prerequisites:**
+
+- Multiple log sources available (Syslog, Windows Event logs, web server logs)
+- Understanding of log correlation concepts
+- Knowledge of time-based analysis and session tracking
+
+**Configuration files used:**
+
+- `multi-source-correlation.yml` - Main configuration
+- Sample log files from different sources
+
+**Sample data:**
+
+- Windows Security Event logs
+- Apache/IIS access logs
+- Application syslog messages
+
+## Scenario
+
+Security operations teams need to correlate events across multiple systems to detect complex attack patterns and user behavior. This tutorial implements a comprehensive correlation system that:
+
+- **Ingests from multiple sources** - Collects Windows Events, Syslog, and HTTP access logs
+- **Normalizes different formats** - Standardizes timestamps, user IDs, and IP addresses
+- **Correlates by session** - Links events using session IDs, user accounts, and IP addresses
+- **Applies temporal analysis** - Identifies event sequences and suspicious timing patterns
+- **Enriches with context** - Adds geographic, organizational, and threat intelligence data
+- **Detects anomalies** - Identifies unusual patterns and potential security incidents
+
+**Data flow:**
+
+Multiple Sources → Format Normalization → Session Correlation → Temporal Analysis → Contextual Enrichment → Anomaly Detection → Unified Output
+
+**Techniques demonstrated:**
+
+- Multi-source ingestion and routing
+- Cross-format field normalization
+- Session-based event correlation
+- Temporal sequence analysis
+- Contextual data enrichment
+
+## Setup
+
+### Key Configuration Components
+
+- **Devices**: Multiple input sources with different protocols
+- **Pipelines**: Source-specific normalization + correlation logic
+- **Targets**: Correlated event storage with session tracking
+
+### Quick Reference of Processors Used
+
+|Processor|Purpose|Key Parameters|
+|---|---|---|
+|`grok`|Parse various log formats|`field`, `patterns`, `pattern_definitions`|
+|`normalize`|Standardize to common schema|`format`, `target_schema`|
+|`fingerprint`|Generate correlation keys|`fields`, `method`, `target_field`|
+|`group`|Correlate related events|`group_by`, `timeout`, `max_events`|
+|`math`|Calculate time differences|`operation`, `operands`|
+|`lookup`|Enrich with external data|`field`, `lookup_table`, `target_field`|
+
+### Expected Input/Output Formats
+
+**Input**: Mixed log formats (CEF, Windows Event XML, Common Log Format, JSON)
+**Output**: Normalized and correlated event sessions with enrichment data
+
+## Trial
+
+<Include id="config-files-execution" />
+
+Create a configuration file named `multi-source-correlation.yml` in your working directory.
+
+### Step 1: Configure Multiple Input Sources
+
+```yml title="multi-source-correlation.yml"
+devices:
+  # Windows Event Log via Syslog
+  - id: 1
+    name: windows_events
+    type: syslog
+    status: true
+    properties:
+      protocol: udp
+      address: 0.0.0.0
+      port: 5140
+      tag: windows
+  
+  # Application Syslog
+  - id: 2
+    name: app_syslog
+    type: syslog
+    status: true
+    properties:
+      protocol: tcp
+      address: 0.0.0.0
+      port: 5141
+      tag: application
+  
+  # HTTP Access Logs
+  - id: 3
+    name: web_logs
+    type: file
+    status: true
+    properties:
+      path: "/var/log/httpd/access.log"
+      follow: true
+      multiline: false
+      encoding: utf-8
+      tag: web_access
+  
+  # CEF Security Events
+  - id: 4
+    name: security_cef
+    type: tcp
+    status: true
+    properties:
+      address: 0.0.0.0
+      port: 5142
+      tag: security_cef
+```
+
+### Step 2: Configure Correlation Target
+
+```yml title="multi-source-correlation.yml"
+targets:
+  - name: correlated_events
+    type: file
+    status: true
+    properties:
+      location: /data/correlated
+      name: "sessions_{{date}}.json"
+      format: json
+      compression: gzip
+      rotation: hourly
+      
+  - name: anomaly_alerts
+    type: file
+    status: true
+    properties:
+      location: /data/alerts
+      name: "anomalies_{{date}}.json"
+      format: json
+      rotation: daily
+```
+
+### Step 3: Configure Source-Specific Normalization Pipelines
+
+```yml title="multi-source-correlation.yml"
+pipelines:
+  # Windows Event Log Normalization
+  - name: normalize_windows_events
+    processors:
+      # Parse Windows Event Log format
+      - grok:
+          field: message
+          patterns:
+            - "(?m)^EventCode=(?<event_code>\\d+).*?TargetUserName=(?<user_name>[^\\s]+).*?IpAddress=(?<source_ip>[0-9\\.]+).*?LogonId=(?<logon_id>[0-9a-fA-F]+)"
+            - "(?m)^EventCode=(?<event_code>\\d+).*?SubjectUserName=(?<user_name>[^\\s]+).*?IpAddress=(?<source_ip>[0-9\\.]+)"
+      
+      # Normalize timestamp
+      - date:
+          field: timestamp
+          target_field: normalized_timestamp
+          formats:
+            - "MMM dd HH:mm:ss"
+            - "yyyy-MM-dd HH:mm:ss"
+          timezone: UTC
+      
+      # Add source metadata
+      - set:
+          field: event_source
+          value: "windows_security"
+      
+      - set:
+          field: event_category
+          value: "authentication"
+          if: "event_code in ['4624', '4625', '4634', '4647']"
+      
+      - set:
+          field: event_category
+          value: "privilege_escalation"
+          if: "event_code in ['4672', '4673', '4674']"
+      
+      # Generate session correlation key
+      - fingerprint:
+          fields: [user_name, source_ip, logon_id]
+          method: md5
+          target_field: session_key
+          ignore_missing: true
+
+  # Application Syslog Normalization
+  - name: normalize_app_logs
+    processors:
+      # Parse application log format
+      - grok:
+          field: message
+          patterns:
+            - "%{TIMESTAMP_ISO8601:app_timestamp} \\[%{DATA:log_level}\\] %{DATA:application}: user=%{USER:user_name} session=%{DATA:session_id} ip=%{IP:source_ip} action=%{DATA:action} %{GREEDYDATA:details}"
+            - "%{TIMESTAMP_ISO8601:app_timestamp} \\[%{DATA:log_level}\\] %{DATA:application}: %{GREEDYDATA:message_text}"
+      
+      # Normalize timestamp
+      - date:
+          field: app_timestamp
+          target_field: normalized_timestamp
+          formats:
+            - "2006-01-02T15:04:05.000Z"
+            - "2006-01-02T15:04:05Z"
+          timezone: UTC
+      
+      # Add source metadata
+      - set:
+          field: event_source
+          value: "application"
+      
+      - set:
+          field: event_category
+          value: "user_action"
+      
+      # Generate session correlation key
+      - fingerprint:
+          fields: [user_name, source_ip, session_id]
+          method: md5
+          target_field: session_key
+          ignore_missing: true
+
+  # Web Access Log Normalization
+  - name: normalize_web_logs
+    processors:
+      # Parse common log format
+      - grok:
+          field: message
+          patterns:
+            - "%{COMBINEDAPACHELOG}"
+            - "%{IISLOG}"
+      
+      # Normalize timestamp
+      - date:
+          field: timestamp
+          target_field: normalized_timestamp
+          formats:
+            - "dd/MMM/yyyy:HH:mm:ss Z"
+            - "yyyy-MM-dd HH:mm:ss"
+          timezone: UTC
+      
+      # Extract session from cookies or URL
+      - grok:
+          field: request
+          patterns:
+            - ".*[?&]session=(?<session_id>[^&\\s]+)"
+          ignore_failure: true
+      
+      # Add source metadata
+      - set:
+          field: event_source
+          value: "web_access"
+      
+      - set:
+          field: event_category
+          value: "web_request"
+      
+      # Generate session correlation key
+      - fingerprint:
+          fields: [clientip, session_id, agent]
+          method: md5
+          target_field: session_key
+          ignore_missing: true
+
+  # CEF Security Event Normalization
+  - name: normalize_security_cef
+    processors:
+      # Parse CEF format
+      - cef:
+          field: message
+          target_field: cef_data
+      
+      # Normalize timestamp
+      - date:
+          field: cef_data.rt
+          target_field: normalized_timestamp
+          formats:
+            - "Jan 02 2006 15:04:05"
+            - "MMM dd yyyy HH:mm:ss"
+          timezone: UTC
+      
+      # Extract relevant fields
+      - set:
+          field: user_name
+          copy_from: cef_data.suser
+      
+      - set:
+          field: source_ip
+          copy_from: cef_data.src
+      
+      - set:
+          field: event_source
+          value: "security_device"
+      
+      - set:
+          field: event_category
+          copy_from: cef_data.cat
+      
+      # Generate session correlation key
+      - fingerprint:
+          fields: [user_name, source_ip]
+          method: md5
+          target_field: session_key
+          ignore_missing: true
+```
+
+### Step 4: Configure Session Correlation Pipeline
+
+```yml title="multi-source-correlation.yml"
+pipelines:
+  # Main correlation pipeline
+  - name: session_correlation
+    processors:
+      # Group events by session key within time window
+      - group:
+          group_by: session_key
+          timeout: 300  # 5 minutes
+          max_events: 100
+          target_field: session_events
+          sort_by: normalized_timestamp
+      
+      # Calculate session duration
+      - script:
+          lang: javascript
+          source:|
+            if (session_events && session_events.length > 1) {
+              var first = new Date(session_events[0].normalized_timestamp);
+              var last = new Date(session_events[session_events.length - 1].normalized_timestamp);
+              session_duration = (last - first) / 1000; // seconds
+              event_count = session_events.length;
+            } else {
+              session_duration = 0;
+              event_count = 1;
+            }
+      
+      # Analyze event sequence patterns
+      - script:
+          lang: javascript
+          source:|
+            var patterns = [];
+            var sources = new Set();
+            var categories = new Set();
+            var risk_score = 0;
+            
+            if (session_events) {
+              session_events.forEach(function(event) {
+                sources.add(event.event_source);
+                categories.add(event.event_category);
+                
+                // Check for suspicious patterns
+                if (event.event_category === 'authentication' && event.event_code === '4625') {
+                  risk_score += 10; // Failed login
+                }
+                if (event.event_category === 'privilege_escalation') {
+                  risk_score += 25; // Privilege escalation
+                }
+                if (event.event_source === 'web_access' && event.response >= 400) {
+                  risk_score += 5; // HTTP errors
+                }
+              });
+              
+              // Multi-source correlation increases risk
+              if (sources.size > 2) {
+                risk_score += 15;
+              }
+              
+              // Rapid event succession is suspicious
+              if (event_count > 10 && session_duration < 60) {
+                risk_score += 20;
+              }
+            }
+            
+            unique_sources = Array.from(sources);
+            unique_categories = Array.from(categories);
+      
+      # Enrich with geographic data for source IPs
+      - geoip:
+          field: source_ip
+          target_field: geo_data
+          database_type: city
+          ignore_missing: true
+          if: "source_ip != null"
+      
+      # Add organizational context
+      - lookup:
+          field: user_name
+          lookup_table: 
+            file: "/config/user_context.csv"
+            key_column: "username"
+            value_columns: ["department", "role", "security_clearance"]
+          target_field: user_context
+          ignore_missing: true
+      
+      # Classify session risk level
+      - set:
+          field: risk_level
+          value: "low"
+          if: "risk_score < 10"
+      
+      - set:
+          field: risk_level
+          value: "medium"
+          if: "risk_score >= 10 && risk_score < 30"
+      
+      - set:
+          field: risk_level
+          value: "high"
+          if: "risk_score >= 30 && risk_score < 50"
+      
+      - set:
+          field: risk_level
+          value: "critical"
+          if: "risk_score >= 50"
+      
+      # Add analysis metadata
+      - set:
+          field: correlation_timestamp
+          value: "{{_timestamp}}"
+      
+      - set:
+          field: analysis_version
+          value: "v1.2"
+
+  # Anomaly detection pipeline
+  - name: anomaly_detection
+    processors:
+      # Detect anomalous patterns
+      - iff:
+          if: "risk_level in ['high', 'critical']"
+          then:
+            - set:
+                field: alert_type
+                value: "high_risk_session"
+            
+            - set:
+                field: alert_description
+                value: "Session {{session_key}} from {{source_ip}} shows high-risk activity patterns"
+            
+            - set:
+                field: recommended_action
+                value: "investigate_immediately"
+                if: "risk_level == 'critical'"
+            
+            - set:
+                field: recommended_action
+                value: "review_within_hour"
+                if: "risk_level == 'high'"
+      
+      # Detect unusual geographic patterns
+      - iff:
+          if: "geo_data.country != null && user_context.usual_location != null && geo_data.country != user_context.usual_location"
+          then:
+            - set:
+                field: geographic_anomaly
+                value: true
+            
+            - math:
+                operation: add
+                operands: [risk_score, 15]
+                target_field: risk_score
+      
+      # Detect off-hours activity
+      - script:
+          lang: javascript
+          source:|
+            var hour = new Date(normalized_timestamp).getUTCHours();
+            if (hour < 6||hour > 22) {
+              off_hours_activity = true;
+              risk_score += 5;
+            }
+```
+
+### Step 5: Configure Complex Routing
+
+```yml title="multi-source-correlation.yml"
+routes:
+  # Route for Windows Events
+  - name: windows_correlation_route
+    devices:
+      - name: windows_events
+    pipelines:
+      - name: normalize_windows_events
+      - name: session_correlation
+      - name: anomaly_detection
+    targets:
+      - name: correlated_events
+      - name: anomaly_alerts
+        if: "alert_type != null"
+  
+  # Route for Application Logs
+  - name: app_correlation_route
+    devices:
+      - name: app_syslog
+    pipelines:
+      - name: normalize_app_logs
+      - name: session_correlation
+      - name: anomaly_detection
+    targets:
+      - name: correlated_events
+      - name: anomaly_alerts
+        if: "alert_type != null"
+  
+  # Route for Web Access Logs
+  - name: web_correlation_route
+    devices:
+      - name: web_logs
+    pipelines:
+      - name: normalize_web_logs
+      - name: session_correlation
+      - name: anomaly_detection
+    targets:
+      - name: correlated_events
+      - name: anomaly_alerts
+        if: "alert_type != null"
+  
+  # Route for Security CEF Events
+  - name: security_correlation_route
+    devices:
+      - name: security_cef
+    pipelines:
+      - name: normalize_security_cef
+      - name: session_correlation
+      - name: anomaly_detection
+    targets:
+      - name: correlated_events
+      - name: anomaly_alerts
+        if: "alert_type != null"
+```
+
+### Step 6: Create User Context Lookup File
+
+Create `/config/user_context.csv`:
+
+```csv
+username,department,role,security_clearance,usual_location
+jdoe,IT,administrator,high,US
+asmith,HR,manager,medium,US
+bwilson,Finance,analyst,medium,UK
+```
+
+### Step 7: Start Multi-Source Processing
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    .\vmetric-director -console
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -console
+    ```
+  </TabItem>
+</Tabs>
+
+### Step 8: Verify Correlated Output
+
+Example correlated session output:
+
+```json
+{
+  "session_key": "a1b2c3d4e5f6",
+  "session_duration": 245,
+  "event_count": 7,
+  "unique_sources": ["windows_security", "application", "web_access"],
+  "unique_categories": ["authentication", "user_action", "web_request"],
+  "risk_score": 35,
+  "risk_level": "high",
+  "user_name": "jdoe",
+  "source_ip": "192.168.1.50",
+  "geo_data": {
+    "country": "US",
+    "city": "New York",
+    "latitude": 40.7128,
+    "longitude": -74.0060
+  },
+  "user_context": {
+    "department": "IT",
+    "role": "administrator",
+    "security_clearance": "high"
+  },
+  "geographic_anomaly": false,
+  "off_hours_activity": false,
+  "correlation_timestamp": "2025-01-12T10:30:45Z",
+  "session_events": [
+    {
+      "event_source": "windows_security",
+      "event_code": "4624",
+      "event_category": "authentication",
+      "normalized_timestamp": "2025-01-12T10:25:30Z"
+    },
+    {
+      "event_source": "application",
+      "action": "file_access",
+      "event_category": "user_action",
+      "normalized_timestamp": "2025-01-12T10:26:15Z"
+    }
+  ]
+}
+```
+
+## Monitoring
+
+### Key Metrics to Observe
+
+1. **Correlation Success Rate**: Percentage of events successfully correlated
+2. **Session Formation**: Average events per session and session duration
+3. **Risk Distribution**: Number of sessions by risk level
+4. **Source Coverage**: Events processed from each source
+5. **Anomaly Detection**: Alert generation rate and false positives
+
+### Performance Considerations
+
+- **Memory Usage**: Correlation requires keeping sessions in memory
+- **Processing Latency**: Complex correlation adds processing time
+- **Storage Growth**: Correlated data is larger than original events
+- **Lookup Performance**: External enrichment sources affect speed
+
+### Common Troubleshooting
+
+**Issue**: Low correlation rates
+- Verify session key generation logic
+- Check timestamp normalization accuracy
+- Review session timeout settings
+
+**Issue**: High false positive rate
+- Adjust risk scoring thresholds
+- Refine anomaly detection rules
+- Improve user context data quality
+
+**Issue**: Missing enrichment data
+- Verify lookup file availability
+- Check external service connectivity
+- Monitor API rate limits
+
+### Security Analysis Examples
+
+Query correlated data for security analysis:
+
+```bash
+# Find high-risk sessions
+jq 'select(.risk_level == "critical" or .risk_level == "high")' sessions_2025-01-12.json
+
+# Analyze geographic anomalies
+jq 'select(.geographic_anomaly == true)' sessions_2025-01-12.json
+
+# Find multi-source correlations
+jq 'select(.unique_sources|length > 2)' sessions_2025-01-12.json
+```
+
+:::caution
+This correlation system is designed for learning. Production deployments require additional security measures, data retention policies, and compliance considerations.
+:::

@@ -1,0 +1,35 @@
+---
+sidebar_label: Logstash
+---
+
+# Comparisons: Logstash
+
+- **Strengths**: Vast plugin ecosystem, ELK stack integration
+- **Best for**: Elasticsearch users, complex transformations
+- **Distinctive Features**: Ruby-based filtering, mature ecosystem
+
+## Discussion
+
+**Logstash** is a widely adopted open-source data collection and processing pipeline, serving as a core component in the Elastic Stack ecosystem. It offers rich data transformation capabilities and a large collection of input, filter, and output plugins. However, its Java-based architecture can lead to significant resource consumption, performance bottlenecks during high-load scenarios, and scaling challenges that require careful configuration and monitoring.
+
+|Feature|VirtualMetric|Logstash|
+|---|---|---|
+|Agentless Log Collection (auto-discovery)|Yes|Partial (requires Beats or other agents for most sources)|
+|Log Delivery Guarantee (WAL)|Yes|Partial (via persistent queues, but not full WAL)|
+|Long-term Log storage|Yes|No (designed as a processing pipeline, relies on external storage)|
+|Compression|Up to 99%|Basic (depends on output configurations)|
+|Processing Performance|Very high[^1]|Moderate, requires extensive tuning and optimization|
+|Forensic data Integrity|Yes|Limited (no built-in integrity verification)|
+|Made in Europe|Yes|No (developed by Elastic, US-based company)|
+|Scalable pricing|Yes|Open source with paid support options through Elastic|
+|Implementation Support|Comprehensive|Community and commercial support available|
+
+## Conclusions
+
+* **VirtualMetric** and **Logstash** represent different approaches to log management, with **VirtualMetric** offering an integrated, high-performance solution while **Logstash** functions primarily as a processing pipeline within the broader Elastic ecosystem. **VirtualMetric** delivers superior performance and efficiency with minimal configuration, whereas **Logstash** often requires significant tuning and optimization to handle high volumes of data effectively.
+
+* For long-term security log storage, **VirtualMetric** significantly outperforms **Logstash** with its advanced compression algorithms that achieve up to 99% reduction in storage requirements while maintaining full query capabilities. **Logstash** itself provides no native storage solution, instead relying on Elasticsearch or other external systems for persistence, which adds complexity and cost. The dependency on additional components not only increases the total cost of ownership but also introduces potential points of failure in the data lifecycle.
+
+* **VirtualMetric**'s agentless architecture eliminates the need for deploying and managing client-side collectors like Filebeat or Metricbeat, which are typically required with **Logstash** deployments. This streamlined approach significantly reduces operational overhead and simplifies deployment across diverse environments. While **Logstash** offers extensive plugin options for data transformation, this flexibility comes at the cost of increased complexity and resource utilization that can become problematic at scale.
+
+* Organizations seeking robust log delivery guarantees will find **VirtualMetric**'s built-in Write-Ahead Logging (WAL) provides superior reliability compared to **Logstash**'s persistent queue functionality, which offers only partial protection against data loss. **VirtualMetric**'s end-to-end approach to data integrity makes it particularly suitable for environments with strict compliance requirements or where forensic analysis of security incidents is critical.

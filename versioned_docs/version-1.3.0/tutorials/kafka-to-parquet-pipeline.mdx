@@ -1,0 +1,484 @@
+---
+sidebar_label: Kafka to Parquet Pipeline
+---
+
+
+# High-Performance Kafka to Parquet Data Lake Pipeline
+
+## Synopsis
+
+This tutorial demonstrates building a high-throughput data pipeline that consumes structured log data from Apache Kafka and efficiently stores it in Parquet format for analytics. You'll learn to configure Kafka consumers, apply schema enforcement, perform data transformations, and output columnar data optimized for big data analytics.
+
+**Prerequisites:**
+
+- Access to Apache Kafka cluster or local Kafka installation
+- Understanding of Kafka topics and consumer groups
+- Basic knowledge of Parquet format and columnar storage
+
+**Configuration files used:**
+
+- `kafka-parquet-pipeline.yml` - Main configuration
+- `schema-enforcement.yml` - Data schema definitions
+
+**Sample data:**
+
+- JSON application logs in Kafka topic
+- Sample schema files for data validation
+
+## Scenario
+
+Data engineering teams need to ingest high-volume application logs from Kafka and store them efficiently for analytics workloads. This tutorial implements a robust pipeline that:
+
+- **Consumes from Kafka** - Connects to Kafka cluster with consumer group management
+- **Enforces data schema** - Validates and standardizes incoming JSON data
+- **Transforms data types** - Converts timestamps, normalizes fields, and handles nested objects
+- **Optimizes for analytics** - Partitions data by date and applies columnar compression
+- **Outputs to Parquet** - Stores data in efficient Parquet format with optimal schemas
+
+**Data flow:**
+
+Kafka Topic → Schema Validation → Data Transformation → Date Partitioning → Parquet Storage
+
+**Techniques demonstrated:**
+
+- Kafka consumer configuration
+- Schema enforcement and validation
+- Nested JSON flattening
+- Date-based partitioning
+- Parquet optimization for analytics
+
+## Setup
+
+### Key Configuration Components
+
+- **Device**: Kafka consumer with optimized batch processing
+- **Pipeline**: Multi-stage data transformation and schema enforcement
+- **Target**: Parquet files with date-based partitioning
+
+### Quick Reference of Processors Used
+
+|Processor|Purpose|Key Parameters|
+|---|---|---|
+|`json`|Parse JSON messages|`field`, `add_to_root`, `allow_duplicate_keys`|
+|`enforce_schema`|Schema validation|`schema`, `strict_mode`, `default_values`|
+|`date`|Date field parsing|`field`, `formats`, `target_field`|
+|`dot_nester`|Flatten nested objects|`separator`, `prefix`|
+|`convert`|Type conversion|`field`, `type`, `target_field`|
+
+### Expected Input/Output Formats
+
+**Input**: JSON log messages from Kafka topic
+**Output**: Date-partitioned Parquet files with enforced schema
+
+## Trial
+
+<Include id="config-files-execution" />
+
+Create a configuration file named `kafka-parquet-pipeline.yml` in your working directory.
+
+### Step 1: Configure the Kafka Consumer Device
+
+```yml title="kafka-parquet-pipeline.yml"
+devices:
+  - id: 1
+    name: kafka_log_consumer
+    type: kafka
+    status: true
+    properties:
+      address: kafka-cluster.example.com:9092
+      topic: application-logs
+      group: datastream-analytics
+      username: datastream-user
+      password: secure-password
+      
+      # Consumer optimization
+      partitions: 6
+      workers: 4
+      buffer_size: 1048576  # 1MB buffer
+      batch_size: 1000
+      flush_interval: 5s
+      
+      # Security settings
+      security_protocol: SASL_SSL
+      sasl_mechanism: PLAIN
+      ssl_ca_location: /path/to/ca-cert.pem
+      
+      # Consumer group settings
+      auto_offset_reset: earliest
+      enable_auto_commit: true
+      session_timeout: 30000
+      heartbeat_interval: 3000
+```
+
+This configuration creates a high-performance Kafka consumer that:
+
+- Connects to a secure Kafka cluster with SASL authentication
+- Processes multiple partitions with worker threads
+- Uses optimized batching for throughput
+- Implements proper consumer group management
+
+:::note
+Adjust `address`, `username`, `password`, and SSL settings according to your Kafka cluster configuration.
+:::
+
+### Step 2: Configure the Parquet Target with Partitioning
+
+```yml title="kafka-parquet-pipeline.yml"
+targets:
+  - name: analytics_parquet
+    type: file
+    status: true
+    properties:
+      location: /data/analytics/logs
+      name: "app_logs_{{date_partition}}.parquet"
+      format: parquet
+      compression: snappy
+      
+      # Parquet optimization
+      row_group_size: 134217728  # 128MB row groups
+      page_size: 1048576         # 1MB pages
+      compression_level: 6
+      
+      # Partitioning strategy
+      partition_by:
+        - date_partition
+        - log_level
+      
+      # File rotation
+      rotation: hourly
+      max_size: 1GB
+      
+      # Schema evolution
+      schema_evolution: true
+      write_empty_files: false
+```
+
+:::caution
+Ensure the target directory `/data/analytics/logs` exists and has sufficient disk space. Parquet files can grow large with high-volume data.
+:::
+
+### Step 3: Configure the Data Transformation Pipeline
+
+```yml title="kafka-parquet-pipeline.yml"
+pipelines:
+  - name: kafka_parquet_transformation
+    processors:
+      # Parse the JSON message
+      - json:
+          field: message
+          add_to_root: true
+          add_to_root_conflict_strategy: replace
+          allow_duplicate_keys: false
+      
+      # Remove the raw message field
+      - remove:
+          field: message
+          ignore_missing: true
+      
+      # Parse and standardize timestamp
+      - date:
+          field: timestamp
+          target_field: parsed_timestamp
+          formats:
+            - "2006-01-02T15:04:05.000Z"
+            - "2006-01-02 15:04:05"
+            - "Jan _2 15:04:05"
+          timezone: UTC
+      
+      # Create date partition field
+      - date:
+          field: parsed_timestamp
+          target_field: date_partition
+          formats:
+            - "2006-01-02"
+          operation: format
+      
+      # Enforce schema for analytics
+      - enforce_schema:
+          schema:
+            application:
+              type: string
+              required: true
+              default: "unknown"
+            log_level:
+              type: string
+              required: true
+              enum: ["DEBUG", "INFO", "WARN", "ERROR", "FATAL"]
+              default: "INFO"
+            message_text:
+              type: string
+              required: true
+              max_length: 10000
+            user_id:
+              type: string
+              required: false
+              pattern: "^[a-zA-Z0-9_-]+$"
+            session_id:
+              type: string
+              required: false
+              pattern: "^[a-fA-F0-9-]+$"
+            request_id:
+              type: string
+              required: false
+            response_time_ms:
+              type: integer
+              required: false
+              min: 0
+              max: 300000
+            status_code:
+              type: integer
+              required: false
+              min: 100
+              max: 599
+            ip_address:
+              type: string
+              required: false
+              pattern: "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
+            user_agent:
+              type: string
+              required: false
+              max_length: 1000
+          strict_mode: false
+          add_missing_fields: true
+      
+      # Flatten nested request/response objects
+      - dot_nester:
+          separator: "."
+          max_depth: 3
+          if: "request != null or response != null"
+      
+      # Convert numeric strings to proper types
+      - convert:
+          field: response_time_ms
+          type: integer
+          ignore_failure: true
+          if: "response_time_ms != null"
+      
+      - convert:
+          field: status_code
+          type: integer
+          ignore_failure: true
+          if: "status_code != null"
+      
+      # Normalize log level
+      - uppercase:
+          field: log_level
+          if: "log_level != null"
+      
+      # Add processing metadata
+      - set:
+          field: ingestion_timestamp
+          value: "{{_timestamp}}"
+      
+      - set:
+          field: processing_date
+          value: "{{date_partition}}"
+      
+      # Clean up temporary fields
+      - remove:
+          field: timestamp
+          ignore_missing: true
+      
+      - remove:
+          field: parsed_timestamp
+          ignore_missing: true
+      
+      # Add data quality metrics
+      - set:
+          field: data_quality_score
+          value: 100
+      
+      - math:
+          operation: subtract
+          operands:
+            - data_quality_score
+            - 10
+          target_field: data_quality_score
+          if: "user_id == null or user_id == ''"
+      
+      - math:
+          operation: subtract
+          operands:
+            - data_quality_score
+            - 5
+          target_field: data_quality_score
+          if: "session_id == null or session_id == ''"
+      
+      - math:
+          operation: subtract
+          operands:
+            - data_quality_score
+            - 20
+          target_field: data_quality_score
+          if: "application == 'unknown'"
+```
+
+### Step 4: Configure the Route
+
+```yml title="kafka-parquet-pipeline.yml"
+routes:
+  - name: kafka_to_parquet_route
+    devices:
+      - name: kafka_log_consumer
+    pipelines:
+      - name: kafka_parquet_transformation
+    targets:
+      - name: analytics_parquet
+    
+    # Route-level settings
+    batch_processing: true
+    batch_size: 5000
+    batch_timeout: 30s
+    parallel_processing: true
+    worker_count: 8
+```
+
+### Step 5: Start Processing
+
+Launch Director to begin processing:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    .\vmetric-director -console
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -console
+    ```
+  </TabItem>
+</Tabs>
+
+### Step 6: Monitor Kafka Consumption
+
+You should see processing logs like these:
+
+```console
+[2025-01-12 10:30:45] [Information] [kafka-log-consumer] Connected to Kafka cluster: kafka-cluster.example.com:9092
+[2025-01-12 10:30:46] [Information] [kafka-log-consumer] Subscribed to topic: application-logs, group: datastream-analytics
+[2025-01-12 10:30:47] [Information] [kafka-log-consumer] Processing batch: 1000 messages from partition 0
+[2025-01-12 10:30:48] [Information] [analytics_parquet] Written Parquet file: app_logs_2025-01-12.parquet (25.6MB, 1000 records)
+```
+
+### Step 7: Verify Parquet Output
+
+Check the output directory structure:
+
+```
+/data/analytics/logs/
+├── date_partition=2025-01-12/
+│   ├── log_level=INFO/
+│   │   ├── app_logs_2025-01-12_10.parquet
+│   │   └── app_logs_2025-01-12_11.parquet
+│   ├── log_level=ERROR/
+│   │   └── app_logs_2025-01-12_10.parquet
+│   └── log_level=WARN/
+│       └── app_logs_2025-01-12_10.parquet
+└── date_partition=2025-01-13/
+    └── log_level=INFO/
+        └── app_logs_2025-01-13_08.parquet
+```
+
+### Step 8: Validate Parquet Schema
+
+You can inspect the Parquet files using tools like `parquet-tools`:
+
+```bash
+parquet-tools schema app_logs_2025-01-12_10.parquet
+```
+
+Expected schema output:
+
+```
+message application {
+  optional binary application (UTF8);
+  optional binary log_level (UTF8);
+  optional binary message_text (UTF8);
+  optional binary user_id (UTF8);
+  optional binary session_id (UTF8);
+  optional binary request_id (UTF8);
+  optional int32 response_time_ms;
+  optional int32 status_code;
+  optional binary ip_address (UTF8);
+  optional binary user_agent (UTF8);
+  optional int64 ingestion_timestamp;
+  optional binary processing_date (UTF8);
+  optional int32 data_quality_score;
+}
+```
+
+## Monitoring
+
+### Key Metrics to Observe
+
+Monitor these critical metrics during operation:
+
+1. **Kafka Consumer Lag**: Monitor partition lag to ensure real-time processing
+2. **Throughput Metrics**: Records per second processed and written
+3. **Parquet File Sizes**: Ensure optimal file sizes for analytics queries
+4. **Schema Validation**: Track schema enforcement success rate
+5. **Data Quality**: Monitor data quality scores and validation failures
+
+### Performance Considerations
+
+- **Consumer Group Scaling**: Add more consumers if lag increases
+- **Parquet Row Group Size**: Optimize for your query patterns (128MB recommended)
+- **Compression**: Snappy offers good balance of speed and compression
+- **Partitioning Strategy**: Align with your most common query patterns
+- **Memory Usage**: Monitor JVM heap for large batches
+
+### Common Troubleshooting
+
+**Issue**: High consumer lag
+- Increase number of consumer workers
+- Optimize batch sizes
+- Check for processing bottlenecks
+
+**Issue**: Large Parquet files
+- Adjust rotation settings
+- Implement more granular partitioning
+- Optimize row group sizes
+
+**Issue**: Schema validation failures
+- Review and update schema definitions
+- Enable detailed error logging
+- Implement data quality monitoring
+
+**Issue**: Kafka connection errors
+- Verify network connectivity
+- Check authentication credentials
+- Monitor Kafka broker health
+
+### Analytics Query Examples
+
+Once data is in Parquet format, you can query it efficiently:
+
+```sql
+-- Example with Apache Spark/Presto
+SELECT 
+  log_level,
+  COUNT(*) as count,
+  AVG(response_time_ms) as avg_response_time,
+  AVG(data_quality_score) as avg_quality
+FROM parquet.`/data/analytics/logs/`
+WHERE date_partition = '2025-01-12'
+  AND log_level IN ('ERROR', 'WARN')
+GROUP BY log_level
+ORDER BY count DESC;
+```
+
+### Log Analysis Techniques
+
+Monitor these patterns in logs:
+
+```console
+[2025-01-12 10:30:45] [Information] [kafka-log-consumer] Consumer lag: 125 messages
+[2025-01-12 10:30:46] [Information] [schema-enforcement] Validation success rate: 98.5%
+[2025-01-12 10:30:47] [Information] [analytics_parquet] Compression ratio: 3.2:1
+[2025-01-12 10:30:48] [Warning] [kafka-log-consumer] Rebalancing partitions due to consumer group change
+```
+
+:::caution
+This tutorial configuration is optimized for learning. For production environments, implement proper monitoring, alerting, and disaster recovery procedures.
+:::
