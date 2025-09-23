@@ -1,0 +1,153 @@
+---
+pagination_prev: null
+sidebar_label: Introduction
+---
+
+# Getting Started: Introduction
+
+Welcome to **VirtualMetric DataStream**. This section will help you deploy your product and get started using it.
+
+## Suite
+
+**DataStream** is a telemetry pipeline solution that simplifies data collection, data processing, and data routing for **Microsoft Sentinel** and other **Azure** data services. It uses pipelines to process, enrich, and direct data flows to their optimal destinations. 
+
+The product suite contains the following applications:
+
+- **Director** - see <Topic id="about-director">this section</Topic> for a more detailed description.
+
+	The primary workhorse of our system. It contains the engine that, using a multi-layered configuration setup, ingests massive data from multiple sources, then processes, transforms, and enriches that data based on a very flexible and composable logic, and then routes them in order to forward the processed data to multiple destinations.
+
+- **Agent** - see <Topic id="about-agent">this section</Topic> for a more detailed description.
+
+	The component that enables completely centralized and unattended management of **Directors** deployed to thousands of machines. Reconfiguring the data flows streamed on whole slews of machines and multiple networks have never been easier.
+
+## Deployment
+
+Before you proceed, please review our <Topic id="deployment-overview">**Deployment Models**</Topic> to see your options.
+
+Here, we will use **Single Node Deployment**&mdash;i.e. we will deploy on a single machine as this is the simplest and most straightforward.
+
+We recommend that you keep all **VirtualMetric** executables in the same directory, preferably named `VirtualMetric`. You can create that directory in advance:
+
+<Tabs>
+	<TabItem value="windows" label="Windows" default>
+	```PowerShell
+	New-Item -Path "C:\Program Files\VirtualMetric" -ItemType Folder
+	```
+	</TabItem>
+	<TabItem value="linux" label="Linux">
+	```bash
+	mkdir /opt/VirtualMetric
+	```
+	</TabItem>
+	<TabItem value="macos" label="macOS">
+	```bash
+	mkdir /Applications/virtualmetric
+	```
+	</TabItem>
+</Tabs>
+
+Throughout the documentation, we will refer to this folder as `<vm_root>`. With the new architecture, **Director** and **Agent** services have separate installation structures:
+
+- `<vm_root>/Director/` - Director installation with full package structure
+- `<vm_root>/Agent/` - Agent installation with minimal structure
+
+Once you have created your installation folder, you can deploy the applications.
+
+## Downloads
+
+- <Topic id="single-node-deployment-director">Download and install **Director**</Topic>.
+
+	If you chose to deploy manually, make sure to create the following folder structures for the service you're installing:
+
+	<Tabs>
+		<TabItem value="windows" label="Windows" default>
+		```PowerShell
+		New-Item -Path "<vm_root>\Director\config\devices","<vm_root>\Director\config\targets","<vm_root>\Director\config\routes" -ItemType Directory -Force
+		```
+		</TabItem>
+		<TabItem value="linux" label="Linux">
+		```bash
+		mkdir -p <vm_root>/Director/config/{devices,targets,routes}
+		```
+		</TabItem>
+		<TabItem value="macos" label="macOS">
+		```bash
+		mkdir -p <vm_root>/Director/config/{devices,targets,routes}
+		```
+		</TabItem>
+	</Tabs>
+
+	With the script-based online installation, this directory tree&mdash;as well as other default folders&mdash;are created automatically.
+
+- <Topic id="single-node-deployment-agent">Download and install **Agent**</Topic>.
+
+:::info
+To access the executables from any directory, make sure to add both Director and Agent paths to your `$PATH` environment variable.
+
+To add only for the current session:
+
+<Tabs>
+	<TabItem value="windows" label="Windows" default>
+	```PowerShell
+	$Env:PATH += ";<vm_root>\Director;<vm_root>\Agent"
+	```
+	</TabItem>
+	<TabItem value="linux" label="Linux">
+	```bash
+	export PATH=$PATH:<vm_root>/Director:<vm_root>/Agent
+	```
+	</TabItem>
+	<TabItem value="macos" label="macOS">
+	```bash
+	export PATH=$PATH:<vm_root>/Director:<vm_root>/Agent
+	```
+	</TabItem>
+</Tabs>
+
+To add for all sessions:
+
+<Tabs>
+	<TabItem value="windows" label="Windows" default>
+		- Open **Settings**.
+		- Go to **System > About**, scroll down to click the link **Advanced system settings**.
+		- Click the button **Environment Variables** at the bottom of the dialog box.
+		- On the lower pane labelled **System variables**, click the variable **Path**.
+		- Go to the bottom of the list, and add both paths: `<vm_root>\Director` and `<vm_root>\Agent`.
+		- Click **OK** to close the box and apply the updated settings.
+	</TabItem>
+	<TabItem value="linux" label="Linux">
+		- Open **Terminal**.
+		- In your home directory, open `.profile` with **vim**.
+			```bash
+			$ vim .profile
+			```
+		- Add the following line at the bottom of the file:
+			```bash
+			export PATH=$PATH:<vm_root>/Director:<vm_root>/Agent
+			```
+		- Save and close the file.
+	</TabItem>
+	<TabItem value="macos" label="macOS">
+		- Open Finder and navigate to your home directory (`~/`).
+		- Locate the shell configuration file for your shell. For **zsh** (default shell for **Catalina** or later), that will be `.zshrc` or `.zprofile`.
+		- Open it with a text editor like **TextEdit**:
+			```bash
+			open -e ~/.zprofile
+			```
+		- Add the following line at the bottom of the file:
+			```bash
+			export PATH=$PATH:<vm_root>/Director:<vm_root>/Agent
+			```
+		- Save and close the file.
+	</TabItem>
+</Tabs>
+
+Do _not_ forget to close and reopen your terminal.
+:::
+
+---
+
+## Next
+
+After completing the above, you can proceed to the <Topic id="examples-user-notes">**Examples**</Topic> to review various scenarios demonstrating how our powerful applications work.

@@ -1,0 +1,268 @@
+---
+description: Adds geographic information
+sidebar_custom_props: 
+  customIcon: 🗺️
+  customCategory: Enrich
+---
+
+# Geo IP
+
+<span className="theme-doc-version-badge badge badge--primary">Enrich</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Enriches IP addresses with geographical and network information using MaxMind's GeoIP2 databases.
+
+The processor supports both IPv4 and IPv6 addresses and can extract various location attributes including continent, country, city, coordinates, and autonomous system information.
+
+## Schema
+
+```yaml {2}
+- geoip:
+    field: <ident>
+    database_file: <string>
+    description: <text>
+    first_only: <boolean>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    properties: <string[]>
+    tag: <string>
+    target_field: <ident>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the IP address to lookup|
+|`database_file`|N|`GeoLite2-City.mmdb`|GeoIP database file to use. Supports City, Country and ASN databases|
+|`description`|N|-|Documentation note|
+|`first_only`|N|`true`|Process only first IP if multiple found|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Skip processing errors|
+|`ignore_missing`|N|`false`|Skip if input field missing|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`properties`|N|all|Properties to extract (see Properties section)|
+|`tag`|N|-|Identifier for logging|
+|`target_field`|N|`geo`/`asn`|Output field for location data|
+
+## Details
+
+The processor can extract different properties depending on the database type used:
+
+* **City/Country databases**
+
+  <TermTable>
+    <TermCol>`continent_name`</TermCol>
+    <DefCol>English name of the continent</DefCol>
+    
+    <TermCol>`country_name`</TermCol>
+    <DefCol>English name of the country</DefCol>
+
+    <TermCol>`country_iso_code`</TermCol>
+    <DefCol>Two-letter country code</DefCol>
+
+    <TermCol>`region_name`</TermCol>
+    <DefCol>English name of the region/state</DefCol>
+
+    <TermCol>`region_iso_code`</TermCol>
+    <DefCol>Region/state code</DefCol>
+
+    <TermCol>`city_name`</TermCol>
+    <DefCol>English name of the city</DefCol>
+
+    <TermCol>`location`</TermCol>
+    <DefCol>Object containing latitude and longitude</DefCol>
+  </TermTable>
+
+* **ASN databases**
+
+  <TermTable>
+    <TermCol>`asn`</TermCol>
+    <DefCol>Autonomous System Number</DefCol>
+    
+    <TermCol>`organization_name`</TermCol>
+    <DefCol>Organization operating the AS</DefCol>
+  </TermTable>
+
+The processor supports three types of _MaxMind_ databases:
+
+* **City Database** (`GeoLite2-City.mmdb`) - Most detailed information. Includes all location properties, and default database if none specified
+
+* **Country Database** (`GeoLite2-Country.mmdb`) - Country-level information only. Lighter weight than city database, although no city or region information
+
+* **ASN Database** (`GeoLite2-ASN.mmdb`) - Network information only. Provides AS number and organization, although without location information
+
+:::note
+The GeoIP database files must be placed in the service's database directory or specified with absolute paths.
+:::
+
+:::warning
+The processor caches database handles for performance. Ensure sufficient memory is available when using large databases.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Looking up IP address location...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "2.125.160.218"
+    }
+    ```
+    ```yaml
+    - geoip:
+        field: ip
+        properties: 
+          - country_name
+          - city_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds geographic information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "2.125.160.218",
+      "geo": {
+        "country_name": "United Kingdom",
+        "city_name": "Boxford"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### ASN
+
+<ExampleGrid>
+  <CommentCol>
+    Looking up network information...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "31.64.0.1"
+    }
+    ```
+    ```yaml
+    - geoip:
+        field: ip
+        database_file: GeoLite2-ASN.mmdb
+        properties:
+          - asn
+          - organization_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds network details:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "31.64.0.1",
+      "asn": {
+        "number": 12576,
+        "organization": {
+          "name": "Orange Personal Communications Services"
+        }
+      }
+    }  </CodeCol>
+</ExampleGrid>
+
+### Full Location
+
+<ExampleGrid>
+  <CommentCol>
+    Extracting all location information...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source_ip": "2.125.160.218"
+    }
+    ```
+    ```yaml
+    - geoip:
+        field: source_ip
+        target_field: location
+        properties:
+          - continent_name
+          - country_name
+          - country_iso_code
+          - region_name
+          - region_iso_code
+          - city_name
+          - location
+    ```
+  </CodeCol>
+  <CommentCol>
+    provides comprehensive details:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source_ip": "2.125.160.218",
+      "location": {
+        "continent_name": "Europe",
+        "country_name": "United Kingdom",
+        "country_iso_code": "GB",
+        "region_name": "England",
+        "region_iso_code": "ENG",
+        "city_name": "Boxford",
+        "location": {
+          "lat": 51.7500,
+          "lon": -1.2500
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling invalid IPs gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "999.999.999.999"
+    }
+    ```
+    ```yaml
+    - geoip:
+        field: ip
+        ignore_failure: true
+        on_failure:
+          - set:
+              field: error
+              value: "Invalid IP address"
+    ```
+  </CodeCol>
+  <CommentCol>
+    captures the error information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "999.999.999.999",
+      "error": "Invalid IP address"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

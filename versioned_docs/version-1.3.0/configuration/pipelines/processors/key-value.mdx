@@ -1,0 +1,250 @@
+---
+description: Parses key=value formatted messages into structured fields
+sidebar_custom_props:
+  customCategory: Parse
+  customIcon: 🗝️
+---
+
+# Key-Value
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Data Analysis</span>
+
+## Synopsis
+
+Parses key=value formatted messages into structured fields.
+
+## Schema
+
+```yaml {2-3}
+- key_value:
+    field: <ident>
+    target_field: <string>
+    field_split: <string>
+    value_split: <string>
+    include_keys: <array>
+    exclude_keys: <array>
+    prefix: <string>
+    trim_key: <string>
+    trim_value: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing key=value formatted data|
+|`target_field`|N|Root level|Target field to store parsed key-value pairs|
+|`field_split`|N|`\s+`|Regex pattern to split fields (space by default)|
+|`value_split`|N|`=`|Character(s) to split key from value|
+|`include_keys`|N|-|Array of keys to include (whitelist)|
+|`exclude_keys`|N|-|Array of keys to exclude (blacklist)|
+|`prefix`|N|-|Prefix to add to all extracted field names|
+|`trim_key`|N|`"'`|Characters to trim from keys|
+|`trim_value`|N|`"'`|Characters to trim from values|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if parsing fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Parses structured data from key=value formatted strings commonly found in log messages, configuration data, and query parameters. The processor supports flexible field and value separators and can filter keys using include/exclude lists.
+
+The processor automatically handles quoted values and provides options for trimming unwanted characters from keys and values.
+
+:::note
+The processor supports various key=value formats including space-separated ("key1=value1 key2=value2"), comma-separated, and custom delimited formats. The `field_split` parameter accepts regex patterns for complex splitting requirements.
+:::
+
+When both `include_keys` and `exclude_keys` are specified, the include list takes precedence, and only explicitly included keys are processed.
+
+:::warning
+If the source field contains malformed key=value pairs or uses unexpected separators, some pairs may be skipped. Use `ignore_failure` to continue processing even when parsing encounters errors.
+:::
+
+## Examples
+
+### Basic Key-Value Parsing
+
+<ExampleGrid>
+  <CommentCol>
+    Parsing space-separated key=value pairs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_data": "user=john status=success duration=150ms"
+    }
+    ```
+    ```yaml
+    - key_value:
+        field: log_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts fields to root level:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_data": "user=john status=success duration=150ms",
+      "user": "john",
+      "status": "success",
+      "duration": "150ms"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Target Field
+
+<ExampleGrid>
+  <CommentCol>
+    Storing parsed data in specific field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "action=login ip=192.168.1.100 result=success"
+    }
+    ```
+    ```yaml
+    - key_value:
+        field: message
+        target_field: parsed_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates nested structure:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "action=login ip=192.168.1.100 result=success",
+      "parsed_data": {
+        "action": "login",
+        "ip": "192.168.1.100",
+        "result": "success"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom Separators
+
+<ExampleGrid>
+  <CommentCol>
+    Using comma separation and colon assignment...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "config_string": "host:localhost,port:8080,ssl:true"
+    }
+    ```
+    ```yaml
+    - key_value:
+        field: config_string
+        field_split: ","
+        value_split: ":"
+        target_field: config
+    ```
+  </CodeCol>
+  <CommentCol>
+    handles custom delimiters:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "config_string": "host:localhost,port:8080,ssl:true",
+      "config": {
+        "host": "localhost",
+        "port": "8080",
+        "ssl": "true"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Key Filtering
+
+<ExampleGrid>
+  <CommentCol>
+    Including only specific keys...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_data": "user=alice action=delete file=doc.txt timestamp=1234567890"
+    }
+    ```
+    ```yaml
+    - key_value:
+        field: event_data
+        include_keys: ["user", "action"]
+        prefix: "event_"
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts only specified keys:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_data": "user=alice action=delete file=doc.txt timestamp=1234567890",
+      "event_user": "alice",
+      "event_action": "delete"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Quoted Values
+
+<ExampleGrid>
+  <CommentCol>
+    Handling quoted values with spaces...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "query_string": "name=\"John Doe\" city=\"New York\" age=30"
+    }
+    ```
+    ```yaml
+    - key_value:
+        field: query_string
+        trim_value: '"'
+        target_field: query_params
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes quotes from values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "query_string": "name=\"John Doe\" city=\"New York\" age=30",
+      "query_params": {
+        "name": "John Doe",
+        "city": "New York",
+        "age": "30"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
