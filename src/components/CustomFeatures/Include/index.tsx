@@ -5,16 +5,13 @@ interface IncludeProps {
   id: string;
 }
 
-// @ts-ignore
-const context = require.context('@site/src/includes', false, /\.(mdx|tsx)$/);
-
 const Include: React.FC<IncludeProps> = ({ id }) => {
   const [Content, setContent] = useState<React.ComponentType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadContent = () => {
+    const loadContent = async () => {
       try {
         setLoading(true);
         setError(null);
@@ -24,7 +21,8 @@ const Include: React.FC<IncludeProps> = ({ id }) => {
           throw new Error(`Include content with ID "${id}" not found in includes.json`);
         }
 
-        const module = context(`./${includePath}`);
+        // Use dynamic import instead of require.context to avoid webpack scanning all files
+        const module = await import(`@site/src/includes/${includePath}`);
         setContent(() => module.default);
       } catch (err) {
         console.error(`Failed to load include content "${id}":`, err);

@@ -28,7 +28,7 @@ export default function DocCardList({ items, className, category }: DocCardListP
     // Support comma-separated categories and cross-category tags
     const categories = category.split(',').map(c => c.trim());
     const itemCategory = item.customProps?.customCategory;
-    const itemTags = item.customProps?.customTags || [];
+    const itemTags = (item.customProps?.customTags as string[]) || [];
 
     return categories.some(cat =>
       itemCategory === cat || itemTags.includes(cat)
