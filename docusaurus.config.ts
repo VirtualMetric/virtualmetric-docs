@@ -2,6 +2,9 @@ import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
+import CustomTheme from "./src/utils/coloring";
+import package_json from "./package.json";
+
 const config: Config = {
   title: "VirtualMetric",
   tagline: "Transform data overload into actionable security insights",
@@ -47,9 +50,20 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
+          lastVersion: "current",
+          includeCurrentVersion: true,
+          exclude: [
+            '**/CLAUDE.md',
+            '**/BACKLOG.md',
+          ],
+          versions: {
+            current: {
+              label: package_json.version,
+            }
+          },
         },
         googleTagManager: {
-          containerId: 'VirtualMetric-10.0.0',
+          containerId: 'VirtualMetric',
         },
         blog: {
           showReadingTime: true,
@@ -60,6 +74,10 @@ const config: Config = {
           onInlineTags: "warn",
           onInlineAuthors: "warn",
           onUntruncatedBlogPosts: "warn",
+          exclude: [
+            '**/CLAUDE.md',
+            '**/BACKLOG.md',
+          ],
         },
         theme: {
           customCss: "./src/css/custom.css",
@@ -67,7 +85,16 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
-  plugins: [require.resolve("docusaurus-lunr-search")],
+  plugins: [
+    require.resolve("docusaurus-lunr-search"),
+    require.resolve('./plugins/validate-topics'),
+    require.resolve('./plugins/validate-images'),
+    require.resolve('./plugins/validate-includes'),
+    // DISABLED: Quote plugin was causing hot reload issues in development
+    // The getPathsToWatch() method was interfering with Docusaurus native file watching
+    // See PROJECT_CONTEXT.md for details and future re-enablement
+    // require.resolve('./plugins/validate-quotes'),
+  ],
   themeConfig: {
     image: "telemetry-color.jpg",
     colorMode: {
@@ -76,6 +103,7 @@ const config: Config = {
       respectPrefersColorScheme: false,
     },
     docs: {
+      versionPersistence: "localStorage",
       sidebar: {
         hideable: false,
         autoCollapseCategories: false,
@@ -101,7 +129,18 @@ const config: Config = {
           type: "docSidebar",
           sidebarId: "userDocs",
           position: "left",
-          label: "Documentation",
+          label: "Docs",
+        },        
+        {
+          type: "docSidebar",
+          sidebarId: "tutorDocs",
+          position: "left",
+          label: "Tutorials",
+        },
+        {
+          to: "/blog",
+          label: "Blog",
+          position: "left"
         },
         {
           to: "https://community.virtualmetric.com/",
@@ -114,17 +153,26 @@ const config: Config = {
           label: "Support",
         },
         {
+          type: "docSidebar",
+          sidebarId: "releaseDocs",
+          position: "left",
+          label: "Release Notes",
+        },
+        {
           type: "search",
           position: "right",
         },
+        {
+          type: "docsVersionDropdown",
+          position: "right"
+        }
       ],
     },
     footer: {
       copyright: `Copyright ©${new Date().getFullYear()} VirtualMetric B.V.`,
     },
     prism: {
-      theme: prismThemes.palenight,
-      darkTheme: prismThemes.palenight
+      theme: CustomTheme
     },
   } satisfies Preset.ThemeConfig,
 };

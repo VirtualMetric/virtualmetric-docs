@@ -1,0 +1,245 @@
+---
+description: Applies processors to arrays
+sidebar_custom_props: 
+  customIcon: 🔄
+  customCategory: Control Flow
+---
+
+# Foreach
+
+<span className="theme-doc-version-badge badge badge--primary">Control Flow</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Runs a processor on each element of an array or object when the number of elements is unknown.
+
+## Schema
+
+```yaml {2-3}
+- foreach:
+    field: <ident>
+    processor: <processor>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the array or object to iterate over|
+|`processor`|Y|-|The processor configuration to run on each element|
+|`description`|N|-|Explanatory note for documentation|
+|`if`|N|-|Conditional expression determining if the processor should run|
+|`ignore_failure`|N|`false`|If `true`, individual element processing failures are ignored|
+|`ignore_missing`|N|`false`|If `true` and `field` does not exist, exits quietly without modifications|
+|`on_failure`|N|-|Processors to run if an error occurs during iteration|
+|`on_success`|N|-|Processors to run after successful iteration completion|
+|`tag`|N|-|Identifier for logging and debugging|
+
+## Details
+
+ The processor supports both arrays and maps (objects) as input, and can execute any valid processor on each element. It uses the following procedure:
+
+* it first locates the specified field in the document, and determines if the field contains an array or a map
+
+* if an array of a map exists, it goes through each element storing the current value in `_ingest._value`, the current key/index in `_ingest._key`, executing the specified processor, and capturing any errors for failure handling. 
+
+* finally, it cleans up any temporary `_ingest` fields, and runs the success/failure processors as appropriate.
+
+:::warning
+Be careful when modifying the `_ingest` fields directly as they are used internally by the processor.
+:::
+
+The processor provides several error handling mechanisms:
+
+<TermTable>
+  <TermCol>`ignore_failure`</TermCol>
+  <DefCol>Skip individual element failures</DefCol>
+
+  <TermCol>`ignore_missing`</TermCol>
+  <DefCol>Skip missing input fields</DefCol>
+
+  <TermCol>`on_failure`</TermCol>
+  <DefCol>Execute recovery processors on error</DefCol>
+
+  <TermCol>`on_success`</TermCol>
+  <DefCol>Execute follow-up processors on success</DefCol>
+</TermTable>
+
+If an error occurs&mdash;and neither `ignore_failure` nor `on_failure` was specified&mdash;the processor leaves the already processed elements modified, stops processing the remaining elements, and returns the error.
+
+## Examples
+
+### Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Process each array element...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "messages": [
+        {"text": "hello", "read": false},
+        {"text": "world", "read": false}
+      ]
+    }
+    ```
+    ```yaml
+    foreach:
+      - field: messages
+      - processor:
+          set:
+            field: "_ingest._value.read"
+            value: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    and mark each as read:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "messages": [
+        {"text": "hello", "read": true},
+        {"text": "world", "read": true}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Maps
+
+<ExampleGrid>
+  <CommentCol>
+    Process each key-value pair...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "counts": {
+        "errors": "5",
+        "warnings": "3",
+        "info": "10"
+      }
+    }
+    ```
+    ```yaml
+    foreach:
+      - field: counts
+      - processor:
+          convert:
+            field: "_ingest._value"
+            type: integer
+    ```
+  </CodeCol>
+  <CommentCol>
+    converting string values to integers:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "counts": {
+        "errors": 5,
+        "warnings": 3,
+        "info": 10
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Nested
+
+<ExampleGrid>
+  <CommentCol>
+    Chain multiple processors for each element...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "users": [
+        {"name": "john doe", "role": "admin"},
+        {"name": "jane smith", "role": "user"}
+      ]
+    }
+    ```
+    ```yaml
+    foreach:
+      - field: users
+      - processor:
+          pipeline:
+            - uppercase:
+                field: "_ingest._value.name"
+            - set:
+                field: "_ingest._value.processed"
+                value: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    applying multiple transformations:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "users": [
+        {"name": "JOHN DOE", "role": "admin", "processed": true},
+        {"name": "JANE SMITH", "role": "user", "processed": true}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle processing failures gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": [
+        {"num": "123"},
+        {"num": "invalid"},
+        {"num": "456"}
+      ]
+    }
+    ```
+    ```yaml
+    foreach:
+      - field: values
+      - processor:
+          convert:
+            field: "_ingest._value.num"
+            type: integer
+      - ignore_failure: true
+      - on_failure:
+          - set:
+              field: "_ingest._value.error"
+              value: "Conversion failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserving data and adding error info:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "values": [
+        {"num": 123},
+        {"num": "invalid", "error": "Conversion failed"},
+        {"num": 456}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

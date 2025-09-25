@@ -1,0 +1,16 @@
+digraph RoutingBetweenPipelines {
+  graph [fontname="Calibri"];
+  node [shape=box, style="filled,rounded", fontname="Calibri", fontsize=11, fillcolor="#fff8e1", color="#ffcc80"];
+  edge [fontname="Calibri", fontsize=10, color="#ffa726"];
+
+  Entry [label="Pipeline: Ingest"];
+  Reroute [label="Reroute Processor"];
+  Security [label="Pipeline: Security Logs"];
+  Audit [label="Pipeline: Audit Logs"];
+  Default [label="Pipeline: Default"];
+
+  Entry -> Reroute;
+  Reroute -> Security [label="if dataset == 'security'"];
+  Reroute -> Audit [label="if dataset == 'audit'"];
+  Reroute -> Default [label="else"];
+}

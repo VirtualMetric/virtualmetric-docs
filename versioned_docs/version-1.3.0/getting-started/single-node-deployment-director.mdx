@@ -1,0 +1,276 @@
+---
+pagination_prev: null
+pagination_next: null
+---
+
+import Link from '@docusaurus/Link';
+
+# Single Node Deployment: Director
+
+To download, install, and test run the **VirtualMetric Director** binary, follow the instructions below.
+
+## System Requirements
+
+**VirtualMetric** applications support the `amd64` and `arm64` versions of **Windows**, **Linux**, and **macOS**. Their minimum requirements are:
+
+- **CPU**: **1 core** - We recommend using a machine with at least **2 CPU cores**. As our system uses a _vectorized pipeline_ and can utilize all available cores, having multiple cores will improve performance
+- **Memory**: **150MB** - Depending on the volumes you need to handle, more memory will improve performance
+- **Disk**: **250MB** - Depending on the amount of temporary data you need storage, more disk space will improve performance
+
+  If you need to retain logs for extended periods or minimize potential data loss in case of unexpected failures, consider allocating additional disk space accordingly.
+
+---
+
+**Director** is a single binary that requires no dependencies, so you can easily download and place it anywhere on your system. It can be installed on a traditional server, on an on-premises virtual machine, or in the cloud. It can also be deployed as an <Topic id="deployment-on-azure-app-service">**Azure App Service**</Topic> for a serverless configuration.
+
+### Installation
+
+You can install **Director** online or offline, depending on your system's internet access.
+
+:::info
+In both the [online](#online) and [offline](#offline) procedures below, we will assume you will use our default installation directory for your platform.
+
+|Platform|Default Installation Directory|
+|--:|:--|
+|Windows|`C:\Program Files\VirtualMetric`|
+|Linux|`/opt/virtualmetric`|
+|macOS|`/Applications/virtualmetric`|
+
+However, if you choose to install the package elsewhere, just replace these with the directory of your choice which you must create beforehand.
+:::
+
+This guide assumes you are installing **Director** as a _service_. If you do not have the necessary privileges to run it as a service, you can configure **Director** to run as a **Scheduled Task** (on **Windows**) or a **Cron job** (on **Linux**/**macOS**) to ensure it starts automatically after a reboot.
+
+:::caution
+**Director**  does _not_ require administrative privileges to run as a background process. However, if you want to run it as a _service_, administrative privileges are required for installing, starting, or stopping it.
+
+Once installed, you can run **Director** as a service with regular user privileges.
+:::
+
+#### Online
+
+If your system has internet access, you can use our automated installation scripts for a quick setup.
+
+<Tabs>
+  <TabItem value="windows" label="Windows" default>  
+    To install as a background process:
+
+    ```PowerShell
+    Invoke-WebRequest dl.vget.me | Invoke-Expression
+    ```
+
+    To install as a service:
+
+    ```PowerShell
+    $p="C:\Program Files\VirtualMetric"
+    Invoke-WebRequest dl.vget.me | Invoke-Expression
+    ```
+  </TabItem>
+  <TabItem value="linux" label="Linux">  
+    To install as a background process:
+
+    ```bash
+    curl -sL dl.vget.me | bash
+    ```
+
+    To install as a service:
+
+    ```bash
+    sudo curl -sL dl.vget.me | p="/opt/virtualmetric" bash
+    ```
+  </TabItem>
+  <TabItem value="macos" label="macOS">  
+    To install as a background process:
+
+    ```bash
+    curl -sL dl.vget.me | bash
+    ```
+
+    To install as a service:
+
+    ```bash
+    sudo curl -sL dl.vget.me | p="/Applications/virtualmetric" bash
+    ```
+  </TabItem>
+</Tabs>
+
+The script will
+
+- detect your operating system and architecture
+- download the appropriate version
+- install and configure the binary based on your selected method (service or background process)
+- launch the executable
+
+To get an overview of the directory tree created after the installation, see this <Topic id="configuration-directory-tree">section</Topic>.
+
+#### Offline
+
+For systems without internet access, you can download and install **Director** manually. Choose the appropriate binary for your system from the table below:
+
+<table style={{textAlign: "center"}}>
+  <tr><th>Operating System</th><th>Download Link</th></tr>
+  <tr>
+    <td rowspan="2">Windows</td>
+   <td><a href="https://dl.vget.me/director/windows/amd64">**Director** for AMD64</a></td>
+   </tr>
+  <tr><td><a href="https://dl.vget.me/director/windows/arm64">**Director** for ARM64</a></td></tr>
+  <tr>
+    <td rowspan="2">Linux</td>
+    <td><a href="https://dl.vget.me/director/linux/amd64">**Director** for AMD64</a></td>
+  </tr>
+  <tr><td><a href="https://dl.vget.me/director/linux/arm64">**Director** for ARM64</a></td></tr>
+  <tr>
+    <td rowspan="2">macOS</td>
+    <td><a href="https://dl.vget.me/director/darwin/amd64">**Director** for AMD64</a></td>
+  </tr>
+  <tr><td><a href="https://dl.vget.me/director/darwin/arm64">**Director** for ARM64</a></td></tr>
+</table>
+
+Once you have downloaded the binary, open a terminal with admin privileges. Choose or create the directory where you want to run **Director** if you haven't <Topic id="getting-started-deployment">already done so</Topic>, and copy the downloaded binary to it. Then, navigate to that directory.
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    Copy-Item -Path %USERPROFILE%\Downloads\vmetric-director.exe -Destination "C:\Program Files\VirtualMetric"
+    Set-Location "C:\Program Files\VirtualMetric"
+    ```
+  </TabItem>
+
+  <TabItem value="bash" label="Bash">
+    On **Linux**:
+
+    ```bash
+    sudo mkdir /opt/virtualmetric
+    sudo cp ./vmetric-director /opt/virtualmetric
+    cd /opt/virtualmetric
+    ```
+
+    On **macOS**:
+
+    ```bash
+    sudo mkdir /Applications/virtualmetric
+    sudo cp ./vmetric-director /Applications/virtualmetric
+    cd /Applications/virtualmetric
+    ```
+  </TabItem>
+</Tabs>
+
+### Post-Installation
+
+Once you are done with the placement of the binary, you have to decide whether you want to run the application as a service or in the background.
+
+As a regular user, you can run **Director** as a background process:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    .\vmetric-director -background
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -background
+    ```
+  </TabItem>
+</Tabs>
+
+You can verify its running status by typing:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    Get-Process | select-string "vmetric-director"
+
+    System.Diagnostics.Process (vmetric-director)
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ps aux | grep vmetric-director
+    root         175  2.5  1.4 1388480 113228 ?      Ssl  10:29   0:01 /opt/virtualmetric/vmetric-director -mode=director
+    ```
+  </TabItem>
+</Tabs>
+
+To stop the running process, just use:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    .\vmetric-director -stop
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    ./vmetric-director -stop
+    ```
+  </TabItem>
+</Tabs>
+
+If you _do_ have the required privileges, you can install/uninstall **Director** as a service with the following command:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    .\vmetric-director -service [install | uninstall]
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    sudo ./vmetric-director -service [install | uninstall]
+    ```
+  </TabItem>
+</Tabs>
+
+Then, you can start/stop the service like so:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    .\vmetric-director -service [start | stop]
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    sudo ./vmetric-director -service [start | stop]
+    ```
+  </TabItem>
+</Tabs>
+
+:::warning
+Do _not_ use `Stop-Process` or `kill` (using a `ProcessId` or`PID`) as this may corrupt the data of running processes.
+:::
+
+You can verify its status by using the following commands:
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    The `Status` column will display `Running` or `Stopped`
+
+    ```PowerShell
+    Get-Service vmetric-director
+
+    Status   Name               DisplayName
+    ------   ----               -----------
+    Running  vmetric-director   VirtualMetric Director
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    systemctl status vmetric-director
+      ● vmetric-director.service - VirtualMetric Director handles the monitoring of local and remote devices.
+          Loaded: loaded (/etc/systemd/system/vmetric-director.service; enabled; preset: enabled)
+          Active: active (running) since Wed 2025-06-25 16:32:45 +03; 2s ago
+        Main PID: 545 (vmetric-directo)
+            Tasks: 17 (limit: 9158)
+          Memory: 79.1M (peak: 79.7M)
+              CPU: 295ms
+          CGroup: /system.slice/vmetric-director.service
+                  └─545 /opt/virtualmetric/vmetric-director -mode=director
+
+      Jun 25 16:32:45 VMLAPTOP systemd[1]: Started vmetric-director.service - VirtualMetric Director handles the monitoring of local and remote devic>
+    ```
+  </TabItem>
+</Tabs>
+
+<Link to="./introduction#downloads" className="button button--primary" style={{ width: '400px', display: 'inline-block', textAlign: 'center'}}>Back To Introduction</Link>

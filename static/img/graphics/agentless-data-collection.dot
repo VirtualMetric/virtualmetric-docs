@@ -1,0 +1,37 @@
+digraph agentlessDataCollection {
+    rankdir=LR
+    node [fontname="Calibri" fontsize=10]
+    edge [fontname="Calibri" fontsize=8]
+
+    // DataStream System - rounded rectangle
+    DS [label="DataStream System" shape=ellipse style=filled fillcolor="#BCC0E7" fontname="Calibri" fontsize=10]
+    
+    // Credential systems
+    CS [label="Credential Store" shape=box style=filled fillcolor="#E5E2FB" fontname="Calibri" fontsize=10]
+    AD [label="Active Directory" shape=box style=filled fillcolor="#E5E2FB" fontname="Calibri" fontsize=10]
+    
+    // Target Systems subgraph
+    subgraph cluster_targets {
+        label="Target Systems"
+        style="rounded,filled"
+        fillcolor="#f8f9fa"
+        fontname="Calibri"
+        fontsize=10
+        
+        W [label="Windows" shape=box style=filled fillcolor="#E5E2FB" fontname="Calibri" fontsize=9]
+        L [label="Linux" shape=box style=filled fillcolor="#E5E2FB" fontname="Calibri" fontsize=9]
+        M [label="macOS" shape=box style=filled fillcolor="#E5E2FB" fontname="Calibri" fontsize=9]
+        S [label="Solaris" shape=box style=filled fillcolor="#E5E2FB" fontname="Calibri" fontsize=9]
+        A [label="AIX" shape=box style=filled fillcolor="#E5E2FB" fontname="Calibri" fontsize=9]
+    }
+
+    // Dotted connections with labels
+    CS -> DS [style=dashed label="Secure Credentials" fontsize=8]
+    AD -> DS [style=dashed label="Service Accounts" fontsize=8]
+    
+    DS -> W [style=dashed label="Read-only Access" fontsize=8]
+    DS -> L [style=dashed label="Read-only Access" fontsize=8]
+    DS -> M [style=dashed label="Read-only Access" fontsize=8]
+    DS -> S [style=dashed label="Read-only Access" fontsize=8]
+    DS -> A [style=dashed label="Read-only Access" fontsize=8]
+}

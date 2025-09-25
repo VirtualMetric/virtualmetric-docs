@@ -1,0 +1,219 @@
+---
+description: Converts strings to lowercase
+sidebar_custom_props: 
+  customIcon: ⬇️
+  customCategory: Text Processing
+---
+
+# Lowercase
+
+<span className="theme-doc-version-badge badge badge--primary">Mutate</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Converts string values to lowercase.
+
+## Schema
+
+```yaml {2}
+- lowercase:
+    field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+    target_field: <ident>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing strings to convert|
+|`description`|N|-|Documentation note|
+|`if`|N|-|Conditional expression|
+|`ignore_failure`|N|`false`|Skip processing errors|
+|`ignore_missing`|N|`false`|Skip if input field missing|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier for logging|
+|`target_field`|N|`field`|Output field for converted strings|
+
+## Details
+
+The processor can handle both single strings and arrays of strings, applying the transformation to all elements.
+
+The processor is useful for standardizing text fields and tags or categories, prepare fields such as emails addresses for case-insensitive comparisons
+
+:::note
+The processor maintains the original field structure: single strings remain single strings, and arrays remain arrays.
+:::
+
+:::warning
+Non-string values in the input field will cause processing errors unless `ignore_failure` is set to `true`.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Converting a single string...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "JohnDoe"
+    }
+    ```
+    ```yaml
+    - lowercase:
+        field: username
+    ```
+  </CodeCol>
+  <CommentCol>
+    transforms the element:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "johndoe"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Converting an array of strings...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["User", "Admin", "MANAGER"]
+    }
+    ```
+    ```yaml
+    - lowercase:
+        field: tags
+    ```
+  </CodeCol>
+  <CommentCol>
+    transforms all elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["user", "admin", "manager"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keep Original
+
+<ExampleGrid>
+  <CommentCol>
+    Storing the result in a new field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "HELLO WORLD"
+    }
+    ```
+    ```yaml
+    - lowercase:
+        field: original
+        target_field: lowercase_text
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserves the original:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "original": "HELLO WORLD",
+      "lowercase_text": "hello world"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Using selection criteria...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "level": "DEBUG",
+      "should_convert": true
+    }
+    ```
+    ```yaml
+    - lowercase:
+        field: level
+        if: "ctx.should_convert == true"
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts only values that meet the condition:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "level": "debug",
+      "should_convert": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling non-string values gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "id": 12345,
+      "name": "USER"
+    }
+    ```
+    ```yaml
+    - lowercase:
+        field: id
+        ignore_failure: true
+        on_failure:
+          - set:
+              field: error
+              value: "Non-string field encountered"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues the execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "id": 12345,
+      "name": "USER",
+      "error": "Non-string field encountered"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

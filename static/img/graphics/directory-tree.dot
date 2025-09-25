@@ -1,0 +1,38 @@
+graph dirTree {
+   tooltip="Directory Tree"
+   rankdir="TD"
+
+   subgraph folderNode {
+      node [shape="folder" style="filled" fillcolor="#bbdefb" fontname="Calibri" fontsize="10"]
+
+      root[label="&lt;vm_root&gt;"]
+      
+      director[label="Director"]
+      agent[label="Agent"]
+
+      directorConfig[label="config"]
+      directorDevices[label="devices"]
+      directorRoutes[label="routes"]
+      directorTargets[label="targets"]
+
+      directorPackage[label="package"]
+      directorDatabase[label="database"]      
+      directorDefinitions[label="definitions"]
+      directorLookups[label="lookups"]
+      directorMibs[label="mibs"]
+      directorAgentBuilds[label="agent"]
+
+      directorStorage[label="storage"]
+
+      agentConfig[label="config"]
+      agentStorage[label="storage"]
+   }
+
+   root -- {director agent}
+   
+   director -- {directorConfig directorPackage directorStorage}
+   directorConfig -- {directorDevices directorRoutes directorTargets}
+   directorPackage -- {directorDatabase directorDefinitions directorLookups directorMibs directorAgentBuilds}
+   
+   agent -- {agentConfig agentStorage}
+}

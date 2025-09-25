@@ -8,7 +8,9 @@
 @import url(https://fonts.bunny.net/css?family=inter:100,200,300,400,500,600,700,800,900|jetbrains-mono:100,200,300,400,500,600,700,800);
 
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap");
+
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap");
+
 /* Font families matching our design system */
 :root {
   --ifm-font-family-base: "IBM Plex Sans", -apple-system, BlinkMacSystemFont,
@@ -49,10 +51,6 @@
   --docsearch-searchbox-shadow: transparent !important;
 }
 
-/* .markdown h1:first-child {
-  --ifm-h1-font-size: 2rem;
-} */
-
 [data-theme="dark"] {
   --ifm-color-primary: #7281f3;
   --ifm-color-primary-dark: #6b7bf2;
@@ -64,17 +62,6 @@
   --ifm-footer-background-color: var(--ifm-color-gray-900);
   --ifm-color-carousel-bg: #2c2c2c;
   --ifm-navbar-background-color: #181B63;
-}
-
-/* For the Details tag */
-[data-theme="dark"] {
-  --vm-color-details-border: #6166e9;
-  --vm-color-details-background: #191d36;
-}
-
-[data-theme="light"] {
-  --vm-color-details-border: #19193e;
-  --vm-color-details-background: #d5d9fb;
 }
 
 .navbar__logo img {
@@ -192,10 +179,6 @@ img[alt$="#width600"] {
   fill: none;
 }
 
-code, pre {
-  font-variant-ligatures: none;
-}
-
 .header-github-link {
   padding: 5px;
   margin-left: 5px;
@@ -273,8 +256,12 @@ figure[data-rehype-pretty-code-figure]
   margin-bottom: 0 !important;
   background-color: hsl(229, 20%, 30%);
   padding: 0.5rem 1rem;
-  color: hsl(229, 20%, 90%);
+  color: #99FFFF;
   border-radius: 0.5rem 0.5rem 0 0;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 1rem !important;
+  font-weight: normal;
+  line-height: 1.5;
 }
 
 .menu div:has(a[href$="tql2/operators"]) + ul,
@@ -351,33 +338,6 @@ pre button.rehype-pretty-copy .success {
   background-position: center;
 }
 
-[data-theme="dark"] .code-block.language-yaml .token.key {
-  color: var(--ifm-color-primary-lightest);
-}
-
-[data-theme="dark"] .code-block.language-yaml .token.punctuation {
-  color: #999999;
-}
-
-[data-theme="dark"] .code-block.language-yaml .token.number {
-  color: #bb00bb;
-}
-
-[data-theme="dark"] .code-block.language-yaml .token.string {
-  color: #009999;
-}
-
-kb-short {
-  color: var(--ifm-color-primary-darkest);
-  font-size: 14pt;
-  font-variant-caps: small-caps;
-}
-
-.about-byline {
-  font-size: 13pt;
-  text-align: center;
-}
-
 .video-responsive {
   position: relative;
   width: 100%;
@@ -394,4 +354,88 @@ kb-short {
   .video-responsive {
     width: 75%;
   }
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+code, pre {
+  font-variant-ligatures: none;
+  max-width: 100%;
+  overflow-x: auto;
+  tab-size: 4;
+}
+
+kb-short {
+  color: var(--ifm-color-primary-darkest);
+  font-size: 14pt;
+  font-variant-caps: small-caps;
+}
+
+.theme-code-block-title {
+  font-size: 12pt;
+  font-weight: normal;
+}
+
+/* For the Details tag */
+[data-theme="dark"] {
+  --vm-color-details-border: #6166e9;
+  --vm-color-details-background: #191d36;
+}
+
+/* For the Details tag */
+[data-theme="light"] {
+  --vm-color-details-border: #19193e;
+  --vm-color-details-background: #cbe8ed;
+}
+
+/* For the DANGER admonition */
+.alert--danger {
+  background-color: #FFF7EF;
+}
+
+/* For the WARNING/CAUTION admonitions */
+.alert--warning {
+  background-color: #FFF7EF;
+}
+
+/* For the INFO admonition */
+.alert--info {
+  background-color: #DDEEEE;
+}
+
+/* For the NOTE admonition */
+.alert--secondary {
+  background-color: #F5F5F5;
+}
+
+/* For the TIP admonition */
+.alert--success {
+  background-color: #E6F6E6;
+}
+
+/* For code block titles */
+.theme-code-block > div[class^="codeBlockTitle_"] {
+  color: #47d9d9;
+  font-family: var(--ifm-font-family-monospace);
+  /* font-size: 1rem !important; */
+  font-weight: normal;
+  line-height: 1.5;
+}
+
+/* Include component loading skeleton */
+.include-loading-skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 100%);
+  animation: include-skeleton-shimmer 1.2s infinite;
+  border: 1px solid var(--ifm-color-gray-300);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ifm-color-gray-600);
+}
+
+@keyframes include-skeleton-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
 }
