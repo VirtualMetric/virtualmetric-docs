@@ -103,6 +103,7 @@ const config: Config = {
       respectPrefersColorScheme: false,
     },
     docs: {
+      versionPersistence: "localStorage",
       sidebar: {
         hideable: false,
         autoCollapseCategories: false,
@@ -131,15 +132,15 @@ const config: Config = {
           label: "Docs",
         },        
         {
-          to: "/blog",
-          label: "Blog",
-          position: "left"
-        },
-        {
           type: "docSidebar",
           sidebarId: "tutorDocs",
           position: "left",
           label: "Tutorials",
+        },
+        {
+          to: "/blog",
+          label: "Blog",
+          position: "left"
         },
         {
           to: "https://community.virtualmetric.com/",
