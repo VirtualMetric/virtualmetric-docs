@@ -59,6 +59,14 @@ const sidebars: SidebarsConfig = {
             "configuration/directors/configuration",
             "configuration/directors/deployment",
             "configuration/directors/troubleshooting",
+            {
+              type: "category",
+              label: "CLI",
+              items: [
+                "configuration/directors/cli/director",
+                "configuration/directors/cli/agent",
+              ]
+            }
           ]
         },
         {
@@ -371,13 +379,6 @@ const sidebars: SidebarsConfig = {
   ],
   tutorDocs: [
     "tutorials/a-local-pipeline",
-    // "tutorials/user-notes",
-    // "tutorials/ingesting-data",
-    // "tutorials/secure-ingestion",
-    // "tutorials/forwarding-data",
-    // "tutorials/reading-json-with-a-pipeline",
-    // "tutorials/a-syslog-to-json-data-stream",
-    // "tutorials/log-collection-with-agents",
   ],  
   releaseDocs: [
     {
