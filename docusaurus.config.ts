@@ -103,6 +103,7 @@ const config: Config = {
       respectPrefersColorScheme: false,
     },
     docs: {
+      versionPersistence: "localStorage",
       sidebar: {
         hideable: false,
         autoCollapseCategories: false,
@@ -132,21 +133,15 @@ const config: Config = {
         },        
         {
           type: "docSidebar",
-          sidebarId: "releaseDocs",
+          sidebarId: "tutorDocs",
           position: "left",
-          label: "Release Notes",
+          label: "Tutorials",
         },
         {
           to: "/blog",
           label: "Blog",
           position: "left"
         },
-        // {
-        //   type: "docSidebar",
-        //   sidebarId: "tutorDocs",
-        //   position: "left",
-        //   label: "Tutorials",
-        // },
         {
           to: "https://community.virtualmetric.com/",
           position: "left",
@@ -156,6 +151,12 @@ const config: Config = {
           to: "https://support.virtualmetric.com/",
           position: "left",
           label: "Support",
+        },
+        {
+          type: "docSidebar",
+          sidebarId: "releaseDocs",
+          position: "left",
+          label: "Release Notes",
         },
         {
           type: "search",

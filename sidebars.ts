@@ -48,6 +48,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Configuration",
+      collapsed: false,
       items: [
         "configuration/quick-start",
         {
@@ -58,6 +59,14 @@ const sidebars: SidebarsConfig = {
             "configuration/directors/configuration",
             "configuration/directors/deployment",
             "configuration/directors/troubleshooting",
+            {
+              type: "category",
+              label: "CLI",
+              items: [
+                "configuration/directors/cli/director",
+                "configuration/directors/cli/agent",
+              ]
+            }
           ]
         },
         {
@@ -290,6 +299,22 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Microsoft Sentinel",
+      items: [
+        "microsoft-sentinel/overview",
+        "microsoft-sentinel/integration",
+        {
+          type: "category",
+          label: "Automation",
+          items: [
+            "microsoft-sentinel/automation/bicep-templates",
+            "microsoft-sentinel/automation/arm-templates",
+          ]
+        }
+      ]
+    },
+    {
+      type: "category",
       label: "Appendix",
       link: {
         type: "generated-index",
@@ -353,15 +378,7 @@ const sidebars: SidebarsConfig = {
     "glossary"
   ],
   tutorDocs: [
-    "tutorials/user-notes",
     "tutorials/a-local-pipeline",
-    "tutorials/kafka-to-parquet-pipeline",
-    "tutorials/microsoft-sentinel-advanced-integration",
-    "tutorials/rabbitmq-threat-intelligence",
-    "tutorials/multi-source-log-correlation",
-    "tutorials/high-volume-sampling-strategies",
-    "tutorials/advanced-netflow-processing",
-    "tutorials/ai-powered-log-analysis",
   ],  
   releaseDocs: [
     {
