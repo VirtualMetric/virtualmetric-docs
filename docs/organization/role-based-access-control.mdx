@@ -1,0 +1,181 @@
+# Role-Based Access Control
+
+**VirtualMetric DataStream** role-based access control (RBAC) provides granular permission management for enterprise deployments, enabling organizations to control user access to telemetry processing components based on assigned roles. The system supports both built-in roles with predefined permissions and custom roles with fine-grained access controls across **DataStream** components including pipelines, devices, targets, routes, and administrative functions.
+
+## Built-in Roles
+
+**DataStream** provides three predefined roles with hierarchical permissions:
+
+### Owner
+- **Full administrative control** over the tenant
+- **All permissions** across all system components
+- **Cannot be deleted** or have role changed by other users
+- **Ownership transfer** capability to other users
+- **One owner per tenant** - role assignment protected
+
+### Admin
+- **Administrative permissions** for most system components
+- **User management** capabilities
+- **Configuration access** for devices, pipelines, targets, and routes
+- **Cannot access** ownership functions or modify Owner accounts
+
+### User
+- **Standard user permissions** for day-to-day operations
+- **Read access** to most components
+- **Limited create/edit** capabilities based on business requirements
+- **No administrative** or user management functions
+
+## Custom Role Management
+
+Create custom roles with specific permission sets for organizational requirements.
+
+### Create Custom Role
+
+1. **Access Role Management**
+   - Navigate to **Organization** → **Roles**
+   - Click **Create New Role** button
+
+2. **Configure Role Details**
+   - **Role Name**: Descriptive identifier for the role
+   - **Description**: Purpose and scope of the role
+   - **Configuration Method**: Select **Basic** or **Advanced**
+
+3. **Permission Assignment**
+
+   **Basic Configuration**:
+   - **Predefined Permission Sets**: Select from common role templates
+   - **Simplified Interface**: Checkbox-based permission selection
+
+   **Advanced Configuration** (requires Advanced RBAC feature):
+   - **Granular Permissions**: Individual permission selection per component
+   - **Fine-grained Control**: Separate Read, Create, Edit, Delete permissions
+
+### Permission Categories
+
+**System Components**:
+- **Pipeline**: Telemetry processing chain management
+- **Device**: Data input source configuration
+- **Target**: Data output destination management
+- **Quick Route**: Simple route configuration
+- **Advanced Route**: Complex conditional routing
+- **Director**: Service orchestration management
+
+**Administrative Functions**:
+- **User**: User account management
+- **Role**: Role and permission management
+- **Audit**: System audit log access
+- **Settings**: System configuration management
+- **Usage**: Resource utilization monitoring
+
+**Enterprise Features**:
+- **SSO**: Single sign-on configuration
+- **MSSP**: Multi-tenant switching capabilities
+- **Content Hub**: Pre-built template access
+
+**Permission Levels**:
+- **Read**: View component information
+- **Create**: Add new components
+- **Edit**: Modify existing components
+- **Delete**: Remove components
+
+## Role Assignment
+
+Assign roles to users during account creation or through user management.
+
+### Assign Role to User
+
+1. **Navigate to User Management**
+   - Access **Organization** → **Users**
+   - Select target user or create new user
+
+2. **Role Selection**
+   - **Role Dropdown**: Select from available roles
+   - **Built-in Roles**: Owner, Admin, User
+   - **Custom Roles**: Organization-specific roles
+
+3. **Permission Validation**
+   - System validates role permissions against user requirements
+   - **Feature Access**: Roles filtered by tenant edition capabilities
+   - **Tenant Scope**: Permissions limited to tenant boundaries
+
+## Advanced RBAC Features
+
+### Edition-Based Permission Filtering
+
+**Advanced RBAC Feature** (premium editions):
+- **Custom role creation** and modification
+- **Granular permission assignment** per component
+- **Role management interface** access
+
+**Feature Dependencies**:
+- **SSO Permissions**: Require SSO feature in tenant edition
+- **MSSP Permissions**: Require MSSP feature for multi-tenant operations
+- **Advanced Configuration**: Available only with Advanced RBAC feature
+
+### Security and Compliance
+
+**Session Management**:
+- **Automatic session invalidation** when roles change
+- **Permission cache clearing** for immediate access updates
+- **Audit trail** for all role and permission modifications
+
+**Access Protection**:
+- **Owner role protection** prevents accidental lockout
+- **Self-modification restrictions** prevent users from elevating their own permissions
+- **Tenant isolation** ensures users cannot access other tenant resources
+
+## Role Modification and Deletion
+
+### Modify Existing Role
+
+1. **Access Role Settings**
+   - Navigate to **Organization** → **Roles**
+   - Select role to modify
+
+2. **Update Permissions**
+   - **Add/Remove Permissions**: Adjust access levels
+   - **Change Configuration Method**: Switch between Basic/Advanced
+   - **Update Description**: Modify role documentation
+
+3. **Apply Changes**
+   - **User Session Impact**: Existing user sessions invalidated
+   - **Immediate Effect**: Permission changes take effect immediately
+   - **Audit Logging**: All changes recorded in audit trail
+
+### Delete Custom Role
+
+1. **Check Role Usage**
+   - **User Assignment Validation**: Ensure no users assigned to role
+   - **Dependency Check**: Verify no system dependencies
+
+2. **Role Removal**
+   - Navigate to role settings
+   - Click **Delete Role** (requires confirmation)
+   - **User Reassignment**: Reassign affected users to other roles first
+
+**Restrictions**:
+- **Built-in roles cannot be deleted** (Owner, Admin, User)
+- **Roles with active user assignments** must be unassigned first
+- **Owner role deletion** is permanently blocked for tenant security
+
+## Troubleshooting
+
+### Permission Issues
+
+**User Cannot Access Component**:
+1. **Verify Role Assignment**: Check user's assigned role
+2. **Review Role Permissions**: Confirm role includes required permissions
+3. **Check Edition Features**: Ensure tenant edition supports required features
+4. **Validate Tenant Scope**: Confirm user accessing correct tenant resources
+
+**Role Management Not Available**:
+1. **Advanced RBAC Feature**: Verify tenant edition includes Advanced RBAC
+2. **User Permissions**: Ensure current user has Role Read/Create/Edit permissions
+3. **Owner Access**: Confirm Owner role for full role management access
+
+### Session and Cache Issues
+
+**Permission Changes Not Applied**:
+1. **Session Refresh**: Log out and log back in to refresh permissions
+2. **Cache Invalidation**: System automatically clears permission cache
+3. **Browser Refresh**: Clear browser cache if interface issues persist
