@@ -14,13 +14,16 @@ const config: Config = {
   organizationName: "VirtualMetric",
   projectName: "virtualmetric-docs",
   onBrokenLinks: "warn",
-  onBrokenMarkdownLinks: "warn",
   i18n: {
     defaultLocale: "en",
     locales: ["en"],
   },
   markdown: {
     mermaid: true,
+    hooks: {
+      // Migrated from deprecated top-level `onBrokenMarkdownLinks`
+      onBrokenMarkdownLinks: "warn",
+    },
   },
   themes: ["@docusaurus/theme-mermaid"],
   stylesheets: [
