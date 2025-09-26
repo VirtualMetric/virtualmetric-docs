@@ -43,6 +43,8 @@ const sidebars: SidebarsConfig = {
         "organization/users",
         "organization/roles",
         "organization/audit",
+        "organization/single-sign-on",
+        "organization/multitenancy",
       ]
     },
     {
