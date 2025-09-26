@@ -44,10 +44,10 @@ const sidebars: SidebarsConfig = {
         "organization/roles",
         "organization/role-based-access-control",
         "organization/audit",
-        "organization/single-sign-on",
-        "organization/multitenancy",
       ]
     },
+    "single-sign-on",
+    "multitenancy",
     {
       type: "category",
       label: "Configuration",
