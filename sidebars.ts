@@ -38,16 +38,26 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Organization",
+      collapsed: false,
       items: [
         "organization/overview",
         "organization/users",
         "organization/roles",
-        "organization/role-based-access-control",
         "organization/audit",
+        {
+          type: "category",
+          label: "Settings",
+          collapsed: false,
+          items: [
+            "organization/settings/company",
+            "organization/settings/single-sign-on",
+            "organization/settings/subscription",
+          ]
+        },
+        "organization/tenants",
+        "organization/usage-and-limits",
       ]
     },
-    "single-sign-on",
-    "multitenancy",
     {
       type: "category",
       label: "Configuration",
