@@ -1,0 +1,49 @@
+---
+pagination_prev: null
+pagination_next: null
+---
+
+# Avro
+
+**Apache Avro** is a data serialization system that provides rich data structures and a compact, fast, binary data format. Originally developed within the Apache Hadoop ecosystem, Avro is designed for schema evolution and language-neutral data exchange.
+
+## Binary Layout
+
+|Section|Internal Name|Description|Possible Values / Format|
+|--:|:-:|:--|:--|
+|**File Header**|`magic`|4-byte magic number identifying Avro files|ASCII: `Obj` followed by `1` byte (hex: `4F 62 6A 01`)|
+||`meta`|Metadata map storing key-value pairs (e.g., schema, codec)|Map of string keys to byte values (e.g., `"avro.schema"` → JSON schema string)|
+||`sync`|16-byte random sync marker used between blocks| 16 random bytes (unique per file)|
+|**Data Block**|`blockCount`|Number of records in the block|Long (variable-length zigzag encoding)|
+||`blockSize`|Size in bytes of the serialized records (after compression, if any)|Long|
+||`blockData`| Serialized records (optionally compressed)|Binary-encoded data per schema|
+||`sync`| Sync marker repeated after each block|Same 16-byte value as in header|
+
+## Schema Types (Stored in Metadata)
+
+|Type|Internal Name|Description|Example / Format|
+|--:|:-:|:--|:--|
+|Primitive|`null`, `boolean`, `int`, `long`, `float`, `double`, `bytes`, `string`|Basic types|`"type": "string"|
+|Record|`record`|Named collection of fields|`{ "type": "record", "name": "Person", "fields": [...] }`|
+|Enum|`enum`|Named set of symbols| `{ "type": "enum", "name": "Suit", "symbols": ["SPADES", "HEARTS"] }`|
+|Array|`array`|Ordered list of items|`{ "type": "array", "items": "string" }`|
+|Map|`map`|Key-value pairs with string keys|`{ "type": "map", "values": "int" }`|
+|Union|JSON array|Multiple possible types|`[ "null", "string" ]`|
+|Fixed|`fixed`|Fixed-size byte array|`{ "type": "fixed", "name": "md5", "size": 16 }`|
+
+## Metadata Keys (in `meta`)
+
+|Key|Description|Example Value|
+|--:|:--|:--|
+|`avro.schema`|JSON-encoded schema|JSON string defining the schema|
+|`avro.codec`|Compression codec used (optional)|`"null"` (default), `"deflate"`, `"snappy"`, `"bzip2"`, `"xz"`|
+
+## Compression Codecs
+
+|Codec|Description|Best For|
+|--:|:--|:--|
+|`null`|No compression applied|Small files or testing|
+|`deflate`|Standard ZIP compression|General-purpose compression|
+|`snappy`|Fast compression/decompression|Real-time streaming applications|
+|`bzip2`|High compression ratio|Storage-constrained environments|
+|`xz`|Modern compression algorithm|Maximum compression efficiency|

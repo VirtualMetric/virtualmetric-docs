@@ -1,0 +1,232 @@
+---
+description: Keeps only specified fields
+sidebar_custom_props:
+  customCategory: Data Manipulation
+  customIcon: ✅
+---
+
+# Keep
+
+## Synopsis
+
+Keeps only specified fields and removes all others.
+
+## Schema
+
+```yaml {2}
+- keep:
+    field: <string|string[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field name(s) to keep. Can be a single string or an array of strings|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if field operations fail|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Removes all fields from the log entry except those explicitly specified. This processor performs the inverse operation of `remove`, allowing you to specify which fields to retain while discarding all others.
+
+:::note
+The `keep` processor operates at the top level of the log entry. When specifying nested fields like `user.id`, the processor will keep the entire parent object (`user`) and not just the specific nested field.
+:::
+
+The processor is useful for creating a minimal document with only essential fields, reducing the size of log entries, or ensuring consistent field presence for downstream systems.
+
+:::warning
+Using the `keep` processor is a destructive operation that removes all non-specified fields. This can lead to loss of potentially useful data. Consider creating a copy of important data before applying keep operations or ensure that your field list is comprehensive.
+:::
+
+## Examples
+
+### Single Field
+
+<ExampleGrid>
+  <CommentCol>
+    Keeping only essential identifier field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "id": "12345",
+      "username": "jsmith",
+      "password": "secret123",
+      "email": "jsmith@example.com",
+      "created_at": "2023-04-15T13:45:30Z"
+    }
+    ```
+    ```yaml
+    - keep:
+        field: "id"
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes all fields except id:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "id": "12345"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Preserving selected fields from a nested structure...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "id": "evt-001",
+        "type": "login",
+        "timestamp": "2023-05-10T08:15:30Z",
+        "debug_info": { "trace_id": "abc123", "session_data": "..." }
+      },
+      "user": {
+        "id": "usr-123",
+        "name": "John Smith",
+        "role": "admin"
+      },
+      "context": {
+        "ip": "192.168.1.1",
+        "user_agent": "Mozilla/5.0...",
+        "referrer": "https://example.com/login"
+      }
+    }
+    ```
+    ```yaml
+    - keep:
+        field: 
+          - "event.id"
+          - "event.type"
+          - "event.timestamp"
+          - "user.id"
+          - "user.role"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a minimal document with specific fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "id": "evt-001",
+        "type": "login",
+        "timestamp": "2023-05-10T08:15:30Z"
+      },
+      "user": {
+        "id": "usr-123",
+        "role": "admin"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Templates
+
+<ExampleGrid>
+  <CommentCol>
+    Dynamically selecting fields to keep...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "authentication",
+      "authentication_username": "admin",
+      "authentication_success": true,
+      "authentication_method": "password",
+      "source_ip": "10.0.0.1",
+      "timestamp": "2023-06-20T14:25:16Z"
+    }
+    ```
+    ```yaml
+    - keep:
+        field: 
+          - "event_type"
+          - "{{event_type}}_username"
+          - "{{event_type}}_success"
+          - "source_ip"
+          - "timestamp"
+    ```
+  </CodeCol>
+  <CommentCol>
+    keeps event-specific fields based on event type:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "authentication",
+      "authentication_username": "admin",
+      "authentication_success": true,
+      "source_ip": "10.0.0.1",
+      "timestamp": "2023-06-20T14:25:16Z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional
+
+<ExampleGrid>
+  <CommentCol>
+    Applying different keep rules based on conditions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_level": "debug",
+      "message": "User login attempt",
+      "user_id": "u12345",
+      "password_hash": "b5f...",
+      "timestamp": "2023-07-15T09:12:45Z",
+      "debug_data": {
+        "trace": "...",
+        "memory_usage": 1024,
+        "stack": "..."
+      }
+    }
+    ```
+    ```yaml
+    - keep:
+        if: "logEntry.log_level != 'debug'"
+        field: 
+          - "log_level"
+          - "message"
+          - "user_id"
+          - "timestamp"
+    - keep:
+        if: "logEntry.log_level == 'debug'"
+        field: 
+          - "log_level"
+          - "message"
+          - "user_id"
+          - "timestamp"
+          - "debug_data"
+    ```
+  </CodeCol>
+  <CommentCol>
+    keeps different sets of fields based on log level
+  </CommentCol>
+</ExampleGrid>
