@@ -1,0 +1,97 @@
+# Console
+
+<span className="theme-doc-version-badge badge badge--secondary">Forward</span>
+
+## Synopsis
+
+Creates a console target that writes log messages to the standard output. Supports field normalization to various logging standards through the field_format property.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: console
+  status: <boolean>
+  pipelines: <pipeline[]>
+  properties:
+    field_format: <string>
+```
+
+## Configuration
+
+The following are the fields used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `console`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+Field format standards:
+
+<TermTable>
+  <TermCol>`ecs`</TermCol>
+  <DefCol>Elastic Common Schema</DefCol>
+
+  <TermCol>`cim`</TermCol>
+  <DefCol>Common Information Model</DefCol>
+
+  <TermCol>`asim`</TermCol>
+  <DefCol>Advanced Security Information Model</DefCol>
+</TermTable>
+
+:::note
+If no field_format is specified, log messages will be written to the console without any field normalization.
+:::
+
+:::warning
+Using field normalization may impact the performance with high message volumes.
+:::
+
+## Examples
+
+### Basic
+
+Console use without field normalization:
+
+```yaml
+targets:
+  - name: basic_console
+    type: console
+```
+
+### ECS
+
+Console use with ECS field normalization:
+
+```yaml
+targets:
+  - name: ecs_console
+    type: console
+    properties:
+      field_format: "ecs"
+```
+
+:::note
+For defails of ECS, see <Topic id="appendix-ecs">Appendix</Topic>.
+:::
+
+### ASIM
+
+Console use with ASIM field normalization:
+
+```yaml
+targets:
+  - name: asim_console
+    type: console
+    properties:
+      field_format: "asim"
+```
+
+:::tip
+For details of _ASIM_, see <Topic id="appendix-asim">Appendix</Topic>.
+:::

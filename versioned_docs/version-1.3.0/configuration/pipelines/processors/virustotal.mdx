@@ -1,0 +1,380 @@
+---
+description: Enriches data with VirusTotal threat intelligence
+sidebar_custom_props: 
+  customIcon: 🛡️
+  customCategory: Threat Intelligence
+---
+
+# VirusTotal
+
+<span className="theme-doc-version-badge badge badge--primary">Enrichment</span><span className="theme-doc-version-badge badge badge--secondary">Threat Intelligence</span>
+
+## Synopsis
+
+Enriches events by querying the **VirusTotal** API for threat intelligence about files, URLs, domains, and IP addresses.
+
+## Schema
+
+```yaml {2,3}
+- virustotal:
+    field: <ident>
+    api_key: <string>
+    query_type: <enum>
+    interval: <numeric>
+    timeout: <numeric>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+    target_field: <ident>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing hash, URL, domain, or IP to query|
+|`api_key`|Y|`${VIRUSTOTAL_API_KEY}`|VirusTotal API key for authentication|
+|`query_type`|N|`hash`|Type of query: `hash`, `url`, `domain`, or `ip`|
+|`interval`|N|1|Polling interval in seconds for URL analysis|
+|`timeout`|N|10|Maximum number of polling attempts|
+|`target_field`|N|`field`|Field to store the API response|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if API call fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor supports queries for file hashes (e.g. MD5, SHA-1, SHA-256), URLs (including scanning and analysis retrieval), domain names, and IP addresses. It also fetches reputation data.
+
+:::note
+File scan results may not be immediately available, and URL scanning may have additional delays. Consider rate limits.
+:::
+
+:::warning
+Long polling intervals may impact processing time.
+:::
+
+The API key can be specified directly or via an environment variable. Responses are returned as structured objects. Analysis stats provide counts from multiple engines.
+
+:::warning[caution]
+API keys should be stored securely.
+:::
+
+Automated URL scanning, and rich threat intelligence are also available, so responses may include rich metadata.
+
+Error handling and success/failure options are supported as well.
+
+## Examples
+
+### File Hashes
+
+<ExampleGrid>
+  <CommentCol>
+    Checking a file hash...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hash": "44d88612fea8a8f36de82e1278abb02f"
+    }
+    ```
+    ```yaml
+    - virustotal:
+        field: hash
+        query_type: hash
+        api_key: "${VIRUSTOTAL_API_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    retrieves the relevant results:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hash": {
+        "antiy_info": "Trojan/Generic.ASBOL.2A",
+        "crowdsourced_ai_results": [
+          {
+            "analysis": "EICAR is a test string used to detect and test antivi...",
+            "category": "code_insight",
+            "id": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c45...",
+            "source": "palm"
+          }
+        ],
+        "crowdsourced_yara_results": [
+          {
+            "author": "Marc Rivero | McAfee ATR Team",
+            "description": "Rule to detect the EICAR pattern",
+            "match_date": 1739087937,
+            "rule_name": "malw_eicar",
+            "ruleset_id": "0019ab4291",
+            "ruleset_name": "MALW_Eicar",
+            "source": "https://github.com/advanced-threat-research/Yara-Rules"
+          }
+        ],
+        "filecondis": {
+          "dhash": "9300009100008090",
+          "raw_md5": "bcf2bafa8b4e580d7c0f48b4c698f596"
+        },
+        "first_seen_itw_date": 1582585760,
+        "first_submission_date": 1148301722,
+        "known_distributors": {
+          "data_sources": ["National Software Reference Library (NSRL)"],
+          "distributors": ["Offensive Security"],
+          "filenames": ["eicar.com"],
+          "products": ["BlackArch Linux", "Kali Linux Nethunter"]
+        },
+        "last_analysis_date": 1739087924,
+        "last_analysis_stats": {
+          "confirmed-timeout": 0,
+          "failure": 0,
+          "harmless": 0,
+          "malicious": 63,
+          "suspicious": 0,
+          "timeout": 0,
+          "type-unsupported": 8,
+          "undetected": 4
+        },
+        "last_modification_date": 1739088845,
+        "last_submission_date": 1739087924,
+        "magic": "EICAR virus test files",
+        "magika": "VBA",
+        "md5": "44d88612fea8a8f36de82e1278abb02f",
+        "meaningful_name": "eicar.com-46473",
+        "names": [
+          "eicar.com-46473",
+          "eicar.txt",
+          "eicar.com-33076",
+          "eicar.com-28456",
+          "eicar.com.txt"
+        ],
+        "popular_threat_classification": {
+          "popular_threat_category": [
+            {"count": 15, "value": "virus"},
+            {"count": 2, "value": "trojan"}
+          ],
+          "popular_threat_name": [
+            {"count": 57, "value": "eicar"},
+            {"count": 47, "value": "test"},
+            {"count": 33, "value": "file"}
+          ],
+          "suggested_threat_label": "virus.eicar/test"
+        },
+        "reputation": 3652,
+        "sandbox_verdicts": {
+          "Lastline": {
+            "category": "malicious",
+            "malware_classification": ["MALWARE", "TROJAN"]
+          },
+          "OS X Sandbox": {
+            "category": "malicious",
+            "confidence": 52,
+            "malware_classification": ["MALWARE", "TROJAN", "EVADER"],
+            "malware_names": ["EICAR"]
+          },
+          "Zenbox": {
+            "category": "harmless",
+            "confidence": 100,
+            "malware_classification": ["CLEAN"]
+          }
+        },
+        "size": 68,
+        "total_votes": {
+          "harmless": 2161,
+          "malicious": 385
+        },
+        "type_description": "VBA",
+        "type_tag": "vba",
+        "type_tags": ["source", "vba", "vbs"]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URLs
+
+<ExampleGrid>
+  <CommentCol>
+    Analyze a URL with custom polling settings...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "http://example.com/file.exe"
+    }
+    ```
+    ```yaml
+    - virustotal:
+        field: url
+        query_type: url
+        interval: 2
+        timeout: 15
+        target_field: url_analysis
+        api_key: "${VIRUSTOTAL_API_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    submits the scan and retrieves the results:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": {
+        "date": 1739089412,
+        "results": {
+          "0xSI_f33d": {
+            "category": "undetected",
+            "engine_name": "0xSI_f33d",
+            "method": "blacklist",
+            "result": "unrated"
+          },
+          "ADMINUSLabs": {
+            "category": "harmless",
+            "engine_name": "ADMINUSLabs",
+            "method": "blacklist",
+            "result": "clean"
+          },
+          "AlienVault": {
+            "category": "harmless",
+            "engine_name": "AlienVault",
+            "method": "blacklist",
+            "result": "clean"
+          },
+          "Antiy-AVL": {
+            "category": "harmless",
+            "engine_name": "Antiy-AVL",
+            "method": "blacklist",
+            "result": "clean"
+          },
+          "BitDefender": {
+            "category": "harmless",
+            "engine_name": "BitDefender",
+            "method": "blacklist",
+            "result": "clean"
+          }
+        },
+        "stats": {
+          "harmless": 73,
+          "malicious": 0,
+          "suspicious": 0,
+          "timeout": 0,
+          "undetected": 23
+        },
+        "status": "completed"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Domains
+
+<ExampleGrid>
+  <CommentCol>
+    Querying domain reputation...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "google.com"
+    }
+    ```
+    ```yaml
+    - virustotal:
+        field: domain
+        query_type: domain
+        target_field: domain_info
+        api_key: "${VIRUSTOTAL_API_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds domain intelligence:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "google.com",
+      "domain_info": {
+        "categories": {
+          "BitDefender": "trackers",
+          "Forcepoint ThreatSeeker": "search engines and portals",
+          "Sophos": "information technology"
+        },
+        "creation_date": 874306800,
+        "last_analysis_stats": {
+          "harmless": 67,
+          "malicious": 0,
+          "suspicious": 0,
+          "timeout": 0,
+          "undetected": 27
+        },
+        "registrar": "MarkMonitor Inc.",
+        "reputation": 602,
+        "total_votes": {
+          "harmless": 399,
+          "malicious": 66
+        },
+        "popularity_ranks": {
+          "Alexa": {"rank": 1, "timestamp": 1684083480},
+          "Cisco Umbrella": {"rank": 1, "timestamp": 1739025487}
+        },
+        "last_https_certificate": {
+          "subject": {"CN": "*.google.com"},
+          "validity": {
+            "not_before": "2025-01-20 08:36:04",
+            "not_after": "2025-04-14 08:36:03"
+          }
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Anticipating API failures...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8"
+    }
+    ```
+    ```yaml
+    - virustotal:
+        field: ip
+        query_type: ip
+        api_key: "invalid-key"
+        ignore_failure: true
+        on_failure:
+          - set:
+              field: lookup_status
+              value: "failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8",
+      "lookup_status": "failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

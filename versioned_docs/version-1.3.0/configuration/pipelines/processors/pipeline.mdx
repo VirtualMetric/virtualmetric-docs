@@ -1,0 +1,148 @@
+---
+description: Executes another pipeline
+sidebar_custom_props: 
+  customIcon: 🔁
+  customCategory: Flow Control
+---
+
+# Pipeline
+
+<span className="theme-doc-version-badge badge badge--primary">Control Flow</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Executes another pipeline by name, allowing for pipeline reuse and modular configurations.
+
+## Schema
+
+```yaml {2}
+- pipeline:
+    name: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing_pipeline: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y|-|Name or reference of the pipeline to execute|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`ignore_missing_pipeline`|N|`false`|If `true`, silently continue when referenced pipeline is not found|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The pipeline processor can reference other pipelines using the syntax `{{ IngestPipeline "pipeline-name" }}`. The names can be specified with or without the `.yml`/`.yaml` extension.
+
+:::warning
+As pipeline references are resolved at runtime, make sure all referenced pipelines exist in your configuration, or set `ignore_missing_pipeline` to `true` if they are optional.
+:::
+
+:::warning
+Be careful with recursive pipeline references to avoid infinite loops. Currently, the processor does not detect circular dependencies.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Another pipeline to be executed...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: main
+        processors:
+          - pipeline:
+              name: '{{ IngestPipeline "parse-logs" }}'
+    ```
+  </CodeCol>
+  <CommentCol>
+    must be defined in the configuration:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: parse-logs
+        processors:
+          - grok:
+              field: message 
+              pattern: '%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level}'
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Executing the pipeline based on criteria...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+      - pipeline:
+          name: '{{ IngestPipeline "enrich-data" }}'
+          if: 'ctx.level == "ERROR"'
+          ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    helps control the flow:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: enrich-data
+        processors:
+          - append:
+              field: tags
+              value: needs-review
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle missing pipelines...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - pipeline:
+        name: '{{ IngestPipeline "optional-pipeline" }}'
+        ignore_missing_pipeline: true
+        on_failure:
+          - append:
+            field: tags
+            value: pipeline-failed
+    ```
+  </CodeCol>
+  <CommentCol>
+    and specify fallback actions:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: main
+        processors:
+          - append:
+              field: status
+              value: processed
+    ```
+  </CodeCol>
+</ExampleGrid>
