@@ -1,0 +1,163 @@
+---
+sidebar_label: Architecture
+---
+
+# Architecture
+
+**VirtualMetric DataStream** is architected with enterprise security and data sovereignty as core principles. Unlike traditional solutions that require sending sensitive data to third-party cloud platforms for processing, **DataStream** keeps all your critical data within your environment while providing centralized management and visibility through a secure cloud control plane.
+
+<img src="/img/virtualmetric-datastream-architecture.png" alt="VirtualMetric DataStream - Enterprise Architecture Overview"/>
+
+## Security-First Architecture
+
+### Data Plane vs Control Plane Separation
+
+**DataStream** employs a strict separation between data plane and control plane operations, ensuring your sensitive security data never leaves your environment:
+
+**Control Plane (VirtualMetric Cloud)**
+- Multi-tenant SaaS platform for centralized management
+- Pipeline configuration and deployment
+- Fleet management across all Directors and Agents
+- Real-time statistics, monitoring, and alerting
+- Role-Based Access Control (RBAC) for team collaboration
+- Zero data processing or storage of customer logs
+
+**Data Plane (Customer Environment)**
+- All data processing occurs within customer-controlled infrastructure
+- Director processes, transforms, and routes data locally
+- Agents collect data and communicate directly with local Director
+- No customer data transmission to VirtualMetric Cloud
+- Complete data sovereignty and compliance control
+
+### Enterprise Security Benefits
+
+This architecture addresses critical enterprise security concerns:
+
+**Data Sovereignty** - All sensitive log data remains within your infrastructure, ensuring compliance with data residency requirements, industry regulations (GDPR, HIPAA, SOX), and corporate data governance policies.
+
+**Minimal Attack Surface** - Only a single HTTPS outbound connection required from Director to VirtualMetric Cloud for management, no inbound connections needed, and agents communicate exclusively with local Director infrastructure.
+
+**Zero Third-Party Data Exposure** - Raw log data never transmitted to external vendors, eliminates risks of data breaches during transit, and maintains complete control over sensitive security information.
+
+**Network Security** - Reduced firewall complexity with minimal external connections, no need to open firewall access from cloud to local systems, and simplified network security management.
+
+**Bandwidth Optimization** - Processes data locally before routing to destinations, eliminates unnecessary raw data transmission, and provides intelligent compression and filtering capabilities.
+
+## Deployment Architecture
+
+### VirtualMetric Cloud (Multi-Tenant)
+
+The centralized management platform provides:
+- **Management Interface** - Intuitive web-based console for pipeline configuration and monitoring
+- **Statistics & Analytics** - Real-time performance metrics, data flow visualization, and operational insights
+- **RBAC & Security** - Granular access controls, audit logging, and secure authentication
+- **Fleet Management** - Centralized deployment and configuration management across distributed environments
+
+### Customer Environment Options
+
+**VirtualMetric Director** can be deployed in multiple configurations to meet diverse enterprise requirements:
+
+#### Clustered Director (High Availability)
+
+- **Load Balancing** - Distributes processing load across multiple Director instances
+- **Automatic Failover** - Ensures continuous operation during maintenance or failures
+- **Scalable Processing** - Handles enterprise-scale data volumes with horizontal scaling
+- **Shared Configuration** - Synchronized pipeline configurations across cluster nodes
+
+#### Flexible Deployment Models
+
+**On-Premises Deployment**
+- Physical servers or virtual machines within customer data centers
+- Complete isolation from external networks if required
+- Integration with existing infrastructure and security controls
+
+**Cloud Deployment** 
+- Customer-owned Azure, AWS, or other cloud environments
+- Maintains data sovereignty within customer cloud tenants
+- Leverages cloud-native services while preserving security isolation
+
+**Hybrid Deployment**
+- Directors in both on-premises and cloud environments
+- Unified management through single control plane
+- Flexible data routing based on location and requirements
+
+### Container and Serverless Support
+
+**Docker Containerization**
+- Lightweight, portable deployment across environments
+- Simplified installation and maintenance
+- Container orchestration support (Kubernetes, Docker Swarm)
+- Consistent runtime environment across platforms
+
+**Azure Serverless Integration**
+- **Director Proxy** - Azure Function-based secure data forwarding
+- Automatic scaling based on data volume
+- Pay-per-use cost optimization
+
+## Network Communication
+
+### Simplified Network Requirements
+
+**Outbound HTTPS (Director to VirtualMetric Cloud)**
+- Single port 443 connection for management communications
+- Control plane synchronization and configuration updates
+- Statistics reporting and health monitoring
+- Secure token-based authentication
+
+**Internal HTTPS (Agents to Director)**
+- Direct communication between Agents and local Director
+- No external connectivity required for Agents
+- Secure data transmission within customer environment
+- Simplified firewall configuration
+
+### Zero Inbound Connectivity
+
+**DataStream** requires no inbound connections from external networks, eliminating common security vulnerabilities:
+- No firewall rules for external access to internal systems
+- Reduced exposure to external threats
+- Simplified compliance and security auditing
+- Enhanced network security posture
+
+## Management Models
+
+### Managed (Default)
+
+- **Centralized Configuration** - Manage all pipelines through VirtualMetric portal
+- **Automatic Updates** - Seamless deployment of configuration changes and updates
+- **Real-Time Monitoring** - Comprehensive visibility across distributed infrastructure
+- **Collaborative Management** - Team-based access with RBAC controls
+
+### Self-Managed (Air-Gapped)
+
+For environments requiring complete network isolation:
+
+- **Offline Configuration** - Manual pipeline configuration and deployment
+- **Local Management** - Direct access to Director management interfaces
+- **Manual Updates** - Administrator-controlled updates and maintenance
+- **Complete Isolation** - Zero external connectivity requirements
+
+### Benefits for Enterprise Environments
+
+**Operational Efficiency**
+- Centralized management of distributed telemetry infrastructure
+- Reduced operational overhead with automated configuration deployment
+- Comprehensive monitoring and alerting capabilities
+- Streamlined troubleshooting and performance optimization
+
+**Security & Compliance**
+- Data never leaves customer-controlled environment
+- Simplified compliance with industry regulations
+- Reduced risk of data breaches and unauthorized access
+- Enhanced audit trail and governance capabilities
+
+**Scalability & Performance**
+- High availability and clustering support for mission-critical environments
+- Horizontal scaling to handle growing data volumes
+- Intelligent load balancing and resource optimization
+- Container and serverless deployment flexibility
+
+**Cost Optimization**
+- Eliminates costs associated with third-party data processing
+- Reduces bandwidth requirements through local processing
+- Flexible deployment models to optimize infrastructure costs
+- Pay-per-use serverless options for variable workloads

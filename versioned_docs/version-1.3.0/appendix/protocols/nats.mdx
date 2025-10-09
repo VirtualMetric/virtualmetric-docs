@@ -1,0 +1,29 @@
+---
+pagination_prev: null
+pagination_next: null
+---
+
+# NATS
+
+NATS protocol for lightweight messaging:
+
+## Message Format
+
+|Field|Description|Example Value|
+|--:|:--|:--|
+|**Operation**|Command type|`PUB`, `SUB`, `MSG`, `PING`, `PONG`, `INFO`, `CONNECT`|
+|**Subject**|Message topic/subject|`foo.bar`, `user.123`|
+|**Reply-To**|Optional reply subject|`_INBOX.abc123`|
+|**Payload Size**|Byte length of payload|`13`|
+|**Payload**|Message data|`Hello, World!`|
+|**Terminator**|CRLF sequence|`\r\n`|
+
+## Protocol Operations
+
+|Operation|Format|Purpose|
+|:-:|:--|:--|
+|`PUB`|`PUB <subject> [reply-to] <size>\r\n<payload>\r\n`|Publish message|
+|`SUB`|`SUB <subject> [queue] <sid>\r\n`|Subscribe to subject|
+|`MSG`|`MSG <subject> <sid> [reply-to] <size>\r\n<payload>\r\n`|Received message|
+|`PING`|`PING\r\n`|Keep-alive request|
+|`PONG`|`PONG\r\n`|Keep-alive response|
