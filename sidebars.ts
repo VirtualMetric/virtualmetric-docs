@@ -115,6 +115,7 @@ const sidebars: SidebarsConfig = {
           label: "Targets",
           items: [
             "configuration/targets/overview",
+            "configuration/targets/aws-s3",
             "configuration/targets/azure-blob-storage",
             "configuration/targets/azure-data-explorer",
             "configuration/targets/clickhouse",
