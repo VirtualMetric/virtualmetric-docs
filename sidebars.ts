@@ -226,7 +226,7 @@ const sidebars: SidebarsConfig = {
                 "configuration/pipelines/processors/keep-last",
                 "configuration/pipelines/processors/kebab-case",
                 "configuration/pipelines/processors/kerberos-decode",
-                "configuration/pipelines/processors/key-value",
+                "configuration/pipelines/processors/kv",
                 "configuration/pipelines/processors/leef",
                 "configuration/pipelines/processors/level",
                 "configuration/pipelines/processors/lookup",
