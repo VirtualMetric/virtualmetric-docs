@@ -360,6 +360,7 @@ const sidebars: SidebarsConfig = {
             "appendix/log-formats/asim",
             "appendix/log-formats/cef",
             "appendix/log-formats/cim",
+            "appendix/log-formats/csl",
             "appendix/log-formats/ecs",
             "appendix/log-formats/estreamer",
             "appendix/log-formats/ipfix",
