@@ -357,16 +357,14 @@ const sidebars: SidebarsConfig = {
             description: "Log format specifications"
           },
           items: [
-            "appendix/log-formats/asim",
-            "appendix/log-formats/cef",
-            "appendix/log-formats/cim",
-            "appendix/log-formats/csl",
-            "appendix/log-formats/ecs",
-            "appendix/log-formats/estreamer",
-            "appendix/log-formats/ipfix",
-            "appendix/log-formats/leef",
-            "appendix/log-formats/netflow",
-            "appendix/log-formats/sflow",
+            "appendix/field-formats/asim",
+            "appendix/field-formats/cef",
+            "appendix/field-formats/cim",
+            "appendix/field-formats/csl",
+            "appendix/field-formats/ecs",
+            "appendix/field-formats/estreamer",
+            "appendix/field-formats/leef",
+            "appendix/field-formats/netflow",
           ],
         },
         {
@@ -377,10 +375,12 @@ const sidebars: SidebarsConfig = {
             description: "Protocol specifications"
           },
           items: [
+            "appendix/protocols/ipfix",
             "appendix/protocols/kafka",
             "appendix/protocols/nats",
             "appendix/protocols/rabbitmq",
             "appendix/protocols/redis",
+            "appendix/protocols/sflow",
             "appendix/protocols/smtp",
             "appendix/protocols/syslog",
             "appendix/protocols/tftp",

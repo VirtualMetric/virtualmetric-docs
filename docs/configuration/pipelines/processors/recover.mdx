@@ -42,9 +42,9 @@ The following fields are used to define the processor:
 
 ## Details
 
-Terminates the pipeline successfully and returns nil, effectively ignoring any errors that occurred in previous processors. This processor is used for error recovery scenarios where you want to gracefully handle failures without propagating them.
+Rescues the pipeline from the conditions specified in `on_failure`, effectively ignoring any errors that occurred in previous processors. This is used for scenarios where you want to prevent failures from propagating.
 
-The recover processor acts as an error boundary, catching any previous failures and treating them as successful completions. This allows pipelines to continue processing subsequent log entries without being halted by errors in earlier processors.
+The processor acts as a boundary, catching any previous failures and treating them as successful completions. This allows pipelines to continue processing subsequent log entries without being halted by errors in earlier processors.
 
 :::note
 The recover processor doesn't modify any data or fields. It serves purely as an error recovery mechanism to prevent pipeline termination due to previous failures.
