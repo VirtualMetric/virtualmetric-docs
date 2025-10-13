@@ -351,10 +351,10 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: "category",
-          label: "Log Formats",
+          label: "Field Formats",
           link: {
             type: "generated-index",
-            description: "Log format specifications"
+            description: "Field format specifications"
           },
           items: [
             "appendix/field-formats/asim",
