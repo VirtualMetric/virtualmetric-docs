@@ -7,7 +7,7 @@
 Creates a target that ingests log messages into Microsoft Sentinel workspace tables using Data Collection Rules (DCRs). Supports automatic table selection, field normalization, and filtering options.
 
 :::tip
-For more details, refer to our Microsoft Sentinel Overview and Microsoft Sentinel Integration chapters.
+For more details on Microsoft Sentinel integration, refer to <Topic id="sentinel-overview">Microsoft Sentinel Overview</Topic> and <Topic id="sentinel-integration">Microsoft Sentinel Integration</Topic>. For Director Proxy deployment, see <Topic id="about-director-proxy">VirtualMetric Director Proxy</Topic>. For cost-optimized ingestion with extended retention, see <Topic id="targets-microsoft-sentinel-data-lake">Microsoft Sentinel data lake</Topic>.
 :::
 
 ## Schema
@@ -22,6 +22,8 @@ For more details, refer to our Microsoft Sentinel Overview and Microsoft Sentine
     tenant_id: <string>
     client_id: <string>
     client_secret: <string>
+    function_app: <string>
+    function_token: <string>
     rule_id: <string>
     endpoint: <string>
     streams:
@@ -58,11 +60,13 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`tenant_id`|N*|-|Azure tenant ID (required unless using managed identity)|
-|`client_id`|N*|-|Azure client ID (required unless using managed identity)|
-|`client_secret`|N*|-|Client secret (required unless using managed identity)|
+|`tenant_id`|N*|-|Azure tenant ID (required for direct authentication)|
+|`client_id`|N*|-|Azure client ID (required for direct authentication)|
+|`client_secret`|N*|-|Client secret (required for direct authentication)|
+|`function_app`|N*|-|Director Proxy endpoint URL (required for proxy forwarding)|
+|`function_token`|N*|-|Director Proxy authentication token (required with `function_app`)|
 
-\* = Conditionally required (see authentication methods above)
+\* = Conditionally required. Use either direct authentication (`tenant_id`, `client_id`, `client_secret`) OR Director Proxy forwarding (`function_app`, `function_token`).
 
 ### Stream Configuration
 
@@ -112,6 +116,16 @@ When `streams` is not specified, tables are automatically selected based on inpu
 
 The Microsoft Sentinel target enables direct ingestion into Microsoft Sentinel tables with flexible configuration options. It supports using the `SystemS3` field to route messages to specific stream tables, using the format `Custom-TableName`.
 
+### Deployment Models
+
+The target supports two deployment models:
+
+**Direct Authentication** - Director connects directly to Azure using service principal credentials (`tenant_id`, `client_id`, `client_secret`). This model requires Director to have network connectivity to Azure endpoints and credentials for the target subscription.
+
+**Director Proxy Forwarding** - Director sends processed data to VirtualMetric Director Proxy (Azure Function) deployed in customer environment. Director Proxy uses Azure Managed Identity for credential-free access to Microsoft Sentinel, eliminating the need to share Azure credentials with Director.
+
+The Director Proxy model is particularly valuable for MSSP deployments where customers maintain complete control over Azure credentials while enabling centralized data processing and routing by the MSSP's Director infrastructure.
+
 The target automatically detects table schemas and can clean messages to remove phantom fields that aren't defined in the schema when `keep_phantom_fields` is set to `false`. 
 
 :::warning
@@ -132,7 +146,6 @@ The `field_format` property allows normalizing log data to standard formats:
 - `asim` - Advanced Security Information Model
 
 Field normalization is applied before the logs are sent to Sentinel, ensuring consistent indexing and search capabilities.
-
 
 ### Preconfigured Schemas
 
@@ -201,6 +214,20 @@ targets:
   - name: managed_identity_sentinel
     type: sentinel
     properties:
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+```
+
+### Director Proxy
+
+Configuration using Director Proxy for credential-free forwarding:
+
+```yaml
+targets:
+  - name: proxy_sentinel
+    type: sentinel
+    properties:
+      function_app: "https://my-director-proxy.azurewebsites.net/api/Sentinel"
+      function_token: "your-proxy-authentication-token"
       endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
 ```
 
