@@ -1,0 +1,44 @@
+---
+pagination_prev: null
+sidebar_label: Quick Start
+---
+
+# Configuration: Quick Start
+
+In order to create its telemetry pipelines, **DataStream** uses five key components: **Devices**, **Targets**, **Pipelines**, **Processors**, and **Routes**. Configuration involves handling and managing text-based structured files (YAML) that specify values for various settings required for running these components.
+
+The various stages where these components are used and how they connect to each other can be described schematically as:
+
+<blockquote style={{textAlign: "center"}}>
+**Ingest** [_Source_<sub>1</sub>, _Source_<sub>2</sub>, &#8230;, _Source_<sub>n</sub>]<br/>
+&darr;<br/>
+**Preprocess** (Normalize) &map; **Route** [_Enrich_ &compfn; _Transform_ &compfn; _Select_] &map; **Postprocess** (Normalize)<br/>
+&darr;<br/>
+**Forward** [_Destination_<sub>1</sub>, _Destination_<sub>2</sub>, &#8230;, _Destination_<sub>n</sub>]
+</blockquote>
+
+Schematically:
+
+<Image id="data-flow" />
+
+## Core Components
+
+### Devices
+**Devices** are listeners that collect data from various sources. Each device type is designed to communicate with specific log generators and understand their data formats. For example, a syslog device knows how to receive and parse syslog messages, while a Kafka device understands how to consume messages from Kafka topics.
+
+### Pipelines and Processors
+**Pipelines** contain sequences of **Processors** that handle the transformation and enrichment of data. Processors are individual functions that perform specific operations like parsing structured data, adding geographic information based on IP addresses, filtering events, or normalizing field names. Pipelines orchestrate these processors to transform raw data into the format needed for analysis and storage.
+
+### Targets
+**Targets** are senders that forward processed data to destinations. Each target type knows how to communicate with specific systems and format data appropriately. An Elasticsearch target formats data for indexing, while a webhook target sends HTTP requests to notification systems.
+
+### Routes
+**Routes** define the connections and flow control between devices, pipelines, and targets. They specify which data from which devices should be processed by which pipelines and then sent to which targets. Routes can include conditional logic to filter data or direct different types of events to different processing paths.
+
+## How Components Work Together
+
+These components combine to create complete data processing flows. A device collects raw data from a source, a route determines if and how that data should be processed based on defined conditions, a pipeline transforms and enriches the data through its processors, and targets deliver the processed data to the appropriate destinations.
+
+For example, in a security monitoring scenario, a firewall device might collect syslog events, a route might filter for only critical security events, a pipeline might parse the events and add threat intelligence data, and targets might send the enriched events to both a security information system and a real-time alerting platform.
+
+This modular design allows you to build flexible telemetry systems by mixing and matching components based on your specific data sources, processing requirements, and destination systems.

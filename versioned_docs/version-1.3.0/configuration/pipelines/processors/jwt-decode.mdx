@@ -1,0 +1,229 @@
+---
+description: Decodes JSON Web Tokens into header, claims, and signature components
+sidebar_custom_props:
+  customCategory: Decode
+  customIcon: 🔑
+---
+
+# JWT Decode
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Security</span>
+
+## Synopsis
+
+Decodes JSON Web Tokens into header, claims, and signature components.
+
+## Schema
+
+```yaml {2-3}
+- jwt_decode:
+    field: <ident>
+    target_field: <string>
+    verify_signature: <boolean>
+    secret: <string>
+    algorithm: <string>
+    extract_claims: <array>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing JWT token to decode|
+|`target_field`|N|`{field}_decoded`|Target field to store decoded JWT components|
+|`verify_signature`|N|`false`|Verify JWT signature using provided secret|
+|`secret`|N|-|Secret key for signature verification|
+|`algorithm`|N|`HS256`|JWT signing algorithm for verification|
+|`extract_claims`|N|-|Array of specific claims to extract to separate fields|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if decoding fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Decodes JSON Web Tokens (JWT) into their constituent parts: header, payload (claims), and signature. The processor can extract the token structure without verification or optionally verify the signature using a provided secret.
+
+The decoded result includes the header information (algorithm, token type), all claims from the payload, and signature verification status when enabled.
+
+:::note
+JWT tokens consist of three base64-encoded parts separated by dots: header.payload.signature. The processor decodes each part and presents them in a structured format.
+:::
+
+When `extract_claims` is specified, the processor creates additional fields for specific claims, making them easily accessible for further processing.
+
+:::warning
+If signature verification is enabled but fails, the processor will still decode the token structure but mark it as invalid. Set `ignore_failure` to `true` to continue processing invalid tokens.
+:::
+
+## Examples
+
+### Basic JWT Decoding
+
+<ExampleGrid>
+  <CommentCol>
+    Decoding JWT token structure...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "auth_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+    }
+    ```
+    ```yaml
+    - jwt_decode:
+        field: auth_token
+        target_field: token_info
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts header and payload:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "auth_token": "eyJhbGciOiJIUzI1N...",
+      "token_info": {
+        "header": {
+          "alg": "HS256",
+          "typ": "JWT"
+        },
+        "payload": {
+          "sub": "1234567890",
+          "name": "John Doe",
+          "iat": 1516239022
+        },
+        "signature": "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Signature Verification
+
+<ExampleGrid>
+  <CommentCol>
+    Verifying JWT signature with secret...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+    ```
+    ```yaml
+    - jwt_decode:
+        field: user_token
+        verify_signature: true
+        secret: "your-256-bit-secret"
+        target_field: verified_token
+    ```
+  </CodeCol>
+  <CommentCol>
+    includes signature verification:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_token": "eyJhbGciOiJIUzI1N...",
+      "verified_token": {
+        "header": {...},
+        "payload": {...},
+        "signature_valid": true,
+        "verification_algorithm": "HS256"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Extracting Specific Claims
+
+<ExampleGrid>
+  <CommentCol>
+    Extracting specific claims to separate fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "session_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+    ```
+    ```yaml
+    - jwt_decode:
+        field: session_token
+        extract_claims: ["sub", "exp", "iat"]
+        target_field: token_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates fields for extracted claims:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "session_token": "eyJhbGciOiJIUzI1N...",
+      "token_data": {...},
+      "user_id": "1234567890",
+      "expires_at": 1735689600,
+      "issued_at": 1516239022
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array of Tokens
+
+<ExampleGrid>
+  <CommentCol>
+    Processing multiple JWT tokens...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tokens": [
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+      ]
+    }
+    ```
+    ```yaml
+    - jwt_decode:
+        field: tokens
+        target_field: decoded_tokens
+    ```
+  </CodeCol>
+  <CommentCol>
+    decodes each token:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tokens": [...],
+      "decoded_tokens": [
+        {
+          "header": {"alg": "HS256"},
+          "payload": {...}
+        },
+        {
+          "header": {"alg": "RS256"},
+          "payload": {...}
+        }
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

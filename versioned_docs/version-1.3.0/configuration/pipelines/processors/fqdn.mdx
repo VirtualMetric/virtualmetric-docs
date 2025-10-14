@@ -1,0 +1,392 @@
+---
+description: Parses and extracts components from fully qualified domain names and hostnames
+sidebar_custom_props: 
+  customIcon: 🏷️
+  customCategory: Parse
+---
+
+# FQDN
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">ASIM Compatible</span>
+
+## Synopsis
+
+Parses FQDNs (Fully Qualified Domain Names); that is URLs and hostnames to extract individual components like hostname, domain, domain type, and normalized FQDN using ASIM logic.
+
+## Schema
+
+```yaml {3}
+- fqdn:
+    description: <text>
+    field: <ident>
+    hostname_field: <ident>
+    domain_field: <ident>
+    domain_type_field: <ident>
+    fqdn_field: <ident>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y||Field containing the hostname, FQDN, or URL to parse|
+|`hostname_field`|N|`{field}_hostname`|Field to store the extracted hostname|
+|`domain_field`|N|`{field}_domain`|Field to store the extracted domain|
+|`domain_type_field`|N|`{field}_domain_type`|Field to store the domain type|
+|`fqdn_field`|N|`{field}_fqdn`|Field to store the normalized FQDN|
+|`description`|N|-|Explanatory notes|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`ignore_missing`|N|`false`|Continue processing if the field is missing|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor analyzes hostname strings and extracts meaningful components based on ASIM (Azure Sentinel Information Model) logic. It supports multiple input formats:
+
+- **URLs**: Full URLs with protocols (http://, https://) are parsed to extract the hostname component
+- **FQDNs**: Domain names like `web01.example.com` are split into hostname and domain parts
+- **Windows format**: NetBIOS names like `DOMAIN\hostname` are recognized and parsed accordingly
+- **Simple hostnames**: Single names without domain components
+
+The processor determines the domain type based on the input format:
+
+- **FQDN**: For dot-separated domain names (e.g., `server.company.com`)
+- **Windows**: For backslash-separated NetBIOS names (e.g., `CONTOSO\WEB01`)
+- **Empty**: For simple hostnames without domain information
+
+:::info
+This processor follows ASIM hostname parsing standards, making it ideal for security analytics and network monitoring scenarios where consistent hostname normalization is required.
+:::
+
+:::note
+The processor automatically handles URL parsing and will extract hostnames from full URLs, stripping protocol, path, and query parameters to focus on the host component.
+:::
+
+:::tip
+Use custom field names to organize extracted components according to your data model. The default field naming convention appends suffixes to the source field name for easy identification.
+:::
+
+## Examples
+
+### Basic FQDN Parsing
+
+<ExampleGrid>
+  <CommentCol>
+    Parse a fully qualified domain name...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "server_name": "web01.company.com"
+    }
+    ```
+    ```yaml
+    - fqdn:
+        field: server_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    into its components:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "server_name": "web01.company.com",
+      "server_name_hostname": "web01",
+      "server_name_domain": "company.com",
+      "server_name_domain_type": "FQDN",
+      "server_name_fqdn": "web01.company.com"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URL Hostname Extraction
+
+<ExampleGrid>
+  <CommentCol>
+    Extract hostname from URLs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request_url": "https://api.example.com/v1/users"
+    }
+    ```
+    ```yaml
+    - fqdn:
+        field: request_url
+        hostname_field: api_host
+        domain_field: api_domain
+        domain_type_field: host_type
+        fqdn_field: full_hostname
+    ```
+  </CodeCol>
+  <CommentCol>
+    with custom field names:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request_url": "https://api.example.com/v1/users",
+      "api_host": "api",
+      "api_domain": "example.com",
+      "host_type": "FQDN",
+      "full_hostname": "api.example.com"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Windows NetBIOS Format
+
+<ExampleGrid>
+  <CommentCol>
+    Parse Windows domain\hostname format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "computer_name": "CONTOSO\\WEB01"
+    }
+    ```
+    ```yaml
+    - fqdn:
+        field: computer_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    recognizing the Windows format:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "computer_name": "CONTOSO\\WEB01",
+      "computer_name_hostname": "WEB01",
+      "computer_name_domain": "CONTOSO",
+      "computer_name_domain_type": "Windows",
+      "computer_name_fqdn": "CONTOSO\\WEB01"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Simple Hostname
+
+<ExampleGrid>
+  <CommentCol>
+    Handle simple hostnames without domains...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "host": "localhost"
+    }
+    ```
+    ```yaml
+    - fqdn:
+        field: host
+    ```
+  </CodeCol>
+  <CommentCol>
+    with empty domain information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "host": "localhost",
+      "host_hostname": "localhost",
+      "host_domain": "",
+      "host_domain_type": "",
+      "host_fqdn": ""
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Subdomain Parsing
+
+<ExampleGrid>
+  <CommentCol>
+    Parse complex subdomains...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service_endpoint": "user-service.staging.internal.company.com"
+    }
+    ```
+    ```yaml
+    - fqdn:
+        field: service_endpoint
+        hostname_field: service_name
+        domain_field: service_domain
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracting the service name and full domain:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service_endpoint": "user-service.staging.internal.company.com",
+      "service_name": "user-service",
+      "service_domain": "staging.internal.company.com",
+      "service_endpoint_domain_type": "FQDN",
+      "service_endpoint_fqdn": "user-service.staging.internal.company.com"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URL with Path and Parameters
+
+<ExampleGrid>
+  <CommentCol>
+    URLs with paths and parameters...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "full_url": "http://shop.example.com/products?category=electronics&page=2"
+    }
+    ```
+    ```yaml
+    - fqdn:
+        field: full_url
+    ```
+  </CodeCol>
+  <CommentCol>
+    are parsed to extract only the hostname:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "full_url": "http://shop.example.com/products?category=electronics&page=2",
+      "full_url_hostname": "shop",
+      "full_url_domain": "example.com",
+      "full_url_domain_type": "FQDN",
+      "full_url_fqdn": "shop.example.com"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### IP Address Handling
+
+<ExampleGrid>
+  <CommentCol>
+    IP addresses are treated as simple hostnames...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "server_ip": "192.168.1.100"
+    }
+    ```
+    ```yaml
+    - fqdn:
+        field: server_ip
+    ```
+  </CodeCol>
+  <CommentCol>
+    without domain information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "server_ip": "192.168.1.100",
+      "server_ip_hostname": "192.168.1.100",
+      "server_ip_domain": "",
+      "server_ip_domain_type": "",
+      "server_ip_fqdn": ""
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Case Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Mixed case URLs are handled correctly...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "website": "HTTPS://WWW.EXAMPLE.COM/Home"
+    }
+    ```
+    ```yaml
+    - fqdn:
+        field: website
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserving original hostname case:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "website": "HTTPS://WWW.EXAMPLE.COM/Home",
+      "website_hostname": "WWW",
+      "website_domain": "EXAMPLE.COM",
+      "website_domain_type": "FQDN",
+      "website_fqdn": "WWW.EXAMPLE.COM"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Empty and Invalid Input
+
+<ExampleGrid>
+  <CommentCol>
+    Empty or invalid input...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "empty_host": "",
+      "null_host": null
+    }
+    ```
+    ```yaml
+    - fqdn:
+        field: empty_host
+    - fqdn:
+        field: null_host
+        ignore_missing: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    results in empty component fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "empty_host": "",
+      "null_host": null,
+      "empty_host_hostname": "",
+      "empty_host_domain": "",
+      "empty_host_domain_type": "",
+      "empty_host_fqdn": "",
+      "null_host_hostname": "",
+      "null_host_domain": "",
+      "null_host_domain_type": "",
+      "null_host_fqdn": ""
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
