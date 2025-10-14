@@ -362,9 +362,7 @@ const sidebars: SidebarsConfig = {
             "appendix/field-formats/cim",
             "appendix/field-formats/csl",
             "appendix/field-formats/ecs",
-            "appendix/field-formats/estreamer",
             "appendix/field-formats/leef",
-            "appendix/field-formats/netflow",
           ],
         },
         {
@@ -375,9 +373,11 @@ const sidebars: SidebarsConfig = {
             description: "Protocol specifications"
           },
           items: [
+            "appendix/protocols/estreamer",
             "appendix/protocols/ipfix",
             "appendix/protocols/kafka",
             "appendix/protocols/nats",
+            "appendix/protocols/netflow",
             "appendix/protocols/rabbitmq",
             "appendix/protocols/redis",
             "appendix/protocols/sflow",
