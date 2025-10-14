@@ -249,7 +249,7 @@ const sidebars: SidebarsConfig = {
                 "configuration/pipelines/processors/pascal-case",
                 "configuration/pipelines/processors/pipeline",
                 "configuration/pipelines/processors/power",
-                "configuration/pipelines/processors/print",,
+                "configuration/pipelines/processors/print",
                 "configuration/pipelines/processors/redact",
                 "configuration/pipelines/processors/recover",
                 "configuration/pipelines/processors/regex-extract",
