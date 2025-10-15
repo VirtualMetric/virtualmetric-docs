@@ -125,6 +125,7 @@ const sidebars: SidebarsConfig = {
             "configuration/targets/event-hubs",
             "configuration/targets/file",
             "configuration/targets/microsoft-sentinel",
+            "configuration/targets/microsoft-sentinel-data-lake",
             "configuration/targets/splunk-hec",
             "configuration/targets/syslog",
           ],
