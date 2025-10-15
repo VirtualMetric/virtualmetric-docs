@@ -45,75 +45,76 @@ targets:
 
 ### AWS Credentials
 
-| Parameter | Type | Required | Default | Description |
+|Parameter|Type|Required|Default|Description|
 |---|---|---|---|---|
-| **key** | string | Y* | - | AWS access key ID for authentication |
-| **secret** | string | Y* | - | AWS secret access key for authentication |
-| **session** | string | N | - | Optional session token for temporary credentials |
-| **region** | string | Y | - | AWS region (e.g., `us-east-1`, `eu-west-1`) |
-| **endpoint** | string | N | - | Custom S3-compatible endpoint URL (for non-AWS S3 services) |
+|`key`|string|Y*|-|AWS access key ID for authentication|
+|`secret`|string|Y*|-|AWS secret access key for authentication|
+|`session`|string|N|-|Optional session token for temporary credentials|
+|`region`|string|Y|-|AWS region (e.g., `us-east-1`, `eu-west-1`)|
+|`endpoint`|string|N|-|Custom S3-compatible endpoint URL (for non-AWS S3 services)|
 
-\* = Conditionally required. AWS credentials (**key** and **secret**) are required unless using IAM role-based authentication on AWS infrastructure.
+\* = Conditionally required. AWS credentials (`key` and `secret`) are required unless using IAM role-based authentication on AWS infrastructure.
 
 ### Connection
 
-| Parameter | Type | Required | Default | Description |
+|Parameter|Type|Required|Default|Description|
 |---|---|---|---|---|
-| **name** | string | Y | - | Unique identifier for the target |
-| **type** | string | Y | `awss3` | Target type identifier (must be `awss3`) |
-| **part_size** | integer | N | `5242880` | Multipart upload part size in bytes (minimum 5MB) |
+|`name`|string|Y|-|Unique identifier for the target|
+|`type`|string|Y|`awss3`|Target type identifier (must be `awss3`)|
+|`part_size`|integer|N|`5242880`|Multipart upload part size in bytes (minimum 5MB)|
 
 ### Files
 
-| Parameter | Type | Required | Default | Description |
+|Parameter|Type|Required|Default|Description|
 |---|---|---|---|---|
-| **buckets** | array | Y | - | Array of bucket configurations for file distribution |
-| **buckets.bucket** | string | Y | - | S3 bucket name |
-| **buckets.name** | string | Y | - | File name template (supports variables: `{date}`, `{time}`, `{unix}`, `{tag}`) |
-| **buckets.format** | string | Y | - | Output format: `json`, `multijson`, `avro`, `parquet` |
-| **buckets.compression** | string | N | - | Compression algorithm: `gzip`, `snappy`, `deflate` |
-| **buckets.extension** | string | N | - | File extension override (defaults to format-specific extension) |
-| **buckets.schema** | string | N* | - | Schema definition file path (required for Avro and Parquet formats) |
-| **buckets.size** | integer | N | `10485760` | Maximum file size in bytes before rotation (10MB default) |
-| **buckets.batch** | integer | N | `1000` | Maximum number of events per file |
+|`buckets`|array|Y|-|Array of bucket configurations for file distribution|
+|`buckets.bucket`|string|Y|-|S3 bucket name|
+|`buckets.name`|string|Y|-|File name template (supports variables: `{date}`, `{time}`, `{unix}`, `{tag}`)|
+|`buckets.format`|string|Y|-|Output format: `json`, `multijson`, `avro`, `parquet`|
+|`buckets.compression`|string|N|-|Compression algorithm: `gzip`, `snappy`, `deflate`|
+|`buckets.extension`|string|N|-|File extension override (defaults to format-specific extension)|
+|`buckets.schema`|string|N*|-|Schema definition file path (required for Avro and Parquet formats)|
+|`buckets.size`|integer|N|`10485760`|Maximum file size in bytes before rotation (10MB default)|
+|`buckets.batch`|integer|N|`1000`|Maximum number of events per file|
 
-\* = Conditionally required. **schema** field is required when **format** is set to `avro` or `parquet`.
+\* = Conditionally required. `schema` field is required when `format` is set to `avro` or `parquet`.
 
 ### AWS Security Lake
 
-| Parameter | Type | Required | Default | Description |
+|Parameter|Type|Required|Default|Description|
 |---|---|---|---|---|
-| **source** | string | N* | - | Security Lake source identifier |
-| **account** | string | N* | - | AWS account ID for Security Lake |
+|`source`|string|N*|-|Security Lake source identifier|
+|`account`|string|N*|-|AWS account ID for Security Lake|
 
-\* = Conditionally required. When **source**, **region**, and **account** are all provided, files use Security Lake path structure: `ext/{source}/region={region}/accountId={account}/eventDay={date}/{file}`
+\* = Conditionally required. When `source`, `region`, and `account` are all provided, files use Security Lake path structure: `ext/{source}/region={region}/accountId={account}/eventDay={date}/{file}`
 
 ### Azure Function App Integration
 
-| Parameter | Type | Required | Default | Description |
+|Parameter|Type|Required|Default|Description|
 |---|---|---|---|---|
-| **function.url** | string | N | - | Azure Function App endpoint URL for indirect uploads |
-| **function.method** | string | N | `POST` | HTTP method for function app requests |
+|`function.url`|string|N|-|Azure Function App endpoint URL for indirect uploads|
+|`function.method`|string|N|`POST`|HTTP method for function app requests|
 
 ### Debug
 
-| Parameter | Type | Required | Default | Description |
+|Parameter|Type|Required|Default|Description|
 |---|---|---|---|---|
-| **description** | string | N | - | Optional description of target purpose |
-| **tag** | string | N | - | Target identifier tag for routing and filtering |
-| **status** | boolean | N | `true` | Enable or disable target processing |
+|`description`|string|N|-|Optional description of target purpose|
+|`tag`|string|N|-|Target identifier tag for routing and filtering|
+|`status`|boolean|N|`true`|Enable or disable target processing|
 
 ## Details
 
-AWS S3 target provides enterprise-grade cloud storage integration with comprehensive file format support and AWS Security Lake compatibility.
+The target provides enterprise-grade cloud storage integration with comprehensive file format support and AWS Security Lake compatibility.
 
 **Authentication Methods**: Supports static credentials (access key and secret key) with optional session tokens for temporary credentials. When deployed on AWS infrastructure, can leverage IAM role-based authentication without explicit credentials.
 
 **File Formats**: Supports four output formats with distinct use cases:
-- **json**: Single JSON object per file (human-readable, suitable for small datasets)
-- **multijson**: Newline-delimited JSON objects (streaming format, efficient for large datasets)
-- **avro**: Schema-based binary serialization (compact, schema evolution support)
-- **parquet**: Columnar storage format (optimized for analytics, compression-friendly)
+
+- `json`: Single JSON object per file (human-readable, suitable for small datasets)
+- `multijson`: Newline-delimited JSON objects (streaming format, efficient for large datasets)
+- `avro`: Schema-based binary serialization (compact, schema evolution support)
+- `parquet`: Columnar storage format (optimized for analytics, compression-friendly)
 
 **Compression Options**: All formats support optional compression (`gzip`, `snappy`, `deflate`) to reduce storage costs and transfer times. Compression is applied before upload.
 
