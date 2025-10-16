@@ -1,0 +1,256 @@
+---
+description: Extracts key-values pairs
+sidebar_custom_props: 
+  customIcon: 🧩
+  customCategory: Parse
+---
+
+# KV
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Parses strings to extract key-value pairs into structured fields.
+
+## Schema
+
+```yaml {2-4}
+- kv:
+    field: <ident>
+    field_split: <regex>
+    value_split: <regex>
+    description: <text>
+    exclude_keys: <string[]>
+    if: <script>
+    ignore_casting: <boolean>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    include_keys: <string[]>
+    lowercase_keys: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    prefix: <string>
+    strip_brackets: <boolean>
+    tag: <string>
+    target_field: <ident>
+    trim_key: <char[]>
+    trim_value: <char[]>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing key-value pairs|
+|`field_split`|Y|-|Delimiter between key-value pairs|
+|`value_split`|Y|-|Delimiter between keys and values|
+|`description`|N|-|Documentation note|
+|`exclude_keys`|N|-|Keys to exclude from output|
+|`if`|N|-|Conditional expression|
+|`ignore_casting`|N|`false`|Disable automatic type conversion|
+|`ignore_failure`|N|`false`|Skip processing errors|
+|`ignore_missing`|N|`false`|Skip if input field missing|
+|`include_keys`|N|-|Only include specified keys|
+|`lowercase_keys`|N|`false`|Convert all keys to lowercase|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`prefix`|N|-|Prefix for extracted keys|
+|`strip_brackets`|N|`false`|Remove brackets from values|
+|`tag`|N|-|Identifier for logging|
+|`target_field`|N|-|Output field for parsed data|
+|`trim_key`|N|-|Characters to trim from keys|
+|`trim_value`|N|-|Characters to trim from values|
+
+## Details
+
+The processor supports various delimiter patterns, key filtering, value formatting, and automatic type casting.
+
+:::note
+Whitespace around field and value delimiters is automatically trimmed.
+:::
+
+:::warning
+Malformed inputs may result in missing entries or incomplete parsing.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Parsing semicolon-separated pairs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "key1=value1;key2=value2;key3=value3"
+    }
+    ```
+    ```yaml
+    - kv:
+        field: message
+        field_split: ";"
+        value_split: "="
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts the structured fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "key1=value1;key2=value2;key3=value3",
+      "key1": "value1",
+      "key2": "value2",
+      "key3": "value3"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keep Original
+
+<ExampleGrid>
+  <CommentCol>
+    Storing the parsed values in a separate object...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "host=localhost:8080, status=200, method=GET"
+    }
+    ```
+    ```yaml
+    - kv:
+        field: data
+        field_split: ","
+        value_split: "="
+        target_field: request_info
+    ```
+  </CodeCol>
+  <CommentCol>
+    groups related fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "host=localhost:8080, status=200, method=GET",
+      "request_info": {
+        "host": "localhost:8080",
+        "status": "200",
+        "method": "GET"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keys
+
+<ExampleGrid>
+  <CommentCol>
+    Including only specific keys...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log": "user=admin role=sudo group=wheel status=active"
+    }
+    ```
+    ```yaml
+    - kv:
+        field: log
+        field_split: " "
+        value_split: "="
+        include_keys: ["user", "role"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts only those records:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log": "user=admin role=sudo group=wheel status=active",
+      "user": "admin",
+      "role": "sudo"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Cleaning up and formatting values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "name=[John], age='25', city=<New York>"
+    }
+    ```
+    ```yaml
+    - kv:
+        field: data
+        field_split: ","
+        value_split: "="
+        strip_brackets: true
+        trim_value: "'"
+        lowercase_keys: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    standardizes the output:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "name=[John], age='25', city=<New York>",
+      "name": "John",
+      "age": "25",
+      "city": "New York"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Prefixing
+
+<ExampleGrid>
+  <CommentCol>
+    Adding a prefix to the extracted keys...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": "cpu=80,mem=60,disk=45"
+    }
+    ```
+    ```yaml
+    - kv:
+        field: metrics
+        field_split: ","
+        value_split: "="
+        prefix: "system_"
+    ```
+  </CodeCol>
+  <CommentCol>
+    places the fields in a namespace:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metrics": "cpu=80,mem=60,disk=45",
+      "system_cpu": "80",
+      "system_mem": "60",
+      "system_disk": "45"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
