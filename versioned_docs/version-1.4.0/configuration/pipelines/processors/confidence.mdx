@@ -1,0 +1,289 @@
+---
+description: Calculates confidence scores from scoring data with multiple normalization methods
+sidebar_custom_props:
+  customCategory: Analytics
+  customIcon: 📊
+---
+
+# Confidence
+
+<span className="theme-doc-version-badge badge badge--primary">Analytics</span><span className="theme-doc-version-badge badge badge--secondary">Scoring</span>
+
+Calculates confidence scores from scoring data using various normalization methods and threshold filtering.
+
+## Schema
+
+```yaml
+- confidence:
+    score_field: <ident>
+    output_field: <ident>
+    min_confidence: <number>
+    min_raw_confidence: <number>
+    top_n: <number>
+    normalization_method: <string>
+    softmax_temperature: <number>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`score_field`|N|`_score`|Field containing scoring data|
+|`output_field`|N|`_confidence`|Target field for confidence results|
+|`min_confidence`|N|`0.0`|Minimum confidence threshold (0-1)|
+|`min_raw_confidence`|N|`0.0`|Minimum raw confidence to include (0-1)|
+|`top_n`|N|`3`|Number of top alternatives to include|
+|`normalization_method`|N|`softmax`|Normalization method to use|
+|`softmax_temperature`|N|`1.0`|Temperature for softmax normalization|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run processor|
+|`ignore_failure`|N|`false`|Continue if processor fails|
+|`ignore_missing`|N|`false`|Continue if score field doesn't exist|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`tag`|N|-|Processor identifier|
+
+## Details
+
+The processor employs two-stage threshold filtering where `min_raw_confidence` filters candidates before normalization while `min_confidence` filters after normalization is applied. Raw confidence is calculated as `score / max_possible_score` to enable fair comparison across different scoring scales, with zero `max_possible_score` values handled gracefully by setting raw_confidence to 0.0.
+
+Results are consistently sorted by raw confidence to ensure predictable ranking, and the processor always includes top N candidates as alternatives even if the main detection fails to meet confidence thresholds. Comprehensive error handling returns structured error information when no candidates meet the specified thresholds.
+
+This processor is particularly valuable for log source detection, identifying log formats with statistical confidence scoring that helps distinguish between similar formats. It excels at threat classification by assigning confidence levels to security threats, enabling more nuanced threat response strategies.
+
+The processor supports vendor identification by analyzing log patterns to determine equipment vendors with measurable confidence levels. It's also effective for data quality assessment, providing confidence metrics that quantify the reliability of data classifications.
+
+The processor enables sophisticated pattern recognition by classifying patterns with statistical confidence measures and supports multi-class classification scenarios by converting raw scoring data into actionable classification results with associated confidence levels.
+
+## Normalization Methods
+
+### softmax
+Creates probability distribution using exponential function. Best for balanced multi-class confidence.
+
+### linear
+Min-max scaling to [0,1] range. Preserves relative differences but doesn't create probability distribution.
+
+### winner_takes_more
+Amplifies winner's advantage while maintaining sum=1. Good for emphasizing clear winners.
+
+### raw_confidence
+Uses proportional raw confidence values with sum=1. Most direct representation of scoring ratios.
+
+## Expected Input Format
+
+The processor expects scoring data in this format:
+
+```json
+{
+  "_score": {
+    "identifier1": {
+      "score": 85,
+      "max_possible_score": 100,
+      "matched_rules": ["rule1", "rule2"]
+    },
+    "identifier2": {
+      "score": 45,
+      "max_possible_score": 100,
+      "matched_rules": ["rule3"]
+    }
+  }
+}
+```
+
+## Examples
+
+### Basic Usage
+
+<ExampleGrid>
+  <CommentCol>
+    Converting scoring data to confidence levels with threshold filtering...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "_score": {
+        "vendor_a": {
+          "score": 90,
+          "max_possible_score": 100,
+          "matched_rules": ["signature_match", "header_format"]
+        },
+        "vendor_b": {
+          "score": 30,
+          "max_possible_score": 100,
+          "matched_rules": ["partial_match"]
+        }
+      }
+    }
+    ```
+    ```yaml
+    - confidence:
+        min_confidence: 0.6
+        top_n: 2
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates confidence analysis with alternatives:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "_score": { /* original scores */ },
+      "_confidence": {
+        "identifier": "vendor_a",
+        "confidence": 0.85,
+        "raw_confidence": 0.90,
+        "score": 90,
+        "max_possible_score": 100,
+        "matched_rules": ["signature_match", "header_format"],
+        "status": "detected",
+        "method": "softmax",
+        "alternatives": [
+          {
+            "identifier": "vendor_b",
+            "confidence": 0.15,
+            "raw_confidence": 0.30,
+            "score": 30
+          }
+        ]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Threat Intelligence
+
+<ExampleGrid>
+  <CommentCol>
+    Using custom fields and winner_takes_more normalization for threat analysis...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "threat_scores": {
+        "malware": {
+          "score": 80,
+          "max_possible_score": 100,
+          "matched_rules": ["suspicious_url", "known_domain"]
+        },
+        "phishing": {
+          "score": 60,
+          "max_possible_score": 100,
+          "matched_rules": ["email_pattern"]
+        },
+        "benign": {
+          "score": 20,
+          "max_possible_score": 100,
+          "matched_rules": []
+        }
+      }
+    }
+    ```
+    ```yaml
+    - confidence:
+        score_field: threat_scores
+        output_field: threat_confidence
+        min_confidence: 0.7
+        min_raw_confidence: 0.4
+        normalization_method: winner_takes_more
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Linear Rankings
+
+<ExampleGrid>
+  <CommentCol>
+    Using linear normalization to preserve relative score differences...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - confidence:
+        normalization_method: linear
+        top_n: 5
+        min_raw_confidence: 0.1
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom Softmax
+
+<ExampleGrid>
+  <CommentCol>
+    Adjusting softmax temperature for different distribution characteristics...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - confidence:
+        normalization_method: softmax
+        softmax_temperature: 2.0
+        min_confidence: 0.5
+    ```
+  </CodeCol>
+  <CommentCol>
+    **Higher temperature (2.0):** More balanced distribution<br/>
+    **Lower temperature (0.5):** More extreme distribution favoring winner
+  </CommentCol>
+</ExampleGrid>
+
+### Source Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Using raw_confidence method for log source identification...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source_scores": {
+        "apache": {
+          "score": 95,
+          "max_possible_score": 100,
+          "matched_rules": ["access_log_format", "timestamp_format", "status_codes"]
+        },
+        "nginx": {
+          "score": 40,
+          "max_possible_score": 100,
+          "matched_rules": ["timestamp_format"]
+        },
+        "iis": {
+          "score": 15,
+          "max_possible_score": 100,
+          "matched_rules": []
+        }
+      }
+    }
+    ```
+    ```yaml
+    - confidence:
+        score_field: source_scores
+        output_field: log_source
+        min_confidence: 0.8
+        normalization_method: raw_confidence
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Output Structure
+
+The confidence processor outputs a structured result containing:
+
+- **identifier**: Best matching identifier (empty if below threshold)
+- **confidence**: Normalized confidence score (0-1)
+- **raw_confidence**: Raw score / max_possible_score ratio
+- **score**: Original numeric score
+- **max_possible_score**: Maximum possible score for this identifier
+- **matched_rules**: Array of matched rule descriptions
+- **status**: `"detected"` or `"undetected"`
+- **method**: Normalization method used
+- **message**: Error/status message (if undetected)
+- **alternatives**: Array of alternative candidates with their scores

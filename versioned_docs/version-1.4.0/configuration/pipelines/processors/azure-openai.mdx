@@ -1,0 +1,227 @@
+---
+description: Processes content with Azure OpenAI API
+sidebar_custom_props: 
+  customIcon: ⚡
+  customCategory: AI
+---
+
+# Azure OpenAI
+
+<span className="theme-doc-version-badge badge badge--primary">Enrichment</span><span className="theme-doc-version-badge badge badge--secondary">AI Powered</span>
+
+## Synopsis
+
+Enriches events by sending field content to Azure OpenAI API for analysis and storing the response.
+
+## Schema
+
+```yaml {2-5}
+- azureai:
+    field: <ident>
+    api_key: <string>
+    resource_name: <string>
+    deployment_name: <string>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    temperature: <number>
+    max_tokens: <number>
+    api_version: <string>
+    developer_msg: <string>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|`message`|Field containing content to analyze|
+|`api_key`|Y|-|Azure OpenAI API key|
+|`resource_name`|Y|-|Azure OpenAI resource name|
+|`deployment_name`|Y|-|Azure model deployment name|
+|`target_field`|N|`field`|Field to store the API response|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if API call fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`temperature`|N|`0.7`|Response randomness (0-1)|
+|`max_tokens`|N|`1000`|Maximum response length|
+|`api_version`|N|`2024-02-15-preview`|Azure OpenAI API version|
+|`developer_msg`|N|Default system message|System message for context|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor is useful for automated analysis, context enrichment, and intelligent processing of log data. It uses **Azure OpenAI** API to analyze field content, and supports system context messages for customized analysis, temperature control for response variation, and token limits for response length management.
+
+API responses are cached to improve performance.
+
+:::warning[caution]
+API calls add latency to event processing.
+:::
+
+Azure deployment integration is provided.
+
+:::warning
+Resource name and deployment name must match your Azure setup. Invalid resource or deployment names will cause processing errors. Make sure your Azure OpenAI resource has the required model deployments
+:::
+
+Developer messages help guide AI's analysis, and lower temperature values produce more focused responses. 
+
+:::note
+Consider rate limits and costs for high-volume processing, as long token limits control response length and costs and input texts may hit token limits.
+:::
+
+:::warning
+API keys must be securely stored and accessed.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Analyzing a Cisco device log...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Interface GigabitEthernet0/1 is down"
+    }
+    ```
+    ```yaml
+    - azureai:
+        field: message
+        target_field: analysis
+        api_key: "${AZURE_OPENAI_API_KEY}"
+        resource_name: "myopenai-resource"
+        deployment_name: "gpt4-deployment"
+        developer_msg: "You are an expert in Cisco networking. Analyze this log message."
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds information to the event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Interface GigabitEthernet0/1 is down",
+      "analysis": "Network interface GigabitEthernet0/1 has lost connectivity. This could indicate a physical connection issue, port configuration problem, or upstream network failure. Immediate investigation recommended."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Precision
+
+<ExampleGrid>
+  <CommentCol>
+    Fine-tuning analysis parameters...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_msg": "Authentication failed for user admin"
+    }
+    ```
+    ```yaml
+    - azureai:
+        field: error_msg
+        target_field: security_analysis
+        api_key: "${AZURE_OPENAI_API_KEY}"
+        resource_name: "myopenai-resource"
+        deployment_name: "gpt4-deployment"
+        temperature: 0.2
+        max_tokens: 100
+        developer_msg: "You are a security analyst. Provide a brief analysis of this error."
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces more focused security insights:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_msg": "Authentication failed for user admin",
+      "security_analysis": "Potential security incident: Failed authentication attempt for privileged 'admin' account. Verify if part of a brute force attempt. Check source IP and implement account lockout if needed."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Analyzing only critical errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Critical: Database corruption detected",
+      "level": "critical"
+    }
+    ```
+    ```yaml
+    - azureai:
+        if: "ctx.level == 'critical'"
+        field: message
+        target_field: ai_insight
+        api_key: "${AZURE_OPENAI_API_KEY}"
+        resource_name: "myopenai-resource"
+        deployment_name: "gpt4-deployment"
+    ```
+  </CodeCol>
+  <CommentCol>
+    is preferable due to level:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Critical: Database corruption detected",
+      "level": "critical",
+      "ai_insight": "Severe database issue detected: Corruption may lead to data loss or system instability. Immediate database recovery procedures should be initiated. Consider failover to backup if available."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom API
+
+<ExampleGrid>
+  <CommentCol>
+    Using a specific API version...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Error code 0x8000ffff"
+    }
+    processors:
+      - azureai:
+          field: message
+          target_field: analysis
+          api_key: "${AZURE_OPENAI_API_KEY}"
+          resource_name: "myopenai-resource"
+          deployment_name: "gpt4-deployment"
+          api_version: "2024-02-15-preview"  <CommentCol>
+    produces results specific to that version:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Error code 0x8000ffff",
+      "analysis": "Generic Windows system error (E_UNEXPECTED). This indicates an unexpected failure in the system. Check system logs for more details and recent changes that might have caused this error."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
