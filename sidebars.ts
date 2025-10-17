@@ -118,6 +118,7 @@ const sidebars: SidebarsConfig = {
             "configuration/targets/aws-s3",
             "configuration/targets/azure-blob-storage",
             "configuration/targets/azure-data-explorer",
+            "configuration/targets/bigquery",
             "configuration/targets/clickhouse",
             "configuration/targets/console",
             "configuration/targets/discard",
