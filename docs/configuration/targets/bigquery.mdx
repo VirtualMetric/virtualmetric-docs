@@ -1,0 +1,278 @@
+# BigQuery
+
+<span className="theme-doc-version-badge badge badge--secondary">Google Cloud</span><span className="theme-doc-version-badge badge badge--secondary">Analytics</span>
+
+## Synopsis
+
+Creates a BigQuery target that streams data directly into BigQuery tables using the streaming insert API. Supports multiple tables, custom schemas, and field normalization.
+
+## Schema
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: bigquery
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    project_id: <string>
+    dataset_id: <string>
+    credentials_json: <string>
+    table: <string>
+    batch_size: <numeric>
+    timeout: <numeric>
+    drop_unknown_table_events: <boolean>
+    ignore_unknown_values: <boolean>
+    skip_invalid_rows: <boolean>
+    max_bad_records: <numeric>
+    field_format: <string>
+    tables:
+      - name: <string>
+        schema: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y|-|Target name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `bigquery`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Google Cloud
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`project_id`|Y|-|Google Cloud project ID|
+|`dataset_id`|Y|-|BigQuery dataset ID|
+|`credentials_json`|N|-|Service account credentials JSON (uses default credentials if not provided)|
+|`table`|N|-|Default table name|
+
+### Streaming Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`1000`|Maximum number of rows per batch|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`drop_unknown_table_events`|N|`true`|Ignore events for undefined tables|
+|`ignore_unknown_values`|N|`false`|Accept rows with values that don't match the schema|
+|`skip_invalid_rows`|N|`false`|Skip rows with errors and insert valid rows|
+|`max_bad_records`|N|`0`|Maximum number of bad records allowed (0 = no limit)|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+### Multiple Tables
+
+You can define multiple tables to stream data into:
+```yaml
+targets:
+  - name: bigquery_multiple_tables
+    type: bigquery
+    properties:
+      tables:
+        - name: "security_logs"
+          schema: "timestamp:TIMESTAMP,message:STRING,severity:STRING"
+        - name: "system_logs"
+          schema: "timestamp:TIMESTAMP,message:STRING,level:STRING"
+```
+
+### Schema Format
+
+The schema format follows the pattern: `field1:type1,field2:type2,...`
+
+Supported types:
+- `STRING` - Variable-length character data
+- `INTEGER` or `INT64` - 64-bit integer
+- `FLOAT` or `FLOAT64` - 64-bit floating point
+- `BOOLEAN` or `BOOL` - True or false
+- `TIMESTAMP` - Absolute point in time
+- `DATE` - Calendar date
+- `TIME` - Time of day
+- `DATETIME` - Date and time
+- `BYTES` - Binary data
+- `NUMERIC` - Exact numeric value
+- `BIGNUMERIC` - Larger numeric value
+- `GEOGRAPHY` - Geographic data
+- `JSON` - JSON data
+- `RECORD` or `STRUCT` - Nested structure
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to BigQuery (testing)|
+
+## Details
+
+The BigQuery target uses streaming inserts to send data in near real-time. Data is batched locally until `batch_size` is reached or when an explicit flush is triggered during finalization.
+
+When using the `SystemS3` field in your logs, the value will be used to route the message to the appropriate table. If no table is specified, the default table (if configured) will be used.
+
+The target automatically parses JSON messages. If the message is not valid JSON, it creates a structured event with `message` and `timestamp` fields.
+
+### Authentication
+
+The target supports two authentication methods:
+
+1. **Service Account JSON**: Provide credentials directly in the configuration using `credentials_json`
+2. **Default Credentials**: If `credentials_json` is not provided, the target uses Google Cloud's default credential chain (environment variables, gcloud CLI, GCE metadata service)
+
+### Error Handling
+
+The target provides flexible error handling:
+
+- `ignore_unknown_values`: Allows inserting rows with extra fields not in the schema
+- `skip_invalid_rows`: Continues inserting valid rows even if some rows fail
+- `max_bad_records`: Limits the number of failed rows before returning an error
+
+When `skip_invalid_rows` is enabled and errors occur, the target logs individual row errors when debug mode is enabled.
+
+:::warning
+Streaming inserts have cost implications. Consider batch loading for high-volume historical data.
+:::
+
+:::note
+BigQuery streaming inserts have quotas and limits. Ensure your project has adequate quota for your ingestion rate.
+:::
+
+## Examples
+
+### Basic
+
+Minimum configuration using default credentials:
+```yaml
+targets:
+  - name: basic_bigquery
+    type: bigquery
+    properties:
+      project_id: "my-project"
+      dataset_id: "logs"
+      table: "system_events"
+```
+
+### With Credentials
+
+Configuration with explicit service account credentials:
+```yaml
+targets:
+  - name: auth_bigquery
+    type: bigquery
+    properties:
+      project_id: "my-project"
+      dataset_id: "logs"
+      table: "application_logs"
+      credentials_json: |
+        {
+          "type": "service_account",
+          "project_id": "my-project",
+          "private_key_id": "key-id",
+          "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+          "client_email": "service-account@my-project.iam.gserviceaccount.com",
+          "client_id": "123456789",
+          "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+          "token_uri": "https://oauth2.googleapis.com/token"
+        }
+```
+
+### Multiple Tables
+
+Configuration with multiple target tables and schemas:
+```yaml
+targets:
+  - name: multi_table_bigquery
+    type: bigquery
+    properties:
+      project_id: "my-project"
+      dataset_id: "security_data"
+      batch_size: 500
+      tables:
+        - name: "firewall_events"
+          schema: "timestamp:TIMESTAMP,src_ip:STRING,dst_ip:STRING,action:STRING,bytes:INTEGER"
+        - name: "authentication_events"
+          schema: "timestamp:TIMESTAMP,username:STRING,success:BOOLEAN,source:STRING"
+        - name: "dns_queries"
+          schema: "timestamp:TIMESTAMP,query:STRING,response:STRING,client_ip:STRING"
+```
+
+### High-Volume
+
+Configuration optimized for high-volume streaming:
+```yaml
+targets:
+  - name: highvol_bigquery
+    type: bigquery
+    properties:
+      project_id: "my-project"
+      dataset_id: "metrics"
+      table: "performance_data"
+      batch_size: 5000
+      timeout: 60
+      skip_invalid_rows: true
+      max_bad_records: 100
+```
+
+### With Error Handling
+
+Configuration with flexible error handling:
+```yaml
+targets:
+  - name: flexible_bigquery
+    type: bigquery
+    properties:
+      project_id: "my-project"
+      dataset_id: "logs"
+      table: "app_logs"
+      ignore_unknown_values: true
+      skip_invalid_rows: true
+      max_bad_records: 50
+```
+
+### Normalized
+
+Using field normalization for enhanced compatibility:
+```yaml
+targets:
+  - name: normalized_bigquery
+    type: bigquery
+    properties:
+      project_id: "my-project"
+      dataset_id: "security"
+      table: "normalized_events"
+      field_format: "ecs"
+```
+
+### With Debugging
+
+Configuration with debug options for testing:
+```yaml
+targets:
+  - name: debug_bigquery
+    type: bigquery
+    properties:
+      project_id: "my-project"
+      dataset_id: "logs"
+      table: "test_events"
+      debug:
+        status: true
+        dont_send_logs: true
+```
+
+### Environment Variables
+
+Using environment variables for sensitive data:
+```yaml
+targets:
+  - name: secure_bigquery
+    type: bigquery
+    properties:
+      project_id: "${GCP_PROJECT_ID}"
+      dataset_id: "${BIGQUERY_DATASET}"
+      table: "secure_logs"
+      credentials_json: "${GCP_CREDENTIALS_JSON}"
+```
