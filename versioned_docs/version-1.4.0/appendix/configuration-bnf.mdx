@@ -1,0 +1,63 @@
+---
+pagination_prev: null
+pagination_next: null
+toc: false
+---
+
+# Configuration BNF
+
+All **DataStream** configuration files in YAML format conform to the following syntax:
+
+<TermTable>
+   <TermCol>`comp-decl`</TermCol>
+   <DefCol>`::= <comp-type> ":" <NEWLINE> <INDENT> <comp-def>`</DefCol>
+
+   <TermCol>`comp-type`</TermCol>
+   <DefCol>`::= "devices" | "targets" | "pipelines" | "routes"`</DefCol>
+
+   <TermCol>`comp-def`</TermCol>
+   <DefCol>`::= <id-fld-def> <fld-defs>`</DefCol>
+
+   <TermCol>`id-fld-def`</TermCol>
+   <DefCol>`::= "-" <id> ":" <id>`</DefCol>
+
+   <TermCol>`fld-defs`</TermCol>
+   <DefCol>`::= <fld-def> [<NEWLINE> <INDENT> <fld-def>]*`</DefCol>
+
+   <TermCol>`fld-def`</TermCol>
+   <DefCol>`::= <fld-name> ":" <fld-vals>`</DefCol>
+
+   <TermCol>`fld-vals`</TermCol>
+   <DefCol>`::= <fld-val> | <inline-list> | <block-list>`</DefCol>
+   
+   <TermCol>`inline-list`</TermCol>
+   <DefCol>`::= "[" <fld-val> ("," <fld-val>)* "]"`</DefCol>
+
+   <TermCol>`block-list`</TermCol>
+   <DefCol>`::= (<NEWLINE> <INDENT> "-" <fld-val>)+`</DefCol>
+
+   <TermCol>`fld-val`</TermCol>
+   <DefCol>`::= txt-val | num-val`</DefCol>
+
+   <TermCol>`txt-val`</TermCol>
+   <DefCol>`::= (<txt-char> | <num-char>)+`</DefCol>
+
+   <TermCol>`num-val`</TermCol>
+   <DefCol>`::= ('-' | '+')? <num-char>+`</DefCol>
+
+   <TermCol>`txt-char`</TermCol>
+   <DefCol>`::= 'a' .. 'z' | 'A' .. 'Z' | '_'`</DefCol>
+
+   <TermCol>`num-char`</TermCol>
+   <DefCol>`::= '0' .. '9'`</DefCol>
+
+   <TermCol>`<NEWLINE>`</TermCol>
+   <DefCol>`::= '\n' | "\r\n" `</DefCol>
+
+   <TermCol>`<INDENT>`*</TermCol>
+   <DefCol>`::= '\t' | [' ']{2,} `</DefCol>
+</TermTable>
+
+:::note Indentation Rule
+\* Users may choose tabs or multiple spaces for indentation. However, the pattern _must_ be consistent in all configuration files, and follow the layout given in the code samples found throughout this guide.
+:::

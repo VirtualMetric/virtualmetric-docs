@@ -1,0 +1,362 @@
+---
+description: AWS S3 target for cloud storage integration with file format support and Security Lake compatibility
+sidebar_custom_props:
+  customCategory: "Targets"
+  customIcon: "☁️"
+---
+
+# AWS S3
+
+<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Cloud Storage</span>
+
+## Synopsis
+
+AWS S3 target enables data export to Amazon Simple Storage Service (S3) buckets with support for multiple file formats (JSON, Avro, Parquet), compression options, and AWS Security Lake integration. The target handles multipart uploads for large files and supports both direct S3 uploads and Azure Function App integration for indirect uploads.
+
+## Schema
+
+```yaml {2-6}
+targets:
+  - name: <string>
+    type: awss3
+    key: <string>
+    secret: <string>
+    buckets:
+      - bucket: <string>
+        name: <string>
+        format: <string>
+        compression: <string>
+        extension: <string>
+        schema: <string>
+        size: <integer>
+        batch: <integer>
+    region: <string>
+    endpoint: <string>
+    session: <string>
+    source: <string>
+    account: <string>
+    part_size: <integer>
+    function:
+      url: <string>
+      method: <string>
+```
+
+## Configuration
+
+### AWS Credentials
+
+|Parameter|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`key`|string|Y*|-|AWS access key ID for authentication|
+|`secret`|string|Y*|-|AWS secret access key for authentication|
+|`session`|string|N|-|Optional session token for temporary credentials|
+|`region`|string|Y|-|AWS region (e.g., `us-east-1`, `eu-west-1`)|
+|`endpoint`|string|N|-|Custom S3-compatible endpoint URL (for non-AWS S3 services)|
+
+\* = Conditionally required. AWS credentials (`key` and `secret`) are required unless using IAM role-based authentication on AWS infrastructure.
+
+### Connection
+
+|Parameter|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`name`|string|Y|-|Unique identifier for the target|
+|`type`|string|Y|`awss3`|Target type identifier (must be `awss3`)|
+|`part_size`|integer|N|`5242880`|Multipart upload part size in bytes (minimum 5MB)|
+
+### Files
+
+|Parameter|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`buckets`|array|Y|-|Array of bucket configurations for file distribution|
+|`buckets.bucket`|string|Y|-|S3 bucket name|
+|`buckets.name`|string|Y|-|File name template (supports variables: `{date}`, `{time}`, `{unix}`, `{tag}`)|
+|`buckets.format`|string|Y|-|Output format: `json`, `multijson`, `avro`, `parquet`|
+|`buckets.compression`|string|N|-|Compression algorithm: `gzip`, `snappy`, `deflate`|
+|`buckets.extension`|string|N|-|File extension override (defaults to format-specific extension)|
+|`buckets.schema`|string|N*|-|Schema definition file path (required for Avro and Parquet formats)|
+|`buckets.size`|integer|N|`10485760`|Maximum file size in bytes before rotation (10MB default)|
+|`buckets.batch`|integer|N|`1000`|Maximum number of events per file|
+
+\* = Conditionally required. `schema` field is required when `format` is set to `avro` or `parquet`.
+
+### AWS Security Lake
+
+|Parameter|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`source`|string|N*|-|Security Lake source identifier|
+|`account`|string|N*|-|AWS account ID for Security Lake|
+
+\* = Conditionally required. When `source`, `region`, and `account` are all provided, files use Security Lake path structure: `ext/{source}/region={region}/accountId={account}/eventDay={date}/{file}`
+
+### Azure Function App Integration
+
+|Parameter|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`function.url`|string|N|-|Azure Function App endpoint URL for indirect uploads|
+|`function.method`|string|N|`POST`|HTTP method for function app requests|
+
+### Debug
+
+|Parameter|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`description`|string|N|-|Optional description of target purpose|
+|`tag`|string|N|-|Target identifier tag for routing and filtering|
+|`status`|boolean|N|`true`|Enable or disable target processing|
+
+## Details
+
+The target provides enterprise-grade cloud storage integration with comprehensive file format support and AWS Security Lake compatibility.
+
+**Authentication Methods**: Supports static credentials (access key and secret key) with optional session tokens for temporary credentials. When deployed on AWS infrastructure, can leverage IAM role-based authentication without explicit credentials.
+
+**File Formats**: Supports four output formats with distinct use cases:
+
+- `json`: Single JSON object per file (human-readable, suitable for small datasets)
+- `multijson`: Newline-delimited JSON objects (streaming format, efficient for large datasets)
+- `avro`: Schema-based binary serialization (compact, schema evolution support)
+- `parquet`: Columnar storage format (optimized for analytics, compression-friendly)
+
+**Compression Options**: All formats support optional compression (`gzip`, `snappy`, `deflate`) to reduce storage costs and transfer times. Compression is applied before upload.
+
+**File Management**: Files are rotated based on size (`size` parameter) or event count (`batch` parameter), whichever limit is reached first. Template variables in file names (`{date}`, `{time}`, `{unix}`, `{tag}`) enable dynamic file naming for time-based partitioning.
+
+**Multipart Upload**: Large files automatically use S3 multipart upload protocol with configurable part size (`part_size` parameter). Default 5MB part size balances upload efficiency and memory usage.
+
+**Multiple Buckets**: Single target can write to multiple S3 buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
+
+**AWS Security Lake Integration**: When **source**, **region**, and **account** parameters are configured, files are uploaded using Security Lake path structure: `ext/{source}/region={region}/accountId={account}/eventDay={date}/{file}`. This enables automatic ingestion by AWS Security Lake services.
+
+**Azure Function App Integration**: Optional indirect upload via Azure Function App endpoint. When configured, target sends file data to function app instead of directly to S3, enabling custom processing or authentication workflows.
+
+**Schema Requirements**: Avro and Parquet formats require schema definition files. Schema files must be accessible at the path specified in the `schema` parameter during target initialization.
+
+## Examples
+
+### Basic Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring basic AWS S3 target with JSON output to single bucket...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: aws-s3-logs
+        type: awss3
+        key: AKIAIOSFODNN7EXAMPLE
+        secret: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+        region: us-east-1
+        buckets:
+          - bucket: datastream-logs
+            name: "events-{date}-{time}.json"
+            format: json
+            size: 10485760
+            batch: 1000
+    ```
+  </CodeCol>
+  <CommentCol>
+    Target writes JSON files to datastream-logs bucket with date/time naming...
+  </CommentCol>
+  <CodeCol>
+    ```text
+    S3 path: s3://datastream-logs/events-2024-01-15-103000.json
+    File format: JSON (single object per file)
+    Rotation: 10MB or 1000 events
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Buckets
+
+<ExampleGrid>
+  <CommentCol>
+    Distributing data across multiple S3 buckets with different formats...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: multi-bucket-export
+        type: awss3
+        key: AKIAIOSFODNN7EXAMPLE
+        secret: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+        region: eu-west-1
+        buckets:
+          - bucket: raw-data-archive
+            name: "raw-{date}.json"
+            format: multijson
+            compression: gzip
+            size: 52428800
+            batch: 10000
+          - bucket: analytics-data
+            name: "analytics-{date}.parquet"
+            format: parquet
+            schema: /etc/datastream/schemas/events.parquet
+            compression: snappy
+            size: 104857600
+            batch: 50000
+    ```
+  </CodeCol>
+  <CommentCol>
+    Target writes compressed JSON to raw-data-archive and Parquet to analytics-data...
+  </CommentCol>
+  <CodeCol>
+    ```text
+    Bucket 1: s3://raw-data-archive/raw-2024-01-15.json.gz
+    Format: Newline-delimited JSON, gzip compressed
+
+    Bucket 2: s3://analytics-data/analytics-2024-01-15.parquet
+    Format: Parquet with Snappy compression
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Parquet Format with Schema
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring Parquet output with schema definition for analytics workloads...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: parquet-analytics
+        type: awss3
+        key: AKIAIOSFODNN7EXAMPLE
+        secret: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+        region: us-west-2
+        buckets:
+          - bucket: analytics-lake
+            name: "events/{date}/part-{time}.parquet"
+            format: parquet
+            schema: /etc/datastream/schemas/telemetry.parquet
+            compression: snappy
+            size: 134217728
+            batch: 100000
+    ```
+  </CodeCol>
+  <CommentCol>
+    Target generates Parquet files with date-based partitioning for analytics queries...
+  </CommentCol>
+  <CodeCol>
+    ```text
+    S3 path: s3://analytics-lake/events/2024-01-15/part-103000.parquet
+    Format: Parquet (columnar storage)
+    Compression: Snappy
+    Partition: Date-based directory structure
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### AWS Security Lake Integration
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring target for AWS Security Lake with required path structure...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: security-lake-export
+        type: awss3
+        key: AKIAIOSFODNN7EXAMPLE
+        secret: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+        region: us-east-1
+        source: datastream
+        account: "123456789012"
+        buckets:
+          - bucket: security-lake-bucket
+            name: "events-{unix}.parquet"
+            format: parquet
+            schema: /etc/datastream/schemas/ocsf.parquet
+            compression: gzip
+            size: 104857600
+            batch: 50000
+    ```
+  </CodeCol>
+  <CommentCol>
+    Target uses Security Lake path structure for automatic ingestion...
+  </CommentCol>
+  <CodeCol>
+    ```text
+    S3 path: s3://security-lake-bucket/ext/datastream/region=us-east-1/accountId=123456789012/eventDay=20240115/events-1705318800.parquet
+
+    Path structure enables AWS Security Lake automatic discovery and ingestion.
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Azure Function App Integration
+
+<ExampleGrid>
+  <CommentCol>
+    Routing S3 uploads through Azure Function App for custom processing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: function-app-s3
+        type: awss3
+        key: AKIAIOSFODNN7EXAMPLE
+        secret: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+        region: us-east-1
+        function:
+          url: https://my-function-app.azurewebsites.net/api/s3upload
+          method: POST
+        buckets:
+          - bucket: processed-data
+            name: "processed-{date}.json"
+            format: json
+            size: 10485760
+            batch: 1000
+    ```
+  </CodeCol>
+  <CommentCol>
+    Target sends file data to Azure Function App instead of direct S3 upload...
+  </CommentCol>
+  <CodeCol>
+    ```text
+    Flow: DataStream → Azure Function App → AWS S3
+
+    Function App can perform:
+    - Custom authentication workflows
+    - Data transformation before upload
+    - Additional validation or processing
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### S3-Compatible Storage
+
+<ExampleGrid>
+  <CommentCol>
+    Using custom endpoint for S3-compatible storage services (MinIO, Wasabi, etc.)...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: minio-storage
+        type: awss3
+        key: minioadmin
+        secret: minioadmin
+        region: us-east-1
+        endpoint: https://minio.example.com:9000
+        buckets:
+          - bucket: telemetry-data
+            name: "logs-{date}.json"
+            format: multijson
+            compression: gzip
+            size: 10485760
+            batch: 5000
+    ```
+  </CodeCol>
+  <CommentCol>
+    Target connects to MinIO or other S3-compatible services using custom endpoint...
+  </CommentCol>
+  <CodeCol>
+    ```text
+    Storage: https://minio.example.com:9000/telemetry-data/logs-2024-01-15.json.gz
+
+    Compatible with: MinIO, Wasabi, DigitalOcean Spaces, and other S3-compatible services
+    ```
+  </CodeCol>
+</ExampleGrid>

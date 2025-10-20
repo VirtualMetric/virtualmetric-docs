@@ -1,0 +1,242 @@
+# NATS
+
+<span className="theme-doc-version-badge badge badge--secondary">Push</span><span className="theme-doc-version-badge badge badge--secondary">Pull</span>
+
+## Synopsis
+
+Creates a JetStream consumer that connects to NATS servers and processes messages from specified streams and subjects. Supports authentication, TLS encryption, and multiple workers with automatic message acknowledgment.
+
+## Schema
+
+```yaml {1,2,4}
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: nats
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    username: <string>
+    password: <string>
+    stream: <string>
+    consumer: <string>
+    subject: <string>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+    tls:
+      status: <boolean>
+      cert_name: <string>
+      key_name: <string>
+```
+
+## Configuration
+
+The following fields are used to define the device:
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `nats`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|NATS server address|
+|`port`|Y||NATS server port|
+|`username`|N|-|Authentication username|
+|`password`|N|-|Authentication password|
+|`stream`|Y|`"vmetric"`|JetStream stream name|
+|`consumer`|Y|`"vmetric"`|JetStream consumer name|
+|`subject`|Y||Subject pattern to subscribe to|
+
+### TLS
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y||TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y||TLS private key file path (required if TLS enabled)|
+
+:::note
+The TLS certificate and key files must be placed in the service root directory.
+:::
+
+### Performance
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable multi-worker mode|
+|`workers`|N|`4`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Read buffer size in bytes|
+
+## Key Features
+
+The following are unique features that **Director** offers.
+
+### Multiple Workers
+
+When `reuse` is enabled, the collector uses multiple workers each of which maintains its own NATS consumer. Workers process messages independently, and messages are automatically acknowledged.
+
+:::note
+The worker count will be capped at the number of available CPU cores.
+:::
+
+### Messages
+
+The collector supports a JetStream persistent message store, message acknowledgment and retry, multiple subject subscriptions, and custom message processing pipelines. It also provides security through TLS-encrypted connections and basic authentication.
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic
+
+A basic consumer can be created easily.
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a simple NATS consumer...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 1
+        name: basic_nats
+        type: nats
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          subject: "logs.>"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure
+
+The consumer can connect to secure NATS servers.
+
+<ExampleGrid>
+  <CommentCol>
+    Connecting with authentication and encryption...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 2
+        name: secure_nats
+        type: nats
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          username: "consumer"
+          password: "secret"
+          stream: "LOGS"
+          consumer: "processor"
+          subject: "logs.secure.>"
+          tls:
+            status: true
+            cert_name: "nats.crt"
+            key_name: "nats.key"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+Performance can be enhanced for high message volumes.
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high throughput...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 3
+        name: performant_nats
+        type: nats
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          stream: "LOGS"
+          consumer: "high-perf"
+          subject: "logs.>"
+          reuse: true
+          workers: 4
+          buffer_size: 32768
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Subject Filters
+
+Targeted message processing is possible:
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring for subject-based filtering...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 4
+        name: filtered_nats
+        type: nats
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          stream: "LOGS"
+          consumer: "filtered"
+          subject: "logs.*.error"
+          reuse: true
+          workers: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::tip
+NATS subjects support `*` and `>` as wildcards for single and multiple tokens respectively.
+:::
+
+### Messages
+
+Messages can be pre-processed based on custom criteria:
+
+<ExampleGrid>
+  <CommentCol>
+    Applying custom processing to messages...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 5
+        name: pipeline_nats
+        type: nats
+        pipelines:
+          - json_parser
+          - field_extractor
+        properties:
+          address: "nats.example.com"
+          port: 4222
+          stream: "LOGS"
+          consumer: "processed"
+          subject: "logs.raw.>"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed sequentially, and can modify or drop messages before ingestion.
+:::
