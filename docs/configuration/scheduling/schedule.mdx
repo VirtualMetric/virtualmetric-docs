@@ -1,0 +1,440 @@
+# Schedule
+
+## Synopsis
+
+Schedule allows you to execute targets and routes at specific times using cron expressions. Instead of running continuously, the component will only process data when the schedule condition is met.
+
+## Schema
+
+### Targets
+
+```yaml
+targets:
+  - name: <string>
+    type: <string>
+    schedule: <string>
+    properties:
+      # target-specific properties
+```
+
+### Routes
+
+```yaml
+routes:
+  - name: <string>
+    schedule: <string>
+    source: <string>
+    destination: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`schedule`|N|-|Cron expression defining when the component should execute|
+
+## Details
+
+The schedule field accepts standard cron expressions to control when a target or route executes. This is useful for scenarios where you want to:
+
+- Process data at specific times of day
+- Run components during off-peak hours
+- Align execution with business schedules
+- Reduce resource consumption by limiting execution windows
+- Create time-based routing logic
+
+When a schedule is configured, the component will only process queued data when the current time matches the cron expression. Between scheduled executions, data accumulates in the queue and is processed during the next scheduled window.
+
+### Cron Expression Format
+
+Standard cron format with five fields:
+
+```
+┌───────────── minute (0-59)
+│ ┌───────────── hour (0-23)
+│ │ ┌───────────── day of month (1-31)
+│ │ │ ┌───────────── month (1-12)
+│ │ │ │ ┌───────────── day of week (0-6, Sunday=0)
+│ │ │ │ │
+* * * * *
+```
+
+### Special Characters
+
+- `*` - Any value
+- `,` - Value list separator
+- `-` - Range of values
+- `/` - Step values
+
+### Time Zone
+
+All cron expressions are evaluated in the system's local timezone.
+
+## Target Examples
+
+### Every Hour
+
+<ExampleGrid>
+  <CommentCol>
+    Execute target at the start of every hour...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: hourly_splunk
+        type: splunk
+        schedule: "0 * * * *"
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              token: "YOUR-TOKEN"
+          index: "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Business Hours Only
+
+<ExampleGrid>
+  <CommentCol>
+    Execute every 30 minutes between 9 AM and 5 PM on weekdays...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: business_hours_elastic
+        type: elastic
+        schedule: "*/30 9-17 * * 1-5"
+        properties:
+          index: "business-logs"
+          endpoints:
+            - endpoint: "http://elasticsearch:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Daily at Midnight
+
+<ExampleGrid>
+  <CommentCol>
+    Execute once per day at midnight...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: daily_archive
+        type: awss3
+        schedule: "0 0 * * *"
+        properties:
+          bucket: "daily-archives"
+          region: "us-east-1"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Times Per Day
+
+<ExampleGrid>
+  <CommentCol>
+    Execute at 6 AM, 12 PM, and 6 PM every day...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: three_times_daily
+        type: splunk
+        schedule: "0 6,12,18 * * *"
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              token: "YOUR-TOKEN"
+          index: "scheduled-logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Every 15 Minutes
+
+<ExampleGrid>
+  <CommentCol>
+    Execute every 15 minutes throughout the day...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: frequent_elastic
+        type: elastic
+        schedule: "*/15 * * * *"
+        properties:
+          index: "frequent-logs"
+          endpoints:
+            - endpoint: "http://elasticsearch:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Weekly on Mondays
+
+<ExampleGrid>
+  <CommentCol>
+    Execute every Monday at 9 AM...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: weekly_report
+        type: splunk
+        schedule: "0 9 * * 1"
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              token: "YOUR-TOKEN"
+          index: "weekly-reports"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Month End
+
+<ExampleGrid>
+  <CommentCol>
+    Execute on the last day of every month at midnight...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: month_end_processing
+        type: bigquery
+        schedule: "0 0 28-31 * *"
+        properties:
+          project: "my-project"
+          dataset: "monthly_data"
+          tables:
+            - "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Night Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Execute every 2 hours during night time (10 PM to 6 AM)...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: night_batch
+        type: clickhouse
+        schedule: "0 22,0,2,4,6 * * *"
+        properties:
+          connection_string: "clickhouse://localhost:9000"
+          table: "night_logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Weekends Only
+
+<ExampleGrid>
+  <CommentCol>
+    Execute every 4 hours on Saturday and Sunday...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: weekend_processing
+        type: elastic
+        schedule: "0 */4 * * 0,6"
+        properties:
+          index: "weekend-logs"
+          endpoints:
+            - endpoint: "http://elasticsearch:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Specific Day of Month
+
+<ExampleGrid>
+  <CommentCol>
+    Execute on the 1st and 15th of every month at noon...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: bi_monthly
+        type: splunk
+        schedule: "0 12 1,15 * *"
+        properties:
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              token: "YOUR-TOKEN"
+          index: "bi-monthly-logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Route Examples
+
+### Business Hours Routing
+
+<ExampleGrid>
+  <CommentCol>
+    Route data to a specific target only during business hours...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: business_hours_route
+        schedule: "* 9-17 * * 1-5"
+        source: "application_logs"
+        destination: "realtime_splunk"
+      
+      - name: off_hours_route
+        source: "application_logs"
+        destination: "batch_storage"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Daily Archive Route
+
+<ExampleGrid>
+  <CommentCol>
+    Route data to archive storage once per day at midnight...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: daily_archive_route
+        schedule: "0 0 * * *"
+        source: "processed_logs"
+        destination: "s3_archive"
+      
+      - name: realtime_route
+        source: "processed_logs"
+        destination: "elasticsearch"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Weekend Backup Route
+
+<ExampleGrid>
+  <CommentCol>
+    Route data to backup target only on weekends...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: weekend_backup
+        schedule: "0 */6 * * 0,6"
+        source: "production_logs"
+        destination: "backup_target"
+      
+      - name: primary_route
+        source: "production_logs"
+        destination: "primary_target"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Peak Hours Dual Routing
+
+<ExampleGrid>
+  <CommentCol>
+    Send data to multiple targets during peak hours for redundancy...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: peak_hours_primary
+        schedule: "* 8-18 * * 1-5"
+        source: "critical_logs"
+        destination: "splunk_primary"
+      
+      - name: peak_hours_secondary
+        schedule: "* 8-18 * * 1-5"
+        source: "critical_logs"
+        destination: "splunk_secondary"
+      
+      - name: off_peak_route
+        source: "critical_logs"
+        destination: "splunk_primary"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Hourly Aggregation Route
+
+<ExampleGrid>
+  <CommentCol>
+    Route aggregated data every hour while streaming raw data continuously...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: hourly_aggregates
+        schedule: "0 * * * *"
+        source: "metrics"
+        destination: "bigquery_aggregates"
+      
+      - name: realtime_metrics
+        source: "metrics"
+        destination: "elasticsearch"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Common Patterns
+
+| Pattern | Expression | Description |
+|---------|-----------|-------------|
+| Every minute | `* * * * *` | Run every minute |
+| Every 5 minutes | `*/5 * * * *` | Run every 5 minutes |
+| Every 10 minutes | `*/10 * * * *` | Run every 10 minutes |
+| Every 30 minutes | `*/30 * * * *` | Run every 30 minutes |
+| Every hour | `0 * * * *` | Run at the start of every hour |
+| Every 2 hours | `0 */2 * * *` | Run every 2 hours |
+| Every 6 hours | `0 */6 * * *` | Run every 6 hours |
+| Daily at midnight | `0 0 * * *` | Run once per day at midnight |
+| Daily at noon | `0 12 * * *` | Run once per day at noon |
+| Weekly (Monday) | `0 0 * * 1` | Run every Monday at midnight |
+| Monthly (1st) | `0 0 1 * *` | Run on the 1st of each month |
+| Weekdays only | `0 9 * * 1-5` | Run weekdays at 9 AM |
+| Weekends only | `0 9 * * 0,6` | Run weekends at 9 AM |
+
+## Usage Notes
+
+- Schedule takes precedence over interval if both are configured
+- Data queues up between scheduled executions
+- First execution occurs at the next matching time after component initialization
+- Failed executions do not trigger immediate retries, they wait for the next scheduled time
+- Use schedule for predictable, time-based execution patterns
+- For high-frequency or continuous processing, omit schedule or use interval instead
+- Multiple routes can have different schedules, creating time-based routing logic
+
+## Troubleshooting
+
+### Component Not Executing
+
+Check that:
+- Cron expression is valid
+- System timezone matches your expectations
+- Component status is enabled
+- Queue contains data to process
+
+### Missed Executions
+
+If executions are being skipped:
+- Verify the cron expression matches your intended schedule
+- Check system logs for errors during execution attempts
+- Ensure previous execution completed before next scheduled time
+
+### Timezone Issues
+
+All schedules use the system's local timezone. If your logs show unexpected execution times:
+- Verify system timezone configuration
+- Consider adjusting cron expression to match your timezone
+- Document timezone expectations in component descriptions
