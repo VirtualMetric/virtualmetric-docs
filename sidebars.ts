@@ -44,6 +44,8 @@ const sidebars: SidebarsConfig = {
         "organization/users",
         "organization/roles",
         "organization/audit",
+        "organization/tenants",
+        "organization/usage-and-limits",
         {
           type: "category",
           label: "Settings",
@@ -54,8 +56,6 @@ const sidebars: SidebarsConfig = {
             "organization/settings/subscription",
           ]
         },
-        "organization/tenants",
-        "organization/usage-and-limits",
       ]
     },
     {
@@ -302,6 +302,15 @@ const sidebars: SidebarsConfig = {
           ],
         },
         'configuration/routes',
+        {
+          type: "category",
+          label: "Scheduling",
+          items: [
+            "configuration/scheduling/overview",
+            "configuration/scheduling/cron",
+            "configuration/scheduling/frequency",
+          ]
+        },
       ],
     },
     {
