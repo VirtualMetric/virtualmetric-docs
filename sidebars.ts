@@ -302,6 +302,15 @@ const sidebars: SidebarsConfig = {
           ],
         },
         'configuration/routes',
+        {
+          type: "category",
+          label: "Scheduling and Time-Based Execution",
+          items: [
+            "configuration/scheduling/overview",
+            "configuration/scheduling/schedule",
+            "configuration/scheduling/interval",
+          ]
+        },
       ],
     },
     {
