@@ -1,0 +1,344 @@
+# Backblaze B2 Cloud Storage
+
+<span className="theme-doc-version-badge badge badge--secondary">Backblaze</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
+
+## Synopsis
+
+Creates a target that writes log messages to Backblaze B2 Cloud Storage with support for various file formats and authentication methods. The target handles large file uploads efficiently with configurable rotation based on size or event count. Backblaze B2 provides cost-effective, reliable cloud storage with simple pricing and no egress fees for many use cases.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: backblazes3
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    key: <string>
+    secret: <string>
+    region: <string>
+    endpoint: <string>
+    part_size: <numeric>
+    bucket: <string>
+    buckets:
+      - bucket: <string>
+        name: <string>
+        format: <string>
+        compression: <string>
+        extension: <string>
+        schema: <string>
+    name: <string>
+    format: <string>
+    compression: <string>
+    extension: <string>
+    schema: <string>
+    max_size: <numeric>
+    batch_size: <numeric>
+    timeout: <numeric>
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `backblazes3`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Backblaze B2 Credentials
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`key`|Y|-|Backblaze B2 application key ID|
+|`secret`|Y|-|Backblaze B2 application key|
+|`region`|Y|-|B2 region (e.g., `us-west-004`, `eu-central-003`)|
+|`endpoint`|Y|-|B2 S3-compatible endpoint (format: `https://s3.<region>.backblazeb2.com`)|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`part_size`|N|`5`|Multipart upload part size in megabytes (minimum 5MB)|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+### Files
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`bucket`|N*|-|Default B2 bucket name (used if `buckets` not specified)|
+|`buckets`|N*|-|Array of bucket configurations for file distribution|
+|`buckets.bucket`|Y|-|B2 bucket name|
+|`buckets.name`|Y|-|File name template|
+|`buckets.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
+|`buckets.compression`|N|`"zstd"`|Compression algorithm|
+|`buckets.extension`|N|Matches `format`|File extension override|
+|`buckets.schema`|N*|-|Schema definition file path (required for Avro and Parquet formats)|
+|`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default file name template when `buckets` not used|
+|`format`|N|`"json"`|Default output format when `buckets` not used|
+|`compression`|N|`"zstd"`|Default compression when `buckets` not used|
+|`extension`|N|Matches `format`|Default file extension when `buckets` not used|
+|`schema`|N|-|Default schema path when `buckets` not used|
+|`max_size`|N|`0`|Maximum file size in bytes before rotation|
+|`batch_size`|N|`100000`|Maximum number of messages per file|
+
+\* = Either `bucket` or `buckets` must be specified. When using `buckets`, schema is conditionally required for Avro and Parquet formats.
+
+:::note
+When `max_size` is reached, the current file is uploaded to B2 and a new file is created. For unlimited file size, set the field to `0`.
+:::
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+The Backblaze B2 target provides cost-effective cloud storage integration with comprehensive file format support. B2 is known for its transparent, simple pricing model with storage at a fraction of the cost of major cloud providers and free egress through Bandwidth Alliance partners.
+
+### Authentication
+
+Requires Backblaze B2 application keys. Application keys can be created through the Backblaze web interface under App Keys. Keys can be scoped to specific buckets and operations for enhanced security.
+
+### Endpoint Configuration
+
+The endpoint URL follows the pattern `https://s3.<region>.backblazeb2.com` where `<region>` is your B2 region identifier. Each bucket is associated with a specific region during creation.
+
+### Available Regions
+
+Backblaze B2 is available in the following regions:
+
+|Region Code|Location|
+|---|---|
+|`us-west-001`|US West (Sacramento)|
+|`us-west-002`|US West (Sacramento)|
+|`us-west-004`|US West (Phoenix)|
+|`us-east-005`|US East (Miami)|
+|`eu-central-003`|Europe (Amsterdam)|
+
+### File Formats
+
+|Format|Description|
+|---|---|
+|`json`|Each log entry is written as a separate JSON line (JSONL format)|
+|`multijson`|All log entries are written as a single JSON array|
+|`avro`|Apache Avro format with schema|
+|`parquet`|Apache Parquet columnar format with schema|
+
+### Compression
+
+All formats support optional compression to reduce storage costs and transfer times. Compression is applied before upload.
+
+|Format|Compression Options|
+|---|---|
+|JSON/MultiJSON|`zstd` (default), `gzip`|
+|Avro|`null`, `deflate`, `snappy`, `zstd`|
+|Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+
+### File Management
+
+Files are rotated based on size (`max_size` parameter) or event count (`batch_size` parameter), whichever limit is reached first. Template variables in file names enable dynamic file naming for time-based partitioning.
+
+### Templates
+
+The following template variables can be used in file names:
+
+|Variable|Description|Example|
+|---|---|---|
+|`{{.Year}}`|Current year|`2024`|
+|`{{.Month}}`|Current month|`01`|
+|`{{.Day}}`|Current day|`15`|
+|`{{.Timestamp}}`|Current timestamp in nanoseconds|`1703688533123456789`|
+|`{{.Format}}`|File format|`json`|
+|`{{.Extension}}`|File extension|`json`|
+|`{{.Compression}}`|Compression type|`zstd`|
+|`{{.TargetName}}`|Target name|`my_logs`|
+|`{{.TargetType}}`|Target type|`backblazes3`|
+|`{{.Table}}`|Bucket name|`logs`|
+
+### Multipart Upload
+
+Large files automatically use multipart upload protocol with configurable part size (`part_size` parameter). Default 5MB part size balances upload efficiency and memory usage.
+
+### Multiple Buckets
+
+Single target can write to multiple B2 buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
+
+### Schema Requirements
+
+Avro and Parquet formats require schema definition files. Schema files must be accessible at the path specified in the `schema` parameter during target initialization.
+
+### Cost Advantages
+
+Backblaze B2 offers highly competitive pricing with storage costs significantly lower than AWS S3, Azure, or Google Cloud. The Bandwidth Alliance provides free egress when downloading to Cloudflare and other partner networks.
+
+### Pricing Model
+
+B2 uses a simple pricing structure with no hidden fees, no API request charges, and the first 10GB of storage free. Download fees apply only when exceeding daily free allowances.
+
+## Examples
+
+### Basic Configuration
+
+The minimum configuration for a JSON B2 target:
+
+```yaml
+targets:
+  - name: basic_b2
+    type: backblazes3
+    properties:
+      key: "0012a3b4c5d6e7f8901234"
+      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
+      region: "us-west-004"
+      endpoint: "https://s3.us-west-004.backblazeb2.com"
+      bucket: "datastream-logs"
+```
+
+### Multiple Buckets
+
+Configuration for distributing data across multiple B2 buckets with different formats:
+
+```yaml
+targets:
+  - name: multi_bucket_export
+    type: backblazes3
+    properties:
+      key: "0012a3b4c5d6e7f8901234"
+      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
+      region: "eu-central-003"
+      endpoint: "https://s3.eu-central-003.backblazeb2.com"
+      buckets:
+        - bucket: "raw-data-archive"
+          name: "raw-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "multijson"
+          compression: "gzip"
+        - bucket: "analytics-data"
+          name: "analytics-{{.Year}}/{{.Month}}/{{.Day}}/data_{{.Timestamp}}.parquet"
+          format: "parquet"
+          schema: "<schema definition>"
+          compression: "snappy"
+```
+
+### Parquet Format
+
+Configuration for daily partitioned Parquet files:
+
+```yaml
+targets:
+  - name: parquet_analytics
+    type: backblazes3
+    properties:
+      key: "0012a3b4c5d6e7f8901234"
+      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
+      region: "us-west-002"
+      endpoint: "https://s3.us-west-002.backblazeb2.com"
+      bucket: "analytics-lake"
+      name: "events/year={{.Year}}/month={{.Month}}/day={{.Day}}/part-{{.Timestamp}}.parquet"
+      format: "parquet"
+      schema: "<schema definition>"
+      compression: "snappy"
+      max_size: 536870912
+```
+
+### High Reliability
+
+Configuration with enhanced settings:
+
+```yaml
+targets:
+  - name: reliable_b2
+    type: backblazes3
+    pipelines:
+      - checkpoint
+    properties:
+      key: "0012a3b4c5d6e7f8901234"
+      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
+      region: "us-east-005"
+      endpoint: "https://s3.us-east-005.backblazeb2.com"
+      bucket: "critical-logs"
+      name: "logs-{{.Timestamp}}.json"
+      format: "json"
+      timeout: 60
+      part_size: 10
+```
+
+### With Field Normalization
+
+Using field normalization for standard format:
+
+```yaml
+targets:
+  - name: normalized_b2
+    type: backblazes3
+    properties:
+      key: "0012a3b4c5d6e7f8901234"
+      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
+      region: "us-west-004"
+      endpoint: "https://s3.us-west-004.backblazeb2.com"
+      bucket: "normalized-logs"
+      name: "logs-{{.Timestamp}}.json"
+      format: "json"
+      field_format: "cim"
+```
+
+### Debug Configuration
+
+Configuration with debugging enabled:
+
+```yaml
+targets:
+  - name: debug_b2
+    type: backblazes3
+    properties:
+      key: "0012a3b4c5d6e7f8901234"
+      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
+      region: "us-west-001"
+      endpoint: "https://s3.us-west-001.backblazeb2.com"
+      bucket: "test-logs"
+      name: "test-{{.Timestamp}}.json"
+      format: "json"
+      debug:
+        status: true
+        dont_send_logs: true
+```
+
+### Cost-Optimized Archive
+
+Configuration optimized for long-term storage with high compression:
+
+```yaml
+targets:
+  - name: archive_b2
+    type: backblazes3
+    properties:
+      key: "0012a3b4c5d6e7f8901234"
+      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
+      region: "eu-central-003"
+      endpoint: "https://s3.eu-central-003.backblazeb2.com"
+      bucket: "log-archive"
+      name: "archive/{{.Year}}/{{.Month}}/logs-{{.Day}}.json"
+      format: "json"
+      compression: "zstd"
+      max_size: 1073741824
+```
