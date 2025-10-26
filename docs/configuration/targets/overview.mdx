@@ -62,6 +62,184 @@ The target listed here is of type `elasticsearch`. It specifies the _host_ that 
 You can use environment variables like `${PASSWORD}` for your credentials. This will improve security by removing the credentials from your configuration file.
 :::
 
+## Debug Options
+
+Targets support debug configuration options for testing, troubleshooting, and development purposes. These options allow you to inspect data flow without affecting production systems.
+
+### Configuration
+
+Debug options are configured under the `debug` property within target properties:
+
+```yaml
+targets:
+  - name: test_elastic
+    type: elastic
+    properties:
+      index: "test-logs"
+      endpoints:
+        - endpoint: "http://elasticsearch:9200"
+      debug:
+        status: true
+        dont_send_logs: false
+```
+
+### Debug Fields
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging for the target|
+|`debug.dont_send_logs`|N|`false`|Prevent logs from being sent to the actual target|
+
+### Debug Status
+
+When `debug.status` is set to `true`, the target logs each event to the internal debugger before processing. This provides visibility into:
+
+- Message content being sent
+- Device information (ID, name, type)
+- Target type and operation details
+- Timing and sequence of events
+
+Debug logs are written to the system's debug output and can be used to:
+
+- Verify data transformation and formatting
+- Troubleshoot pipeline processing issues
+- Monitor data flow in development environments
+- Audit message content during testing
+
+### Don't Send Logs
+
+When `debug.dont_send_logs` is set to `true`, events are logged to the debugger but **not** sent to the actual target destination. This is useful for:
+
+- **Safe Testing**: Test configuration changes without affecting production systems
+- **Development**: Develop and validate pipelines without external dependencies
+- **Cost Control**: Avoid charges from cloud services during testing
+- **Dry Runs**: Verify event formatting and routing logic before deployment
+
+:::warning
+The `dont_send_logs` option only works when `debug.status` is also set to `true`. If debugging is disabled, logs will be sent normally regardless of the `dont_send_logs` setting.
+:::
+
+### Use Cases
+
+#### Development Environment
+
+Test your configuration safely without sending data to production targets:
+
+```yaml
+targets:
+  - name: dev_splunk
+    type: splunk
+    properties:
+      endpoints:
+        - endpoint: "https://splunk.example.com:8088/services/collector"
+          token: "YOUR-TOKEN"
+      index: "main"
+      debug:
+        status: true
+        dont_send_logs: true
+```
+
+#### Troubleshooting
+
+Enable debug logging to diagnose issues while still sending data:
+
+```yaml
+targets:
+  - name: debug_elastic
+    type: elastic
+    properties:
+      index: "production-logs"
+      endpoints:
+        - endpoint: "http://elasticsearch:9200"
+      debug:
+        status: true
+        dont_send_logs: false
+```
+
+#### Pipeline Validation
+
+Verify pipeline transformations before enabling the target:
+
+```yaml
+targets:
+  - name: validate_transformations
+    type: splunk
+    properties:
+      endpoints:
+        - endpoint: "https://splunk.example.com:8088/services/collector"
+          token: "YOUR-TOKEN"
+      field_format: "cim"
+      debug:
+        status: true
+        dont_send_logs: true
+    pipelines:
+      - name: test_pipeline
+        processors:
+          - set:
+              field: environment
+              value: "development"
+```
+
+#### Staged Deployment
+
+Test new target configurations in parallel with existing ones:
+
+```yaml
+targets:
+  # Production target (normal operation)
+  - name: prod_elastic
+    type: elastic
+    properties:
+      index: "production-logs"
+      endpoints:
+        - endpoint: "http://prod-elasticsearch:9200"
+  
+  # Test target (debug mode, no actual sending)
+  - name: test_elastic
+    type: elastic
+    properties:
+      index: "test-logs"
+      endpoints:
+        - endpoint: "http://test-elasticsearch:9200"
+      debug:
+        status: true
+        dont_send_logs: true
+```
+
+### Best Practices
+
+**Disable in Production**: Always disable debug options in production environments to avoid performance overhead and excessive logging.
+
+**Use for Development**: Enable `dont_send_logs` during development to prevent test data from reaching production systems.
+
+**Temporary Troubleshooting**: Enable debug logging temporarily when investigating issues, then disable it once resolved.
+
+**Separate Configurations**: Maintain separate configuration files for development and production environments with appropriate debug settings.
+
+**Monitor Debug Output**: Ensure your logging system can handle the increased volume when debug logging is enabled.
+
+### Performance Considerations
+
+Debug logging adds overhead to target processing:
+
+- Each event is serialized and written to the debug log
+- Additional function calls and memory allocation occur
+- Log I/O operations may impact throughput
+
+For high-volume scenarios:
+- Disable debug logging in production
+- Use debug mode only for representative samples
+- Monitor system resources when debugging is enabled
+
+### Security Notes
+
+Debug logs may contain sensitive information:
+
+- Message content is logged verbatim
+- Authentication tokens are not logged, but message content might contain PII
+- Ensure debug logs are secured with appropriate access controls
+- Review debug output before sharing for troubleshooting
+
 ## Deployment
 
 The following deployment types can be used:

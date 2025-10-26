@@ -1,0 +1,132 @@
+---
+pagination_prev: null
+pagination_next: null
+---
+
+# OCSF
+
+The Open Cybersecurity Schema Framework (OCSF) is an open standard for security event data that provides a vendor-agnostic way to normalize security logs across different sources. OCSF provides standardization for security-focused log data, enabling seamless integration with AWS Security Lake and other security analytics platforms.
+
+OCSF organizes security events into classes, each representing a specific type of security activity. When using `field_format: "ocsf"`, VirtualMetric automatically transforms your security data into OCSF-compliant format based on the event type.
+
+## Available OCSF Schema Classes
+
+### System Activity (1000-1999)
+
+- `OCSF1001` - File Activity
+- `OCSF1002` - Kernel Extension Activity
+- `OCSF1003` - Kernel Activity
+- `OCSF1004` - Memory Activity
+- `OCSF1005` - Module Activity
+- `OCSF1006` - Scheduled Job Activity
+- `OCSF1007` - Process Activity
+
+### Findings (2000-2999)
+
+- `OCSF2001` - Security Finding
+- `OCSF2002` - Vulnerability Finding
+- `OCSF2003` - Compliance Finding
+- `OCSF2004` - Detection Finding
+
+### Identity & Access Management (3000-3999)
+
+- `OCSF3001` - Account Change
+- `OCSF3002` - Authentication
+- `OCSF3003` - Authorize Session
+- `OCSF3004` - Entity Management
+- `OCSF3005` - User Access Management
+- `OCSF3006` - Group Management
+
+### Network Activity (4000-4999)
+
+- `OCSF4001` - Network Activity
+- `OCSF4002` - HTTP Activity
+- `OCSF4003` - DNS Activity
+- `OCSF4004` - DHCP Activity
+- `OCSF4005` - RDP Activity
+- `OCSF4006` - SMB Activity
+- `OCSF4007` - SSH Activity
+- `OCSF4008` - FTP Activity
+- `OCSF4009` - Email Activity
+- `OCSF4010` - Network File Activity
+- `OCSF4011` - Email File Activity
+- `OCSF4012` - Email URL Activity
+- `OCSF4013` - NTP Activity
+- `OCSF4014` - Tunnel Activity
+
+### Discovery (5000-5999)
+
+- `OCSF5001` - Device Inventory Info
+- `OCSF5002` - Device Config State
+- `OCSF5003` - User Inventory Info
+- `OCSF5004` - Operating System Patch State
+
+### Application Activity (6000-6999)
+
+- `OCSF6001` - Web Resources Activity
+- `OCSF6002` - Application Lifecycle
+- `OCSF6003` - API Activity
+- `OCSF6004` - Web Resource Access Activity
+- `OCSF6005` - Datastore Activity
+- `OCSF6006` - File Hosting Activity
+
+## Usage
+
+To enable OCSF normalization, specify the field format in your target configuration:
+
+```yaml
+targets:
+  - name: my_target
+    type: awssecuritylake
+    properties:
+      field_format: "ocsf"
+```
+
+When using the VirtualMetric AWS Security Lake Pack, OCSF normalization is handled automatically through the `aws_lake` pipeline. The pack intelligently routes events to the appropriate OCSF schema class based on the source data type and vendor.
+
+## Integration with AWS Security Lake
+
+OCSF is the native schema format for AWS Security Lake. When sending data to AWS Security Lake, you must:
+
+1. Enable OCSF field formatting (handled automatically by the `aws_lake` pipeline)
+2. Specify the appropriate OCSF schema identifier for each bucket
+3. Ensure data is in Parquet format (handled automatically by the `awssecuritylake` target)
+
+## VirtualMetric AWS Security Lake Pack
+
+The VirtualMetric AWS Security Lake Pack provides comprehensive OCSF normalization for diverse security data sources:
+
+- **Syslog messages** (native, CEF, LEEF formats) are automatically converted to OCSF
+- **Windows Security Events** are transformed from ECS through ASIM to OCSF
+- **Firewall logs** from major vendors (Fortinet, Palo Alto Networks, Check Point, Cisco ASA, SonicWall, WatchGuard, Cisco Meraki) are normalized to OCSF
+- **Windows DNS logs** are converted to OCSF DNS Activity format
+
+The pack handles multi-stage transformations, preserving vendor-specific context while ensuring OCSF compliance for AWS Security Lake ingestion.
+
+## Example Configuration
+
+```yaml
+targets:
+  - name: security_lake
+    type: awssecuritylake
+    pipelines:
+      - aws_lake
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      source: "virtualmetric"
+      account: "123456789012"
+      buckets:
+        - bucket: "aws-security-data-lake-network"
+          name: "network-{{.Timestamp}}.parquet"
+          schema: "OCSF4001"
+        - bucket: "aws-security-data-lake-auth"
+          name: "auth-{{.Timestamp}}.parquet"
+          schema: "OCSF3002"
+        - bucket: "aws-security-data-lake-dns"
+          name: "dns-{{.Timestamp}}.parquet"
+          schema: "OCSF4003"
+```
+
+In this example, the `aws_lake` pipeline automatically normalizes all events to OCSF format, and the target routes them to the appropriate buckets based on their schema class.

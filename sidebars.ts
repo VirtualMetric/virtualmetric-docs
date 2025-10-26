@@ -11,6 +11,7 @@ const sidebars: SidebarsConfig = {
         "about/applications",
         "about/architecture",
         "about/key-features",
+        "about/siem-optimization",
         "about/licensing",
       ],
     },
@@ -44,6 +45,8 @@ const sidebars: SidebarsConfig = {
         "organization/users",
         "organization/roles",
         "organization/audit",
+        "organization/tenants",
+        "organization/usage-and-limits",
         {
           type: "category",
           label: "Settings",
@@ -54,8 +57,6 @@ const sidebars: SidebarsConfig = {
             "organization/settings/subscription",
           ]
         },
-        "organization/tenants",
-        "organization/usage-and-limits",
       ]
     },
     {
@@ -115,20 +116,30 @@ const sidebars: SidebarsConfig = {
           label: "Targets",
           items: [
             "configuration/targets/overview",
+            "configuration/targets/alibaba-oss",
             "configuration/targets/aws-s3",
+            "configuration/targets/aws-security-lake",
             "configuration/targets/azure-blob-storage",
             "configuration/targets/azure-data-explorer",
+            "configuration/targets/backblaze-b2",
             "configuration/targets/bigquery",
             "configuration/targets/clickhouse",
+            "configuration/targets/cloudflare-r2",
             "configuration/targets/console",
+            "configuration/targets/digitalocean-spaces",
             "configuration/targets/discard",
             "configuration/targets/elasticsearch",
             "configuration/targets/event-hubs",
             "configuration/targets/file",
+            "configuration/targets/ibm-cos",
             "configuration/targets/microsoft-sentinel",
             "configuration/targets/microsoft-sentinel-data-lake",
+            "configuration/targets/minio",
+            "configuration/targets/oracle-cloud-os",
+            "configuration/targets/scaleway-os",
             "configuration/targets/splunk-hec",
             "configuration/targets/syslog",
+            "configuration/targets/wasabi-cloud-storage",
           ],
         },
         {
@@ -302,6 +313,15 @@ const sidebars: SidebarsConfig = {
           ],
         },
         'configuration/routes',
+        {
+          type: "category",
+          label: "Scheduling",
+          items: [
+            "configuration/scheduling/overview",
+            "configuration/scheduling/cron",
+            "configuration/scheduling/interval",
+          ]
+        },
       ],
     },
     {
@@ -365,6 +385,7 @@ const sidebars: SidebarsConfig = {
             "appendix/field-formats/csl",
             "appendix/field-formats/ecs",
             "appendix/field-formats/leef",
+            "appendix/field-formats/ocsf",
           ],
         },
         {

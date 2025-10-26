@@ -1,23 +1,22 @@
-# AWS S3
+# Wasabi Hot Cloud Storage
 
-<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
+<span className="theme-doc-version-badge badge badge--secondary">Wasabi</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
 
 ## Synopsis
 
-Creates a target that writes log messages to Amazon S3 buckets with support for various file formats, authentication methods, and multipart uploads. The target handles large file uploads efficiently with configurable rotation based on size or event count.
+Creates a target that writes log messages to Wasabi Hot Cloud Storage with support for various file formats and authentication methods. The target handles large file uploads efficiently with configurable rotation based on size or event count. Wasabi provides high-performance, cost-effective cloud storage with no egress fees and predictable pricing.
 
 ## Schema
 
 ```yaml {1,3}
 - name: <string>
   description: <string>
-  type: awss3
+  type: wasabis3
   pipelines: <pipeline[]>
   status: <boolean>
   properties:
     key: <string>
     secret: <string>
-    session: <string>
     region: <string>
     endpoint: <string>
     part_size: <numeric>
@@ -53,21 +52,18 @@ The following fields are used to define the target:
 |---|---|---|---|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `awss3`|
+|`type`|Y||Must be `wasabis3`|
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### AWS Credentials
+### Wasabi Hot Cloud Storage Credentials
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`key`|N*|-|AWS access key ID for authentication|
-|`secret`|N*|-|AWS secret access key for authentication|
-|`session`|N|-|Optional session token for temporary credentials|
-|`region`|Y|-|AWS region (e.g., `us-east-1`, `eu-west-1`)|
-|`endpoint`|N|-|Custom S3-compatible endpoint URL (for non-AWS S3 services)|
-
-\* = Conditionally required. AWS credentials (`key` and `secret`) are required unless using IAM role-based authentication on AWS infrastructure.
+|`key`|Y|-|Wasabi access key ID|
+|`secret`|Y|-|Wasabi secret access key|
+|`region`|Y|-|Wasabi region (e.g., `us-east-1`, `eu-central-1`, `ap-northeast-1`)|
+|`endpoint`|Y|-|Wasabi endpoint URL (format: `https://s3.<region>.wasabisys.com`)|
 
 ### Connection
 
@@ -81,9 +77,9 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`bucket`|N*|-|Default S3 bucket name (used if `buckets` not specified)|
+|`bucket`|N*|-|Default Wasabi bucket name (used if `buckets` not specified)|
 |`buckets`|N*|-|Array of bucket configurations for file distribution|
-|`buckets.bucket`|Y|-|S3 bucket name|
+|`buckets.bucket`|Y|-|Wasabi bucket name|
 |`buckets.name`|Y|-|File name template|
 |`buckets.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
 |`buckets.compression`|N|`"zstd"`|Compression algorithm|
@@ -100,7 +96,7 @@ The following fields are used to define the target:
 \* = Either `bucket` or `buckets` must be specified. When using `buckets`, schema is conditionally required for Avro and Parquet formats.
 
 :::note
-When `max_size` is reached, the current file is uploaded to S3 and a new file is created. For unlimited file size, set the field to `0`.
+When `max_size` is reached, the current file is uploaded to Wasabi and a new file is created. For unlimited file size, set the field to `0`.
 :::
 
 ### Scheduler
@@ -119,11 +115,35 @@ When `max_size` is reached, the current file is uploaded to S3 and a new file is
 
 ## Details
 
-The AWS S3 target supports writing to different buckets with various file formats and schemas. The target provides enterprise-grade cloud storage integration with comprehensive file format support.
+The Wasabi Hot Cloud Storage target provides high-performance cloud storage integration with comprehensive file format support. Wasabi is designed as a cost-effective alternative to traditional cloud storage with 80% lower pricing, no egress fees, and no API charges.
 
-### Authentication Methods
+### Authentication
 
-Supports static credentials (access key and secret key) with optional session tokens for temporary credentials. When deployed on AWS infrastructure, can leverage IAM role-based authentication without explicit credentials.
+Requires Wasabi access credentials. Access keys can be created through the Wasabi Console under Access Keys. Sub-users can be created with specific permissions and bucket access for enhanced security.
+
+### Endpoint Configuration
+
+The endpoint URL follows the pattern `https://s3.<region>.wasabisys.com` where `<region>` is your chosen Wasabi region identifier. Each bucket is associated with a specific region.
+
+### Available Regions
+
+Wasabi Hot Cloud Storage is available in the following regions worldwide:
+
+|Region Code|Location|
+|---|---|
+|`us-east-1`|US East (N. Virginia)|
+|`us-east-2`|US East (N. Virginia)|
+|`us-central-1`|US Central (Texas)|
+|`us-west-1`|US West (Oregon)|
+|`eu-central-1`|Europe (Amsterdam)|
+|`eu-central-2`|Europe (Frankfurt)|
+|`eu-west-1`|Europe (London)|
+|`eu-west-2`|Europe (Paris)|
+|`ap-northeast-1`|Asia Pacific (Tokyo)|
+|`ap-northeast-2`|Asia Pacific (Osaka)|
+|`ap-southeast-1`|Asia Pacific (Singapore)|
+|`ap-southeast-2`|Asia Pacific (Sydney)|
+|`ca-central-1`|Canada (Toronto)|
 
 ### File Formats
 
@@ -162,50 +182,68 @@ The following template variables can be used in file names:
 |`{{.Extension}}`|File extension|`json`|
 |`{{.Compression}}`|Compression type|`zstd`|
 |`{{.TargetName}}`|Target name|`my_logs`|
-|`{{.TargetType}}`|Target type|`awss3`|
+|`{{.TargetType}}`|Target type|`wasabis3`|
 |`{{.Table}}`|Bucket name|`logs`|
 
 ### Multipart Upload
 
-Large files automatically use S3 multipart upload protocol with configurable part size (`part_size` parameter). Default 5MB part size balances upload efficiency and memory usage.
+Large files automatically use multipart upload protocol with configurable part size (`part_size` parameter). Default 5MB part size balances upload efficiency and memory usage.
 
 ### Multiple Buckets
 
-Single target can write to multiple S3 buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
+Single target can write to multiple Wasabi buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
 
 ### Schema Requirements
 
 Avro and Parquet formats require schema definition files. Schema files must be accessible at the path specified in the `schema` parameter during target initialization.
 
+### Cost Advantages
+
+Wasabi offers significant cost savings compared to AWS S3 and other major cloud providers. Key pricing benefits include no egress fees, no API request charges, and storage costs up to 80% lower than AWS S3.
+
+### Performance Characteristics
+
+Wasabi delivers consistent, high-speed performance across all storage tiers with no performance degradation. All data is stored on high-performance infrastructure without cold storage tiers.
+
+### Data Durability
+
+Wasabi provides 11 nines (99.999999999%) of object durability through erasure coding and geographic distribution of data across multiple data centers.
+
+### Immutability Support
+
+Wasabi supports bucket-level and object-level immutability for compliance requirements, enabling write-once-read-many (WORM) storage configurations.
+
 ## Examples
 
 ### Basic Configuration
 
-The minimum configuration for a JSON S3 target:
+The minimum configuration for a JSON Wasabi target:
 
 ```yaml
 targets:
-  - name: basic_s3
-    type: awss3
+  - name: basic_wasabi
+    type: wasabis3
     properties:
-      key: "AKIAIOSFODNN7EXAMPLE"
-      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      key: "ABCDEFGHIJKLMNOPQRST"
+      secret: "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
       region: "us-east-1"
+      endpoint: "https://s3.us-east-1.wasabisys.com"
       bucket: "datastream-logs"
 ```
 
 ### Multiple Buckets
 
-Configuration for distributing data across multiple S3 buckets with different formats:
+Configuration for distributing data across multiple Wasabi buckets with different formats:
 
 ```yaml
 targets:
   - name: multi_bucket_export
-    type: awss3
+    type: wasabis3
     properties:
-      key: "AKIAIOSFODNN7EXAMPLE"
-      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-      region: "eu-west-1"
+      key: "ABCDEFGHIJKLMNOPQRST"
+      secret: "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+      region: "eu-central-1"
+      endpoint: "https://s3.eu-central-1.wasabisys.com"
       buckets:
         - bucket: "raw-data-archive"
           name: "raw-{{.Year}}-{{.Month}}-{{.Day}}.json"
@@ -225,11 +263,12 @@ Configuration for daily partitioned Parquet files:
 ```yaml
 targets:
   - name: parquet_analytics
-    type: awss3
+    type: wasabis3
     properties:
-      key: "AKIAIOSFODNN7EXAMPLE"
-      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-      region: "us-west-2"
+      key: "ABCDEFGHIJKLMNOPQRST"
+      secret: "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+      region: "ap-northeast-1"
+      endpoint: "https://s3.ap-northeast-1.wasabisys.com"
       bucket: "analytics-lake"
       name: "events/year={{.Year}}/month={{.Month}}/day={{.Day}}/part-{{.Timestamp}}.parquet"
       format: "parquet"
@@ -244,14 +283,15 @@ Configuration with enhanced settings:
 
 ```yaml
 targets:
-  - name: reliable_s3
-    type: awss3
+  - name: reliable_wasabi
+    type: wasabis3
     pipelines:
       - checkpoint
     properties:
-      key: "AKIAIOSFODNN7EXAMPLE"
-      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-      region: "us-east-1"
+      key: "ABCDEFGHIJKLMNOPQRST"
+      secret: "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+      region: "us-west-1"
+      endpoint: "https://s3.us-west-1.wasabisys.com"
       bucket: "critical-logs"
       name: "logs-{{.Timestamp}}.json"
       format: "json"
@@ -265,12 +305,13 @@ Using field normalization for standard format:
 
 ```yaml
 targets:
-  - name: normalized_s3
-    type: awss3
+  - name: normalized_wasabi
+    type: wasabis3
     properties:
-      key: "AKIAIOSFODNN7EXAMPLE"
-      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-      region: "us-east-1"
+      key: "ABCDEFGHIJKLMNOPQRST"
+      secret: "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+      region: "ap-southeast-1"
+      endpoint: "https://s3.ap-southeast-1.wasabisys.com"
       bucket: "normalized-logs"
       name: "logs-{{.Timestamp}}.json"
       format: "json"
@@ -283,16 +324,59 @@ Configuration with debugging enabled:
 
 ```yaml
 targets:
-  - name: debug_s3
-    type: awss3
+  - name: debug_wasabi
+    type: wasabis3
     properties:
-      key: "AKIAIOSFODNN7EXAMPLE"
-      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-      region: "us-east-1"
+      key: "ABCDEFGHIJKLMNOPQRST"
+      secret: "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+      region: "us-east-2"
+      endpoint: "https://s3.us-east-2.wasabisys.com"
       bucket: "test-logs"
       name: "test-{{.Timestamp}}.json"
       format: "json"
       debug:
         status: true
         dont_send_logs: true
+```
+
+### Cost-Optimized Archive
+
+Configuration optimized for long-term storage with maximum cost efficiency:
+
+```yaml
+targets:
+  - name: archive_wasabi
+    type: wasabis3
+    properties:
+      key: "ABCDEFGHIJKLMNOPQRST"
+      secret: "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+      region: "eu-west-1"
+      endpoint: "https://s3.eu-west-1.wasabisys.com"
+      bucket: "log-archive"
+      name: "archive/{{.Year}}/{{.Month}}/logs-{{.Day}}.json"
+      format: "json"
+      compression: "zstd"
+      max_size: 1073741824
+```
+
+### High-Volume Data Lake
+
+Configuration for high-volume analytics data lake:
+
+```yaml
+targets:
+  - name: data_lake_wasabi
+    type: wasabis3
+    properties:
+      key: "ABCDEFGHIJKLMNOPQRST"
+      secret: "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+      region: "us-central-1"
+      endpoint: "https://s3.us-central-1.wasabisys.com"
+      bucket: "enterprise-datalake"
+      name: "data/year={{.Year}}/month={{.Month}}/day={{.Day}}/hour={{.Hour}}/{{.Timestamp}}.parquet"
+      format: "parquet"
+      schema: "<schema definition>"
+      compression: "snappy"
+      batch_size: 500000
+      max_size: 2147483648
 ```
