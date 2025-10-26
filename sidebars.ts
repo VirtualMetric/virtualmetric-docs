@@ -11,6 +11,7 @@ const sidebars: SidebarsConfig = {
         "about/applications",
         "about/architecture",
         "about/key-features",
+        "about/siem-optimization",
         "about/licensing",
       ],
     },
