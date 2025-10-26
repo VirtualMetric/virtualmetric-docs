@@ -16,6 +16,11 @@ Creates a console target that writes log messages to the standard output. Suppor
   pipelines: <pipeline[]>
   properties:
     field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
 ```
 
 ## Configuration
@@ -31,26 +36,19 @@ The following are the fields used to define the target:
 |`status`|N|`true`|Enable/disable the target|
 |`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
 
-Field format standards:
+### Scheduler
 
-<TermTable>
-  <TermCol>`ecs`</TermCol>
-  <DefCol>Elastic Common Schema</DefCol>
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
 
-  <TermCol>`cim`</TermCol>
-  <DefCol>Common Information Model</DefCol>
+### Debug Options
 
-  <TermCol>`asim`</TermCol>
-  <DefCol>Advanced Security Information Model</DefCol>
-</TermTable>
-
-:::note
-If no field_format is specified, log messages will be written to the console without any field normalization.
-:::
-
-:::warning
-Using field normalization may impact the performance with high message volumes.
-:::
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
 
 ## Examples
 
