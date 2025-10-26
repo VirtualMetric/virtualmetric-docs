@@ -1,8 +1,8 @@
-# Cron-Based
+# Cron
 
 ## Synopsis
 
-Cron-Based scheduling allows you to execute targets and routes at specific times using cron expressions. Instead of running continuously, the component will only process data when the cron condition is met.
+Cron-based execution allows targets and routes to run at specific times using cron expressions. Instead of running continuously, the component will only process data when the cron schedule condition is met.
 
 ## Schema
 
@@ -13,7 +13,7 @@ targets:
   - name: <string>
     type: <string>
     properties:
-      schedule: <string>
+      cron: <string>
       # target-specific properties
 ```
 
@@ -22,30 +22,21 @@ targets:
 ```yaml
 routes:
   - name: <string>
-    schedule: <string>
     source: <string>
     destination: <string>
-```
-
-## Configuration
-
-```yaml
-routes:
-  - name: <string>
-    schedule: <string>
-    source: <string>
-    destination: <string>
+    properties:
+      cron: <string>
 ```
 
 ## Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`schedule`|N|-|Cron expression defining when the component should execute|
+|`cron`|N|-|Cron expression defining when the component should execute|
 
 ## Details
 
-The schedule field accepts standard cron expressions to control when a target or route executes. This is useful for scenarios where you want to:
+The cron field accepts standard cron expressions to control when a target or route executes. This is useful for scenarios where you want to:
 
 - Process data at specific times of day
 - Run components during off-peak hours
@@ -53,7 +44,7 @@ The schedule field accepts standard cron expressions to control when a target or
 - Reduce resource consumption by limiting execution windows
 - Create time-based routing logic
 
-When a schedule is configured, the component will only process queued data when the current time matches the cron expression. Between scheduled executions, data accumulates in the queue and is processed during the next scheduled window.
+When a cron schedule is configured, the component will only process queued data when the current time matches the cron expression. Between scheduled executions, data accumulates in the queue and is processed during the next scheduled window.
 
 ### Cron Expression Format
 
@@ -93,8 +84,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: hourly_splunk
         type: splunk
-        schedule: "0 * * * *"
         properties:
+          cron: "0 * * * *"
           endpoints:
             - endpoint: "https://splunk.example.com:8088/services/collector"
               token: "YOUR-TOKEN"
@@ -114,8 +105,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: business_hours_elastic
         type: elastic
-        schedule: "*/30 9-17 * * 1-5"
         properties:
+          cron: "*/30 9-17 * * 1-5"
           index: "business-logs"
           endpoints:
             - endpoint: "http://elasticsearch:9200"
@@ -134,8 +125,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: daily_archive
         type: awss3
-        schedule: "0 0 * * *"
         properties:
+          cron: "0 0 * * *"
           bucket: "daily-archives"
           region: "us-east-1"
     ```
@@ -153,8 +144,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: three_times_daily
         type: splunk
-        schedule: "0 6,12,18 * * *"
         properties:
+          cron: "0 6,12,18 * * *"
           endpoints:
             - endpoint: "https://splunk.example.com:8088/services/collector"
               token: "YOUR-TOKEN"
@@ -174,8 +165,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: frequent_elastic
         type: elastic
-        schedule: "*/15 * * * *"
         properties:
+          cron: "*/15 * * * *"
           index: "frequent-logs"
           endpoints:
             - endpoint: "http://elasticsearch:9200"
@@ -194,8 +185,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: weekly_report
         type: splunk
-        schedule: "0 9 * * 1"
         properties:
+          cron: "0 9 * * 1"
           endpoints:
             - endpoint: "https://splunk.example.com:8088/services/collector"
               token: "YOUR-TOKEN"
@@ -215,8 +206,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: month_end_processing
         type: bigquery
-        schedule: "0 0 28-31 * *"
         properties:
+          cron: "0 0 28-31 * *"
           project: "my-project"
           dataset: "monthly_data"
           tables:
@@ -236,8 +227,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: night_batch
         type: clickhouse
-        schedule: "0 22,0,2,4,6 * * *"
         properties:
+          cron: "0 22,0,2,4,6 * * *"
           connection_string: "clickhouse://localhost:9000"
           table: "night_logs"
     ```
@@ -255,8 +246,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: weekend_processing
         type: elastic
-        schedule: "0 */4 * * 0,6"
         properties:
+          cron: "0 */4 * * 0,6"
           index: "weekend-logs"
           endpoints:
             - endpoint: "http://elasticsearch:9200"
@@ -275,8 +266,8 @@ All cron expressions are evaluated in the system's local timezone.
     targets:
       - name: bi_monthly
         type: splunk
-        schedule: "0 12 1,15 * *"
         properties:
+          cron: "0 12 1,15 * *"
           endpoints:
             - endpoint: "https://splunk.example.com:8088/services/collector"
               token: "YOUR-TOKEN"
@@ -297,9 +288,10 @@ All cron expressions are evaluated in the system's local timezone.
     ```yaml
     routes:
       - name: business_hours_route
-        schedule: "* 9-17 * * 1-5"
         source: "application_logs"
         destination: "realtime_splunk"
+        properties:
+          cron: "* 9-17 * * 1-5"
       
       - name: off_hours_route
         source: "application_logs"
@@ -318,9 +310,10 @@ All cron expressions are evaluated in the system's local timezone.
     ```yaml
     routes:
       - name: daily_archive_route
-        schedule: "0 0 * * *"
         source: "processed_logs"
         destination: "s3_archive"
+        properties:
+          cron: "0 0 * * *"
       
       - name: realtime_route
         source: "processed_logs"
@@ -339,9 +332,10 @@ All cron expressions are evaluated in the system's local timezone.
     ```yaml
     routes:
       - name: weekend_backup
-        schedule: "0 */6 * * 0,6"
         source: "production_logs"
         destination: "backup_target"
+        properties:
+          cron: "0 */6 * * 0,6"
       
       - name: primary_route
         source: "production_logs"
@@ -360,14 +354,16 @@ All cron expressions are evaluated in the system's local timezone.
     ```yaml
     routes:
       - name: peak_hours_primary
-        schedule: "* 8-18 * * 1-5"
         source: "critical_logs"
         destination: "splunk_primary"
+        properties:
+          cron: "* 8-18 * * 1-5"
       
       - name: peak_hours_secondary
-        schedule: "* 8-18 * * 1-5"
         source: "critical_logs"
         destination: "splunk_secondary"
+        properties:
+          cron: "* 8-18 * * 1-5"
       
       - name: off_peak_route
         source: "critical_logs"
@@ -386,9 +382,10 @@ All cron expressions are evaluated in the system's local timezone.
     ```yaml
     routes:
       - name: hourly_aggregates
-        schedule: "0 * * * *"
         source: "metrics"
         destination: "bigquery_aggregates"
+        properties:
+          cron: "0 * * * *"
       
       - name: realtime_metrics
         source: "metrics"
@@ -417,13 +414,13 @@ All cron expressions are evaluated in the system's local timezone.
 
 ## Usage Notes
 
-- Schedule takes precedence over interval if both are configured
+- Cron takes precedence over interval if both are configured
 - Data queues up between scheduled executions
 - First execution occurs at the next matching time after component initialization
 - Failed executions do not trigger immediate retries, they wait for the next scheduled time
-- Use schedule for predictable, time-based execution patterns
-- For high-frequency or continuous processing, omit schedule or use interval instead
-- Multiple routes can have different schedules, creating time-based routing logic
+- Use cron for predictable, time-based execution patterns
+- For high-frequency or continuous processing, omit cron or use interval instead
+- Multiple routes can have different cron schedules, creating time-based routing logic
 
 ## Troubleshooting
 
@@ -444,7 +441,7 @@ If executions are being skipped:
 
 ### Timezone Issues
 
-All schedules use the system's local timezone. If your logs show unexpected execution times:
+All cron schedules use the system's local timezone. If your logs show unexpected execution times:
 - Verify system timezone configuration
 - Consider adjusting cron expression to match your timezone
 - Document timezone expectations in component descriptions

@@ -308,7 +308,7 @@ const sidebars: SidebarsConfig = {
           items: [
             "configuration/scheduling/overview",
             "configuration/scheduling/cron",
-            "configuration/scheduling/frequency",
+            "configuration/scheduling/interval",
           ]
         },
       ],
