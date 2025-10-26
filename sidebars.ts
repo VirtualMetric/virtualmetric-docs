@@ -384,6 +384,7 @@ const sidebars: SidebarsConfig = {
             "appendix/field-formats/csl",
             "appendix/field-formats/ecs",
             "appendix/field-formats/leef",
+            "appendix/field-formats/ocsf",
           ],
         },
         {
