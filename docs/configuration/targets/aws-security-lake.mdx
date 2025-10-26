@@ -1,0 +1,420 @@
+# AWS Security Lake
+
+<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Security</span>
+
+## Synopsis
+
+Creates a target that writes security and compliance log data to AWS Security Lake, Amazon's purpose-built data lake for security data. The target automatically formats data in OCSF (Open Cybersecurity Schema Framework) compliant Parquet format, enabling centralized collection and analysis of security logs from various sources. AWS Security Lake requires data to be in Parquet format with OCSF schema compliance for proper ingestion and processing.
+
+## Schema
+
+```yaml
+- name: <string>
+  description: <string>
+  type: awssecuritylake
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    key: <string>
+    secret: <string>
+    session: <string>
+    region: <string>
+    endpoint: <string>
+    part_size: <numeric>
+    source: <string>
+    account: <string>
+    buckets:
+      - bucket: <string>
+        name: <string>
+        schema: <string>
+    max_size: <numeric>
+    batch_size: <numeric>
+    timeout: <numeric>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `awssecuritylake`|
+|`pipelines`|Y||Must include `aws_lake` pipeline for OCSF normalization|
+|`status`|N|`true`|Enable/disable the target|
+
+### AWS Credentials
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`key`|N*|-|AWS access key ID for authentication|
+|`secret`|N*|-|AWS secret access key for authentication|
+|`session`|N|-|Optional session token for temporary credentials|
+|`region`|Y|-|AWS region where Security Lake is configured (e.g., `us-east-1`, `eu-west-1`)|
+|`endpoint`|N|-|Custom endpoint URL (for testing or alternate configurations)|
+
+\* = Conditionally required. AWS credentials (`key` and `secret`) are required unless using IAM role-based authentication on AWS infrastructure.
+
+### Security Lake Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`source`|Y|-|Custom source name identifying the data source in Security Lake|
+|`account`|Y|-|AWS account ID where Security Lake is configured|
+|`region`|Y|-|AWS region for Security Lake (must match the region in AWS Credentials)|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`part_size`|N|`5`|Multipart upload part size in megabytes (minimum 5MB)|
+|`timeout`|N|`30`|Connection timeout in seconds|
+
+### Buckets
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`buckets`|Y|-|Array of bucket configurations for different security data types|
+|`buckets.bucket`|Y|-|Security Lake bucket name for specific data type|
+|`buckets.name`|Y|-|File name template|
+|`buckets.schema`|Y|-|OCSF schema identifier (e.g., `OCSF4001`, `OCSF3002`)|
+|`max_size`|N|`0`|Maximum file size in bytes before rotation|
+|`batch_size`|N|`100000`|Maximum number of messages per file|
+
+:::note
+AWS Security Lake requires all data to be in Parquet format with OCSF schema compliance. The target automatically uses Parquet format and gzip compression as required by AWS Security Lake specifications. Each bucket must specify its corresponding OCSF schema identifier to ensure proper data routing and classification.
+:::
+
+:::note
+When `max_size` is reached, the current file is uploaded to Security Lake and a new file is created. For unlimited file size, set the field to `0`.
+:::
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+The AWS Security Lake target integrates with Amazon Security Lake, providing a centralized security data lake for collecting, normalizing, and analyzing security logs across your AWS environment and third-party sources. This target automatically organizes data using Security Lake's partitioning structure and ensures all data is formatted in OCSF-compliant Parquet format as required by AWS Security Lake.
+
+### Authentication Methods
+
+Supports static credentials (access key and secret key) with optional session tokens for temporary credentials. When deployed on AWS infrastructure, can leverage IAM role-based authentication without explicit credentials. The IAM role or user must have appropriate permissions to write to Security Lake buckets.
+
+### Security Lake Integration
+
+AWS Security Lake provides a centralized repository for security data, automatically normalizing logs into the Open Cybersecurity Schema Framework (OCSF) format. The target handles the required partitioning structure (`ext/{source}/region={region}/accountId={accountId}/eventDay={YYYYMMDD}/`) automatically, ensuring data is properly organized for Security Lake ingestion and analysis.
+
+All data is automatically written in Parquet format with gzip compression, which is the only format accepted by AWS Security Lake. The target ensures schema compliance with OCSF specifications through the specified schema identifier for each bucket.
+
+### Bucket Configuration Requirements
+
+AWS Security Lake target requires explicit bucket configuration with corresponding OCSF schema identifiers. Each bucket represents a specific security event type and must be configured with:
+
+- **Bucket name**: The Security Lake bucket for the specific event type
+- **File name template**: Pattern for generated Parquet files
+- **OCSF schema identifier**: The schema class that matches the event type
+
+This approach ensures proper data routing and classification, as the target needs to know which bucket corresponds to which OCSF schema to correctly process and store security events.
+
+### VirtualMetric AWS Security Lake Pack
+
+VirtualMetric provides the **Amazon Security Lake Automation and Normalization Pack**, which offers enterprise-grade normalization and routing for AWS Security Lake. This automation pack transforms diverse security data sources into OCSF-compliant format, including:
+
+- **Syslog messages** (native, CEF, LEEF formats)
+- **Windows Security Events** and Windows Firewall logs
+- **Firewall logs** from major vendors (Fortinet, Palo Alto Networks, Check Point, Cisco ASA, SonicWall, WatchGuard, Cisco Meraki)
+- **Windows DNS logs**
+
+The pack implements a sophisticated multi-stage processing pipeline with intelligent source detection, vendor-specific optimization, and automatic OCSF schema compliance. It supports all OCSF schema classes and handles the complete transformation from source format to OCSF without requiring manual schema configuration in the pipeline.
+
+When using the VirtualMetric AWS Security Lake Pack (pipeline: `aws_lake`), data is automatically normalized to OCSF format before reaching the target. The pack handles all intermediate transformations, including CEF/LEEF to CommonSecurityLog, ECS to ASIM, and ASIM to OCSF conversions. You only need to define the buckets with their corresponding OCSF schema identifiers in the target configuration.
+
+### OCSF Schema Identifiers
+
+AWS Security Lake uses OCSF schema classes to categorize security events. Common schema identifiers include:
+
+|Schema ID|Description|Event Types|
+|---|---|---|
+|`OCSF1001`|File Activity|File access, creation, deletion, modification|
+|`OCSF1002`|Kernel Extension Activity|Kernel module operations|
+|`OCSF1003`|Kernel Activity|System calls, kernel events|
+|`OCSF1004`|Memory Activity|Memory allocation, access patterns|
+|`OCSF1005`|Module Activity|Library loading, dynamic linking|
+|`OCSF1006`|Scheduled Job Activity|Cron jobs, task scheduler|
+|`OCSF1007`|Process Activity|Process creation, termination|
+|`OCSF2001`|Security Finding|Vulnerability findings, security issues|
+|`OCSF3001`|Account Change|User account modifications|
+|`OCSF3002`|Authentication|Login, logout, authentication events|
+|`OCSF3003`|Authorize Session|Session authorization, access control|
+|`OCSF3004`|Entity Management|Identity and entity operations|
+|`OCSF3005`|User Access Management|Permission changes, role assignments|
+|`OCSF4001`|Network Activity|Network connections, traffic flows|
+|`OCSF4002`|HTTP Activity|Web requests, API calls|
+|`OCSF4003`|DNS Activity|DNS queries and responses|
+|`OCSF4004`|DHCP Activity|DHCP lease operations|
+|`OCSF4005`|RDP Activity|Remote desktop connections|
+|`OCSF4006`|SMB Activity|File sharing, SMB sessions|
+|`OCSF4007`|SSH Activity|SSH connections and commands|
+|`OCSF4008`|FTP Activity|File transfer operations|
+|`OCSF4009`|Email Activity|Email sending, receiving|
+|`OCSF4010`|Network File Activity|Network file operations|
+|`OCSF4011`|Email File Activity|Email attachment handling|
+|`OCSF4012`|Email URL Activity|Links in emails|
+|`OCSF5001`|Inventory Info|Asset inventory updates|
+|`OCSF5002`|Config State|Configuration changes|
+|`OCSF6001`|Web Resources Activity|Web resource access|
+|`OCSF6002`|Application Lifecycle|App deployment, updates|
+|`OCSF6003`|API Activity|API endpoint usage|
+|`OCSF6004`|Web Resource Access Activity|Web content access|
+
+### File Management
+
+Files are rotated based on size (`max_size` parameter) or event count (`batch_size` parameter), whichever limit is reached first. Files are automatically uploaded to the correct Security Lake partition path based on the current date and configured source, region, and account parameters.
+
+All files are written in Parquet format with gzip compression as required by AWS Security Lake. The OCSF schema specified for each bucket determines the structure and field types within the Parquet files.
+
+### Templates
+
+The following template variables can be used in file names:
+
+|Variable|Description|Example|
+|---|---|---|
+|`{{.Year}}`|Current year|`2024`|
+|`{{.Month}}`|Current month|`01`|
+|`{{.Day}}`|Current day|`15`|
+|`{{.Timestamp}}`|Current timestamp in nanoseconds|`1703688533123456789`|
+|`{{.TargetName}}`|Target name|`security_logs`|
+|`{{.TargetType}}`|Target type|`awssecuritylake`|
+|`{{.Table}}`|Bucket name|`security-data`|
+
+### Multipart Upload
+
+Large files automatically use multipart upload protocol with configurable part size (`part_size` parameter). Default 5MB part size balances upload efficiency and memory usage for security data workloads.
+
+### Multiple Buckets
+
+The target requires multiple bucket configurations for different security data types (e.g., network logs, authentication logs, DNS queries, process events), enabling organized data classification and access control. Each bucket configuration must specify its corresponding OCSF schema identifier to ensure proper data routing.
+
+## Examples
+
+### Basic Multi-Bucket Configuration
+
+Configuration for multiple security event types:
+
+```yaml
+targets:
+  - name: security_lake_multi
+    type: awssecuritylake
+    pipelines:
+      - aws_lake
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      source: "virtualmetric"
+      account: "123456789012"
+      buckets:
+        - bucket: "aws-security-data-lake-network"
+          name: "network-events-{{.Timestamp}}.parquet"
+          schema: "OCSF4001"
+        - bucket: "aws-security-data-lake-auth"
+          name: "auth-events-{{.Timestamp}}.parquet"
+          schema: "OCSF3002"
+        - bucket: "aws-security-data-lake-dns"
+          name: "dns-events-{{.Timestamp}}.parquet"
+          schema: "OCSF4003"
+```
+
+### Comprehensive Multi-Source Configuration
+
+Configuration for collecting multiple security data types with the VirtualMetric pack:
+
+```yaml
+targets:
+  - name: security_lake_comprehensive
+    type: awssecuritylake
+    pipelines:
+      - aws_lake
+      - checkpoint
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      source: "virtualmetric-enterprise"
+      account: "123456789012"
+      buckets:
+        - bucket: "aws-security-data-lake-network"
+          name: "network-{{.Year}}{{.Month}}{{.Day}}-{{.Timestamp}}.parquet"
+          schema: "OCSF4001"
+        - bucket: "aws-security-data-lake-authentication"
+          name: "auth-{{.Year}}{{.Month}}{{.Day}}-{{.Timestamp}}.parquet"
+          schema: "OCSF3002"
+        - bucket: "aws-security-data-lake-dns"
+          name: "dns-{{.Year}}{{.Month}}{{.Day}}-{{.Timestamp}}.parquet"
+          schema: "OCSF4003"
+        - bucket: "aws-security-data-lake-process"
+          name: "process-{{.Year}}{{.Month}}{{.Day}}-{{.Timestamp}}.parquet"
+          schema: "OCSF1007"
+      timeout: 90
+      part_size: 10
+```
+
+### High Reliability Configuration
+
+Configuration with enhanced reliability settings for critical security data:
+
+```yaml
+targets:
+  - name: critical_security_logs
+    type: awssecuritylake
+    pipelines:
+      - aws_lake
+      - checkpoint
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      source: "virtualmetric-critical"
+      account: "123456789012"
+      buckets:
+        - bucket: "aws-security-data-lake-findings"
+          name: "findings-{{.Timestamp}}.parquet"
+          schema: "OCSF2001"
+        - bucket: "aws-security-data-lake-network"
+          name: "network-{{.Timestamp}}.parquet"
+          schema: "OCSF4001"
+      timeout: 60
+      part_size: 10
+      batch_size: 50000
+```
+
+### Windows Security Events
+
+Configuration for Windows-specific security logs:
+
+```yaml
+targets:
+  - name: security_lake_windows
+    type: awssecuritylake
+    pipelines:
+      - aws_lake
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-west-2"
+      source: "virtualmetric-windows"
+      account: "123456789012"
+      buckets:
+        - bucket: "aws-security-data-lake-authentication"
+          name: "windows-auth-{{.Timestamp}}.parquet"
+          schema: "OCSF3002"
+        - bucket: "aws-security-data-lake-process"
+          name: "windows-process-{{.Timestamp}}.parquet"
+          schema: "OCSF1007"
+        - bucket: "aws-security-data-lake-account"
+          name: "windows-account-{{.Timestamp}}.parquet"
+          schema: "OCSF3001"
+      max_size: 268435456
+```
+
+### Network and HTTP Activity
+
+Configuration for network traffic and web activity monitoring:
+
+```yaml
+targets:
+  - name: security_lake_network_http
+    type: awssecuritylake
+    pipelines:
+      - aws_lake
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "eu-west-1"
+      source: "virtualmetric-network"
+      account: "123456789012"
+      buckets:
+        - bucket: "aws-security-data-lake-network"
+          name: "network-traffic-{{.Year}}/{{.Month}}/{{.Day}}/{{.Timestamp}}.parquet"
+          schema: "OCSF4001"
+        - bucket: "aws-security-data-lake-http"
+          name: "http-activity-{{.Year}}/{{.Month}}/{{.Day}}/{{.Timestamp}}.parquet"
+          schema: "OCSF4002"
+        - bucket: "aws-security-data-lake-dns"
+          name: "dns-queries-{{.Year}}/{{.Month}}/{{.Day}}/{{.Timestamp}}.parquet"
+          schema: "OCSF4003"
+```
+
+### Firewall Logs
+
+Configuration for firewall and network security device logs:
+
+```yaml
+targets:
+  - name: security_lake_firewall
+    type: awssecuritylake
+    pipelines:
+      - aws_lake
+      - checkpoint
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      source: "virtualmetric-firewall"
+      account: "123456789012"
+      buckets:
+        - bucket: "aws-security-data-lake-network"
+          name: "firewall-{{.Timestamp}}.parquet"
+          schema: "OCSF4001"
+        - bucket: "aws-security-data-lake-findings"
+          name: "firewall-threats-{{.Timestamp}}.parquet"
+          schema: "OCSF2001"
+      timeout: 90
+      max_size: 536870912
+```
+
+### Debug Configuration
+
+Configuration with debugging enabled for testing:
+
+```yaml
+targets:
+  - name: debug_security_lake
+    type: awssecuritylake
+    pipelines:
+      - aws_lake
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      source: "virtualmetric-test"
+      account: "123456789012"
+      buckets:
+        - bucket: "aws-security-data-lake-test"
+          name: "test-{{.Timestamp}}.parquet"
+          schema: "OCSF4001"
+      debug:
+        status: true
+        dont_send_logs: true
+```
+
+:::note
+All configurations must include the `aws_lake` pipeline for automatic OCSF normalization and must define explicit bucket configurations with corresponding OCSF schema identifiers. The VirtualMetric AWS Security Lake Pack handles all data transformation automatically, routing events to the appropriate buckets based on their OCSF schema class.
+:::

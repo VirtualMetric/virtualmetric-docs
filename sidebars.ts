@@ -116,6 +116,7 @@ const sidebars: SidebarsConfig = {
           items: [
             "configuration/targets/overview",
             "configuration/targets/aws-s3",
+            "configuration/targets/aws-security-lake",
             "configuration/targets/azure-blob-storage",
             "configuration/targets/azure-data-explorer",
             "configuration/targets/bigquery",
