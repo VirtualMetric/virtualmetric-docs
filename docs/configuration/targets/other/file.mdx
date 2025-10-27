@@ -56,7 +56,7 @@ Files can have the following properties:
 |`format`|N|`"json"`|File format. See [Formats](#formats) below|
 |`compression`|N|-|Compression algorithm. See [Compression](#compression) below|
 |`extension`|N|Matches `format`|Custom file extension|
-|`schema`|N|-|Data schema for <Topic id="appendix-avro">Avro</Topic> / <Topic id="appendix-parquet">Parquet</Topic> formats or schema template name|
+|`schema`|N|-|Data schema for <Topic id="appendix-avro">Avro</Topic> / <Topic id="appendix-parquet">Parquet</Topic> formats. Can be a built-in schema name, a path to a schema file, or an inline schema definition|
 |`batch_size`|N|`100000`|Maximum number of messages per file|
 |`max_size`|N|`32MB`|Maximum file size before rotating|
 |`no_buffer`|N|`false`|Disable write buffering|
@@ -106,6 +106,12 @@ The target supports the following built-in schema templates:
 - `Syslog` - Standard schema for Syslog messages
 - `CommonSecurityLog` - Schema compatible with Common Security Log Format (CSL)
 
+You can also reference custom schema files by name (without the .json extension). The system will search for schema files in:
+1. User schema directory: `<user-path>/schemas/`
+2. Package schema directory: `<package-path>/schemas/`
+
+Schema files are searched recursively in these directories, and filename matching is case-insensitive.
+
 :::note
 Files with no messages (i.e. with `counter=0`) are automatically removed when the target is disposed.
 :::
@@ -144,18 +150,18 @@ The following template variables can be used in the file name:
 
 Files can use the following compression algorithms:
 
-|Format|Compression Codecs|
-|---|---|
-|JSON|Not supported|
-|MultiJSON|Not supported|
-|Avro|`deflate`, `snappy`, `zstd` (default)|
-|Parquet|`gzip`, `snappy`, `zstd` (default), `brotli`, `lz4`|
+|Format|Default|Compression Codecs|
+|---|---|---|
+|JSON|-|Not supported|
+|MultiJSON|-|Not supported|
+|Avro|`zstd`|`deflate`, `snappy`, `zstd`|
+|Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
 
 ## Examples
 
 ### JSON
 
-Configuration for a _JSON_ output&mdash; as "json" is the default format, no need to specify it:
+Configuration for a JSON output (as "json" is the default format, no need to specify it):
 
 ```yaml
 targets:
@@ -189,9 +195,41 @@ targets:
           name: "app_{{.Year}}_{{.Month}}_{{.Day}}.json"
 ```
 
-### Avro
+### Avro with Built-in Schema
 
-Configuration for an Avro output with compression and schema:
+Configuration for an Avro output with compression using a built-in schema:
+
+```yaml
+targets:
+  - name: syslog_avro
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      format: "avro"
+      compression: "snappy"
+      schema: "Syslog"
+```
+
+### Avro with Custom Schema File
+
+Configuration for an Avro output using a custom schema file:
+
+```yaml
+targets:
+  - name: custom_avro
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      format: "avro"
+      compression: "zstd"
+      schema: "MyCustomSchema"
+```
+
+This will look for `MyCustomSchema.json` in the schema directories.
+
+### Avro with Inline Schema
+
+Configuration for an Avro output with an inline schema definition:
 
 ```yaml
 targets:
@@ -212,22 +250,39 @@ targets:
         }
 ```
 
-Using built-in schema templates:
+### Parquet with Built-in Schema
+
+Configuration for a Parquet output with compression using a built-in schema:
 
 ```yaml
 targets:
-  - name: syslog_avro
+  - name: csl_logs
     type: file
     properties:
       location: "/var/log/vmetric"
-      format: "avro"
-      compression: "snappy"
-      schema: "Syslog"
+      format: "parquet"
+      schema: "CommonSecurityLog"
+      compression: "brotli"
 ```
 
-### Parquet
+### Parquet with Custom Schema File
 
-Configuration for a _Parquet_ output with compression and schema:
+Configuration for a Parquet output using a custom schema file:
+
+```yaml
+targets:
+  - name: custom_parquet
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      format: "parquet"
+      compression: "zstd"
+      schema: "NetworkTrafficSchema"
+```
+
+### Parquet with Inline Schema
+
+Configuration for a Parquet output with an inline schema definition:
 
 ```yaml
 targets:
@@ -240,28 +295,31 @@ targets:
       schema: |
         {
           "timestamp": {
-            "type": "INT",
-            "bitWidth": 64,
-            "signed": true
+            "type": "INT64",
+            "logicalType": "TIMESTAMP_MILLIS"
           },
           "message": {
             "type": "STRING",
             "compression": "ZSTD"
+          },
+          "level": {
+            "type": "STRING"
           }
         }
 ```
 
-Using built-in schema templates:
+### Kusto Schema Conversion
+
+You can also use Kusto schema format, which will be automatically converted:
 
 ```yaml
 targets:
-  - name: csl_logs
+  - name: kusto_format
     type: file
     properties:
       location: "/var/log/vmetric"
       format: "parquet"
-      schema: "CommonSecurityLog"
-      compression: "brotli"
+      schema: "timestamp:datetime,message:string,level:string,source:string"
 ```
 
 ### Windows
