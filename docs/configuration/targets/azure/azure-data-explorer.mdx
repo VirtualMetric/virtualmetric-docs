@@ -23,7 +23,6 @@ Creates an Azure Data Explorer (Kusto) target that ingests data directly into Az
     table: <string>
     schema: <string>
     type: <string>
-    drop_unknown_stream_events: <boolean>
     flush_immediately: <boolean>
     timeout: <numeric>
     batch_size: <numeric>
@@ -71,7 +70,6 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`drop_unknown_stream_events`|N|`true`|Ignore events for undefined tables|
 |`flush_immediately`|N|`true`|Send data to ADX without waiting for batch completion|
 |`timeout`|N|`30`|Connection timeout in seconds|
 |`batch_size`|N|`100000`|Maximum number of messages per batch|
@@ -118,7 +116,6 @@ The target uses a routing system to direct events to the appropriate table:
 
 1. **Explicit Table Matching**: If an event has a `SystemS3` field, the target looks for a table defined in the `tables` array with a matching name
 2. **Catch-All Table**: If no matching table is found (or if `SystemS3` is not set), the event is routed to the default `table` specified at the root level
-3. **Drop Unknown Events**: If no default `table` is configured and `drop_unknown_stream_events` is `true`, unmatched events are dropped
 
 The `table` and `schema` properties at the root level serve as a catch-all mechanism. This is particularly useful for automation scenarios where systems may look for specific tables with specific schemas. If no matching table is found in the `tables` array, these events will fall back to the default table instead of being dropped.
 
@@ -144,10 +141,6 @@ For tables not defined in the configuration, the target can automatically discov
 
 :::warning
 Consider cluster capacity when setting batch sizes and timeouts.
-:::
-
-:::note
-Messages with empty table names or undefined tables will be sent to the default table if specified, or dropped if `drop_unknown_stream_events` is enabled.
 :::
 
 ## Examples

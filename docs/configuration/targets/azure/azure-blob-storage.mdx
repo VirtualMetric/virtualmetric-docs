@@ -4,7 +4,7 @@
 
 ## Synopsis
 
-Creates a target that writes log messages to _Azure Blob Storage_ with support for various file formats, authentication methods, and retry mechanisms. Inherits file format capabilities from the base target.
+Creates a target that writes log messages to _Azure Blob Storage_ with support for various file formats, authentication methods, and retry mechanisms. Inherits file format capabilities from the base file target.
 
 ## Schema
 
@@ -21,17 +21,24 @@ Creates a target that writes log messages to _Azure Blob Storage_ with support f
     client_secret: <string>
     container: <string>
     name: <string>
-    type: <string>
+    format: <string>
     extension: <string>
     compression: <string>
     schema: <string>
     field_format: <string>
     no_buffer: <boolean>
-    max_retry: <numeric>
-    retry_interval: <numeric>
     timeout: <numeric>
     max_size: <numeric>
     batch_size: <numeric>
+    containers:
+      - container: <string>
+        name: <string>
+        format: <string>
+        compression: <string>
+        extension: <string>
+        schema: <string>
+    function_app: <string>
+    function_token: <string>
     interval: <string|numeric>
     cron: <string>
     debug:
@@ -56,26 +63,34 @@ The following fields are used to define the target:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`account`|Y||Azure storage account name|
-|`tenant_id`|N*|-|Azure tenant ID (required unless using managed identity)|
-|`client_id`|N*|-|Azure client ID (required unless using managed identity)|
-|`client_secret`|N*|-|Azure client secret (required unless using managed identity)|
-|`container`|N|`"vmetric"`|Blob container name|
+|`tenant_id`|N(1)|-|Azure tenant ID (required unless using managed identity or function app)|
+|`client_id`|N(1)|-|Azure client ID (required unless using managed identity or function app)|
+|`client_secret`|N(1)|-|Azure client secret (required unless using managed identity or function app)|
+|`container`|N(2)|`"vmetric"`|Default/fallback container name (catch-all for unmatched events)|
 
-\* = Conditionally required (see notes in the Azure section above)
+(1) = Conditionally required (see authentication methods above)
+(2) = Required if you want a catch-all container for unmatched events, or if not using the `containers` array
 
 ### Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`max_retry`|N|`5`|Maximum number of upload retries|
-|`retry_interval`|N|`10`|Base interval between retries in seconds|
 |`timeout`|N|`30`|Connection timeout in seconds|
-|`max_size`|N|`0`|Maximum file size in bytes|
+|`max_size`|N|`0`|Maximum file size in bytes before uploading|
 |`batch_size`|N|`100000`|Maximum number of messages per file|
 
 :::note
 When `max_size` is reached, the current file is uploaded to blob storage and a new file is created. For unlimited file size, set the field to `0`.
 :::
+
+### Function App (Optional)
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`function_app`|N|-|Azure Function App URL for uploading blobs|
+|`function_token`|N|-|Authentication token for the Function App|
+
+If `function_app` is specified, the target will use the Function App to upload blobs instead of direct Azure Blob Storage SDK. This is useful for scenarios where direct access to storage is restricted.
 
 ### Files
 
@@ -84,19 +99,38 @@ The following fields can be used for files:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Blob name template|
-|`type`|N|`"json"`|File format (`json`, `multijson`, `avro`, `parquet`)|
-|`extension`|N|Matches `type`|Custom file extension|
+|`format`|N|`"json"`|File format (`json`, `multijson`, `avro`, `parquet`)|
+|`extension`|N|Matches `format`|Custom file extension|
 |`compression`|N|`"zstd"`|Compression algorithm|
-|`schema`|N|-|Data schema for Avro/Parquet formats or schema template name|
+|`schema`|N|-|Data schema for Avro/Parquet formats. Can be a built-in schema name, a path to a schema file, or an inline schema definition|
 |`no_buffer`|N|`false`|Disable write buffering|
-|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+|`field_format`|N|-|Data normalization format. See applicable Normalization section|
+
+### Multiple Containers
+
+You can define multiple output containers with different settings:
+
+```yaml
+targets:
+  - name: multi_container_blob
+    type: azblob
+    properties:
+      containers:
+        - container: "security-logs"
+          name: "security_{{.Year}}_{{.Month}}_{{.Day}}.parquet"
+          format: "parquet"
+          schema: "CommonSecurityLog"
+        - container: "system-logs"
+          name: "system_{{.Year}}_{{.Month}}_{{.Day}}.json"
+          format: "json"
+```
 
 ### Scheduler
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
-|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+|`interval`|N|realtime|Execution frequency|
+|`cron`|N|-|Cron expression for scheduled execution|
 
 ### Debug Options
 
@@ -107,12 +141,26 @@ The following fields can be used for files:
 
 ## Details
 
-The Azure Blob Storage target supports writing to different containers with various file formats and schemas. When using the `SystemS3` field in your logs, the value will be used to route the message to the appropriate container.
+The Azure Blob Storage target supports writing to multiple containers with various file formats and schemas. When using the `SystemS3` field in your logs, the value will be used to route the message to the appropriate container.
+
+### Container Routing and Catch-All Behavior
+
+The target uses a routing system to direct events to the appropriate container:
+
+1. **Explicit Container Matching**: If an event has a `SystemS3` field, the target looks for a container defined in the `containers` array with a matching name
+2. **Catch-All Container**: If no matching container is found (or if `SystemS3` is not set), the event is routed to the default `container` specified at the root level
+
+The `container` and `schema` properties at the root level serve as a catch-all mechanism. This is particularly useful for automation scenarios where systems may look for specific containers with specific schemas. If no matching container is found in the `containers` array, these events will fall back to the default container instead of being dropped.
 
 The target supports the following built-in schema templates for structured data formats:
+- `Syslog` - Standard schema for Syslog messages
+- `CommonSecurityLog` - Schema compatible with Common Security Log Format (CSL)
 
-- `{{Syslog}}` - Standard schema for Syslog messages
-- `{{CommonSecurityLog}}` - Schema compatible with Common Event Format (CEF)
+You can also reference custom schema files by name (without the .json extension). The system will search for schema files in:
+1. User schema directory: `<user-path>/schemas/`
+2. Package schema directory: `<package-path>/schemas/`
+
+Schema files are searched recursively in these directories, and filename matching is case-insensitive.
 
 ### Templates
 
@@ -137,21 +185,19 @@ The following template variables can be used in the blob name:
 |---|---|
 |`json`|Each log entry is written as a separate JSON line (JSONL format)|
 |`multijson`|All log entries are written as a single JSON array|
-|`avro`|Apache Avro format with schema|
+|`avro`|Apache Avro format with schema and compression support|
 |`parquet`|Apache Parquet columnar format with schema|
 
 ### Compression
 
-|Format|Compression Options|
-|---|---|
-|JSON/MultiJSON|`zstd` (default)|
-|Avro|`null`, `deflate`, `snappy`, `zstd`|
-|Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+Files can use the following compression algorithms:
 
-
-:::warning
-Failed uploads are retried automatically based on the `max_retry` and `retry_interval` settings. The `retry_interval` setting is based on an exponential backoff which is _retry_interval_&nbsp;*&nbsp;2&nbsp;^&nbsp;_attempt_, therefore each retry will wait longer than the previous one.
-:::
+|Format|Default|Compression Codecs|
+|---|---|---|
+|JSON|-|Not supported|
+|MultiJSON|-|Not supported|
+|Avro|`zstd`|`deflate`, `snappy`, `zstd`|
+|Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
 
 :::note
 Files with no messages (i.e. with `counter=0`) are automatically skipped during upload.
@@ -163,7 +209,7 @@ The following upload configurations are available.
 
 ### JSON
 
-The minimum configuration for a _JSON_ blob storage:
+The minimum configuration for a JSON blob storage:
 
 ```yaml
 targets:
@@ -174,63 +220,131 @@ targets:
       tenant_id: "00000000-0000-0000-0000-000000000000"
       client_id: "00000000-0000-0000-0000-000000000000"
       client_secret: "your-client-secret"
-  ```
+```
 
-  ### Parquet
+### Multiple Containers with Catch-All
 
-  Configuration for daily partitioned _Parquet_ files:
+Configuration with multiple target containers and a catch-all default container:
 
-  ```yaml
-  targets:
-    - name: parquet_blob
-      type: azblob
-      properties:
-        account: "mystorageaccount"
-        tenant_id: "00000000-0000-0000-0000-000000000000"
-        client_id: "00000000-0000-0000-0000-000000000000"
-        client_secret: "your-client-secret"
-        container: "logs"
-        type: "parquet"
-        compression: "zstd"
-        name: "logs/year={{.Year}}/month={{.Month}}/day={{.Day}}/data_{{.Timestamp}}.parquet"
-        max_size: 536870912  # 512MB
-  ```
+```yaml
+targets:
+  - name: multi_container_blob
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      # Catch-all container for unmatched events
+      container: "general-logs"
+      schema: "Syslog"
+      containers:
+        - container: "security-logs"
+          name: "security_{{.Year}}_{{.Month}}_{{.Day}}.parquet"
+          format: "parquet"
+          schema: "CommonSecurityLog"
+          compression: "zstd"
+        - container: "system-logs"
+          name: "system_{{.Year}}_{{.Month}}_{{.Day}}.json"
+          format: "json"
+        - container: "application-logs"
+          name: "app_{{.Year}}_{{.Month}}_{{.Day}}.avro"
+          format: "avro"
+          schema: "Syslog"
+          compression: "snappy"
+```
 
-  ### High Reliability
+### Parquet
 
-  Configuration with enhanced retry settings:
+Configuration for daily partitioned Parquet files:
 
-  ```yaml
-  targets:
-    - name: reliable_blob
-      type: azblob
-      pipelines:
-        - checkpoint
-      properties:
-        account: "mystorageaccount"
-        tenant_id: "00000000-0000-0000-0000-000000000000"
-        client_id: "00000000-0000-0000-0000-000000000000"
-        client_secret: "your-client-secret"
-        max_retry: 10
-        retry_interval: 30
-        timeout: 60
-        no_buffer: true
-      ```
+```yaml
+targets:
+  - name: parquet_blob
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      container: "logs"
+      format: "parquet"
+      compression: "zstd"
+      name: "logs/year={{.Year}}/month={{.Month}}/day={{.Day}}/data_{{.Timestamp}}.parquet"
+      schema: "Syslog"
+      max_size: 536870912  # 512MB
+```
 
-  ### Debug Configuration
+### Avro with Custom Schema
 
-  Configuration with debugging enabled:
+Configuration for Avro format with a custom schema file:
 
-  ```yaml
-  targets:
-    - name: debug_blob
-      type: azblob
-      properties:
-        account: "mystorageaccount"
-        tenant_id: "00000000-0000-0000-0000-000000000000"
-        client_id: "00000000-0000-0000-0000-000000000000"
-        client_secret: "your-client-secret"
-        debug:
-          status: true
-          dont_send_logs: true  # Test mode that doesn't actually upload
+```yaml
+targets:
+  - name: avro_blob
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      container: "logs"
+      format: "avro"
+      compression: "snappy"
+      name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.avro"
+      schema: "MyCustomSchema"
+```
+
+### Function App Upload
+
+Configuration using Azure Function App for uploading:
+
+```yaml
+targets:
+  - name: function_blob
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      function_app: "https://my-function-app.azurewebsites.net/api/BlobStorage"
+      function_token: "your-function-token"
+      container: "logs"
+```
+
+### Debug Configuration
+
+Configuration with debugging enabled:
+
+```yaml
+targets:
+  - name: debug_blob
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      debug:
+        status: true
+        dont_send_logs: true  # Test mode that doesn't actually upload
+```
+
+### High Volume with Batching
+
+Configuration optimized for high-volume ingestion:
+
+```yaml
+targets:
+  - name: high_volume_blob
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      container: "logs"
+      format: "parquet"
+      compression: "zstd"
+      batch_size: 50000
+      max_size: 536870912  # 512MB
+      timeout: 60
 ```
