@@ -55,7 +55,7 @@ Files can have the following properties:
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|File name template|
 |`format`|N|`"json"`|File format. See [Formats](#formats) below|
 |`compression`|N|-|Compression algorithm. See [Compression](#compression) below|
-|`extension`|N|Matches `type`|Custom file extension|
+|`extension`|N|Matches `format`|Custom file extension|
 |`schema`|N|-|Data schema for <Topic id="appendix-avro">Avro</Topic> / <Topic id="appendix-parquet">Parquet</Topic> formats or schema template name|
 |`batch_size`|N|`100000`|Maximum number of messages per file|
 |`max_size`|N|`32MB`|Maximum file size before rotating|
@@ -74,11 +74,11 @@ targets:
       locations:
         - id: "security_logs"
           path: "/var/log/security"
-          schema: "{{CommonSecurityLog}}"
+          schema: "CommonSecurityLog"
           format: "parquet"
         - id: "system_logs"
           path: "/var/log/system"
-          schema: "{{CommonSystemLog}}"
+          schema: "CommonSystemLog"
           format: "json"
 ```
 
@@ -103,8 +103,8 @@ The file target supports writing to multiple file locations with different forma
 If no schema is specified for Avro or Parquet formats, a default schema will be used that captures epoch timestamp and message content.
 
 The target supports the following built-in schema templates:
-- `{{Syslog}}` - Standard schema for Syslog messages
-- `{{CommonSecurityLog}}` - Schema compatible with Common Event Format (CEF)
+- `Syslog` - Standard schema for Syslog messages
+- `CommonSecurityLog` - Schema compatible with Common Security Log Format (CSL)
 
 :::note
 Files with no messages (i.e. with `counter=0`) are automatically removed when the target is disposed.
@@ -137,7 +137,6 @@ The following template variables can be used in the file name:
 |---|---|
 |`json`|Each log entry is written as a separate JSON line (JSONL format)|
 |`multijson`|All log entries are written as a single JSON array|
-|`ocf`|OCF format with schema|
 |`avro`|Apache Avro format with schema|
 |`parquet`|Apache Parquet columnar format with schema|
 
@@ -145,10 +144,12 @@ The following template variables can be used in the file name:
 
 Files can use the following compression algorithms:
 
-|Format|Default|Compression Codecs|
-|---|---|---|
-|Avro|`zstd`|See <Topic id="appendix-avro-compression">Appendix</Topic>|
-|Parquet|`zstd`|See <Topic id="appendix-parquet-compression">Appendix</Topic>|
+|Format|Compression Codecs|
+|---|---|
+|JSON|Not supported|
+|MultiJSON|Not supported|
+|Avro|`deflate`, `snappy`, `zstd` (default)|
+|Parquet|`gzip`, `snappy`, `zstd` (default), `brotli`, `lz4`|
 
 ## Examples
 
@@ -162,12 +163,11 @@ targets:
     type: file
     properties:
       location: "/var/log/vmetric"
-      compression: "zstd"
 ```
 
 ### Multiple Locations
 
-Configuration for multiple output locations; a different format is used for each location:
+Configuration for multiple output locations with different formats:
 
 ```yaml
 targets:
@@ -178,7 +178,8 @@ targets:
         - id: "security"
           path: "/var/log/vmetric/security"
           format: "parquet"
-          schema: "{{CommonSecurityLog}}"
+          schema: "CommonSecurityLog"
+          compression: "zstd"
         - id: "system"
           path: "/var/log/vmetric/system"
           format: "json"
@@ -186,6 +187,42 @@ targets:
           path: "/var/log/vmetric/app"
           format: "multijson"
           name: "app_{{.Year}}_{{.Month}}_{{.Day}}.json"
+```
+
+### Avro
+
+Configuration for an Avro output with compression and schema:
+
+```yaml
+targets:
+  - name: avro_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      format: "avro"
+      compression: "zstd"
+      schema: |
+        {
+          "type": "record",
+          "name": "Log",
+          "fields": [
+            {"name": "epoch", "type": "long"},
+            {"name": "message", "type": "string"}
+          ]
+        }
+```
+
+Using built-in schema templates:
+
+```yaml
+targets:
+  - name: syslog_avro
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      format: "avro"
+      compression: "snappy"
+      schema: "Syslog"
 ```
 
 ### Parquet
@@ -217,32 +254,19 @@ targets:
 Using built-in schema templates:
 
 ```yaml
-name: cef_logs
-type: file
-properties:
-  location: "/var/log/vmetric"
-  format: "parquet"
-  schema: "{{CommonSecurityLog}}"
-```
-
-### OCF
-
-Configuration for an _OCF_ output with daily file rotation:
-
-```yaml
 targets:
-  - name: ocf_logs
+  - name: csl_logs
     type: file
     properties:
       location: "/var/log/vmetric"
-      format: "ocf"
-      compression: "zstd"
-      name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.ocf"
+      format: "parquet"
+      schema: "CommonSecurityLog"
+      compression: "brotli"
 ```
 
 ### Windows
 
-Configuration for a _Windows_ environment with a proper path structure:
+Configuration for a Windows environment with a proper path structure:
 
 ```yaml
 targets:
@@ -250,6 +274,22 @@ targets:
     type: file
     properties:
       location: "C:\\ProgramData\\VMetric\\Logs"
-      compression: "zstd"
+      format: "json"
       name: "windows_{{.Year}}\\{{.Month}}\\system_logs.json"
+```
+
+### Daily Rotation with Templates
+
+Configuration with daily file rotation using template variables:
+
+```yaml
+targets:
+  - name: daily_logs
+    type: file
+    properties:
+      location: "/var/log/vmetric"
+      format: "avro"
+      compression: "zstd"
+      name: "logs_{{.Year}}_{{.Month}}_{{.Day}}.avro"
+      schema: "Syslog"
 ```
