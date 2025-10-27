@@ -120,6 +120,7 @@ const sidebars: SidebarsConfig = {
             "configuration/targets/amazon-cloudwatch",
             "configuration/targets/amazon-kinesis",
             "configuration/targets/amazon-msk",
+            "configuration/targets/amazon-opensearch",
             "configuration/targets/amazon-redshift",
             "configuration/targets/amazon-sns",
             "configuration/targets/amazon-sqs",
