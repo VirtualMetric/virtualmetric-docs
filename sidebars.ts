@@ -117,7 +117,12 @@ const sidebars: SidebarsConfig = {
           items: [
             "configuration/targets/overview",
             "configuration/targets/alibaba-oss",
+            "configuration/targets/amazon-cloudwatch",
+            "configuration/targets/amazon-kinesis",
             "configuration/targets/amazon-msk",
+            "configuration/targets/amazon-redshift",
+            "configuration/targets/amazon-sns",
+            "configuration/targets/amazon-sqs",
             "configuration/targets/apache-kafka",
             "configuration/targets/aws-s3",
             "configuration/targets/aws-security-lake",
