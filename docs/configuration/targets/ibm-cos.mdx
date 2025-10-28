@@ -1,0 +1,321 @@
+# IBM Cloud Object Storage
+
+<span className="theme-doc-version-badge badge badge--secondary">IBM Cloud</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
+
+## Synopsis
+
+Creates a target that writes log messages to IBM Cloud Object Storage buckets with support for various file formats and authentication methods. The target handles large file uploads efficiently with configurable rotation based on size or event count. IBM Cloud Object Storage provides enterprise-grade durability, security, and global availability.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: ibmcos
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    key: <string>
+    secret: <string>
+    region: <string>
+    endpoint: <string>
+    part_size: <numeric>
+    bucket: <string>
+    buckets:
+      - bucket: <string>
+        name: <string>
+        format: <string>
+        compression: <string>
+        extension: <string>
+        schema: <string>
+    name: <string>
+    format: <string>
+    compression: <string>
+    extension: <string>
+    schema: <string>
+    max_size: <numeric>
+    batch_size: <numeric>
+    timeout: <numeric>
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `ibmcos`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### IBM Cloud Object Storage Credentials
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`key`|Y|-|IBM Cloud Object Storage HMAC access key ID|
+|`secret`|Y|-|IBM Cloud Object Storage HMAC secret access key|
+|`region`|Y|-|IBM Cloud region (e.g., `us-south`, `eu-gb`, `jp-tok`)|
+|`endpoint`|Y|-|IBM COS endpoint URL (e.g., `https://s3.us-south.cloud-object-storage.appdomain.cloud`)|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`part_size`|N|`5`|Multipart upload part size in megabytes (minimum 5MB)|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+### Files
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`bucket`|N*|-|Default IBM COS bucket name (used if `buckets` not specified)|
+|`buckets`|N*|-|Array of bucket configurations for file distribution|
+|`buckets.bucket`|Y|-|IBM COS bucket name|
+|`buckets.name`|Y|-|File name template|
+|`buckets.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
+|`buckets.compression`|N|`"zstd"`|Compression algorithm|
+|`buckets.extension`|N|Matches `format`|File extension override|
+|`buckets.schema`|N*|-|Schema definition file path (required for Avro and Parquet formats)|
+|`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default file name template when `buckets` not used|
+|`format`|N|`"json"`|Default output format when `buckets` not used|
+|`compression`|N|`"zstd"`|Default compression when `buckets` not used|
+|`extension`|N|Matches `format`|Default file extension when `buckets` not used|
+|`schema`|N|-|Default schema path when `buckets` not used|
+|`max_size`|N|`0`|Maximum file size in bytes before rotation|
+|`batch_size`|N|`100000`|Maximum number of messages per file|
+
+\* = Either `bucket` or `buckets` must be specified. When using `buckets`, schema is conditionally required for Avro and Parquet formats.
+
+:::note
+When `max_size` is reached, the current file is uploaded to IBM COS and a new file is created. For unlimited file size, set the field to `0`.
+:::
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+The IBM Cloud Object Storage target provides enterprise-grade cloud storage integration with comprehensive file format support. IBM COS offers high durability (99.999999999%), security features, and flexible storage classes for cost optimization.
+
+### Authentication
+
+Requires IBM Cloud Object Storage HMAC credentials. HMAC credentials can be created through the IBM Cloud console and provide programmatic access to COS buckets.
+
+### Endpoint Configuration
+
+IBM Cloud Object Storage uses region-specific endpoints. The endpoint format is typically `https://s3.<region>.cloud-object-storage.appdomain.cloud` where `<region>` corresponds to your chosen IBM Cloud region.
+
+### Available Regions
+
+IBM Cloud Object Storage is available in multiple regions worldwide:
+
+|Region Code|Location|
+|---|---|
+|`us-south`|Dallas, USA|
+|`us-east`|Washington DC, USA|
+|`eu-gb`|London, UK|
+|`eu-de`|Frankfurt, Germany|
+|`jp-tok`|Tokyo, Japan|
+|`au-syd`|Sydney, Australia|
+
+### File Formats
+
+|Format|Description|
+|---|---|
+|`json`|Each log entry is written as a separate JSON line (JSONL format)|
+|`multijson`|All log entries are written as a single JSON array|
+|`avro`|Apache Avro format with schema|
+|`parquet`|Apache Parquet columnar format with schema|
+
+### Compression
+
+All formats support optional compression to reduce storage costs and transfer times. Compression is applied before upload.
+
+|Format|Compression Options|
+|---|---|
+|JSON/MultiJSON|`zstd` (default), `gzip`|
+|Avro|`null`, `deflate`, `snappy`, `zstd`|
+|Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+
+### File Management
+
+Files are rotated based on size (`max_size` parameter) or event count (`batch_size` parameter), whichever limit is reached first. Template variables in file names enable dynamic file naming for time-based partitioning.
+
+### Templates
+
+The following template variables can be used in file names:
+
+|Variable|Description|Example|
+|---|---|---|
+|`{{.Year}}`|Current year|`2024`|
+|`{{.Month}}`|Current month|`01`|
+|`{{.Day}}`|Current day|`15`|
+|`{{.Timestamp}}`|Current timestamp in nanoseconds|`1703688533123456789`|
+|`{{.Format}}`|File format|`json`|
+|`{{.Extension}}`|File extension|`json`|
+|`{{.Compression}}`|Compression type|`zstd`|
+|`{{.TargetName}}`|Target name|`my_logs`|
+|`{{.TargetType}}`|Target type|`ibmcos`|
+|`{{.Table}}`|Bucket name|`logs`|
+
+### Multipart Upload
+
+Large files automatically use multipart upload protocol with configurable part size (`part_size` parameter). Default 5MB part size balances upload efficiency and memory usage.
+
+### Multiple Buckets
+
+Single target can write to multiple IBM COS buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
+
+### Schema Requirements
+
+Avro and Parquet formats require schema definition files. Schema files must be accessible at the path specified in the `schema` parameter during target initialization.
+
+### Storage Classes
+
+IBM Cloud Object Storage supports multiple storage classes for cost optimization. Choose the appropriate class based on data access patterns and retention requirements.
+
+## Examples
+
+### Basic Configuration
+
+The minimum configuration for a JSON IBM COS target:
+
+```yaml
+targets:
+  - name: basic_ibm_cos
+    type: ibmcos
+    properties:
+      key: "0123456789abcdef0123456789abcdef"
+      secret: "fedcba9876543210fedcba9876543210fedcba98"
+      region: "us-south"
+      endpoint: "https://s3.us-south.cloud-object-storage.appdomain.cloud"
+      bucket: "datastream-logs"
+```
+
+### Multiple Buckets
+
+Configuration for distributing data across multiple IBM COS buckets with different formats:
+
+```yaml
+targets:
+  - name: multi_bucket_export
+    type: ibmcos
+    properties:
+      key: "0123456789abcdef0123456789abcdef"
+      secret: "fedcba9876543210fedcba9876543210fedcba98"
+      region: "eu-gb"
+      endpoint: "https://s3.eu-gb.cloud-object-storage.appdomain.cloud"
+      buckets:
+        - bucket: "raw-data-archive"
+          name: "raw-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "multijson"
+          compression: "gzip"
+        - bucket: "analytics-data"
+          name: "analytics-{{.Year}}/{{.Month}}/{{.Day}}/data_{{.Timestamp}}.parquet"
+          format: "parquet"
+          schema: "<schema definition>"
+          compression: "snappy"
+```
+
+### Parquet Format
+
+Configuration for daily partitioned Parquet files:
+
+```yaml
+targets:
+  - name: parquet_analytics
+    type: ibmcos
+    properties:
+      key: "0123456789abcdef0123456789abcdef"
+      secret: "fedcba9876543210fedcba9876543210fedcba98"
+      region: "jp-tok"
+      endpoint: "https://s3.jp-tok.cloud-object-storage.appdomain.cloud"
+      bucket: "analytics-lake"
+      name: "events/year={{.Year}}/month={{.Month}}/day={{.Day}}/part-{{.Timestamp}}.parquet"
+      format: "parquet"
+      schema: "<schema definition>"
+      compression: "snappy"
+      max_size: 536870912
+```
+
+### High Reliability
+
+Configuration with enhanced settings:
+
+```yaml
+targets:
+  - name: reliable_ibm_cos
+    type: ibmcos
+    pipelines:
+      - checkpoint
+    properties:
+      key: "0123456789abcdef0123456789abcdef"
+      secret: "fedcba9876543210fedcba9876543210fedcba98"
+      region: "us-east"
+      endpoint: "https://s3.us-east.cloud-object-storage.appdomain.cloud"
+      bucket: "critical-logs"
+      name: "logs-{{.Timestamp}}.json"
+      format: "json"
+      timeout: 60
+      part_size: 10
+```
+
+### With Field Normalization
+
+Using field normalization for standard format:
+
+```yaml
+targets:
+  - name: normalized_ibm_cos
+    type: ibmcos
+    properties:
+      key: "0123456789abcdef0123456789abcdef"
+      secret: "fedcba9876543210fedcba9876543210fedcba98"
+      region: "eu-de"
+      endpoint: "https://s3.eu-de.cloud-object-storage.appdomain.cloud"
+      bucket: "normalized-logs"
+      name: "logs-{{.Timestamp}}.json"
+      format: "json"
+      field_format: "cim"
+```
+
+### Debug Configuration
+
+Configuration with debugging enabled:
+
+```yaml
+targets:
+  - name: debug_ibm_cos
+    type: ibmcos
+    properties:
+      key: "0123456789abcdef0123456789abcdef"
+      secret: "fedcba9876543210fedcba9876543210fedcba98"
+      region: "au-syd"
+      endpoint: "https://s3.au-syd.cloud-object-storage.appdomain.cloud"
+      bucket: "test-logs"
+      name: "test-{{.Timestamp}}.json"
+      format: "json"
+      debug:
+        status: true
+        dont_send_logs: true
+```
