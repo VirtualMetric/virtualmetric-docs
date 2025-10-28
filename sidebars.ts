@@ -118,7 +118,7 @@ const sidebars: SidebarsConfig = {
             "configuration/targets/overview",
             {
               type: "category",
-              label: "Azure",
+              label: "Microsoft Azure",
               items: [
                 "configuration/targets/azure/microsoft-sentinel",
                 "configuration/targets/azure/microsoft-sentinel-data-lake",
@@ -131,7 +131,7 @@ const sidebars: SidebarsConfig = {
             },
             {
               type: "category",
-              label: "AWS",
+              label: "Amazon Web Services (AWS)",
               items: [
                 "configuration/targets/aws/amazon-security-lake",
                 "configuration/targets/aws/amazon-s3",
@@ -175,14 +175,14 @@ const sidebars: SidebarsConfig = {
               type: "category",
               label: "Cloud Storage",
               items: [
-                "configuration/targets/cloud-storage/alibaba-oss",
-                "configuration/targets/cloud-storage/backblaze-b2",
+                "configuration/targets/cloud-storage/minio",
+                "configuration/targets/cloud-storage/ibm-cos",
                 "configuration/targets/cloud-storage/cloudflare-r2",
                 "configuration/targets/cloud-storage/digitalocean-spaces",
-                "configuration/targets/cloud-storage/ibm-cos",
-                "configuration/targets/cloud-storage/minio",
-                "configuration/targets/cloud-storage/oracle-cloud-os",
                 "configuration/targets/cloud-storage/scaleway-os",
+                "configuration/targets/cloud-storage/oracle-cloud-os",
+                "configuration/targets/cloud-storage/alibaba-oss",
+                "configuration/targets/cloud-storage/backblaze-b2",
                 "configuration/targets/cloud-storage/wasabi-cloud-storage",
               ],
             },
