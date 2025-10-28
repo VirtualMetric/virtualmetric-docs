@@ -1,22 +1,23 @@
-# DigitalOcean Spaces
+# Amazon S3
 
-<span className="theme-doc-version-badge badge badge--secondary">DigitalOcean</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
+<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
 
 ## Synopsis
 
-Creates a target that writes log messages to DigitalOcean Spaces with support for various file formats and authentication methods. The target handles large file uploads efficiently with configurable rotation based on size or event count. DigitalOcean Spaces provides simple, scalable object storage with built-in CDN integration.
+Creates a target that writes log messages to Amazon S3 buckets with support for various file formats, authentication methods, and multipart uploads. The target handles large file uploads efficiently with configurable rotation based on size or event count.
 
 ## Schema
 
 ```yaml {1,3}
 - name: <string>
   description: <string>
-  type: digitaloceans3
+  type: awss3
   pipelines: <pipeline[]>
   status: <boolean>
   properties:
     key: <string>
     secret: <string>
+    session: <string>
     region: <string>
     endpoint: <string>
     part_size: <numeric>
@@ -52,18 +53,21 @@ The following fields are used to define the target:
 |---|---|---|---|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `digitaloceans3`|
+|`type`|Y||Must be `awss3`|
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### DigitalOcean Spaces Credentials
+### AWS Credentials
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`key`|Y|-|DigitalOcean Spaces access key|
-|`secret`|Y|-|DigitalOcean Spaces secret key|
-|`region`|Y|-|DigitalOcean region (e.g., `nyc3`, `sfo3`, `ams3`, `sgp1`)|
-|`endpoint`|Y|-|Spaces endpoint URL (format: `https://<region>.digitaloceanspaces.com`)|
+|`key`|N*|-|AWS access key ID for authentication|
+|`secret`|N*|-|AWS secret access key for authentication|
+|`session`|N|-|Optional session token for temporary credentials|
+|`region`|Y|-|AWS region (e.g., `us-east-1`, `eu-west-1`)|
+|`endpoint`|N|-|Custom S3-compatible endpoint URL (for non-AWS S3 services)|
+
+\* = Conditionally required. AWS credentials (`key` and `secret`) are required unless using IAM role-based authentication on AWS infrastructure.
 
 ### Connection
 
@@ -77,17 +81,17 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`bucket`|N*|-|Default Spaces bucket name (used if `buckets` not specified)|
+|`bucket`|N*|-|Default S3 bucket name (used if `buckets` not specified)|
 |`buckets`|N*|-|Array of bucket configurations for file distribution|
-|`buckets.bucket`|Y|-|Spaces bucket name|
+|`buckets.bucket`|Y|-|S3 bucket name|
 |`buckets.name`|Y|-|File name template|
 |`buckets.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
-|`buckets.compression`|N|`"zstd"`|Compression algorithm|
+|`buckets.compression`|N|-|Compression algorithm. See [Compression](#compression) below|
 |`buckets.extension`|N|Matches `format`|File extension override|
 |`buckets.schema`|N*|-|Schema definition file path (required for Avro and Parquet formats)|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default file name template when `buckets` not used|
-|`format`|N|`"json"`|Default output format when `buckets` not used|
-|`compression`|N|`"zstd"`|Default compression when `buckets` not used|
+|`format`|N|`"json"`|Default output format when `buckets` not used. See [Compression](#compression) below|
+|`compression`|N|-|Default compression when `buckets` not used|
 |`extension`|N|Matches `format`|Default file extension when `buckets` not used|
 |`schema`|N|-|Default schema path when `buckets` not used|
 |`max_size`|N|`0`|Maximum file size in bytes before rotation|
@@ -96,7 +100,7 @@ The following fields are used to define the target:
 \* = Either `bucket` or `buckets` must be specified. When using `buckets`, schema is conditionally required for Avro and Parquet formats.
 
 :::note
-When `max_size` is reached, the current file is uploaded to Spaces and a new file is created. For unlimited file size, set the field to `0`.
+When `max_size` is reached, the current file is uploaded to S3 and a new file is created. For unlimited file size, set the field to `0`.
 :::
 
 ### Scheduler
@@ -115,28 +119,11 @@ When `max_size` is reached, the current file is uploaded to Spaces and a new fil
 
 ## Details
 
-The DigitalOcean Spaces target provides simple, developer-friendly object storage with comprehensive file format support. Spaces includes built-in CDN functionality powered by DigitalOcean's global network for fast content delivery.
+The Amazon S3 target supports writing to different buckets with various file formats and schemas. The target provides enterprise-grade cloud storage integration with comprehensive file format support.
 
-### Authentication
+### Authentication Methods
 
-Requires DigitalOcean Spaces access credentials. Access keys can be generated through the DigitalOcean Control Panel under API settings. Each key provides full access to all Spaces in the account.
-
-### Endpoint Configuration
-
-The endpoint URL follows the pattern `https://<region>.digitaloceanspaces.com` where `<region>` is your chosen DigitalOcean datacenter location.
-
-### Available Regions
-
-DigitalOcean Spaces is available in the following regions:
-
-|Region Code|Location|
-|---|---|
-|`nyc3`|New York City, USA|
-|`sfo3`|San Francisco, USA|
-|`ams3`|Amsterdam, Netherlands|
-|`sgp1`|Singapore|
-|`fra1`|Frankfurt, Germany|
-|`syd1`|Sydney, Australia|
+Supports static credentials (access key and secret key) with optional session tokens for temporary credentials. When deployed on AWS infrastructure, can leverage IAM role-based authentication without explicit credentials.
 
 ### File Formats
 
@@ -149,13 +136,14 @@ DigitalOcean Spaces is available in the following regions:
 
 ### Compression
 
-All formats support optional compression to reduce storage costs and transfer times. Compression is applied before upload.
+Some formats support built-in compression to reduce storage costs and transfer times. When supported, compression is applied at the file/block level before upload.
 
-|Format|Compression Options|
-|---|---|
-|JSON/MultiJSON|`zstd` (default), `gzip`|
-|Avro|`null`, `deflate`, `snappy`, `zstd`|
-|Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+|Format|Default|Compression Codecs|
+|---|---|---|
+|JSON|-|Not supported|
+|MultiJSON|-|Not supported|
+|Avro|`zstd`|`deflate`, `snappy`, `zstd`|
+|Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
 
 ### File Management
 
@@ -175,60 +163,50 @@ The following template variables can be used in file names:
 |`{{.Extension}}`|File extension|`json`|
 |`{{.Compression}}`|Compression type|`zstd`|
 |`{{.TargetName}}`|Target name|`my_logs`|
-|`{{.TargetType}}`|Target type|`digitaloceans3`|
+|`{{.TargetType}}`|Target type|`awss3`|
 |`{{.Table}}`|Bucket name|`logs`|
 
 ### Multipart Upload
 
-Large files automatically use multipart upload protocol with configurable part size (`part_size` parameter). Default 5MB part size balances upload efficiency and memory usage.
+Large files automatically use S3 multipart upload protocol with configurable part size (`part_size` parameter). Default 5MB part size balances upload efficiency and memory usage.
 
 ### Multiple Buckets
 
-Single target can write to multiple Spaces buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
+Single target can write to multiple S3 buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
 
 ### Schema Requirements
 
 Avro and Parquet formats require schema definition files. Schema files must be accessible at the path specified in the `schema` parameter during target initialization.
 
-### CDN Integration
-
-DigitalOcean Spaces includes built-in CDN functionality. Files stored in Spaces can be served globally through the CDN with no additional configuration required.
-
-### Cost Structure
-
-DigitalOcean Spaces offers predictable pricing with no egress fees within reasonable limits, making it cost-effective for applications with moderate data transfer requirements.
-
 ## Examples
 
 ### Basic Configuration
 
-The minimum configuration for a JSON Spaces target:
+The minimum configuration for a JSON S3 target:
 
 ```yaml
 targets:
-  - name: basic_spaces
-    type: digitaloceans3
+  - name: basic_s3
+    type: awss3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "nyc3"
-      endpoint: "https://nyc3.digitaloceanspaces.com"
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
       bucket: "datastream-logs"
 ```
 
 ### Multiple Buckets
 
-Configuration for distributing data across multiple Spaces buckets with different formats:
+Configuration for distributing data across multiple S3 buckets with different formats:
 
 ```yaml
 targets:
   - name: multi_bucket_export
-    type: digitaloceans3
+    type: awss3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "sfo3"
-      endpoint: "https://sfo3.digitaloceanspaces.com"
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "eu-west-1"
       buckets:
         - bucket: "raw-data-archive"
           name: "raw-{{.Year}}-{{.Month}}-{{.Day}}.json"
@@ -248,12 +226,11 @@ Configuration for daily partitioned Parquet files:
 ```yaml
 targets:
   - name: parquet_analytics
-    type: digitaloceans3
+    type: awss3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "ams3"
-      endpoint: "https://ams3.digitaloceanspaces.com"
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-west-2"
       bucket: "analytics-lake"
       name: "events/year={{.Year}}/month={{.Month}}/day={{.Day}}/part-{{.Timestamp}}.parquet"
       format: "parquet"
@@ -268,15 +245,14 @@ Configuration with enhanced settings:
 
 ```yaml
 targets:
-  - name: reliable_spaces
-    type: digitaloceans3
+  - name: reliable_s3
+    type: awss3
     pipelines:
       - checkpoint
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "sgp1"
-      endpoint: "https://sgp1.digitaloceanspaces.com"
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
       bucket: "critical-logs"
       name: "logs-{{.Timestamp}}.json"
       format: "json"
@@ -290,13 +266,12 @@ Using field normalization for standard format:
 
 ```yaml
 targets:
-  - name: normalized_spaces
-    type: digitaloceans3
+  - name: normalized_s3
+    type: awss3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "fra1"
-      endpoint: "https://fra1.digitaloceanspaces.com"
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
       bucket: "normalized-logs"
       name: "logs-{{.Timestamp}}.json"
       format: "json"
@@ -309,13 +284,12 @@ Configuration with debugging enabled:
 
 ```yaml
 targets:
-  - name: debug_spaces
-    type: digitaloceans3
+  - name: debug_s3
+    type: awss3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "nyc3"
-      endpoint: "https://nyc3.digitaloceanspaces.com"
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
       bucket: "test-logs"
       name: "test-{{.Timestamp}}.json"
       format: "json"
