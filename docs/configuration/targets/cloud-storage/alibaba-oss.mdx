@@ -1,17 +1,17 @@
-# DigitalOcean Spaces
+# Alibaba Cloud OSS
 
-<span className="theme-doc-version-badge badge badge--secondary">DigitalOcean</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
+<span className="theme-doc-version-badge badge badge--secondary">Alibaba Cloud</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
 
 ## Synopsis
 
-Creates a target that writes log messages to DigitalOcean Spaces with support for various file formats and authentication methods. The target handles large file uploads efficiently with configurable rotation based on size or event count. DigitalOcean Spaces provides simple, scalable object storage with built-in CDN integration.
+Creates a target that writes log messages to Alibaba Cloud Object Storage Service (OSS) with support for various file formats and authentication methods. The target handles large file uploads efficiently with configurable rotation based on size or event count. Alibaba Cloud OSS provides secure, cost-effective, and high-durability object storage with strong presence in Asia-Pacific regions.
 
 ## Schema
 
 ```yaml {1,3}
 - name: <string>
   description: <string>
-  type: digitaloceans3
+  type: alibabas3
   pipelines: <pipeline[]>
   status: <boolean>
   properties:
@@ -52,18 +52,18 @@ The following fields are used to define the target:
 |---|---|---|---|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `digitaloceans3`|
+|`type`|Y||Must be `alibabas3`|
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### DigitalOcean Spaces Credentials
+### Alibaba Cloud OSS Credentials
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`key`|Y|-|DigitalOcean Spaces access key|
-|`secret`|Y|-|DigitalOcean Spaces secret key|
-|`region`|Y|-|DigitalOcean region (e.g., `nyc3`, `sfo3`, `ams3`, `sgp1`)|
-|`endpoint`|Y|-|Spaces endpoint URL (format: `https://<region>.digitaloceanspaces.com`)|
+|`key`|Y|-|Alibaba Cloud OSS access key ID|
+|`secret`|Y|-|Alibaba Cloud OSS access key secret|
+|`region`|Y|-|Alibaba Cloud region (e.g., `oss-cn-hangzhou`, `oss-us-west-1`, `oss-ap-southeast-1`)|
+|`endpoint`|Y|-|OSS endpoint URL (format: `https://oss-<region>.aliyuncs.com`)|
 
 ### Connection
 
@@ -77,17 +77,17 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`bucket`|N*|-|Default Spaces bucket name (used if `buckets` not specified)|
+|`bucket`|N*|-|Default OSS bucket name (used if `buckets` not specified)|
 |`buckets`|N*|-|Array of bucket configurations for file distribution|
-|`buckets.bucket`|Y|-|Spaces bucket name|
+|`buckets.bucket`|Y|-|OSS bucket name|
 |`buckets.name`|Y|-|File name template|
 |`buckets.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
-|`buckets.compression`|N|`"zstd"`|Compression algorithm|
+|`buckets.compression`|N|-|Compression algorithm. See [Compression](#compression) below|
 |`buckets.extension`|N|Matches `format`|File extension override|
 |`buckets.schema`|N*|-|Schema definition file path (required for Avro and Parquet formats)|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default file name template when `buckets` not used|
 |`format`|N|`"json"`|Default output format when `buckets` not used|
-|`compression`|N|`"zstd"`|Default compression when `buckets` not used|
+|`compression`|N|-|Default compression when `buckets` not used|
 |`extension`|N|Matches `format`|Default file extension when `buckets` not used|
 |`schema`|N|-|Default schema path when `buckets` not used|
 |`max_size`|N|`0`|Maximum file size in bytes before rotation|
@@ -96,7 +96,7 @@ The following fields are used to define the target:
 \* = Either `bucket` or `buckets` must be specified. When using `buckets`, schema is conditionally required for Avro and Parquet formats.
 
 :::note
-When `max_size` is reached, the current file is uploaded to Spaces and a new file is created. For unlimited file size, set the field to `0`.
+When `max_size` is reached, the current file is uploaded to OSS and a new file is created. For unlimited file size, set the field to `0`.
 :::
 
 ### Scheduler
@@ -115,28 +115,38 @@ When `max_size` is reached, the current file is uploaded to Spaces and a new fil
 
 ## Details
 
-The DigitalOcean Spaces target provides simple, developer-friendly object storage with comprehensive file format support. Spaces includes built-in CDN functionality powered by DigitalOcean's global network for fast content delivery.
+The Alibaba Cloud OSS target provides enterprise-grade cloud storage integration with comprehensive file format support. OSS offers 99.9999999999% (12 nines) data durability and strong regional coverage across Asia-Pacific, making it ideal for applications serving Asian markets.
 
 ### Authentication
 
-Requires DigitalOcean Spaces access credentials. Access keys can be generated through the DigitalOcean Control Panel under API settings. Each key provides full access to all Spaces in the account.
+Requires Alibaba Cloud access credentials. Access keys can be created through the Alibaba Cloud Console under AccessKey Management. RAM (Resource Access Management) users can be created with specific OSS permissions for enhanced security.
 
 ### Endpoint Configuration
 
-The endpoint URL follows the pattern `https://<region>.digitaloceanspaces.com` where `<region>` is your chosen DigitalOcean datacenter location.
+The endpoint URL follows the pattern `https://oss-<region>.aliyuncs.com` where `<region>` is your chosen Alibaba Cloud region identifier. Internal endpoints are also available for ECS instances in the same region using `https://oss-<region>-internal.aliyuncs.com` for cost savings.
 
 ### Available Regions
 
-DigitalOcean Spaces is available in the following regions:
+Alibaba Cloud OSS is available in numerous regions worldwide:
 
 |Region Code|Location|
 |---|---|
-|`nyc3`|New York City, USA|
-|`sfo3`|San Francisco, USA|
-|`ams3`|Amsterdam, Netherlands|
-|`sgp1`|Singapore|
-|`fra1`|Frankfurt, Germany|
-|`syd1`|Sydney, Australia|
+|`oss-cn-hangzhou`|China (Hangzhou)|
+|`oss-cn-shanghai`|China (Shanghai)|
+|`oss-cn-beijing`|China (Beijing)|
+|`oss-cn-shenzhen`|China (Shenzhen)|
+|`oss-cn-hongkong`|China (Hong Kong)|
+|`oss-us-west-1`|US (Silicon Valley)|
+|`oss-us-east-1`|US (Virginia)|
+|`oss-ap-southeast-1`|Singapore|
+|`oss-ap-southeast-2`|Australia (Sydney)|
+|`oss-ap-southeast-3`|Malaysia (Kuala Lumpur)|
+|`oss-ap-southeast-5`|Indonesia (Jakarta)|
+|`oss-ap-northeast-1`|Japan (Tokyo)|
+|`oss-ap-south-1`|India (Mumbai)|
+|`oss-eu-central-1`|Germany (Frankfurt)|
+|`oss-eu-west-1`|UK (London)|
+|`oss-me-east-1`|UAE (Dubai)|
 
 ### File Formats
 
@@ -149,13 +159,14 @@ DigitalOcean Spaces is available in the following regions:
 
 ### Compression
 
-All formats support optional compression to reduce storage costs and transfer times. Compression is applied before upload.
+Some formats support built-in compression to reduce storage costs and transfer times. When supported, compression is applied at the file/block level before upload.
 
-|Format|Compression Options|
-|---|---|
-|JSON/MultiJSON|`zstd` (default), `gzip`|
-|Avro|`null`, `deflate`, `snappy`, `zstd`|
-|Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+|Format|Default|Compression Codecs|
+|---|---|---|
+|JSON|-|Not supported|
+|MultiJSON|-|Not supported|
+|Avro|`zstd`|`deflate`, `snappy`, `zstd`|
+|Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
 
 ### File Management
 
@@ -175,7 +186,7 @@ The following template variables can be used in file names:
 |`{{.Extension}}`|File extension|`json`|
 |`{{.Compression}}`|Compression type|`zstd`|
 |`{{.TargetName}}`|Target name|`my_logs`|
-|`{{.TargetType}}`|Target type|`digitaloceans3`|
+|`{{.TargetType}}`|Target type|`alibabas3`|
 |`{{.Table}}`|Bucket name|`logs`|
 
 ### Multipart Upload
@@ -184,51 +195,51 @@ Large files automatically use multipart upload protocol with configurable part s
 
 ### Multiple Buckets
 
-Single target can write to multiple Spaces buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
+Single target can write to multiple OSS buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
 
 ### Schema Requirements
 
 Avro and Parquet formats require schema definition files. Schema files must be accessible at the path specified in the `schema` parameter during target initialization.
 
-### CDN Integration
+### Storage Classes
 
-DigitalOcean Spaces includes built-in CDN functionality. Files stored in Spaces can be served globally through the CDN with no additional configuration required.
+Alibaba Cloud OSS supports multiple storage classes including Standard, Infrequent Access, Archive, and Cold Archive for cost optimization based on access patterns.
 
-### Cost Structure
+### Regional Performance
 
-DigitalOcean Spaces offers predictable pricing with no egress fees within reasonable limits, making it cost-effective for applications with moderate data transfer requirements.
+OSS provides excellent performance for applications serving Asian markets with extensive regional presence across China, Southeast Asia, and other Asia-Pacific regions.
 
 ## Examples
 
 ### Basic Configuration
 
-The minimum configuration for a JSON Spaces target:
+The minimum configuration for a JSON OSS target:
 
 ```yaml
 targets:
-  - name: basic_spaces
-    type: digitaloceans3
+  - name: basic_oss
+    type: alibabas3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "nyc3"
-      endpoint: "https://nyc3.digitaloceanspaces.com"
+      key: "LTAI5tAbCdEfGhIjKlMnOpQr"
+      secret: "aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789"
+      region: "oss-cn-hangzhou"
+      endpoint: "https://oss-cn-hangzhou.aliyuncs.com"
       bucket: "datastream-logs"
 ```
 
 ### Multiple Buckets
 
-Configuration for distributing data across multiple Spaces buckets with different formats:
+Configuration for distributing data across multiple OSS buckets with different formats:
 
 ```yaml
 targets:
   - name: multi_bucket_export
-    type: digitaloceans3
+    type: alibabas3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "sfo3"
-      endpoint: "https://sfo3.digitaloceanspaces.com"
+      key: "LTAI5tAbCdEfGhIjKlMnOpQr"
+      secret: "aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789"
+      region: "oss-ap-southeast-1"
+      endpoint: "https://oss-ap-southeast-1.aliyuncs.com"
       buckets:
         - bucket: "raw-data-archive"
           name: "raw-{{.Year}}-{{.Month}}-{{.Day}}.json"
@@ -248,12 +259,12 @@ Configuration for daily partitioned Parquet files:
 ```yaml
 targets:
   - name: parquet_analytics
-    type: digitaloceans3
+    type: alibabas3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "ams3"
-      endpoint: "https://ams3.digitaloceanspaces.com"
+      key: "LTAI5tAbCdEfGhIjKlMnOpQr"
+      secret: "aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789"
+      region: "oss-cn-shanghai"
+      endpoint: "https://oss-cn-shanghai.aliyuncs.com"
       bucket: "analytics-lake"
       name: "events/year={{.Year}}/month={{.Month}}/day={{.Day}}/part-{{.Timestamp}}.parquet"
       format: "parquet"
@@ -268,15 +279,15 @@ Configuration with enhanced settings:
 
 ```yaml
 targets:
-  - name: reliable_spaces
-    type: digitaloceans3
+  - name: reliable_oss
+    type: alibabas3
     pipelines:
       - checkpoint
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "sgp1"
-      endpoint: "https://sgp1.digitaloceanspaces.com"
+      key: "LTAI5tAbCdEfGhIjKlMnOpQr"
+      secret: "aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789"
+      region: "oss-cn-beijing"
+      endpoint: "https://oss-cn-beijing.aliyuncs.com"
       bucket: "critical-logs"
       name: "logs-{{.Timestamp}}.json"
       format: "json"
@@ -290,13 +301,13 @@ Using field normalization for standard format:
 
 ```yaml
 targets:
-  - name: normalized_spaces
-    type: digitaloceans3
+  - name: normalized_oss
+    type: alibabas3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "fra1"
-      endpoint: "https://fra1.digitaloceanspaces.com"
+      key: "LTAI5tAbCdEfGhIjKlMnOpQr"
+      secret: "aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789"
+      region: "oss-ap-northeast-1"
+      endpoint: "https://oss-ap-northeast-1.aliyuncs.com"
       bucket: "normalized-logs"
       name: "logs-{{.Timestamp}}.json"
       format: "json"
@@ -309,17 +320,36 @@ Configuration with debugging enabled:
 
 ```yaml
 targets:
-  - name: debug_spaces
-    type: digitaloceans3
+  - name: debug_oss
+    type: alibabas3
     properties:
-      key: "DO00ABC123XYZ456"
-      secret: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-      region: "nyc3"
-      endpoint: "https://nyc3.digitaloceanspaces.com"
+      key: "LTAI5tAbCdEfGhIjKlMnOpQr"
+      secret: "aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789"
+      region: "oss-cn-hangzhou"
+      endpoint: "https://oss-cn-hangzhou.aliyuncs.com"
       bucket: "test-logs"
       name: "test-{{.Timestamp}}.json"
       format: "json"
       debug:
         status: true
         dont_send_logs: true
+```
+
+### Internal Endpoint
+
+Configuration using internal endpoint for ECS instances in the same region:
+
+```yaml
+targets:
+  - name: internal_oss
+    type: alibabas3
+    properties:
+      key: "LTAI5tAbCdEfGhIjKlMnOpQr"
+      secret: "aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789"
+      region: "oss-cn-shanghai"
+      endpoint: "https://oss-cn-shanghai-internal.aliyuncs.com"
+      bucket: "application-logs"
+      name: "logs/{{.Year}}/{{.Month}}/{{.Day}}/{{.Timestamp}}.json"
+      format: "json"
+      compression: "zstd"
 ```

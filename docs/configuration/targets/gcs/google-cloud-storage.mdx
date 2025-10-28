@@ -1,22 +1,22 @@
-# Backblaze B2 Cloud Storage
+# Google Cloud Storage
 
-<span className="theme-doc-version-badge badge badge--secondary">Backblaze</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
+<span className="theme-doc-version-badge badge badge--secondary">Google Cloud</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
 
 ## Synopsis
 
-Creates a target that writes log messages to Backblaze B2 Cloud Storage with support for various file formats and authentication methods. The target handles large file uploads efficiently with configurable rotation based on size or event count. Backblaze B2 provides cost-effective, reliable cloud storage with simple pricing and no egress fees for many use cases.
+Creates a target that writes log messages to Google Cloud Storage buckets with support for various file formats, authentication methods, and multipart uploads. The target handles large file uploads efficiently with configurable rotation based on size or event count. Google Cloud Storage provides enterprise-grade durability, security, and global availability with strong consistency.
 
 ## Schema
-
 ```yaml {1,3}
 - name: <string>
   description: <string>
-  type: backblazes3
+  type: gcs
   pipelines: <pipeline[]>
   status: <boolean>
   properties:
     key: <string>
     secret: <string>
+    project_id: <string>
     region: <string>
     endpoint: <string>
     part_size: <numeric>
@@ -52,18 +52,21 @@ The following fields are used to define the target:
 |---|---|---|---|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `backblazes3`|
+|`type`|Y||Must be `gcs`|
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### Backblaze B2 Credentials
+### Google Cloud Storage Credentials
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`key`|Y|-|Backblaze B2 application key ID|
-|`secret`|Y|-|Backblaze B2 application key|
-|`region`|Y|-|B2 region (e.g., `us-west-004`, `eu-central-003`)|
-|`endpoint`|Y|-|B2 S3-compatible endpoint (format: `https://s3.<region>.backblazeb2.com`)|
+|`key`|N*|-|Google Cloud Storage HMAC access key ID for authentication|
+|`secret`|N*|-|Google Cloud Storage HMAC secret access key for authentication|
+|`project_id`|Y|-|Google Cloud project ID|
+|`region`|N|`us-central1`|Google Cloud region (e.g., `us-central1`, `europe-west1`, `asia-east1`)|
+|`endpoint`|N|`https://storage.googleapis.com`|Custom GCS-compatible endpoint URL|
+
+\* = Conditionally required. HMAC credentials (`key` and `secret`) are required unless using service account authentication with Application Default Credentials.
 
 ### Connection
 
@@ -77,17 +80,17 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`bucket`|N*|-|Default B2 bucket name (used if `buckets` not specified)|
+|`bucket`|N*|-|Default GCS bucket name (used if `buckets` not specified)|
 |`buckets`|N*|-|Array of bucket configurations for file distribution|
-|`buckets.bucket`|Y|-|B2 bucket name|
+|`buckets.bucket`|Y|-|GCS bucket name|
 |`buckets.name`|Y|-|File name template|
 |`buckets.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
-|`buckets.compression`|N|`"zstd"`|Compression algorithm|
+|`buckets.compression`|N|-|Compression algorithm. See [Compression](#compression) below|
 |`buckets.extension`|N|Matches `format`|File extension override|
 |`buckets.schema`|N*|-|Schema definition file path (required for Avro and Parquet formats)|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default file name template when `buckets` not used|
 |`format`|N|`"json"`|Default output format when `buckets` not used|
-|`compression`|N|`"zstd"`|Default compression when `buckets` not used|
+|`compression`|N|-|Default compression when `buckets` not used|
 |`extension`|N|Matches `format`|Default file extension when `buckets` not used|
 |`schema`|N|-|Default schema path when `buckets` not used|
 |`max_size`|N|`0`|Maximum file size in bytes before rotation|
@@ -96,7 +99,7 @@ The following fields are used to define the target:
 \* = Either `bucket` or `buckets` must be specified. When using `buckets`, schema is conditionally required for Avro and Parquet formats.
 
 :::note
-When `max_size` is reached, the current file is uploaded to B2 and a new file is created. For unlimited file size, set the field to `0`.
+When `max_size` is reached, the current file is uploaded to GCS and a new file is created. For unlimited file size, set the field to `0`.
 :::
 
 ### Scheduler
@@ -115,27 +118,39 @@ When `max_size` is reached, the current file is uploaded to B2 and a new file is
 
 ## Details
 
-The Backblaze B2 target provides cost-effective cloud storage integration with comprehensive file format support. B2 is known for its transparent, simple pricing model with storage at a fraction of the cost of major cloud providers and free egress through Bandwidth Alliance partners.
+The Google Cloud Storage target provides enterprise-grade cloud storage integration with comprehensive file format support. GCS offers high durability (99.999999999%), strong consistency for read-after-write operations, and integration with Google Cloud's security and analytics ecosystem.
 
-### Authentication
+### Authentication Methods
 
-Requires Backblaze B2 application keys. Application keys can be created through the Backblaze web interface under App Keys. Keys can be scoped to specific buckets and operations for enhanced security.
+Supports HMAC credentials (access key and secret key) for S3-compatible API access. When deployed on Google Cloud infrastructure, can leverage service account authentication with Application Default Credentials without explicit credentials. HMAC keys can be created through the Google Cloud Console for programmatic access.
 
-### Endpoint Configuration
+### Storage Classes
 
-The endpoint URL follows the pattern `https://s3.<region>.backblazeb2.com` where `<region>` is your B2 region identifier. Each bucket is associated with a specific region during creation.
+Google Cloud Storage supports multiple storage classes for cost optimization:
+
+|Storage Class|Use Case|
+|---|---|
+|Standard|Frequently accessed data|
+|Nearline|Data accessed less than once per month|
+|Coldline|Data accessed less than once per quarter|
+|Archive|Data accessed less than once per year|
 
 ### Available Regions
 
-Backblaze B2 is available in the following regions:
+Google Cloud Storage is available in multiple regions worldwide:
 
 |Region Code|Location|
 |---|---|
-|`us-west-001`|US West (Sacramento)|
-|`us-west-002`|US West (Sacramento)|
-|`us-west-004`|US West (Phoenix)|
-|`us-east-005`|US East (Miami)|
-|`eu-central-003`|Europe (Amsterdam)|
+|`us-central1`|Iowa, USA|
+|`us-east1`|South Carolina, USA|
+|`us-west1`|Oregon, USA|
+|`europe-west1`|Belgium|
+|`europe-west2`|London, UK|
+|`europe-west3`|Frankfurt, Germany|
+|`asia-east1`|Taiwan|
+|`asia-northeast1`|Tokyo, Japan|
+|`asia-southeast1`|Singapore|
+|`australia-southeast1`|Sydney, Australia|
 
 ### File Formats
 
@@ -148,13 +163,14 @@ Backblaze B2 is available in the following regions:
 
 ### Compression
 
-All formats support optional compression to reduce storage costs and transfer times. Compression is applied before upload.
+Some formats support built-in compression to reduce storage costs and transfer times. When supported, compression is applied at the file/block level before upload.
 
-|Format|Compression Options|
-|---|---|
-|JSON/MultiJSON|`zstd` (default), `gzip`|
-|Avro|`null`, `deflate`, `snappy`, `zstd`|
-|Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+|Format|Default|Compression Codecs|
+|---|---|---|
+|JSON|-|Not supported|
+|MultiJSON|-|Not supported|
+|Avro|`zstd`|`deflate`, `snappy`, `zstd`|
+|Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
 
 ### File Management
 
@@ -174,7 +190,7 @@ The following template variables can be used in file names:
 |`{{.Extension}}`|File extension|`json`|
 |`{{.Compression}}`|Compression type|`zstd`|
 |`{{.TargetName}}`|Target name|`my_logs`|
-|`{{.TargetType}}`|Target type|`backblazes3`|
+|`{{.TargetType}}`|Target type|`gcs`|
 |`{{.Table}}`|Bucket name|`logs`|
 
 ### Multipart Upload
@@ -183,51 +199,57 @@ Large files automatically use multipart upload protocol with configurable part s
 
 ### Multiple Buckets
 
-Single target can write to multiple B2 buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
+Single target can write to multiple GCS buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
 
 ### Schema Requirements
 
 Avro and Parquet formats require schema definition files. Schema files must be accessible at the path specified in the `schema` parameter during target initialization.
 
-### Cost Advantages
+### Integration with Google Cloud
 
-Backblaze B2 offers highly competitive pricing with storage costs significantly lower than AWS S3, Azure, or Google Cloud. The Bandwidth Alliance provides free egress when downloading to Cloudflare and other partner networks.
-
-### Pricing Model
-
-B2 uses a simple pricing structure with no hidden fees, no API request charges, and the first 10GB of storage free. Download fees apply only when exceeding daily free allowances.
+GCS integrates seamlessly with other Google Cloud services including BigQuery for analytics, Cloud Functions for serverless processing, and Cloud Logging for centralized logging.
 
 ## Examples
 
 ### Basic Configuration
 
-The minimum configuration for a JSON B2 target:
-
+The minimum configuration for a JSON GCS target:
 ```yaml
 targets:
-  - name: basic_b2
-    type: backblazes3
+  - name: basic_gcs
+    type: gcs
     properties:
-      key: "0012a3b4c5d6e7f8901234"
-      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
-      region: "us-west-004"
-      endpoint: "https://s3.us-west-004.backblazeb2.com"
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      bucket: "datastream-logs"
+```
+
+### Service Account Authentication
+
+Configuration using Application Default Credentials:
+```yaml
+targets:
+  - name: gcs_service_account
+    type: gcs
+    properties:
+      project_id: "my-project-123456"
+      region: "us-central1"
       bucket: "datastream-logs"
 ```
 
 ### Multiple Buckets
 
-Configuration for distributing data across multiple B2 buckets with different formats:
-
+Configuration for distributing data across multiple GCS buckets with different formats:
 ```yaml
 targets:
   - name: multi_bucket_export
-    type: backblazes3
+    type: gcs
     properties:
-      key: "0012a3b4c5d6e7f8901234"
-      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
-      region: "eu-central-003"
-      endpoint: "https://s3.eu-central-003.backblazeb2.com"
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "europe-west1"
       buckets:
         - bucket: "raw-data-archive"
           name: "raw-{{.Year}}-{{.Month}}-{{.Day}}.json"
@@ -243,16 +265,15 @@ targets:
 ### Parquet Format
 
 Configuration for daily partitioned Parquet files:
-
 ```yaml
 targets:
   - name: parquet_analytics
-    type: backblazes3
+    type: gcs
     properties:
-      key: "0012a3b4c5d6e7f8901234"
-      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
-      region: "us-west-002"
-      endpoint: "https://s3.us-west-002.backblazeb2.com"
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-west1"
       bucket: "analytics-lake"
       name: "events/year={{.Year}}/month={{.Month}}/day={{.Day}}/part-{{.Timestamp}}.parquet"
       format: "parquet"
@@ -264,18 +285,17 @@ targets:
 ### High Reliability
 
 Configuration with enhanced settings:
-
 ```yaml
 targets:
-  - name: reliable_b2
-    type: backblazes3
+  - name: reliable_gcs
+    type: gcs
     pipelines:
       - checkpoint
     properties:
-      key: "0012a3b4c5d6e7f8901234"
-      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
-      region: "us-east-005"
-      endpoint: "https://s3.us-east-005.backblazeb2.com"
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-east1"
       bucket: "critical-logs"
       name: "logs-{{.Timestamp}}.json"
       format: "json"
@@ -286,59 +306,56 @@ targets:
 ### With Field Normalization
 
 Using field normalization for standard format:
-
 ```yaml
 targets:
-  - name: normalized_b2
-    type: backblazes3
+  - name: normalized_gcs
+    type: gcs
     properties:
-      key: "0012a3b4c5d6e7f8901234"
-      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
-      region: "us-west-004"
-      endpoint: "https://s3.us-west-004.backblazeb2.com"
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "europe-west2"
       bucket: "normalized-logs"
       name: "logs-{{.Timestamp}}.json"
       format: "json"
       field_format: "cim"
 ```
 
+### BigQuery Integration
+
+Configuration optimized for BigQuery data lake:
+```yaml
+targets:
+  - name: bigquery_ready
+    type: gcs
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-central1"
+      bucket: "bigquery-staging"
+      name: "bq-import/{{.Year}}/{{.Month}}/{{.Day}}/data-{{.Timestamp}}.json"
+      format: "json"
+      compression: "gzip"
+      max_size: 1073741824
+```
+
 ### Debug Configuration
 
 Configuration with debugging enabled:
-
 ```yaml
 targets:
-  - name: debug_b2
-    type: backblazes3
+  - name: debug_gcs
+    type: gcs
     properties:
-      key: "0012a3b4c5d6e7f8901234"
-      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
-      region: "us-west-001"
-      endpoint: "https://s3.us-west-001.backblazeb2.com"
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "asia-east1"
       bucket: "test-logs"
       name: "test-{{.Timestamp}}.json"
       format: "json"
       debug:
         status: true
         dont_send_logs: true
-```
-
-### Cost-Optimized Archive
-
-Configuration optimized for long-term storage with high compression:
-
-```yaml
-targets:
-  - name: archive_b2
-    type: backblazes3
-    properties:
-      key: "0012a3b4c5d6e7f8901234"
-      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
-      region: "eu-central-003"
-      endpoint: "https://s3.eu-central-003.backblazeb2.com"
-      bucket: "log-archive"
-      name: "archive/{{.Year}}/{{.Month}}/logs-{{.Day}}.json"
-      format: "json"
-      compression: "zstd"
-      max_size: 1073741824
 ```

@@ -1,4 +1,4 @@
-# Interval-Based
+# Interval
 
 ## Synopsis
 
@@ -13,16 +13,6 @@ targets:
   - name: <string>
     type: <string>
     properties:
-      frequency: <string|numeric>
-      # target-specific properties
-```
-
-### Routes
-```yaml
-targets:
-  - name: <string>
-    type: <string>
-    properties:
       interval: <string|numeric>
       # target-specific properties
 ```
@@ -32,9 +22,10 @@ targets:
 ```yaml
 routes:
   - name: <string>
-    interval: <string|numeric>
     source: <string>
     destination: <string>
+    properties:
+      interval: <string|numeric>
 ```
 
 ## Configuration
@@ -297,9 +288,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: hourly_archive
-        interval: "1h"
         source: "processed_logs"
         destination: "s3_archive"
+        properties:
+          interval: "1h"
       
       - name: realtime_route
         source: "processed_logs"
@@ -318,9 +310,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: batch_route
-        interval: "15m"
         source: "application_logs"
         destination: "batch_processor"
+        properties:
+          interval: "15m"
       
       - name: stream_route
         source: "application_logs"
@@ -339,9 +332,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: cost_optimized_route
-        interval: "6h"
         source: "high_volume_logs"
         destination: "expensive_analytics"
+        properties:
+          interval: "6h"
       
       - name: cheap_storage_route
         source: "high_volume_logs"
@@ -360,9 +354,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: aggregated_route
-        interval: "5m"
         source: "metrics"
         destination: "aggregated_storage"
+        properties:
+          interval: "5m"
       
       - name: raw_route
         source: "metrics"
@@ -381,9 +376,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: backup_route
-        interval: "30m"
         source: "critical_logs"
         destination: "backup_storage"
+        properties:
+          interval: "30m"
       
       - name: primary_route
         source: "critical_logs"

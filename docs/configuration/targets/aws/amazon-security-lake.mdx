@@ -1,10 +1,10 @@
-# AWS Security Lake
+# Amazon Security Lake
 
 <span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Security Lake</span>
 
 ## Synopsis
 
-Creates a target that writes security and compliance log data to AWS Security Lake, Amazon's purpose-built data lake for security data. The target automatically formats data in OCSF (Open Cybersecurity Schema Framework) compliant Parquet format, enabling centralized collection and analysis of security logs from various sources. AWS Security Lake requires data to be in Parquet format with OCSF schema compliance for proper ingestion and processing.
+Creates a target that writes security and compliance log data to Amazon Security Lake, Amazon's purpose-built data lake for security data. The target automatically formats data in OCSF (Open Cybersecurity Schema Framework) compliant Parquet format, enabling centralized collection and analysis of security logs from various sources. Amazon Security Lake requires data to be in Parquet format with OCSF schema compliance for proper ingestion and processing.
 
 ## Schema
 
@@ -46,7 +46,7 @@ The following fields are used to define the target:
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
 |`type`|Y||Must be `awssecuritylake`|
-|`pipelines`|Y||Must include `aws_lake` pipeline for OCSF normalization|
+|`pipelines`|N||Optional pipeline for OCSF normalization|
 |`status`|N|`true`|Enable/disable the target|
 
 ### AWS Credentials
@@ -88,7 +88,7 @@ The following fields are used to define the target:
 |`batch_size`|N|`100000`|Maximum number of messages per file|
 
 :::note
-AWS Security Lake requires all data to be in Parquet format with OCSF schema compliance. The target automatically uses Parquet format and gzip compression as required by AWS Security Lake specifications. Each bucket must specify its corresponding OCSF schema identifier to ensure proper data routing and classification.
+Amazon Security Lake requires all data to be in Parquet format with OCSF schema compliance. The target automatically uses Parquet format and gzip compression as required by Amazon Security Lake specifications. Each bucket must specify its corresponding OCSF schema identifier to ensure proper data routing and classification.
 :::
 
 :::note
@@ -111,7 +111,7 @@ When `max_size` is reached, the current file is uploaded to Security Lake and a 
 
 ## Details
 
-The AWS Security Lake target integrates with Amazon Security Lake, providing a centralized security data lake for collecting, normalizing, and analyzing security logs across your AWS environment and third-party sources. This target automatically organizes data using Security Lake's partitioning structure and ensures all data is formatted in OCSF-compliant Parquet format as required by AWS Security Lake.
+The Amazon Security Lake target integrates with Amazon Security Lake, providing a centralized security data lake for collecting, normalizing, and analyzing security logs across your AWS environment and third-party sources. This target automatically organizes data using Security Lake's partitioning structure and ensures all data is formatted in OCSF-compliant Parquet format as required by Amazon Security Lake.
 
 ### Authentication Methods
 
@@ -119,13 +119,13 @@ Supports static credentials (access key and secret key) with optional session to
 
 ### Security Lake Integration
 
-AWS Security Lake provides a centralized repository for security data, automatically normalizing logs into the Open Cybersecurity Schema Framework (OCSF) format. The target handles the required partitioning structure (`ext/{source}/region={region}/accountId={accountId}/eventDay={YYYYMMDD}/`) automatically, ensuring data is properly organized for Security Lake ingestion and analysis.
+Amazon Security Lake provides a centralized repository for security data, automatically normalizing logs into the Open Cybersecurity Schema Framework (OCSF) format. The target handles the required partitioning structure (`ext/{source}/region={region}/accountId={accountId}/eventDay={YYYYMMDD}/`) automatically, ensuring data is properly organized for Security Lake ingestion and analysis.
 
-All data is automatically written in Parquet format with gzip compression, which is the only format accepted by AWS Security Lake. The target ensures schema compliance with OCSF specifications through the specified schema identifier for each bucket.
+All data is automatically written in Parquet format with gzip compression, which is the only format accepted by Amazon Security Lake. The target ensures schema compliance with OCSF specifications through the specified schema identifier for each bucket.
 
 ### Bucket Configuration Requirements
 
-AWS Security Lake target requires explicit bucket configuration with corresponding OCSF schema identifiers. Each bucket represents a specific security event type and must be configured with:
+Amazon Security Lake target requires explicit bucket configuration with corresponding OCSF schema identifiers. Each bucket represents a specific security event type and must be configured with:
 
 - **Bucket name**: The Security Lake bucket for the specific event type
 - **File name template**: Pattern for generated Parquet files
@@ -133,9 +133,9 @@ AWS Security Lake target requires explicit bucket configuration with correspondi
 
 This approach ensures proper data routing and classification, as the target needs to know which bucket corresponds to which OCSF schema to correctly process and store security events.
 
-### VirtualMetric AWS Security Lake Pack
+### VirtualMetric Amazon Security Lake Pack
 
-VirtualMetric provides the **Amazon Security Lake Automation and Normalization Pack**, which offers enterprise-grade normalization and routing for AWS Security Lake. This automation pack transforms diverse security data sources into OCSF-compliant format, including:
+VirtualMetric provides the **Amazon Security Lake Automation and Normalization Pack**, which offers enterprise-grade normalization and routing for Amazon Security Lake. This automation pack transforms diverse security data sources into OCSF-compliant format, including:
 
 - **Syslog messages** (native, CEF, LEEF formats)
 - **Windows Security Events** and Windows Firewall logs
@@ -144,11 +144,11 @@ VirtualMetric provides the **Amazon Security Lake Automation and Normalization P
 
 The pack implements a sophisticated multi-stage processing pipeline with intelligent source detection, vendor-specific optimization, and automatic OCSF schema compliance. It supports all OCSF schema classes and handles the complete transformation from source format to OCSF without requiring manual schema configuration in the pipeline.
 
-When using the VirtualMetric AWS Security Lake Pack (pipeline: `aws_lake`), data is automatically normalized to OCSF format before reaching the target. The pack handles all intermediate transformations, including CEF/LEEF to CommonSecurityLog, ECS to ASIM, and ASIM to OCSF conversions. You only need to define the buckets with their corresponding OCSF schema identifiers in the target configuration.
+When using the VirtualMetric Amazon Security Lake Pack (pipeline: `aws_lake`), data is automatically normalized to OCSF format before reaching the target. The pack handles all intermediate transformations, including CEF/LEEF to CommonSecurityLog, ECS to ASIM, and ASIM to OCSF conversions. You only need to define the buckets with their corresponding OCSF schema identifiers in the target configuration.
 
 ### OCSF Schema Identifiers
 
-AWS Security Lake uses OCSF schema classes to categorize security events. Common schema identifiers include:
+Amazon Security Lake uses OCSF schema classes to categorize security events. Common schema identifiers include:
 
 |Schema ID|Description|Event Types|
 |---|---|---|
@@ -188,7 +188,7 @@ AWS Security Lake uses OCSF schema classes to categorize security events. Common
 
 Files are rotated based on size (`max_size` parameter) or event count (`batch_size` parameter), whichever limit is reached first. Files are automatically uploaded to the correct Security Lake partition path based on the current date and configured source, region, and account parameters.
 
-All files are written in Parquet format with gzip compression as required by AWS Security Lake. The OCSF schema specified for each bucket determines the structure and field types within the Parquet files.
+All files are written in Parquet format with gzip compression as required by Amazon Security Lake. The OCSF schema specified for each bucket determines the structure and field types within the Parquet files.
 
 ### Templates
 
@@ -416,5 +416,5 @@ targets:
 ```
 
 :::note
-All configurations must include the `aws_lake` pipeline for automatic OCSF normalization and must define explicit bucket configurations with corresponding OCSF schema identifiers. The VirtualMetric AWS Security Lake Pack handles all data transformation automatically, routing events to the appropriate buckets based on their OCSF schema class.
+All configurations must include the `aws_lake` pipeline for automatic OCSF normalization and must define explicit bucket configurations with corresponding OCSF schema identifiers. The VirtualMetric Amazon Security Lake Pack handles all data transformation automatically, routing events to the appropriate buckets based on their OCSF schema class.
 :::

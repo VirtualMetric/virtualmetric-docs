@@ -23,7 +23,6 @@ Creates an Azure Data Explorer (Kusto) target that ingests data directly into Az
     table: <string>
     schema: <string>
     type: <string>
-    drop_unknown_stream_events: <boolean>
     flush_immediately: <boolean>
     timeout: <numeric>
     batch_size: <numeric>
@@ -55,22 +54,22 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`tenant_id`|N*|-|Azure tenant ID (required unless using managed identity)|
-|`client_id`|N*|-|Azure client ID (required unless using managed identity)|
-|`client_secret`|N*|-|Azure client secret (required unless using managed identity)|
+|`tenant_id`|N(1)|-|Azure tenant ID (required unless using managed identity)|
+|`client_id`|N(1)|-|Azure client ID (required unless using managed identity)|
+|`client_secret`|N(1)|-|Azure client secret (required unless using managed identity)|
 |`endpoint`|Y|-|Azure Data Explorer cluster endpoint|
 |`database`|Y|-|Target database name|
-|`table`|N|-|Default table name|
-|`schema`|N|-|Table schema definition for the default table|
+|`table`|N(2)|-|Default/fallback table name (catch-all for unmatched events)|
+|`schema`|N(2)|-|Table schema definition for the default/fallback table|
 |`type`|N|`parquet`|Data format: `parquet`, `json`, `multijson`, or `avro`|
 
-\* = Conditionally required (see authentication methods above)
+(1) = Conditionally required (see authentication methods above)
+(2) = Required if you want a catch-all table for unmatched events, or if not using the tables array
 
 ### Ingestion Options
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`drop_unknown_stream_events`|N|`true`|Ignore events for undefined tables|
 |`flush_immediately`|N|`true`|Send data to ADX without waiting for batch completion|
 |`timeout`|N|`30`|Connection timeout in seconds|
 |`batch_size`|N|`100000`|Maximum number of messages per batch|
@@ -111,6 +110,22 @@ targets:
 
 The Azure Data Explorer target supports ingesting data into multiple tables with different schemas. When using the `SystemS3` field in your logs, the value will be used to route the message to the appropriate table.
 
+### Table Routing and Catch-All Behavior
+
+The target uses a routing system to direct events to the appropriate table:
+
+1. **Explicit Table Matching**: If an event has a `SystemS3` field, the target looks for a table defined in the `tables` array with a matching name
+2. **Catch-All Table**: If no matching table is found (or if `SystemS3` is not set), the event is routed to the default `table` specified at the root level
+
+The `table` and `schema` properties at the root level serve as a catch-all mechanism. This is particularly useful for automation scenarios where systems may look for specific tables with specific schemas. If no matching table is found in the `tables` array, these events will fall back to the default table instead of being dropped.
+
+**Example routing logic:**
+```
+Event with SystemS3="security_logs" → routes to "security_logs" table if defined
+Event with SystemS3="unknown_table" → routes to default table if configured
+Event without SystemS3 → routes to default table if configured
+```
+
 The target automatically validates table existence before starting ingestion. Data is buffered locally until `batch_size` or `max_size` is reached, or when an explicit flush is triggered.
 
 For tables not defined in the configuration, the target can automatically discover them from the database if they exist. The service principal must have appropriate permissions on the database and tables.
@@ -126,10 +141,6 @@ For tables not defined in the configuration, the target can automatically discov
 
 :::warning
 Consider cluster capacity when setting batch sizes and timeouts.
-:::
-
-:::note
-Messages with empty table names or undefined tables will be sent to the default table if specified, or dropped if `drop_unknown_stream_events` is enabled.
 :::
 
 ## Examples
@@ -151,9 +162,9 @@ targets:
       table: "system_events"
 ```
 
-### Multiple Tables
+### Multiple Tables with Catch-All
 
-Configuration with multiple target tables:
+Configuration with multiple target tables and a catch-all default table:
 
 ```yaml
 targets:
@@ -166,6 +177,9 @@ targets:
       endpoint: "https://cluster.region.kusto.windows.net"
       database: "logs"
       type: "parquet"
+      # Catch-all table for unmatched events
+      table: "general_logs"
+      schema: "TimeGenerated:datetime,Message:string,Source:string"
       tables:
         - name: "security_events"
           schema: "TimeGenerated:datetime,Computer:string,EventID:int,Message:string"
@@ -174,6 +188,8 @@ targets:
         - name: "application_events"
           schema: "TimeGenerated:datetime,Computer:string,EventID:int,Message:string"
 ```
+
+In this example, events with `SystemS3` set to "security_events", "system_events", or "application_events" will route to their respective tables. All other events will route to the "general_logs" catch-all table.
 
 ### High-Volume
 
@@ -231,3 +247,29 @@ targets:
       database: "logs"
       field_format: "asim"
 ```
+
+### Automation-Friendly Configuration
+
+Configuration designed for automation tools that expect specific table names:
+
+```yaml
+targets:
+  - name: automation_adx
+    type: azdx
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "11111111-1111-1111-1111-111111111111"
+      client_secret: "your-client-secret"
+      endpoint: "https://cluster.region.kusto.windows.net"
+      database: "logs"
+      # Catch-all ensures automation-generated events always have a destination
+      table: "automated_events"
+      schema: "Timestamp:datetime,EventType:string,Data:string,Source:string"
+      tables:
+        - name: "monitoring_alerts"
+          schema: "Timestamp:datetime,AlertLevel:string,Message:string"
+        - name: "deployment_logs"
+          schema: "Timestamp:datetime,Service:string,Version:string,Status:string"
+```
+
+In this configuration, automation tools looking for "monitoring_alerts" or "deployment_logs" will find their specific tables with the expected schemas. Any other automated events will be captured in the "automated_events" catch-all table, ensuring no data is lost.
