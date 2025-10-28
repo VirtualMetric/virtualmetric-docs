@@ -82,12 +82,12 @@ The following fields are used to define the target:
 |`buckets.bucket`|Y|-|OCI bucket name|
 |`buckets.name`|Y|-|File name template|
 |`buckets.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
-|`buckets.compression`|N|`"zstd"`|Compression algorithm|
+|`buckets.compression`|N|-|Compression algorithm. See [Compression](#compression) below|
 |`buckets.extension`|N|Matches `format`|File extension override|
 |`buckets.schema`|N*|-|Schema definition file path (required for Avro and Parquet formats)|
 |`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default file name template when `buckets` not used|
 |`format`|N|`"json"`|Default output format when `buckets` not used|
-|`compression`|N|`"zstd"`|Default compression when `buckets` not used|
+|`compression`|N|-|Default compression when `buckets` not used|
 |`extension`|N|Matches `format`|Default file extension when `buckets` not used|
 |`schema`|N|-|Default schema path when `buckets` not used|
 |`max_size`|N|`0`|Maximum file size in bytes before rotation|
@@ -166,13 +166,14 @@ Oracle Cloud Infrastructure is available in numerous regions worldwide:
 
 ### Compression
 
-All formats support optional compression to reduce storage costs and transfer times. Compression is applied before upload.
+Some formats support built-in compression to reduce storage costs and transfer times. When supported, compression is applied at the file/block level before upload.
 
-|Format|Compression Options|
-|---|---|
-|JSON/MultiJSON|`zstd` (default), `gzip`|
-|Avro|`null`, `deflate`, `snappy`, `zstd`|
-|Parquet|`uncompressed`, `gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+|Format|Default|Compression Codecs|
+|---|---|---|
+|JSON|-|Not supported|
+|MultiJSON|-|Not supported|
+|Avro|`zstd`|`deflate`, `snappy`, `zstd`|
+|Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
 
 ### File Management
 
