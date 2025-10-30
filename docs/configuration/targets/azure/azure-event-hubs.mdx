@@ -21,17 +21,17 @@ Creates a target that sends processed messages to _Azure Event Hubs_ with suppor
     client_secret: <string>
     namespace: <string>
     event_hub: <string>
-    partition_key: <string>
-    format: <string>
-    batch_size: <numeric>
-    max_retry: <numeric>
-    retry_interval: <numeric>
-    timeout: <numeric>
-    compression: <string>
+    partition:
+      id: <string>
+      key: <string>
+    field_format: <string>
+    max_bytes: <numeric>
+    max_events: <numeric>
     tls:
       status: <boolean>
       cert_name: <string>
       key_name: <string>
+      insecure_skip_verify: <boolean>
     interval: <string|numeric>
     cron: <string>
     debug:
@@ -74,35 +74,45 @@ EventHubs target supports two authentication methods:
 
 \* = Conditionally required (see authentication methods above)
 
+### Partition Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`partition.id`|N*|-|Specific partition ID to send messages to|
+|`partition.key`|N*|-|Partition key for message routing|
+
+\* = Mutually exclusive - use either `partition.id` OR `partition.key`, not both
+
 ### Message Configuration
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`partition_key`|N|-|Partition key for message routing|
-|`format`|N|`json`|Output format (`json`, `multijson`, `raw`)|
-|`compression`|N|-|Compression method (`gzip`, `lz4`)|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
 
 ### Performance
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`batch_size`|N|`100`|Number of messages per batch|
-|`timeout`|N|`30`|Connection timeout in seconds|
-|`max_retry`|N|`3`|Maximum retry attempts|
-|`retry_interval`|N|`5`|Retry interval in seconds|
+|`max_bytes`|N|`0`|Maximum batch size in bytes (0 for unlimited)|
+|`max_events`|N|`1000`|Maximum number of events per batch|
 
 ### TLS
 
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`tls.status`|N|`false`|Enable TLS encryption|
-|`tls.cert_name`|N*||TLS certificate file path (required if TLS enabled)|
-|`tls.key_name`|N*||TLS private key file path (required if TLS enabled)|
+|`tls.cert_name`|N*|-|TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|N*|-|TLS private key file path (required if TLS enabled)|
+|`tls.insecure_skip_verify`|N|`false`|Skip TLS certificate verification (NOT recommended for production)|
 
 \* = Conditionally required (only when `tls.status: true`)
 
 :::note
 TLS certificate and key files must be placed in the service root directory.
+:::
+
+:::warning
+Setting `insecure_skip_verify: true` disables certificate validation and should only be used for testing/development environments.
 :::
 
 ### Scheduler
@@ -121,11 +131,18 @@ TLS certificate and key files must be placed in the service root directory.
 
 ## Details
 
-The EventHubs target sends processed messages to Azure Event Hubs for real-time event streaming and analytics. It supports automatic batching for optimal performance, configurable retry mechanisms for reliability, and multiple authentication methods for flexible deployment scenarios.
+The EventHubs target sends processed messages to Azure Event Hubs for real-time event streaming and analytics. It supports automatic batching for optimal performance and multiple authentication methods for flexible deployment scenarios.
 
-Messages are sent with automatic partition distribution unless a specific partition key is provided. The target handles connection pooling and automatic reconnection on network failures.
+Messages are sent with automatic partition distribution unless a specific partition ID or key is provided. The target handles connection pooling and automatic reconnection on network failures.
 
-Format options include JSON for structured data, multijson for line-delimited JSON arrays, and raw format for preserving original message structure. Compression options help reduce network bandwidth for high-volume scenarios.
+### Partition Management
+
+You can control message routing to Event Hubs partitions using two mutually exclusive options:
+
+- **`partition.id`**: Routes all messages to a specific partition by ID (0-based index)
+- **`partition.key`**: Uses a partition key for consistent hashing across partitions
+
+If neither is specified, Event Hubs automatically distributes messages across available partitions using round-robin distribution.
 
 ## Examples
 
@@ -144,12 +161,11 @@ The following are commonly used configuration types.
       properties:
         client_connection_string: "Endpoint=sb://mynamespace.servicebus.windows.net/;SharedAccessKeyName=mykey;SharedAccessKey=myvalue"
         event_hub: "processed-logs"
-        format: json
-        batch_size: 100
+        max_events: 100
     ```
   </CodeCol>
   <CommentCol>
-    Target sends JSON messages to Event Hubs in batches...
+    Target sends messages to Event Hubs in batches...
   </CommentCol>
   <CodeCol>
     ```json
@@ -179,8 +195,7 @@ The following are commonly used configuration types.
         client_secret: "${AZURE_CLIENT_SECRET}"
         namespace: "production-namespace"
         event_hub: "security-events"
-        format: json
-        batch_size: 250
+        max_events: 250
     ```
   </CodeCol>
 </ExampleGrid>
@@ -198,25 +213,21 @@ The following are commonly used configuration types.
       properties:
         client_connection_string: "${EVENTHUBS_CONNECTION_STRING}"
         event_hub: "high-volume-events"
-        format: multijson
-        batch_size: 500
-        compression: gzip
-        timeout: 60
-        max_retry: 5
-        retry_interval: 3
+        max_events: 500
+        max_bytes: 1048576
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Partitioned Messages
+### Partition Key Configuration
 
 <ExampleGrid>
   <CommentCol>
-    Using partition keys for message routing control...
+    Using partition key for consistent message routing...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - name: partitioned_target
+    - name: partitioned_key_target
       type: eventhubs
       properties:
         tenant_id: "${AZURE_TENANT_ID}"
@@ -224,9 +235,29 @@ The following are commonly used configuration types.
         client_secret: "${AZURE_CLIENT_SECRET}"
         namespace: "analytics-namespace"
         event_hub: "partitioned-logs"
-        partition_key: "source_system"
-        format: json
-        batch_size: 200
+        partition:
+          key: "source_system"
+        max_events: 200
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Partition ID Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Sending all messages to a specific partition...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - name: partitioned_id_target
+      type: eventhubs
+      properties:
+        client_connection_string: "${EVENTHUBS_CONNECTION_STRING}"
+        event_hub: "specific-partition"
+        partition:
+          id: "0"
+        max_events: 150
     ```
   </CodeCol>
 </ExampleGrid>
@@ -244,8 +275,7 @@ The following are commonly used configuration types.
       properties:
         client_connection_string: "${EVENTHUBS_CONNECTION_STRING}"
         event_hub: "secure-events"
-        format: json
-        batch_size: 150
+        max_events: 150
         tls:
           status: true
           cert_name: "eventhubs.crt"
@@ -271,9 +301,7 @@ The following are commonly used configuration types.
       properties:
         client_connection_string: "${EVENTHUBS_CONNECTION_STRING}"
         event_hub: "processed-events"
-        format: json
-        batch_size: 100
-        compression: lz4
+        max_events: 100
     ```
   </CodeCol>
 </ExampleGrid>
