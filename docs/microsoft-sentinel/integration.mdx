@@ -55,9 +55,11 @@ sidebar_label: Integration
     1. Navigate to **Azure Portal** > **Monitor** > **Data Collection Endpoints**
     2. Select **Create**
     3. Configure the DCE:
-      - **Name**: `datastream-dce`
-      - **Resource group**: Select your resource group
-      - **Region**: Same region as your Log Analytics workspace
+        |Field|Value|
+        |--:|:--|
+        |**Name**|`datastream-dce`|
+        |**Resource group**|Select your resource group|
+        |**Region**|Same region as your Log Analytics workspace|
     4. Click **Review + create** > **Create**
     5. Record the **Logs Ingestion** endpoint URL
 
@@ -66,20 +68,26 @@ sidebar_label: Integration
     1. Navigate to **Monitor** > **Data Collection Rules**
     2. Select **Create**
     3. Configure basic settings:
-      - **Rule name**: `datastream-dcr`
-      - **Resource group**: Same as your DCE
-      - **Region**: Same as your DCE
-      - **Platform Type**: **Windows** or **Linux** based on your data sources
-    4. In **Resources** tab:
-      - Add your **Log Analytics workspace**
-    5. In **Collect and deliver** tab:
-      - **Data source type**: **Custom Text Logs** or **Windows Event Logs**
-      - **Data source name**: `DataStreamLogs`
-      - **File pattern**: Configure based on your log sources
+
+        |Field|Value|
+        |--:|:--|
+        |**Rule name**|`datastream-dcr`|
+        |**Resource group**|Same as your DCE|
+        |**Region**|Same as your DCE|
+        |**Platform Type**|**Windows** or **Linux** based on your data sources|
+    4. In **Resources** tab: add your **Log Analytics workspace**
+    5. In **Collect and deliver** tab, 
+        |Field|Value|
+        |--:|:--|
+        |**Data source type**|**Custom Text Logs** or **Windows Event Logs**|
+        |**Data source name**|`DataStreamLogs`|
+        |**File pattern**|Configure based on your log sources
     6. Configure **Destination**:
-      - **Destination type**: **Azure Monitor Logs**
-      - **Destination**: Your Log Analytics workspace
-      - **Table**: Create or select target table
+        |Field|Value|
+        |--:|:--|
+        |**Destination type**|**Azure Monitor Logs**|
+        |**Destination**|Your Log Analytics workspace|
+        |**Table**|Create or select target table|
     7. Click **Review + create** > **Create**
     8. Record the **DCR Immutable ID**
   </TabItem>
@@ -89,19 +97,9 @@ sidebar_label: Integration
 
 **Director** needs the following permissions for **Microsoft Sentinel** integration.
 
-<Tabs groupId="integration-method">
-  <TabItem value="autodiscovery" label="Autodiscovery" default>
-    :::note
-    If you used the **Automation** tool with _App Registration_, these permissions are already configured.
-    :::
-
-    **Director** needs the following permissions to fetch the _Data Collection Rules_ and their associated streams.
-
-  </TabItem>
-  <TabItem value="manual" label="Manual">
-    **Director** needs permissions to send data to your manually configured _Data Collection Rules_.
-  </TabItem>
-</Tabs>
+:::note
+If you used the **Automation** tool with _App Registration_, these permissions are already configured.
+:::
 
 <Tabs groupId="integration-method">
   <TabItem value="autodiscovery" label="Autodiscovery" default>
@@ -115,8 +113,8 @@ sidebar_label: Integration
     3. Select **Add** > **Add role assignment**
     4. Assign the following permissions:
         |Role|Assignee|
-        |:--|:--|
-        |Monitoring Metrics Publisher|Your _Managed Identity_ or _Application_|
+        |--:|:--|
+        |Monitoring Metrics Publisher|Your _Managed Identity_<br/>-or-<br/>_Application_|
 
     ### For Autodiscovery
 
@@ -126,14 +124,12 @@ sidebar_label: Integration
     2. Go to **Access Control (IAM)**
     3. Select **Add** > **Add role assignment**
     4. Assign the following permissions:
-      |Role|Assignee|
-      |---|---|
-      |Monitoring Reader|Your _Managed Identity_ or _Application_|
-
-    :::important
-    The `Monitoring Reader` role should be assigned at the _Resource Group_ level only. Assigning this role at the _Subscription_ level is **not recommended** since it is not required for the functionality to work, and it increases the autodiscovery scan duration.
-    :::
-
+        |Role|Assignee|
+        |--:|:--|
+        |Monitoring Reader|Your _Managed Identity_<br/>-or-<br/>_Application_|
+        :::important
+        The `Monitoring Reader` role should be assigned at the _Resource Group_ level only. Assigning this role at the _Subscription_ level is **not recommended** since it is not required for the functionality to work, and it increases the autodiscovery scan duration.
+        :::
   </TabItem>
   <TabItem value="manual" label="Manual">
 
@@ -145,9 +141,9 @@ sidebar_label: Integration
     2. Go to **Access Control (IAM)**
     3. Select **Add** > **Add role assignment**
     4. Assign the following permissions:
-      |Role|Assignee|
-      |---|---|
-      |Monitoring Metrics Publisher|Your _Service Principal_ or _Application_|
+        |Role|Assignee|
+        |--:|:--|
+        |Monitoring Metrics Publisher|Your _Service Principal_<br/>-or-<br/>_Application_|
 
     ### DataStream Target Configuration
 
@@ -302,7 +298,7 @@ The most salient reason for preventing phantom fields is to reduce their **impac
 <Tabs groupId="integration-method">
   <TabItem value="autodiscovery" label="Autodiscovery" default>
 
-### Basic Autodiscovery Configuration
+### Basic
 
 ```yaml
 targets:
@@ -315,7 +311,7 @@ targets:
       endpoint: "/subscriptions/.../dataCollectionEndpoints/<your-dce-name>"  # Use Resource ID
 ```
 
-### Filtered Stream Configuration
+### Filtered Streams
 
 You can filter the autodiscovered streams that you intend to use:
 
@@ -333,7 +329,7 @@ targets:
         - name: "Custom-SecurityEvent"
 ```
 
-### Cache Configuration
+### Cache
 
 You can optionally adjust the cache timeout (in seconds):
 
@@ -350,7 +346,7 @@ targets:
   </TabItem>
   <TabItem value="manual" label="Manual">
 
-### Basic Manual Configuration
+### Basic
 
 ```yaml
 targets:
@@ -366,7 +362,7 @@ targets:
           dcr_id: "dcr-<immutable-id>"
 ```
 
-### Multi-Stream Manual Configuration
+### Multi-Stream
 
 For multiple tables and streams:
 
@@ -388,7 +384,7 @@ targets:
           dcr_id: "dcr-<system-dcr-id>"
 ```
 
-### Manual Configuration with Field Filtering
+### Field Filtering
 
 Prevent phantom fields with explicit field management:
 
