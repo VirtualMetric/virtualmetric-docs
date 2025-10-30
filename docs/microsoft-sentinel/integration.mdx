@@ -68,7 +68,6 @@ sidebar_label: Integration
     1. Navigate to **Monitor** > **Data Collection Rules**
     2. Select **Create**
     3. Configure basic settings:
-
         |Field|Value|
         |--:|:--|
         |**Rule name**|`datastream-dcr`|
@@ -104,46 +103,40 @@ If you used the **Automation** tool with _App Registration_, these permissions a
 <Tabs groupId="integration-method">
   <TabItem value="autodiscovery" label="Autodiscovery" default>
 
-    ### For Data Collection
+    - **For Data Collection** - For each DCR name prefixed with _vmetric_:
 
-    For each DCR name prefixed with _vmetric_:
+        1. Navigate to the DCR in **Azure Portal**
+        2. Go to **Access Control (IAM)**
+        3. Select **Add** > **Add role assignment**
+        4. Assign the following permissions:
+            |Role|Assignee|
+            |--:|:--|
+            |Monitoring Metrics Publisher|Your _Managed Identity_<br/>-or-<br/>_Application_|
 
-    1. Navigate to the DCR in **Azure Portal**
-    2. Go to **Access Control (IAM)**
-    3. Select **Add** > **Add role assignment**
-    4. Assign the following permissions:
-        |Role|Assignee|
-        |--:|:--|
-        |Monitoring Metrics Publisher|Your _Managed Identity_<br/>-or-<br/>_Application_|
+    - **For Autodiscovery** - To enable the DCR autodiscovery features:
 
-    ### For Autodiscovery
-
-    To enable the DCR autodiscovery features:
-
-    1. Navigate to the _Resource Group_ containing your DCRs
-    2. Go to **Access Control (IAM)**
-    3. Select **Add** > **Add role assignment**
-    4. Assign the following permissions:
-        |Role|Assignee|
-        |--:|:--|
-        |Monitoring Reader|Your _Managed Identity_<br/>-or-<br/>_Application_|
-        :::important
-        The `Monitoring Reader` role should be assigned at the _Resource Group_ level only. Assigning this role at the _Subscription_ level is **not recommended** since it is not required for the functionality to work, and it increases the autodiscovery scan duration.
-        :::
+      1. Navigate to the _Resource Group_ containing your DCRs
+      2. Go to **Access Control (IAM)**
+      3. Select **Add** > **Add role assignment**
+      4. Assign the following permissions:
+          |Role|Assignee|
+          |--:|:--|
+          |Monitoring Reader|Your _Managed Identity_<br/>-or-<br/>_Application_|
+          :::important
+          The `Monitoring Reader` role should be assigned at the _Resource Group_ level only. Assigning this role at the _Subscription_ level is **not recommended** since it is not required for the functionality to work, and it increases the autodiscovery scan duration.
+          :::
   </TabItem>
   <TabItem value="manual" label="Manual">
 
-    ### For Data Collection
+    - **For Data Collection** - For each manually created DCR:
 
-    For each manually created DCR:
-
-    1. Navigate to the DCR in **Azure Portal**
-    2. Go to **Access Control (IAM)**
-    3. Select **Add** > **Add role assignment**
-    4. Assign the following permissions:
-        |Role|Assignee|
-        |--:|:--|
-        |Monitoring Metrics Publisher|Your _Service Principal_<br/>-or-<br/>_Application_|
+      1. Navigate to the DCR in **Azure Portal**
+      2. Go to **Access Control (IAM)**
+      3. Select **Add** > **Add role assignment**
+      4. Assign the following permissions:
+          |Role|Assignee|
+          |--:|:--|
+          |Monitoring Metrics Publisher|Your _Service Principal_<br/>-or-<br/>_Application_|
 
     ### DataStream Target Configuration
 
@@ -166,26 +159,19 @@ If you used the **Automation** tool with _App Registration_, these permissions a
   </TabItem>
 </Tabs>
 
+## Verification
+
 <Tabs groupId="integration-method">
   <TabItem value="autodiscovery" label="Autodiscovery" default>
-
-    ### Verification
-
     After assigning the permissions:
-
     1. Wait a few minutes for **Azure** RBAC to propagate
     2. Test the connection using **Director**
     3. Check the logs for any permission-related errors
-
     :::tip
     If you encounter permission issues, verify that all role assignments are properly configured, that **Azure** RBAC changes have propagated (can take up to 30 minutes), and that the identity has the correct access scope.
     :::
-
   </TabItem>
   <TabItem value="manual" label="Manual">
-
-    ### Verification
-
     Test your manual configuration:
 
     1. Wait a few minutes for **Azure** RBAC to propagate
@@ -195,11 +181,9 @@ If you used the **Automation** tool with _App Registration_, these permissions a
       ```
     3. Check the logs for authentication or DCR errors
     4. Verify data appears in your Log Analytics workspace table
-
     :::tip
     For manual configuration issues, verify the DCE endpoint URL is correct, the DCR Immutable ID matches your configuration, and the service principal has proper permissions on both the DCR and Log Analytics workspace.
     :::
-
   </TabItem>
 </Tabs>
 
