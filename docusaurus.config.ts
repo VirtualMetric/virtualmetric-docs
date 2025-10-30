@@ -92,10 +92,9 @@ const config: Config = {
     [
       require.resolve("docusaurus-lunr-search"),
       {
-        excludeRoutes: [
-          "/1.*/**/*",
-        ],
-      },
+        excludeRoutes: ["/1.*/**/*"],
+        disableVersioning: true,
+      }
     ],
     require.resolve('./plugins/validate-topics'),
     require.resolve('./plugins/validate-images'),
