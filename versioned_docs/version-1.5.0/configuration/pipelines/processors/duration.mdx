@@ -1,0 +1,219 @@
+---
+description: Converts durations to seconds
+sidebar_custom_props:
+  customCategory: Date and Time
+  customIcon: ⏱️
+---
+
+# Duration
+
+<span className="theme-doc-version-badge badge badge--primary">Date and Time</span>
+## Synopsis
+
+Converts time duration strings to seconds.
+
+## Schema
+
+```yaml {2}
+- duration:
+    field: <ident>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing the duration string|
+|`target_field`|N|*value of `field`*|Destination field to store the converted duration in seconds|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip if source field doesn't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Supported Formats
+
+The processor can handle the following duration formats:
+
+1. **Go Duration Format**:
+
+   - "5s" (5 seconds)
+   - "1m30s" (1 minute and 30 seconds)
+   - "2h45m" (2 hours and 45 minutes)
+   - "24h" (24 hours)
+
+2. **Time Format**:
+
+   - "HH:MM:SS" (hours:minutes:seconds)
+   - "MM:SS" (minutes:seconds)
+
+## Description
+
+Converts a string representing a time duration into a numeric value in seconds. The processor supports multiple duration formats including Go's duration syntax (e.g., "5m", "2h30m") and time notation formats (e.g., "HH:MM:SS", "MM:SS").
+
+:::note
+When using the time format (HH:MM:SS), the processor assumes that the values represent hours, minutes, and seconds respectively. For MM:SS format, the processor assumes minutes and seconds.
+:::
+
+The processor is useful for normalizing various time duration notations into a consistent numeric format that can be used for calculations, filtering, or visualization.
+
+:::warning
+Invalid duration formats will cause the processor to fail unless `ignore_failure` is set to `true`. Always validate input data or provide proper error handling when processing user-generated duration strings.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Go duration format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "duration_str": "5m30s"
+      }
+    }
+    ```
+    ```yaml
+    - duration:
+        field: event.duration_str
+        target_field: event.duration_seconds
+    ```
+  </CodeCol>
+  <CommentCol>
+    is converted to seconds:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "duration_str": "5m30s",
+        "duration_seconds": 330
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Time Format
+
+<ExampleGrid>
+  <CommentCol>
+    Converting time notation...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "video": {
+        "length": "1:45:30"
+      }
+    }
+    ```
+    ```yaml
+    - duration:
+        field: video.length
+        target_field: video.length_seconds
+    ```
+  </CodeCol>
+  <CommentCol>
+    parses hours, minutes, and seconds:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "video": {
+        "length": "1:45:30",
+        "length_seconds": 6330
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### In-Place
+
+<ExampleGrid>
+  <CommentCol>
+    Replacing the original field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "task": {
+        "elapsed_time": "45:20"
+      }
+    }
+    ```
+    ```yaml
+    - duration:
+        field: task.elapsed_time
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts the value in place:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "task": {
+        "elapsed_time": 2720
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling potential parsing errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log": {
+        "duration": "invalid"
+      }
+    }
+    ```
+    ```yaml
+    - duration:
+        field: log.duration
+        target_field: log.duration_seconds
+        ignore_failure: true
+        on_failure:
+          - set:
+              field: log.error
+              value: "Failed to parse duration"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log": {
+        "duration": "invalid",
+        "error": "Failed to parse duration"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

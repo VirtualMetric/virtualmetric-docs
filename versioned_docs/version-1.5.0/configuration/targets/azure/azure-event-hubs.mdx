@@ -1,0 +1,279 @@
+# Azure Event Hubs
+
+<span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">Real-time Messaging</span>
+
+## Synopsis
+
+Creates a target that sends processed messages to _Azure Event Hubs_ with support for multiple authentication methods, batch processing, and automatic retry mechanisms. Provides high-throughput event streaming to Azure Event Hubs for real-time analytics and downstream processing.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: eventhubs
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    client_connection_string: <string>
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    namespace: <string>
+    event_hub: <string>
+    partition_key: <string>
+    format: <string>
+    batch_size: <numeric>
+    max_retry: <numeric>
+    retry_interval: <numeric>
+    timeout: <numeric>
+    compression: <string>
+    tls:
+      status: <boolean>
+      cert_name: <string>
+      key_name: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `eventhubs`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Connection
+
+EventHubs target supports two authentication methods:
+
+**Method 1: Connection String Authentication**
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`client_connection_string`|Y*||Event Hubs connection string (required if not using method 2)|
+|`event_hub`|Y||Event hub name to send messages to|
+
+**Method 2: Service Principal Authentication**
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tenant_id`|Y*||Azure tenant ID (required if not using connection string)|
+|`client_id`|Y*||Azure service principal client ID|
+|`client_secret`|Y*||Azure service principal client secret|
+|`namespace`|Y*||Event Hubs namespace (required if not using connection string)|
+|`event_hub`|Y||Event hub name to send messages to|
+
+\* = Conditionally required (see authentication methods above)
+
+### Message Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`partition_key`|N|-|Partition key for message routing|
+|`format`|N|`json`|Output format (`json`, `multijson`, `raw`)|
+|`compression`|N|-|Compression method (`gzip`, `lz4`)|
+
+### Performance
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`100`|Number of messages per batch|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`max_retry`|N|`3`|Maximum retry attempts|
+|`retry_interval`|N|`5`|Retry interval in seconds|
+
+### TLS
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|N*||TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|N*||TLS private key file path (required if TLS enabled)|
+
+\* = Conditionally required (only when `tls.status: true`)
+
+:::note
+TLS certificate and key files must be placed in the service root directory.
+:::
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+The EventHubs target sends processed messages to Azure Event Hubs for real-time event streaming and analytics. It supports automatic batching for optimal performance, configurable retry mechanisms for reliability, and multiple authentication methods for flexible deployment scenarios.
+
+Messages are sent with automatic partition distribution unless a specific partition key is provided. The target handles connection pooling and automatic reconnection on network failures.
+
+Format options include JSON for structured data, multijson for line-delimited JSON arrays, and raw format for preserving original message structure. Compression options help reduce network bandwidth for high-volume scenarios.
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic with Connection String
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a basic EventHubs target with connection string...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - name: basic_eventhubs_target
+      type: eventhubs
+      properties:
+        client_connection_string: "Endpoint=sb://mynamespace.servicebus.windows.net/;SharedAccessKeyName=mykey;SharedAccessKey=myvalue"
+        event_hub: "processed-logs"
+        format: json
+        batch_size: 100
+    ```
+  </CodeCol>
+  <CommentCol>
+    Target sends JSON messages to Event Hubs in batches...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": "2024-01-15T10:30:00Z",
+      "host": "server01",
+      "message": "User authentication successful",
+      "severity": "info"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Service Principal Authentication
+
+<ExampleGrid>
+  <CommentCol>
+    Using service principal authentication for secure access...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - name: sp_eventhubs_target
+      type: eventhubs
+      properties:
+        tenant_id: "12345678-1234-1234-1234-123456789012"
+        client_id: "87654321-4321-4321-4321-210987654321"
+        client_secret: "${AZURE_CLIENT_SECRET}"
+        namespace: "production-namespace"
+        event_hub: "security-events"
+        format: json
+        batch_size: 250
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Throughput Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high-volume message sending...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - name: high_volume_target
+      type: eventhubs
+      properties:
+        client_connection_string: "${EVENTHUBS_CONNECTION_STRING}"
+        event_hub: "high-volume-events"
+        format: multijson
+        batch_size: 500
+        compression: gzip
+        timeout: 60
+        max_retry: 5
+        retry_interval: 3
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Partitioned Messages
+
+<ExampleGrid>
+  <CommentCol>
+    Using partition keys for message routing control...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - name: partitioned_target
+      type: eventhubs
+      properties:
+        tenant_id: "${AZURE_TENANT_ID}"
+        client_id: "${AZURE_CLIENT_ID}"
+        client_secret: "${AZURE_CLIENT_SECRET}"
+        namespace: "analytics-namespace"
+        event_hub: "partitioned-logs"
+        partition_key: "source_system"
+        format: json
+        batch_size: 200
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure Connection with TLS
+
+<ExampleGrid>
+  <CommentCol>
+    Implementing TLS encryption for secure transmission...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - name: secure_eventhubs_target
+      type: eventhubs
+      properties:
+        client_connection_string: "${EVENTHUBS_CONNECTION_STRING}"
+        event_hub: "secure-events"
+        format: json
+        batch_size: 150
+        tls:
+          status: true
+          cert_name: "eventhubs.crt"
+          key_name: "eventhubs.key"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Pipeline Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Applying post-processing pipelines before sending...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - name: pipeline_eventhubs_target
+      type: eventhubs
+      pipelines:
+        - format_timestamp
+        - add_metadata
+        - validate_schema
+      properties:
+        client_connection_string: "${EVENTHUBS_CONNECTION_STRING}"
+        event_hub: "processed-events"
+        format: json
+        batch_size: 100
+        compression: lz4
+    ```
+  </CodeCol>
+</ExampleGrid>
