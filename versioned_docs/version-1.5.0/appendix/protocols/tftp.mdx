@@ -1,0 +1,30 @@
+---
+pagination_prev: null
+pagination_next: null
+---
+
+# TFTP
+
+Trivial File Transfer Protocol for simple file transfers:
+
+## Binary Layout
+
+|Field|Internal Name|Description|Type / Format|Example / Values|
+|--:|:--:|:--|:--|:--|
+|**Opcode**|`opcode`|Operation type|`uint16`|`1` = RRQ, `2` = WRQ, `3` = DATA, `4` = ACK, `5` = ERROR|
+|**Filename**|`filename`|File path (RRQ/WRQ only)|Null-terminated string|`config.txt\0`|
+|**Mode**|`mode`|Transfer mode (RRQ/WRQ only)|Null-terminated string|`octet\0`, `netascii\0`|
+|**Block Number**|`block_num`|Data block sequence (DATA/ACK)|`uint16`|e.g. `1`, `2`, `3`|
+|**Data**|`data`|File content (DATA only)|Binary|Up to 512 bytes|
+|**Error Code**|`error_code`|Error type (ERROR only)|`uint16`|`0` = Not defined, `1` = File not found|
+|**Error Message**|`error_msg`|Error description (ERROR only)|Null-terminated string|`File not found\0`|
+
+## Opcodes
+
+|Opcode|Name|Purpose|
+|--:|:--|:--|
+|`1`|RRQ|Read Request|
+|`2`|WRQ|Write Request|
+|`3`|DATA|Data packet|
+|`4`|ACK|Acknowledgment|
+|`5`|ERROR|Error packet|

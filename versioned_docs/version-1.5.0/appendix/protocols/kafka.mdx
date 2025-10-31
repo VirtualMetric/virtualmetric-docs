@@ -1,0 +1,47 @@
+---
+pagination_prev: null
+pagination_next: null
+---
+
+# Kafka
+
+## Binary Layout
+
+|Field|Internal Name|Description|Type / Format|Example / Values|
+|--:|:--:|:--|:--|:--|
+|**Size**|`length`|Total size of the request (excluding this field)|`int32`|e.g. `0x0000012C`|
+|**API Key**|`api_key`|Identifies the type of request|`int16`|`0` = Produce, `1` = Fetch, etc.|
+|**API Version**|`api_version`|Version of the API being used|`int16`| e.g. `7`|
+|**Correlation ID**|`correlation_id`|Used to match requests to responses|`int32`|e.g. `12345`|
+|**Client ID**|`client_id`|Optional identifier of the client|`string` (nullable)|e.g. `"my-client"`|
+|**Request Body**|*(varies by API)*|The actual request payload|Structured binary|Depends on `api_key` and `api_version`|
+
+## Common API Keys
+
+|API Key|Name|Purpose|
+|--:|:--|:--|
+|`0`|Produce|Send messages to a topic|
+|`1`|Fetch|Retrieve messages from a topic|
+|`3`|Metadata|Get topic/partition info|
+|`8`|Offset|Get earliest/latest offsets|
+|`18`|ApiVersions|Discover supported API versions|
+|`21`|SaslHandshake|SASL authentication handshake|
+|`22`|SaslAuthenticate|SASL authentication|
+|`42`|DescribeCluster|Get cluster metadata|
+
+## Primitive Types Used
+
+|Type|Description|
+|:-:|---|
+|`int8/16/32/64`|Signed integers (big-endian)|
+|`string`|Length-prefixed UTF-8 string|
+|`array<T>`|Length-prefixed array of type `T`|
+|`bytes`|Length-prefixed byte array|
+|`varint`|Variable-length integer (zigzag encoding)|
+
+## Response Structure
+
+|Field|Description|
+|--:|:--|
+|`correlation_id`|Matches the request|
+|`response_body`|Depends on the request type|
