@@ -1,0 +1,235 @@
+---
+description: Generates random strings with specified length and character sets
+sidebar_custom_props:
+  customCategory: Text Processing
+  customIcon: 🎲
+---
+
+# Random String
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">Data Generation</span>
+
+## Synopsis
+
+Generates random strings with specified length and character sets.
+
+## Schema
+
+```yaml {2-4}
+- random_string:
+    field: <ident>
+    length: <integer>
+    charset: <string>
+    target_field: <string>
+    prefix: <string>
+    suffix: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the generated random string|
+|`length`|Y|-|Length of the random string to generate|
+|`charset`|N|`alphanumeric`|Character set: `alphanumeric`, `alpha`, `numeric`, `hex`, `custom`|
+|`target_field`|N|Same as `field`|Target field to store result|
+|`prefix`|N|-|Static prefix to prepend to random string|
+|`suffix`|N|-|Static suffix to append to random string|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if generation fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Generates cryptographically secure random strings using specified character sets and length requirements. This processor is useful for creating unique identifiers, tokens, passwords, or test data.
+
+The processor supports various predefined character sets and allows custom character sets for specific requirements. Generated strings are suitable for security-sensitive applications.
+
+:::note
+The processor uses cryptographically secure random number generation to ensure unpredictability of the generated strings. This makes them suitable for security tokens and identifiers.
+:::
+
+The `prefix` and `suffix` options allow you to add static text before and after the random portion, which is useful for creating formatted identifiers or tokens with specific patterns.
+
+:::warning
+Generating very long random strings (>10000 characters) may impact performance. Consider using reasonable lengths for production workloads.
+:::
+
+## Examples
+
+### Basic Random String
+
+<ExampleGrid>
+  <CommentCol>
+    Generating a 10-character alphanumeric string...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": "existing_user"
+    }
+    ```
+    ```yaml
+    - random_string:
+        field: session_id
+        length: 10
+        charset: alphanumeric
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds random session identifier:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": "existing_user",
+      "session_id": "A7k9Mq2Px5"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Hexadecimal Token
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a hexadecimal token...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request_data": "sample"
+    }
+    ```
+    ```yaml
+    - random_string:
+        field: token
+        length: 16
+        charset: hex
+        target_field: auth_token
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates hex token:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request_data": "sample",
+      "auth_token": "a1b2c3d4e5f67890"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Formatted Identifier
+
+<ExampleGrid>
+  <CommentCol>
+    Creating formatted ID with prefix/suffix...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "login"
+    }
+    ```
+    ```yaml
+    - random_string:
+        field: transaction_id
+        length: 8
+        charset: alphanumeric
+        prefix: "TXN-"
+        suffix: "-2024"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates formatted transaction ID:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "login",
+      "transaction_id": "TXN-K3m7Qp9R-2024"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Numeric PIN
+
+<ExampleGrid>
+  <CommentCol>
+    Generating numeric PIN code...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_request": "reset_password"
+    }
+    ```
+    ```yaml
+    - random_string:
+        field: verification_pin
+        length: 6
+        charset: numeric
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates numeric verification code:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_request": "reset_password",
+      "verification_pin": "847329"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Alphabetic Code
+
+<ExampleGrid>
+  <CommentCol>
+    Creating alphabetic reference code...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ticket_type": "support"
+    }
+    ```
+    ```yaml
+    - random_string:
+        field: reference_code
+        length: 5
+        charset: alpha
+        prefix: "REF-"
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates alphabetic reference:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ticket_type": "support",
+      "reference_code": "REF-KMPQX"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

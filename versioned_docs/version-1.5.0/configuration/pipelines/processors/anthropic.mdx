@@ -1,0 +1,219 @@
+---
+description: Processes content with Anthropic's Claude API
+sidebar_custom_props: 
+  customIcon: 🎭
+  customCategory: AI
+---
+
+# Anthropic
+
+<span className="theme-doc-version-badge badge badge--primary">Enrichment</span><span className="theme-doc-version-badge badge badge--secondary">AI Powered</span>
+
+## Synopsis
+
+Enriches events by sending field content to **Anthropic**'s Claude API to analyze the content and store the response.
+
+## Schema
+
+```yaml {2-3}
+- anthropic:
+    field: <ident>
+    api_key: <string>
+    target_field: <ident>
+    developer_msg: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    model: <string>
+    temperature: <number>
+    max_tokens: <number>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|`message`|Field containing content to analyze|
+|`api_key`|Y|-|Anthropic API key for authentication|
+|`target_field`|N|`field`|Field to store the API response|
+|`developer_msg`|N|System message for context|Default system message for one-word responses unless explanation requested|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if API call fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`model`|N|`claude-3-opus-20240229`|Claude model to use|
+|`temperature`|N|`0.7`|Response randomness (0-1)|
+|`max_tokens`|N|`1000`|Maximum response length|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor is useful for automated analysis, context enrichment, and intelligent processing of log data. It supports system context messages for analysis, temperature control for response variation, and token limits for response length management.
+
+The latest Claude models are available. Supported models: claude-3-opus-20240229, claude-3-sonnet-20240229, claude-3-haiku-20240307.
+
+:::warning
+Invalid model names will cause processing errors.
+:::
+
+API responses are cached to improve performance.
+
+:::warning[caution]
+API calls add latency to event processing.
+:::
+
+Developer messages help guide Claude's analysis, and lower temperature values produce more focused responses. Also, consider rate limits and costs for high-volume processing. Token limits control response length and costs, and long input texts may hit token limits.
+
+:::warning
+API keys must be securely stored and accessed.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Analyzing a Cisco device log...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Interface GigabitEthernet0/1 is down"
+    }
+    ```
+    ```yaml
+    - anthropic:
+        field: message
+        target_field: analysis
+        api_key: "${ANTHROPIC_SECRET_KEY}"
+        developer_msg: "You are an expert in Cisco networking. Analyze this log message."
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds information to the event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Interface GigabitEthernet0/1 is down",
+      "analysis": "Critical network issue detected: GigabitEthernet0/1 interface is non-operational. Possible causes include physical link failure, administrative shutdown, or interface configuration issues. Recommended actions: Check cable connectivity, interface status, and configuration settings."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Precision
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring analysis parameters...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_msg": "Authentication failed for user admin"
+    }
+    ```
+    ```yaml
+    - anthropic:
+        field: error_msg
+        target_field: security_analysis
+        api_key: "${ANTHROPIC_SECRET_KEY}"
+        model: "claude-3-sonnet-20240229"
+        temperature: 0.2
+        max_tokens: 100
+        developer_msg: "You are a security analyst. Provide a brief analysis of this error."
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces more focused security insights:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_msg": "Authentication failed for user admin",
+      "security_analysis": "Security alert: Failed login attempt detected for admin account. This requires immediate attention as it involves a privileged account. Recommend reviewing authentication logs, checking for brute force patterns, and ensuring proper access controls are in place."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Analyzing only critical errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Critical: Database corruption detected",
+      "level": "critical"
+    }
+    ```
+    ```yaml
+    - anthropic:
+        if: "ctx.level == 'critical'"
+        field: message
+        target_field: ai_insight
+        api_key: "${ANTHROPIC_SECRET_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    is preferable due to level:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Critical: Database corruption detected",
+      "level": "critical",
+      "ai_insight": "Critical database integrity issue detected. This indicates potential data corruption that could lead to data loss or service disruption. Immediate actions required: Initiate database recovery procedures, verify backup integrity, and prepare for possible failover."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling API failures gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "System alert"
+    }
+    ```
+    ```yaml
+    - anthropic:
+        field: message
+        api_key: "invalid-key"
+        ignore_failure: true
+        on_failure:
+          - set:
+              field: analysis_status
+              value: "failed"
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "System alert",
+      "analysis_status": "failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

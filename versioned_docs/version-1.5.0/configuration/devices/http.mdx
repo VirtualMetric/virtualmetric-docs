@@ -1,0 +1,273 @@
+# HTTP
+
+<span className="theme-doc-version-badge badge badge--secondary">Push</span>
+
+## Synopsis
+
+Creates an HTTP server that accepts messages via HTTP POST requests. Supports multiple authentication methods, TLS encryption, and customizable response handling.
+
+## Schema
+
+```yaml {1,2,4}
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: http
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    url: <string>
+    protocol: <string>
+    content_type: <string>
+    reuse: <boolean>
+    workers: <numeric>
+    response:
+      code: <numeric>
+      body: <string>
+      content_type: <string>
+    tls:
+      status: <boolean>
+      cert_name: <string>
+      key_name: <string>
+    authentication:
+      type: <string>
+      username: <string>
+      password: <string>
+    header:
+      key: <string>
+      value: <string>
+    hmac:
+      type: <string>
+      header: <string>
+      key: <string>
+      prefix: <string>
+    queue:
+      interval: <numeric>
+```
+
+## Configuration
+
+The following fields are used to define the device:
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `http`|
+|`status`|N|`true`|Enable/disable the device|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`protocol`|N|`"tcp"`|Transport protocol (must be tcp)|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y||Listen port|
+|`url`|N|`"/"`|URL path to listen on|
+|`content_type`|N|`"application/json"`|Expected content type of incoming requests|
+
+### Response
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`response.code`|N|`200`|HTTP response status code|
+|`response.body`|N|`{"message":"success"}`|Response body content|
+|`response.content_type`|N|`"application/json"`|Response content type|
+
+### Authentication
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`authentication.type`|N|`"none"`|Authentication type (`basic`, `header`, or `hmac`)|
+|`username`|Y||Username for basic auth (required if type is `basic`)|
+|`password`|Y||Password for basic auth (required if type is `basic`)|
+|`header.key`|Y||Header name for header auth (required if type is `header`)|
+|`header.value`|Y||Header value for header auth (required if type is `header`)|
+|`hmac.type`|Y||HMAC algorithm (`sha1`, `sha256`, or `sha512`)|
+|`hmac.header`|Y||Header name for HMAC signature|
+|`hmac.key`|Y||Secret key for HMAC calculation|
+|`hmac.prefix`|N|-|Optional prefix to strip from HMAC header value|
+
+### TLS
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.cert_name`|Y||TLS certificate file path (required if TLS enabled)|
+|`tls.key_name`|Y||TLS private key file path (required if TLS enabled)|
+
+:::note
+TLS certificate and key files must be placed in the service root directory.
+:::
+
+## Advanced Configuration
+
+To enhance performance and achieve better message handling, the following settings are used.
+
+### Performance
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`true`|Enable socket address reuse|
+|`workers`|N|`<dynamic>`|Number of worker processes when reuse is enabled|
+
+### Messages
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`queue.interval`|N|`1`|Queue processing interval in seconds|
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic
+
+The minimum required settings for a basic server are POST endpoint at `/logs`, a JSON content type, and a simple success response
+
+<ExampleGrid>
+  <CommentCol>
+    Create a simple HTTP server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 1
+        name: basic_http
+        type: http
+        properties:
+          port: 8080
+          url: "/logs"
+          content_type: "application/json"
+          response:
+            code: 200
+            body: '{"status":"ok"}'
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Authentication
+
+For authentication, define a username/password, and an environment variable for the password.
+
+<ExampleGrid>
+  <CommentCol>
+    HTTP server with basic auth...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 2
+        name: auth_http
+        type: http
+        properties:
+          port: 8080
+          url: "/api/logs"
+          authentication:
+            type: "basic"
+          username: "vmetric"
+          password: "P@ssw0rd"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### API Keys
+
+To enable API key authentication, use a custom header-based authentication, a configurable header name and value, and an environment variable for secure key storage.
+
+<ExampleGrid>
+  <CommentCol>
+    HTTP server with API key header auth...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 3
+        name: apikey_http
+        type: http
+        properties:
+          port: 8080
+          url: "/api/v1/logs"
+          authentication:
+            type: "header"
+          header:
+            key: "X-API-Key"
+            value: "${API_KEY}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### HMAC
+
+For a secure HMAC authentication, use SHA-256 signature verification, a custom signature header, and optional signature prefix.
+
+<ExampleGrid>
+  <CommentCol>
+    HTTP server with HMAC signature verification...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 4
+        name: hmac_http
+        type: http
+        properties:
+          port: 8080
+          url: "/secure/logs"
+          authentication:
+            type: "hmac"
+          hmac:
+            type: "sha256"
+            header: "X-Signature"
+            key: "${HMAC_SECRET}"
+            prefix: "sha256="
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+When using HMAC authentication, ensure that the client calculates the signature using the same algorithm and key.
+:::
+
+### Secure
+
+For a secure server, use TLS encryption, basic authentication, a custom response code, and secure credentials handling.
+
+<ExampleGrid>
+  <CommentCol>
+    HTTPS server with TLS and authentication...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 5
+        name: secure_http
+        type: http
+        properties:
+          port: 8443
+          url: "/api/ingest"
+          tls:
+            status: true
+            cert_name: "server.crt"
+            key_name: "server.key"
+          authentication:
+            type: "basic"
+          username: "ingest_user"
+          password: "${INGEST_PASSWORD}"
+          response:
+            code: 201
+            body: '{"status":"created"}'
+            content_type: "application/json"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+For production deployments, always use TLS encryption when authentication is enabled to protect credentials and tokens.
+:::

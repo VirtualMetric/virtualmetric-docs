@@ -1,0 +1,307 @@
+---
+description: Capitalizes the first letter of strings while making the rest lowercase
+sidebar_custom_props: 
+  customIcon: 🔤
+  customCategory: Text Processing
+---
+
+# Capitalize
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">String Formatting</span><span className="theme-doc-version-badge badge badge--secondary">Case Conversion</span>
+
+## Synopsis
+
+A text formatting processor that capitalizes the first letter of strings while converting the remaining characters to lowercase, providing consistent sentence-case formatting for data normalization and display purposes.
+
+## Schema
+
+```yaml {2}
+- capitalize:
+  field: <ident>
+  target_field: <ident>
+  description: <text>
+  if: <script>
+  ignore_failure: <boolean>
+  ignore_missing: <boolean>
+  on_failure: <processor[]>
+  on_success: <processor[]>
+  tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the string(s) to capitalize|
+|`target_field`|N|`field`|Field to store the capitalized result|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if capitalization fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See [Handling Failures](../handling-failures.mdx)|
+|`on_success`|N|-|See [Handling Success](../handling-success.mdx)|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor applies proper sentence-case formatting by capitalizing the first character and converting all subsequent characters to lowercase. This ensures consistent formatting regardless of the original case of the input string.
+
+:::note
+The processor supports both individual strings and string arrays, applying capitalization to each string element in the array.
+:::
+
+Single-character strings are converted to uppercase, while longer strings receive the first-letter capitalization treatment. Empty strings are returned unchanged to maintain data integrity.
+
+The processor handles Unicode characters correctly, ensuring proper case conversion for international text content and special characters.
+
+:::warning
+The processor only works with string and string array field types. Other data types will result in processing errors.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Capitalizing simple strings...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_name": "john doe",
+      "company": "ACME CORPORATION",
+      "department": "Information Technology"
+    }
+    ```
+    ```yaml
+    processors:
+      - capitalize:
+        field: user_name
+        target_field: formatted_name
+      - capitalize:
+        field: company
+        target_field: formatted_company
+      - capitalize:
+        field: department
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces properly formatted text:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_name": "john doe",
+      "company": "ACME CORPORATION",
+      "department": "Information technology",
+      "formatted_name": "John doe",
+      "formatted_company": "Acme corporation"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Capitalizing string arrays...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "categories": ["SECURITY", "network", "Database", "aPPLICATION"],
+      "cities": ["new york", "LOS ANGELES", "chicago", "HOUSTON"]
+    }
+    ```
+    ```yaml
+    processors:
+      - capitalize:
+        field: categories
+        target_field: clean_categories
+      - capitalize:
+        field: cities
+    ```
+  </CodeCol>
+  <CommentCol>
+    formats all array elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "categories": ["SECURITY", "network", "Database", "aPPLICATION"],
+      "cities": ["New york", "Los angeles", "Chicago", "Houston"],
+      "clean_categories": ["Security", "Network", "Database", "Application"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Log Level Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Normalizing log levels...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_entries": [
+        {"level": "ERROR", "message": "Database connection failed"},
+        {"level": "warning", "message": "Memory usage high"},
+        {"level": "INFO", "message": "System started"}
+      ]
+    }
+    ```
+    ```yaml
+    processors:
+      - foreach:
+        field: log_entries
+        processor:
+          capitalize:
+            field: _ingest._value.level
+            target_field: _ingest._value.normalized_level
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates consistent log level format:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_entries": [
+        {"level": "ERROR", "message": "Database connection failed", "normalized_level": "Error"},
+        {"level": "warning", "message": "Memory usage high", "normalized_level": "Warning"},
+        {"level": "INFO", "message": "System started", "normalized_level": "Info"}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Status Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Formatting status fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "server_status": "RUNNING",
+      "database_status": "offline",
+      "service_status": "Maintenance"
+    }
+    ```
+    ```yaml
+    processors:
+      - capitalize:
+        field: server_status
+      - capitalize:
+        field: database_status
+      - capitalize:
+        field: service_status
+    ```
+  </CodeCol>
+  <CommentCol>
+    standardizes status formatting:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "server_status": "Running",
+      "database_status": "Offline",
+      "service_status": "Maintenance"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Single Characters
+
+<ExampleGrid>
+  <CommentCol>
+    Handling single characters and short strings...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "grade": "a",
+      "priority": "h",
+      "code": "x1"
+    }
+    ```
+    ```yaml
+    processors:
+      - capitalize:
+        field: grade
+        target_field: letter_grade
+      - capitalize:
+        field: priority
+        target_field: priority_level
+      - capitalize:
+        field: code
+        target_field: formatted_code
+    ```
+  </CodeCol>
+  <CommentCol>
+    properly formats short strings:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "grade": "a",
+      "priority": "h",
+      "code": "x1",
+      "letter_grade": "A",
+      "priority_level": "H",
+      "formatted_code": "X1"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional
+
+<ExampleGrid>
+  <CommentCol>
+    Capitalizing based on conditions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_type": "CRITICAL",
+      "severity": "high",
+      "format_alerts": true
+    }
+    ```
+    ```yaml
+    processors:
+      - capitalize:
+        field: alert_type
+        target_field: formatted_alert
+        if: "format_alerts == true"
+      - capitalize:
+        field: severity
+        target_field: formatted_severity
+        if: "format_alerts == true"
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies formatting when condition is met:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_type": "CRITICAL",
+      "severity": "high",
+      "format_alerts": true,
+      "formatted_alert": "Critical",
+      "formatted_severity": "High"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

@@ -1,0 +1,341 @@
+---
+description: Evaluates and scores data against configurable rules for pattern recognition and classification
+sidebar_custom_props:
+  customCategory: Analytics
+  customIcon: 🎯
+---
+
+# Score
+
+<span className="theme-doc-version-badge badge badge--primary">Analytics</span><span className="theme-doc-version-badge badge badge--secondary">Pattern Recognition</span>
+
+Evaluates data against configurable scoring rules to identify patterns, classify content, and calculate confidence scores.
+
+## Schema
+
+```yaml {2,4}
+- score:
+    identifier: <string>
+    score_field: <ident>
+    rules:
+      - type: <string>
+        points: <number>
+        # ... rule-specific fields
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`identifier`|Y|-|Identifier name (e.g., vendor, threat type, log format)|
+|`score_field`|N|`_score`|Field to store scoring results|
+|`rules`|Y|-|Array of scoring rules to evaluate|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run processor|
+|`ignore_failure`|N|`false`|Continue if processor fails|
+|`ignore_missing`|N|`false`|Continue if fields are missing|
+|`on_failure`|N|-|Processors to run on failure|
+|`on_success`|N|-|Processors to run on success|
+|`tag`|N|-|Processor identifier|
+
+## Details
+
+The processor uses accumulative scoring where multiple rules contribute to the total score, with rules evaluated in the order specified in the configuration. For key-value fields parsing, temporary fields are created as needed to support the evaluation process.
+
+Field references and templates work seamlessly in rule configurations, allowing for dynamic rule evaluation based on log content. The implementation provides efficient evaluation with early termination options to optimize performance, and the final score divided by max_possible_score yields a raw confidence ratio that can be used by downstream confidence processors.
+
+This processor is essential for log format detection, distinguishing between Apache, Nginx, IIS, and custom log formats through pattern-based scoring rules. It excels at data quality assessment by scoring data completeness and structure quality across various input sources.
+
+The processor supports security classification by evaluating security events and threat indicators using configurable scoring criteria. Content analysis capabilities enable scoring of document types, file formats, and message patterns for automated classification workflows.
+
+It's also valuable for vendor identification, analyzing log characteristics to determine equipment vendors, and enables the construction of custom classification systems for any structured data through flexible rule-based scoring mechanisms.
+
+## Rule Types
+
+### kv_fields
+Scores based on presence of key-value fields.
+
+**Configuration:**
+- `fields`: Array of field names to check
+- `min_matches`: Minimum fields required to match
+
+### regex
+Scores based on regex pattern matching.
+
+**Configuration:**
+- `pattern`: Regular expression pattern
+- `field`: Field to check (optional, defaults to original message)
+- `capture_groups`: Map of named groups to bonus points
+
+### contains
+Scores based on text content matching.
+
+**Configuration:**
+- `text`: Text to search for
+- `field`: Field to check (optional)
+- `case_sensitive`: Case-sensitive matching
+
+### not_contains
+Scores when text is NOT found (inverse of contains).
+
+### field_value  
+Scores based on exact field value matching.
+
+**Configuration:**
+- `field`: Field to check
+- `value`: Expected value
+- `ignore_case`: Case-insensitive comparison
+
+### csv
+Scores based on CSV structure validation.
+
+**Configuration:**
+- `delimiter`: CSV delimiter (default: comma)
+- `min_fields`: Minimum number of fields required
+- `header_patterns`: Array of expected header patterns
+
+### structure
+Scores based on data format structure.
+
+**Configuration:**
+- `format`: Format type (`cef`, `leef`, `json`, `kv`, `csv`)
+
+### processor
+Scores based on successful processor execution.
+
+**Configuration:**
+- `processors`: Array of processors to run
+
+## Examples
+
+### Format Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Scoring Apache access log format with multiple pattern rules...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - score:
+        identifier: apache_access
+        rules:
+          - type: regex
+            points: 30
+            pattern: '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+            description: "IP address at start"
+          - type: contains
+            points: 25
+            text: 'GET '
+            description: "HTTP GET method"
+          - type: contains
+            points: 25
+            text: 'HTTP/1.'
+            description: "HTTP version"
+          - type: regex
+            points: 20
+            pattern: '\[[\d\/\w:\s\+]+\]'
+            description: "Apache timestamp format"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### CSV Validation
+
+<ExampleGrid>
+  <CommentCol>
+    Validating CSV data structure and content patterns...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - score:
+        identifier: csv_data
+        rules:
+          - type: structure
+            points: 40
+            format: csv
+          - type: csv
+            points: 30
+            min_fields: 3
+            delimiter: ","
+          - type: csv
+            points: 30
+            header_patterns: ["id", "name", "email"]
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Security Events
+
+```yaml
+- score:
+    identifier: brute_force_attack
+    rules:
+      - type: contains
+        points: 40
+        text: "authentication failed"
+        case_sensitive: false
+      - type: regex
+        points: 30
+        pattern: "failed.*login.*attempts?.*(\d+)"
+        capture_groups:
+          "1": 20  # Bonus for capturing attempt count
+      - type: field_value
+        points: 20
+        field: event.category
+        value: security
+      - type: kv_fields
+        points: 10
+        fields: ["user.name", "source.ip", "event.timestamp"]
+        min_matches: 2
+```
+
+### Threat Scoring
+
+```yaml
+- score:
+    identifier: malware_indicators
+    rules:
+      - type: contains
+        points: 50
+        text: "malware"
+        case_sensitive: false
+      - type: regex
+        points: 40
+        pattern: "\.exe|\.dll|\.scr|\.bat"
+        description: "Executable file extensions"
+      - type: not_contains
+        points: 20
+        text: "whitelist"
+        description: "Not whitelisted"
+      - type: processor
+        points: 30
+        processors:
+          - virustotal:
+              field: file.hash
+              api_key: "{{virustotal_key}}"
+```
+
+### CEF Format
+
+```yaml
+- score:
+    identifier: cef_format
+    rules:
+      - type: structure
+        points: 60
+        format: cef
+      - type: regex
+        points: 25
+        pattern: "^CEF:\d+\|"
+        description: "CEF header with version"
+      - type: contains
+        points: 15
+        text: "CEF:"
+```
+
+### Key-Value Logs
+
+```yaml
+- score:
+    identifier: key_value_logs
+    rules:
+      - type: structure
+        points: 40
+        format: kv
+      - type: kv_fields
+        points: 30
+        fields: ["timestamp", "level", "message", "service"]
+        min_matches: 3
+      - type: regex
+        points: 30
+        pattern: '\w+=["\']?[^"\'\s]+["\']?'
+        description: "Key-value pair pattern"
+```
+
+## Output Structure
+
+The processor creates a scoring structure in the specified field:
+
+```json
+{
+  "_score": {
+    "identifier_name": {
+      "score": 85,
+      "max_possible_score": 100,
+      "matched_rules": ["rule description 1", "rule description 2"]
+    }
+  }
+}
+```
+
+### Multi-Identifier
+
+Multiple score processors can contribute to the same score field:
+
+```yaml
+- score:
+    identifier: apache_logs
+    rules: [...]
+- score:
+    identifier: nginx_logs  
+    rules: [...]
+- score:
+    identifier: iis_logs
+    rules: [...]
+```
+
+**Result:**
+```json
+{
+  "_score": {
+    "apache_logs": {"score": 90, "max_possible_score": 100, "matched_rules": [...]},
+    "nginx_logs": {"score": 45, "max_possible_score": 100, "matched_rules": [...]},
+    "iis_logs": {"score": 20, "max_possible_score": 100, "matched_rules": [...]}
+  }
+}
+```
+
+## Advanced Features
+
+### Capture Groups
+
+```yaml
+- type: regex
+  points: 30
+  pattern: 'HTTP/(\d+)\.(\d+)\s+(\d{3})'
+  capture_groups:
+    "1": 5   # HTTP major version
+    "2": 3   # HTTP minor version  
+    "3": 10  # Status code
+```
+
+### CSV Headers
+
+```yaml
+- type: csv
+  points: 40
+  min_fields: 5
+  header_patterns: ["timestamp", "user", "action"]
+```
+
+### Processor Rules
+
+```yaml
+- type: processor
+  points: 50
+  processors:
+    - grok:
+        pattern: "%{COMMONAPACHELOG}"
+    - date:
+        field: timestamp
+        formats: ["dd/MMM/yyyy:HH:mm:ss Z"]
+```
