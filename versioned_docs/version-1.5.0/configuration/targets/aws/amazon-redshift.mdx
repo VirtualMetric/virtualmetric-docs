@@ -1,0 +1,548 @@
+# Amazon Redshift
+
+<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Data Warehouse</span>
+
+## Synopsis
+
+Creates a target that loads data into Amazon Redshift using S3 staging and the COPY command. The target handles data file creation, S3 upload, and Redshift COPY operations with support for multiple tables and file formats. Amazon Redshift is a fully managed, petabyte-scale data warehouse service in the cloud.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: amazonredshift
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    key: <string>
+    secret: <string>
+    session: <string>
+    region: <string>
+    endpoint: <string>
+    username: <string>
+    password: <string>
+    database: <string>
+    schema: <string>
+    port: <numeric>
+    staging_bucket: <string>
+    staging_prefix: <string>
+    iam_role: <string>
+    table: <string>
+    tables: <table[]>
+    format: <string>
+    compression: <string>
+    batch_size: <numeric>
+    max_size: <numeric>
+    part_size: <numeric>
+    timeout: <numeric>
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `amazonredshift`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### AWS Credentials
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`key`|N*|-|AWS access key ID for S3 authentication|
+|`secret`|N*|-|AWS secret access key for S3 authentication|
+|`session`|N|-|Optional session token for temporary credentials|
+|`region`|Y|-|AWS region (e.g., `us-east-1`, `eu-west-1`)|
+
+\* = Conditionally required. AWS credentials (`key` and `secret`) are required unless using IAM role-based authentication on AWS infrastructure.
+
+### Redshift Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`endpoint`|Y|-|Redshift cluster endpoint (without port or database)|
+|`database`|Y|-|Redshift database name|
+|`username`|Y|-|Redshift database username|
+|`password`|Y|-|Redshift database password|
+|`schema`|N|`public`|Redshift schema name|
+|`port`|N|`5439`|Redshift port number|
+
+### S3 Staging Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`staging_bucket`|Y|-|S3 bucket name for staging files|
+|`staging_prefix`|N|`redshift-staging/`|S3 key prefix for staging files|
+|`iam_role`|N|-|IAM role ARN for Redshift to access S3 (recommended)|
+|`part_size`|N|`5`|S3 multipart upload part size in MB|
+
+:::note
+Using an IAM role is recommended for production. If not provided, AWS credentials will be used in the COPY command.
+:::
+
+### Table Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`table`|N*|-|Single table name for data loading|
+|`tables`|N*|-|Array of table configurations for multiple tables|
+|`format`|N|`parquet`|File format: `parquet`, `json`, `avro`, `csv`|
+|`compression`|N|-|File compression format|
+
+\* = Either `table` or `tables` must be specified.
+
+#### Table Array Configuration
+
+When using the `tables` array, each table can have the following properties:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`table`|Y|-|Table name|
+|`schema`|N|Parent `schema`|Schema name for this table|
+|`format`|N|Parent `format`|File format for this table|
+|`compression`|N|Parent `compression`|Compression format for this table|
+
+### Batch Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|-|Maximum number of events per file|
+|`max_size`|N|-|Maximum file size in bytes|
+|`timeout`|N|`300`|Timeout in seconds for COPY operations|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+### Data Loading Process
+
+The Redshift target uses a three-stage process to load data:
+
+1. **File Creation**: Accumulates data in memory and creates files in the specified format
+2. **S3 Upload**: Uploads the file to the staging S3 bucket
+3. **COPY Command**: Executes a Redshift COPY command to load data from S3 into the table
+4. **Cleanup**: Deletes the staging file from S3 after successful load
+
+### Supported File Formats
+
+The target supports the following file formats for COPY operations:
+
+**Parquet** (default)
+- Columnar format optimized for analytics
+- Best compression and query performance
+- Recommended for most use cases
+
+**JSON**
+- Semi-structured data format
+- Uses `auto` option for schema detection
+- Useful for nested or variable schemas
+
+**Avro**
+- Binary format with schema evolution support
+- Uses `auto` option for schema detection
+- Good for schema changes over time
+
+**CSV**
+- Simple text format
+- Compatible with many tools
+- Less efficient than columnar formats
+
+### Authentication Methods
+
+**S3 Authentication**
+- Static credentials (access key and secret key)
+- IAM role-based authentication on AWS infrastructure
+
+**Redshift Authentication**
+- Username and password required
+- Connection uses SSL by default
+
+**COPY Command Authentication**
+- IAM role (recommended): Redshift assumes role to access S3
+- Static credentials: Embedded in COPY command (not recommended for production)
+
+### Connection Pool
+
+The target maintains a connection pool to Redshift with the following settings:
+- Maximum connections: 5
+- Minimum connections: 1
+- Connection lifetime: 1 hour
+- Idle timeout: 30 minutes
+
+### S3 Staging
+
+Files are staged in S3 before loading into Redshift. The S3 key structure is:
+```
+{staging_prefix}{table_name}/{file_path}
+```
+
+After successful COPY, the staging file is automatically deleted from S3.
+
+### Multiple Tables
+
+You can configure multiple tables with different formats and schemas:
+
+```yaml
+tables:
+  - table: events
+    schema: public
+    format: parquet
+  - table: logs
+    schema: analytics
+    format: json
+```
+
+Data is routed to tables based on the `SystemS3` field in the log message.
+
+### Error Handling
+
+The target handles errors at each stage:
+- S3 upload failures return an error and retry
+- COPY command failures return detailed error messages
+- Connection pool handles reconnections automatically
+- Staging files are retained on error for troubleshooting
+
+### Performance Considerations
+
+**File Size**: Larger files generally provide better COPY performance. Use `batch_size` and `max_size` to control file sizes.
+
+**Format**: Parquet provides the best compression and load performance for analytical queries.
+
+**Parallelism**: The queue parallelism setting controls concurrent workers. Redshift COPY operations are I/O intensive, so setting parallelism to 1 is recommended to avoid connection pool exhaustion.
+
+**IAM Role**: Using an IAM role for COPY operations is more secure and performs better than embedding credentials.
+
+## Examples
+
+### Basic Configuration
+
+The minimum configuration for a Redshift target:
+
+```yaml
+targets:
+  - name: basic_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      table: "events"
+```
+
+### With IAM Role
+
+Configuration using IAM role for COPY operations (recommended):
+
+```yaml
+targets:
+  - name: iam_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      table: "events"
+```
+
+### Multiple Tables
+
+Configuration with multiple tables and different formats:
+
+```yaml
+targets:
+  - name: multi_table_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      schema: "public"
+      format: "parquet"
+      tables:
+        - table: "events"
+          format: "parquet"
+        - table: "logs"
+          format: "json"
+        - table: "metrics"
+          schema: "analytics"
+          format: "parquet"
+```
+
+### JSON Format
+
+Configuration using JSON format:
+
+```yaml
+targets:
+  - name: json_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      table: "json_events"
+      format: "json"
+```
+
+### With Batch Limits
+
+Configuration with batch size and file size limits:
+
+```yaml
+targets:
+  - name: batched_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      table: "events"
+      batch_size: 100000
+      max_size: 104857600
+```
+
+### Custom Schema
+
+Configuration with custom schema:
+
+```yaml
+targets:
+  - name: custom_schema_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      schema: "events_schema"
+      staging_bucket: "my-redshift-staging"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      table: "application_logs"
+```
+
+### With Staging Prefix
+
+Configuration with custom staging prefix:
+
+```yaml
+targets:
+  - name: custom_prefix_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      staging_prefix: "datastream/staging/"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      table: "events"
+```
+
+### With Field Normalization
+
+Using field normalization for standard format:
+
+```yaml
+targets:
+  - name: normalized_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      table: "normalized_events"
+      field_format: "cim"
+```
+
+### With Checkpoint Pipeline
+
+Configuration with checkpoint pipeline for reliability:
+
+```yaml
+targets:
+  - name: reliable_redshift
+    type: amazonredshift
+    pipelines:
+      - checkpoint
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      table: "critical_events"
+```
+
+### Scheduled Loading
+
+Configuration with scheduled data loading:
+
+```yaml
+targets:
+  - name: scheduled_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      table: "hourly_events"
+      interval: "1h"
+```
+
+### Custom Port
+
+Configuration with custom Redshift port:
+
+```yaml
+targets:
+  - name: custom_port_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      port: 5440
+      staging_bucket: "my-redshift-staging"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      table: "events"
+```
+
+### Debug Configuration
+
+Configuration with debugging enabled:
+
+```yaml
+targets:
+  - name: debug_redshift
+    type: amazonredshift
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "my-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "analytics"
+      username: "admin"
+      password: "MyPassword123"
+      staging_bucket: "my-redshift-staging"
+      table: "test_events"
+      debug:
+        status: true
+        dont_send_logs: true
+```
+
+### Production Configuration
+
+Configuration for production with optimal settings:
+
+```yaml
+targets:
+  - name: production_redshift
+    type: amazonredshift
+    pipelines:
+      - checkpoint
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      endpoint: "prod-cluster.abc123xyz789.us-east-1.redshift.amazonaws.com"
+      database: "production"
+      username: "datastream_user"
+      password: "SecurePassword123"
+      schema: "events"
+      staging_bucket: "prod-redshift-staging"
+      staging_prefix: "datastream/"
+      iam_role: "arn:aws:iam::123456789012:role/RedshiftCopyRole"
+      format: "parquet"
+      batch_size: 500000
+      max_size: 524288000
+      timeout: 600
+      field_format: "cim"
+      tables:
+        - table: "application_events"
+          format: "parquet"
+        - table: "security_events"
+          format: "parquet"
+        - table: "audit_logs"
+          schema: "audit"
+          format: "json"
+```
