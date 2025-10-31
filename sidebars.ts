@@ -171,6 +171,7 @@ const sidebars: SidebarsConfig = {
               items: [
                 "configuration/targets/mq/apache-kafka",
                 "configuration/targets/mq/confluent-cloud",
+                "configuration/targets/mq/synadia-cloud",
                 "configuration/targets/mq/redpanda",
                 "configuration/targets/mq/warpstream",
                 "configuration/targets/mq/aivenkafka",
@@ -188,6 +189,10 @@ const sidebars: SidebarsConfig = {
                 "configuration/targets/analytics/elastic-security",
                 "configuration/targets/analytics/splunk",
                 "configuration/targets/analytics/splunk-security",
+                "configuration/targets/analytics/databricks-s3",
+                "configuration/targets/analytics/databricks-blob",
+                "configuration/targets/analytics/snowflake-s3",
+                "configuration/targets/analytics/snowflake-blob",
               ],
             },
             {
