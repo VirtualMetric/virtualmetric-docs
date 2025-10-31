@@ -23,6 +23,7 @@ Creates an Azure Data Explorer (Kusto) target that ingests data directly into Az
     table: <string>
     schema: <string>
     type: <string>
+    compression: <string>
     flush_immediately: <boolean>
     timeout: <numeric>
     batch_size: <numeric>
@@ -31,6 +32,8 @@ Creates an Azure Data Explorer (Kusto) target that ingests data directly into Az
     tables:
       - name: <string>
         schema: <string>
+        type: <string>
+        compression: <string>
     interval: <string|numeric>
     cron: <string>
     debug:
@@ -61,7 +64,8 @@ The following fields are used to define the target:
 |`database`|Y|-|Target database name|
 |`table`|N(2)|-|Default/fallback table name (catch-all for unmatched events)|
 |`schema`|N(2)|-|Table schema definition for the default/fallback table|
-|`type`|N|`parquet`|Data format: `parquet`, `json`, `multijson`, or `avro`|
+|`type`|N|`parquet`|Data format. See [Formats](#formats) below|
+|`compression`|N|-|Compression algorithm. See [Compression](#compression) below|
 
 (1) = Conditionally required (see authentication methods above)
 (2) = Required if you want a catch-all table for unmatched events, or if not using the tables array
@@ -139,6 +143,17 @@ For tables not defined in the configuration, the target can automatically discov
 |`avro`|Apache Avro format with schema|
 |`parquet`|Apache Parquet columnar format with schema (default)|
 
+### Compression
+
+Data can use the following compression algorithms:
+
+|Format|Default|Compression Codecs|
+|---|---|---|
+|JSON|-|Not supported|
+|MultiJSON|-|Not supported|
+|Avro|`zstd`|`deflate`, `snappy`, `zstd`|
+|Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+
 :::warning
 Consider cluster capacity when setting batch sizes and timeouts.
 :::
@@ -177,16 +192,23 @@ targets:
       endpoint: "https://cluster.region.kusto.windows.net"
       database: "logs"
       type: "parquet"
+      compression: "zstd"
       # Catch-all table for unmatched events
       table: "general_logs"
       schema: "TimeGenerated:datetime,Message:string,Source:string"
       tables:
         - name: "security_events"
           schema: "TimeGenerated:datetime,Computer:string,EventID:int,Message:string"
+          type: "parquet"
+          compression: "zstd"
         - name: "system_events"
           schema: "TimeGenerated:datetime,Computer:string,EventID:int,Message:string"
+          type: "avro"
+          compression: "snappy"
         - name: "application_events"
           schema: "TimeGenerated:datetime,Computer:string,EventID:int,Message:string"
+          type: "parquet"
+          compression: "brotli"
 ```
 
 In this example, events with `SystemS3` set to "security_events", "system_events", or "application_events" will route to their respective tables. All other events will route to the "general_logs" catch-all table.
