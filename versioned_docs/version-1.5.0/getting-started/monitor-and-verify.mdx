@@ -1,0 +1,238 @@
+# Monitor and Verify
+
+Your first DataStream pipeline should now be processing data. Let's verify everything is working correctly and show you how to monitor your data flows going forward.
+
+## Check Director Status
+
+Your Director manages all data processing, so let's ensure it's healthy:
+
+1. **Navigate to Director Dashboard**
+   - Go to **Fleet Management** → **Directors**
+   - Click on your Director's name in the table
+
+2. **Verify Connection Health**
+   - **Connection Status**: Should show "Connected" with green indicator
+   - **IP Address**: Should display your server's IP address
+   - **Status**: Should show "Enabled"
+
+3. **Review Activity Logs**
+   - Click the **Activity Logs** tab
+   - Look for recent activity entries showing:
+     - Data processing messages
+     - Route execution logs
+     - Any error or warning messages
+   - Recent timestamps indicate active processing
+
+**Healthy Activity Log Examples:**
+```
+[2024-01-15 10:30:15] Device 'My First Syslog Device' received 5 messages
+[2024-01-15 10:30:16] Pipeline 'syslog-parser' processed 5 events successfully  
+[2024-01-15 10:30:16] Target 'My First File Target' wrote 5 events to file
+```
+
+## Verify Data Flow
+
+Let's confirm data is moving through your complete pipeline:
+
+### Check Device Activity
+
+1. **Navigate to Your Device**
+   - Go to **Fleet Management** → **Devices** → **Syslog**
+   - Find your device in the table
+   - Look for activity indicators or recent message counts
+
+2. **Verify Network Connectivity**
+   - Confirm your device is listening on the correct port (514)
+   - Test network connectivity to your DataStream server
+   - Ensure firewall rules allow inbound syslog traffic
+
+### Examine Target Output
+
+1. **Navigate to Output Directory**
+   - Go to the file location you specified in your target
+   - Look for JSON files with today's date pattern
+   - Example: `logs-2024_01_15.json`
+
+2. **Verify File Contents**
+   Open a recent file to confirm proper data processing:
+
+   **Raw syslog input:**
+   ```
+   <134>Jan 15 10:30:00 server1 application: User login successful
+   ```
+
+   **Processed JSON output:**
+   ```json
+   {
+     "@timestamp": "2024-01-15T10:30:00.000Z",
+     "message": "User login successful",
+     "host": {"name": "server1"},
+     "process": {"name": "application"},  
+     "log": {
+       "level": "info",
+       "syslog": {
+         "facility": {"code": 16, "name": "local0"},
+         "severity": {"code": 6, "name": "info"}
+       }
+     },
+     "event": {
+       "category": ["authentication"],
+       "outcome": "success"
+     }
+   }
+   ```
+
+3. **Check File Growth**
+   - Monitor file sizes increasing over time
+   - Verify new files are created daily (based on your naming template)
+   - Confirm compression is working (files should be smaller than expected)
+
+### Monitor Route Performance
+
+1. **Return to Quick Routes**
+   - Go to **Routes** → **Quick Routes**
+   - Click on your route's blue rectangle to view details
+   - Look for processing statistics or performance metrics
+
+2. **Check for Processing Errors**
+   - Review any error counts or warning indicators
+   - Verify the route status shows as active/enabled
+   - Confirm all components in the route are functioning
+
+## Understanding Your Processed Data
+
+### Data Structure
+
+Your processed logs now have consistent structure:
+
+**Core Fields:**
+- `@timestamp`: Standardized ISO 8601 timestamp
+- `message`: Original log message content
+- `host.name`: Source system identifier
+- `log.level`: Normalized severity (debug, info, warn, error)
+
+**Event Classification:**
+- `event.category`: Type of event (network, security, system)
+- `event.action`: What happened (login, logout, connection)
+- `event.outcome`: Result (success, failure, unknown)
+
+**Source Information:**
+- `log.syslog.facility`: System component that logged the event
+- `log.syslog.severity`: Original syslog severity level
+- Additional fields based on your specific pipeline template
+
+### Data Quality Indicators
+
+**Good data processing shows:**
+- Consistent field structure across all events
+- Proper timestamp parsing and formatting
+- Meaningful categorization in event fields
+- No parsing errors or null values in critical fields
+
+**Potential issues to watch for:**
+- Missing or malformed timestamps
+- Unparsed message content (indicates pipeline issues)
+- Excessive null values (suggests data format mismatch)
+- Processing errors in Director logs
+
+## Performance Monitoring
+
+### System Health Indicators
+
+1. **Director Resource Usage**
+   - Monitor CPU and memory consumption
+   - Watch disk space in target directories
+   - Check network connectivity stability
+   - Review processing throughput rates
+
+2. **Data Volume Metrics**
+   - Messages processed per second
+   - File size growth rates
+   - Processing latency (time from receipt to output)
+   - Error rates and retry counts
+
+3. **Storage Management**
+   - Target directory disk space usage
+   - File rotation and cleanup requirements  
+   - Compression effectiveness
+   - Backup and archival needs
+
+### Success Indicators
+
+Your setup is working correctly when you see:
+- ✅ Director status shows "Connected"
+- ✅ New JSON files appear regularly in target directory
+- ✅ Files contain properly structured, parsed log data
+- ✅ Data appears consistently (matching your log source frequency)
+- ✅ No error messages in Director Activity Logs
+- ✅ Processing latency remains acceptable for your needs
+
+## Troubleshooting Common Issues
+
+### No Data Appearing
+
+**Check data sources:**
+1. Verify log sources are sending to correct IP address and port
+2. Test network connectivity: `telnet <server-ip> 514`
+3. Check firewall rules allow inbound traffic on port 514
+4. Confirm syslog sources are configured and operational
+
+**Verify DataStream configuration:**
+1. Ensure device status is "Enabled" 
+2. Confirm route is properly saved and active
+3. Check Director connection status
+4. Review target directory permissions
+
+### Data Looks Incorrect
+
+**Pipeline issues:**
+1. Verify you selected correct pipeline template for your log format
+2. Review pipeline configuration in **My Pipelines**
+3. Check if custom parsing rules are needed
+4. Consider pipeline customization for unique log structures
+
+**Format mismatches:**
+1. Compare raw input vs expected pipeline input format
+2. Test with known-good sample data
+3. Review pipeline documentation for supported formats
+4. Contact support if standard templates don't fit your data
+
+### Performance Problems
+
+**Processing bottlenecks:**
+1. Check Director system resources (CPU, memory, disk)
+2. Monitor network bandwidth if processing remote logs
+3. Consider adjusting batch sizes in device/target configurations
+4. Review processing volume vs system capacity
+
+**Storage issues:**
+1. Monitor disk space in target directories
+2. Implement file rotation or cleanup policies
+3. Consider compression settings optimization
+4. Plan for data archival or deletion policies
+
+## Next Steps for Operations
+
+**Daily Monitoring:**
+- Review Director health and connectivity
+- Check data processing volumes and rates
+- Monitor target storage usage and file creation
+- Watch for error messages or processing failures
+
+**Weekly Review:**
+- Analyze data quality and completeness
+- Review processing performance trends
+- Check system resource utilization
+- Plan capacity adjustments if needed
+
+**Ongoing Optimization:**
+- Customize pipeline processing for your specific needs
+- Add additional data sources as requirements grow
+- Implement alerting for critical processing failures
+- Document your configuration for team knowledge sharing
+
+## What's Next?
+
+Your basic DataStream pipeline is operational. Now you can expand and enhance your data processing capabilities.
+
+**Next:** [Next Steps](next-steps) to learn how to customize your pipeline, add more data sources, implement advanced routing, and scale your deployment.

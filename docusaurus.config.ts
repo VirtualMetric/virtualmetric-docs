@@ -89,14 +89,16 @@ const config: Config = {
     ],
   ],
   plugins: [
-    require.resolve("docusaurus-lunr-search"),
+    [
+      require.resolve("docusaurus-lunr-search"),
+      {
+        excludeRoutes: ["/1.*/**/*"],
+        disableVersioning: true,
+      }
+    ],
     require.resolve('./plugins/validate-topics'),
     require.resolve('./plugins/validate-images'),
     require.resolve('./plugins/validate-includes'),
-    // DISABLED: Quote plugin was causing hot reload issues in development
-    // The getPathsToWatch() method was interfering with Docusaurus native file watching
-    // See PROJECT_CONTEXT.md for details and future re-enablement
-    // require.resolve('./plugins/validate-quotes'),
   ],
   themeConfig: {
     image: "telemetry-color.jpg",

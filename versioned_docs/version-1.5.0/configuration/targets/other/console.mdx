@@ -1,0 +1,95 @@
+# Console
+
+<span className="theme-doc-version-badge badge badge--secondary">Forward</span>
+
+## Synopsis
+
+Creates a console target that writes log messages to the standard output. Supports field normalization to various logging standards through the field_format property.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: console
+  status: <boolean>
+  pipelines: <pipeline[]>
+  properties:
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following are the fields used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `console`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Examples
+
+### Basic
+
+Console use without field normalization:
+
+```yaml
+targets:
+  - name: basic_console
+    type: console
+```
+
+### ECS
+
+Console use with ECS field normalization:
+
+```yaml
+targets:
+  - name: ecs_console
+    type: console
+    properties:
+      field_format: "ecs"
+```
+
+:::note
+For defails of ECS, see <Topic id="appendix-ecs">Appendix</Topic>.
+:::
+
+### ASIM
+
+Console use with ASIM field normalization:
+
+```yaml
+targets:
+  - name: asim_console
+    type: console
+    properties:
+      field_format: "asim"
+```
+
+:::tip
+For details of _ASIM_, see <Topic id="appendix-asim">Appendix</Topic>.
+:::
