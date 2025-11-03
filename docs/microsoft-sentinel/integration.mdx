@@ -6,91 +6,90 @@ sidebar_label: Integration
 
 **VirtualMetric Director** supports **Microsoft Sentinel** integration through two different approaches: automatic discovery and manual configuration. Choose the method that best fits your environment and requirements.
 
-**Prerequisites** for both approaches:
+## Prerequisites
+
+Both integration approaches require:
 
 - an **Azure** subscription with permissions to create resources
 - a _Log Analytics_ workspace required by **Microsoft Sentinel**
 
-<Tabs groupId="integration-method">
-  <TabItem value="autodiscovery" label="Autodiscovery" default>
+## Autodiscovery Setup
 
-    **VirtualMetric Director** provides an autodiscovery feature for **Microsoft Sentinel** integration. This enables automatic detection and configuration of _Data Collection Rules_ (DCRs) and their associated streams, simplifying the setup process and providing dynamic updates as your Sentinel environment changes.
+**VirtualMetric Director** provides an autodiscovery feature for **Microsoft Sentinel** integration. This enables automatic detection and configuration of _Data Collection Rules_ (DCRs) and their associated streams, simplifying the setup process and providing dynamic updates as your Sentinel environment changes.
 
-    Open a terminal with _Administrative_ access and navigate to `<vm_root>`. Then, type the following command and press <kb-short>Enter</kb-short>.
+Open a terminal with _Administrative_ access and navigate to `<vm_root>`. Then, type the following command and press <kb-short>Enter</kb-short>.
 
-    <Tabs>
-      <TabItem value="powershell" label="PowerShell" default>
-        ```PowerShell
-        C:\vmetric-director -sentinel -autodiscovery
-        ```
-      </TabItem>
-      <TabItem value="bash" label="Bash">
-        ```bash
-        vmetric-director -sentinel -autodiscovery
-        ```
-      </TabItem>
-    </Tabs>
-
-    Follow the on-screen prompts to complete the setup process. For detailed step-by-step instructions, refer to <Topic id="sentinel-overview">Microsoft Sentinel Overview</Topic>.
-
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```PowerShell
+    C:\vmetric-director -sentinel -autodiscovery
+    ```
   </TabItem>
-  <TabItem value="manual" label="Manual">
-    Manual integration requires step-by-step configuration of **Microsoft Sentinel** components. This approach provides full control over the integration process and is ideal for environments requiring specific configuration requirements.
-
-    ### Service Principal Setup
-
-    Create a service principal for **DataStream** authentication:
-
-    1. Navigate to **Azure Active Directory** > **App registrations**
-    2. Select **New registration**
-    3. Enter **DataStream** as the application name
-    4. Select **Accounts in this organizational directory only**
-    5. Click **Register**
-    6. Record the **Application (client) ID** and **Directory (tenant) ID**
-    7. Go to **Certificates & secrets** > **New client secret**
-    8. Create a secret and record the **Client secret value**
-
-    ### Data Collection Endpoint Setup
-
-    1. Navigate to **Azure Portal** > **Monitor** > **Data Collection Endpoints**
-    2. Select **Create**
-    3. Configure the DCE:
-        |Field|Value|
-        |--:|:--|
-        |**Name**|`datastream-dce`|
-        |**Resource group**|Select your resource group|
-        |**Region**|Same region as your Log Analytics workspace|
-    4. Click **Review + create** > **Create**
-    5. Record the **Logs Ingestion** endpoint URL
-
-    ### Data Collection Rule Creation
-
-    1. Navigate to **Monitor** > **Data Collection Rules**
-    2. Select **Create**
-    3. Configure basic settings:
-        |Field|Value|
-        |--:|:--|
-        |**Rule name**|`datastream-dcr`|
-        |**Resource group**|Same as your DCE|
-        |**Region**|Same as your DCE|
-        |**Platform Type**|**Windows** or **Linux** based on your data sources|
-    4. In **Resources** tab: add your **Log Analytics workspace**
-    5. In **Collect and deliver** tab, 
-        |Field|Value|
-        |--:|:--|
-        |**Data source type**|**Custom Text Logs** or **Windows Event Logs**|
-        |**Data source name**|`DataStreamLogs`|
-        |**File pattern**|Configure based on your log sources
-    6. Configure **Destination**:
-        |Field|Value|
-        |--:|:--|
-        |**Destination type**|**Azure Monitor Logs**|
-        |**Destination**|Your Log Analytics workspace|
-        |**Table**|Create or select target table|
-    7. Click **Review + create** > **Create**
-    8. Record the **DCR Immutable ID**
+  <TabItem value="bash" label="Bash">
+    ```bash
+    vmetric-director -sentinel -autodiscovery
+    ```
   </TabItem>
 </Tabs>
+
+Follow the on-screen prompts to complete the setup process. For detailed step-by-step instructions, refer to <Topic id="sentinel-overview">Microsoft Sentinel Overview</Topic>.
+
+## Manual Setup
+
+Manual integration requires step-by-step configuration of **Microsoft Sentinel** components. This approach provides full control over the integration process and is ideal for environments requiring specific configuration requirements.
+
+### Service Principal Setup
+
+Create a service principal for **DataStream** authentication:
+
+1. Navigate to **Azure Active Directory** > **App registrations**
+2. Select **New registration**
+3. Enter **DataStream** as the application name
+4. Select **Accounts in this organizational directory only**
+5. Click **Register**
+6. Record the **Application (client) ID** and **Directory (tenant) ID**
+7. Go to **Certificates & secrets** > **New client secret**
+8. Create a secret and record the **Client secret value**
+
+### Data Collection Endpoint Setup
+
+1. Navigate to **Azure Portal** > **Monitor** > **Data Collection Endpoints**
+2. Select **Create**
+3. Configure the DCE:
+    |Field|Value|
+    |--:|:--|
+    |**Name**|`datastream-dce`|
+    |**Resource group**|Select your resource group|
+    |**Region**|Same region as your Log Analytics workspace|
+4. Click **Review + create** > **Create**
+5. Record the **Logs Ingestion** endpoint URL
+
+### Data Collection Rule Creation
+
+1. Navigate to **Monitor** > **Data Collection Rules**
+2. Select **Create**
+3. Configure basic settings:
+    |Field|Value|
+    |--:|:--|
+    |**Rule name**|`datastream-dcr`|
+    |**Resource group**|Same as your DCE|
+    |**Region**|Same as your DCE|
+    |**Platform Type**|**Windows** or **Linux** based on your data sources|
+4. In **Resources** tab: add your **Log Analytics workspace**
+5. In **Collect and deliver** tab, 
+    |Field|Value|
+    |--:|:--|
+    |**Data source type**|**Custom Text Logs** or **Windows Event Logs**|
+    |**Data source name**|`DataStreamLogs`|
+    |**File pattern**|Configure based on your log sources
+6. Configure **Destination**:
+    |Field|Value|
+    |--:|:--|
+    |**Destination type**|**Azure Monitor Logs**|
+    |**Destination**|Your Log Analytics workspace|
+    |**Table**|Create or select target table|
+7. Click **Review + create** > **Create**
+8. Record the **DCR Immutable ID**
 
 ## Required Permissions
 
@@ -103,32 +102,7 @@ If you used the **Automation** tool with _App Registration_, these permissions a
 <Tabs groupId="integration-method">
   <TabItem value="autodiscovery" label="Autodiscovery" default>
 
-    - **For Data Collection** - For each DCR name prefixed with _vmetric_:
-
-        1. Navigate to the DCR in **Azure Portal**
-        2. Go to **Access Control (IAM)**
-        3. Select **Add** > **Add role assignment**
-        4. Assign the following permissions:
-            |Role|Assignee|
-            |--:|:--|
-            |Monitoring Metrics Publisher|Your _Managed Identity_<br/>-or-<br/>_Application_|
-
-    - **For Autodiscovery** - To enable the DCR autodiscovery features:
-
-      1. Navigate to the _Resource Group_ containing your DCRs
-      2. Go to **Access Control (IAM)**
-      3. Select **Add** > **Add role assignment**
-      4. Assign the following permissions:
-          |Role|Assignee|
-          |--:|:--|
-          |Monitoring Reader|Your _Managed Identity_<br/>-or-<br/>_Application_|
-          :::important
-          The `Monitoring Reader` role should be assigned at the _Resource Group_ level only. Assigning this role at the _Subscription_ level is **not recommended** since it is not required for the functionality to work, and it increases the autodiscovery scan duration.
-          :::
-  </TabItem>
-  <TabItem value="manual" label="Manual">
-
-    - **For Data Collection** - For each manually created DCR:
+  - **For Data Collection** - For each DCR name prefixed with _vmetric_:
 
       1. Navigate to the DCR in **Azure Portal**
       2. Go to **Access Control (IAM)**
@@ -136,153 +110,43 @@ If you used the **Automation** tool with _App Registration_, these permissions a
       4. Assign the following permissions:
           |Role|Assignee|
           |--:|:--|
-          |Monitoring Metrics Publisher|Your _Service Principal_<br/>-or-<br/>_Application_|
+          |Monitoring Metrics Publisher|Your _Managed Identity_<br/>-or-<br/>_Application_|
 
-    ### DataStream Target Configuration
+  - **For Autodiscovery** - To enable the DCR autodiscovery features:
 
-    Configure the **DataStream** target using direct DCE endpoint URL:
-
-    ```yaml
-    targets:
-      - name: sentinel
-        type: sentinel
-        properties:
-          tenant_id: "<your-tenant-id>"
-          client_id: "<your-client-id>"
-          client_secret: "<your-client-secret>"
-          endpoint: "https://<dce-name>-<region>.ingest.monitor.azure.com"  # Direct URL
-          streams:
-            - name: "Custom-DataStreamLogs"
-              dcr_id: "<dcr-immutable-id>"
-    ```
-
+    1. Navigate to the _Resource Group_ containing your DCRs
+    2. Go to **Access Control (IAM)**
+    3. Select **Add** > **Add role assignment**
+    4. Assign the following permissions:
+        |Role|Assignee|
+        |--:|:--|
+        |Monitoring Reader|Your _Managed Identity_<br/>-or-<br/>_Application_|
+        :::important
+        The `Monitoring Reader` role should be assigned at the _Resource Group_ level only. Assigning this role at the _Subscription_ level is **not recommended** since it is not required for the functionality to work, and it increases the autodiscovery scan duration.
+        :::
   </TabItem>
-</Tabs>
 
-## Verification
-
-<Tabs groupId="integration-method">
-  <TabItem value="autodiscovery" label="Autodiscovery" default>
-    After assigning the permissions:
-    1. Wait a few minutes for **Azure** RBAC to propagate
-    2. Test the connection using **Director**
-    3. Check the logs for any permission-related errors
-    :::tip
-    If you encounter permission issues, verify that all role assignments are properly configured, that **Azure** RBAC changes have propagated (can take up to 30 minutes), and that the identity has the correct access scope.
-    :::
-  </TabItem>
-  <TabItem value="manual" label="Manual">
-    Test your manual configuration:
-
-    1. Wait a few minutes for **Azure** RBAC to propagate
-    2. Test the connection using **Director**:
-      ```bash
-      vmetric-director -test-target sentinel
-      ```
-    3. Check the logs for authentication or DCR errors
-    4. Verify data appears in your Log Analytics workspace table
-    :::tip
-    For manual configuration issues, verify the DCE endpoint URL is correct, the DCR Immutable ID matches your configuration, and the service principal has proper permissions on both the DCR and Log Analytics workspace.
-    :::
-  </TabItem>
-</Tabs>
-
-## How It Works
-
-<Tabs groupId="integration-method">
-  <TabItem value="autodiscovery" label="Autodiscovery" default>
-
-    ### Resource ID-Based Discovery
-
-    Instead of manually configuring the _Data Collection Endpoint_ (DCE) URL, you can provide the _DCE Resource ID_. For example:
-
-    ```text
-    /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.Insights/dataCollectionEndpoints/<dce-name>
-    ```
-
-    When using a _Resource ID_, **Director** will discover all DCRs associated with the specified DCE, and collect detailed stream information including table names, table schemas (column definitions), and stream configurations.
-
-    ### Caching Mechanism
-
-    The default cache duration is **5 minutes**. The cache is automatically invalidated when the configuration file (`sentinel.yml`) is modified or the cache timeout is reached.
-
-    ### Dynamic Updates
-
-    The autodiscovery feature continuously adapts to changes in your **Sentinel** environment thanks to which new DCRs are automatically detected, and changes to table schemas are recognized while custom tables and columns are discovered and integrated.
-
-  </TabItem>
   <TabItem value="manual" label="Manual">
 
-    ### Direct Endpoint Configuration
+  - **For Data Collection** - For each manually created DCR:
 
-    Manual integration uses direct DCE endpoint URLs and explicit stream configuration. You must specify:
-
-    - **DCE Endpoint URL**: Direct HTTPS URL to your Data Collection Endpoint
-    - **DCR Immutable ID**: The specific Data Collection Rule identifier
-    - **Stream Names**: Exact stream names matching your DCR configuration
-
-    ### Static Configuration
-
-    Manual configuration is static and requires updates when:
-    - New DCRs are created
-    - Stream configurations change
-    - Table schemas are modified
-    - Endpoint URLs change
-
-    ### Schema Management
-
-    For manual integration, you must define table schemas in advance, map data fields to table columns, handle schema mismatches in your pipeline configuration, and monitor for phantom fields manually.
+    1. Navigate to the DCR in **Azure Portal**
+    2. Go to **Access Control (IAM)**
+    3. Select **Add** > **Add role assignment**
+    4. Assign the following permissions:
+        |Role|Assignee|
+        |--:|:--|
+        |Monitoring Metrics Publisher|Your _Service Principal_<br/>-or-<br/>_Application_|
 
   </TabItem>
 </Tabs>
 
-## Phantom Field Prevention
-
-**Microsoft Sentinel** has moved to DCR-based log ingestion and manual schema management. This change, while powerful, can lead to _phantom fields_, i.e. data fields that are ingested and billed even though they are not part of the table schema and therefore are inaccessible for querying, and yet are still incurring storage costs.
-
-> For a comprehensive understanding of phantom fields, see [Sentinel Phantom Fields](https://www.managedsentinel.com/sentinel-phantom-fields/) by ManagedSentinel.
-
-Among the common scenarios that cause these are log splitting with mismatched schemas, temporary fields in transformations, duplicate fields emerging from improper field mapping, and schema modifications without proper cleanup.
-
-<Tabs groupId="integration-method">
-  <TabItem value="autodiscovery" label="Autodiscovery" default>
-    **Director**'s autodiscovery feature includes a built-in phantom field prevention mechanism based on the following:
-
-    **Schema Validation** - Automatically discovers table schemas from DCRs, validates each field against the known schema, and discards fields not present in the table schema.
-
-    **Dynamic Field Mapping** - Fields that exist in the schema or are required are kept while others are discarded.
-
-    **Cost Optimization** - Prevents unnecessary data ingestion thereby reducing storage costs while maintaining data accessibility.
-
-    The guiding principles for autodiscovery include schema management (regularly review table schemas, update schemas when adding new fields, use autodiscovery to validate field usage), field mapping (let autodiscovery handle field validation, define critical fields explicitly when needed, and monitor for any dropped fields in logs), and cost monitoring (track ingestion volumes, monitor field usage patterns, and verify data accessibility).
-  </TabItem>
-  <TabItem value="manual" label="Manual">
-    **Manual integration requires proactive phantom field prevention** since automatic schema validation is not available.
-
-    **Schema Pre-Definition** - Define table schemas in advance and ensure all pipeline processors output only schema-defined fields.
-
-    **Pipeline Field Filtering** - Use `remove` processors to eliminate fields not present in your target table schema.
-
-    **Manual Validation** - Regularly review ingested data to identify phantom fields and update pipeline configuration.
-
-    The guiding principles for manual configuration:
-
-    * For _schema management_, pre-define table schemas, document all expected fields, update pipelines when schemas change.
-
-    * For _field mapping_, use explicit field mapping in pipelines, implement field removal processors, validate data before ingestion.
-
-    * For _cost monitoring_, implement manual monitoring of phantom fields, regularly audit ingested data structure, track field usage patterns.
-  </TabItem>
-</Tabs>
-
-The most salient reason for preventing phantom fields is to reduce their **impact on cost**. Some environments show up to 65% of table data as phantom fields.
-
-## Configuration Examples
+## Configuration
 
 <Tabs groupId="integration-method">
   <TabItem value="autodiscovery" label="Autodiscovery" default>
 
-### Basic
+### Basic Configuration
 
 ```yaml
 targets:
@@ -313,7 +177,7 @@ targets:
         - name: "Custom-SecurityEvent"
 ```
 
-### Cache
+### Cache Configuration
 
 You can optionally adjust the cache timeout (in seconds):
 
@@ -330,7 +194,7 @@ targets:
   </TabItem>
   <TabItem value="manual" label="Manual">
 
-### Basic
+### Basic Configuration
 
 ```yaml
 targets:
@@ -346,7 +210,7 @@ targets:
           dcr_id: "dcr-<immutable-id>"
 ```
 
-### Multi-Stream
+### Multi-Stream Configuration
 
 For multiple tables and streams:
 
@@ -368,7 +232,7 @@ targets:
           dcr_id: "dcr-<system-dcr-id>"
 ```
 
-### Field Filtering
+### Field Filtering Configuration
 
 Prevent phantom fields with explicit field management:
 
@@ -396,3 +260,130 @@ targets:
 
   </TabItem>
 </Tabs>
+
+## Verification
+
+After completing the setup and assigning permissions:
+
+1. Wait a few minutes for **Azure** RBAC to propagate (can take up to 30 minutes)
+2. Test the connection using **Director**:
+    <Tabs groupId="integration-method">
+      <TabItem value="autodiscovery" label="Autodiscovery" default>
+        ```bash
+        # Autodiscovery will test connection automatically
+        ```
+      </TabItem>
+      <TabItem value="manual" label="Manual">
+        ```bash
+        vmetric-director -test-target sentinel
+        ```
+      </TabItem>
+    </Tabs>
+3. Check the logs for any permission-related or configuration errors
+4. For manual configuration: verify data appears in your Log Analytics workspace table
+
+:::tip Troubleshooting
+**For autodiscovery issues:**
+- Verify that all role assignments are properly configured
+- Ensure the identity has the correct access scope
+- Check that **Azure** RBAC changes have propagated
+
+**For manual configuration issues:**
+- Verify the DCE endpoint URL is correct
+- Confirm the DCR Immutable ID matches your configuration
+- Ensure the service principal has proper permissions on both the DCR and Log Analytics workspace
+:::
+
+## How It Works
+
+<Tabs groupId="integration-method">
+  <TabItem value="autodiscovery" label="Autodiscovery" default>
+
+### Resource ID-Based Discovery
+
+Instead of manually configuring the _Data Collection Endpoint_ (DCE) URL, you can provide the _DCE Resource ID_. For example:
+
+```text
+/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.Insights/dataCollectionEndpoints/<dce-name>
+```
+
+When using a _Resource ID_, **Director** will discover all DCRs associated with the specified DCE, and collect detailed stream information including table names, table schemas (column definitions), and stream configurations.
+
+### Caching Mechanism
+
+The default cache duration is **5 minutes**. The cache is automatically invalidated when the configuration file (`sentinel.yml`) is modified or the cache timeout is reached.
+
+### Dynamic Updates
+
+The autodiscovery feature continuously adapts to changes in your **Sentinel** environment thanks to which new DCRs are automatically detected, and changes to table schemas are recognized while custom tables and columns are discovered and integrated.
+
+  </TabItem>
+  <TabItem value="manual" label="Manual">
+
+### Direct Endpoint Configuration
+
+Manual integration uses direct DCE endpoint URLs and explicit stream configuration. You must specify:
+
+- **DCE Endpoint URL**: Direct HTTPS URL to your Data Collection Endpoint
+- **DCR Immutable ID**: The specific Data Collection Rule identifier
+- **Stream Names**: Exact stream names matching your DCR configuration
+
+### Static Configuration
+
+Manual configuration is static and requires updates when:
+- New DCRs are created
+- Stream configurations change
+- Table schemas are modified
+- Endpoint URLs change
+
+### Schema Management
+
+For manual integration, you must define table schemas in advance, map data fields to table columns, handle schema mismatches in your pipeline configuration, and monitor for phantom fields manually.
+
+  </TabItem>
+</Tabs>
+
+## Phantom Field Prevention
+
+**Microsoft Sentinel** has moved to DCR-based log ingestion and manual schema management. This change, while powerful, can lead to _phantom fields_, i.e. data fields that are ingested and billed even though they are not part of the table schema and therefore are inaccessible for querying, and yet are still incurring storage costs.
+
+> For a comprehensive understanding of phantom fields, see [Sentinel Phantom Fields](https://www.managedsentinel.com/sentinel-phantom-fields/) by ManagedSentinel.
+
+Among the common scenarios that cause these are log splitting with mismatched schemas, temporary fields in transformations, duplicate fields emerging from improper field mapping, and schema modifications without proper cleanup.
+
+<Tabs groupId="integration-method">
+  <TabItem value="autodiscovery" label="Autodiscovery" default>
+
+**Director**'s autodiscovery feature includes a built-in phantom field prevention mechanism based on the following:
+
+**Schema Validation** - Automatically discovers table schemas from DCRs, validates each field against the known schema, and discards fields not present in the table schema.
+
+**Dynamic Field Mapping** - Fields that exist in the schema or are required are kept while others are discarded.
+
+**Cost Optimization** - Prevents unnecessary data ingestion thereby reducing storage costs while maintaining data accessibility.
+
+The guiding principles for autodiscovery include schema management (regularly review table schemas, update schemas when adding new fields, use autodiscovery to validate field usage), field mapping (let autodiscovery handle field validation, define critical fields explicitly when needed, and monitor for any dropped fields in logs), and cost monitoring (track ingestion volumes, monitor field usage patterns, and verify data accessibility).
+
+  </TabItem>
+  <TabItem value="manual" label="Manual">
+
+    **Manual integration requires proactive phantom field prevention** since automatic schema validation is not available.
+
+    **Schema Pre-Definition** - Define table schemas in advance and ensure all pipeline processors output only schema-defined fields.
+
+    **Pipeline Field Filtering** - Use `remove` processors to eliminate fields not present in your target table schema.
+
+    **Manual Validation** - Regularly review ingested data to identify phantom fields and update pipeline configuration.
+
+    The guiding principles for manual configuration:
+
+    * For _schema management_, pre-define table schemas, document all expected fields, update pipelines when schemas change.
+
+    * For _field mapping_, use explicit field mapping in pipelines, implement field removal processors, validate data before ingestion.
+
+    * For _cost monitoring_, implement manual monitoring of phantom fields, regularly audit ingested data structure, track field usage patterns.
+
+  </TabItem>
+</Tabs>
+
+The most salient reason for preventing phantom fields is to reduce their **impact on cost**. Some environments show up to 65% of table data as phantom fields.
