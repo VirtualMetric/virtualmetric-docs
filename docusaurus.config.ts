@@ -135,18 +135,24 @@ const config: Config = {
           sidebarId: "userDocs",
           position: "left",
           label: "Docs",
-        },        
+        },
         {
           type: "docSidebar",
-          sidebarId: "tutorDocs",
+          sidebarId: "releaseDocs",
           position: "left",
-          label: "Tutorials",
+          label: "Release Notes",
         },
-        {
-          to: "/blog",
-          label: "Blog",
-          position: "left"
-        },
+        // {
+        //   type: "docSidebar",
+        //   sidebarId: "tutorDocs",
+        //   position: "left",
+        //   label: "Tutorials",
+        // },
+        // {
+        //   to: "/blog",
+        //   label: "Blog",
+        //   position: "left"
+        // },
         {
           to: "https://community.virtualmetric.com/",
           position: "left",
@@ -156,12 +162,6 @@ const config: Config = {
           to: "https://support.virtualmetric.com/",
           position: "left",
           label: "Support",
-        },
-        {
-          type: "docSidebar",
-          sidebarId: "releaseDocs",
-          position: "left",
-          label: "Release Notes",
         },
         {
           type: "search",
