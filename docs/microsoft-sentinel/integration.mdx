@@ -76,12 +76,12 @@ Create a service principal for **DataStream** authentication:
     |**Region**|Same as your DCE|
     |**Platform Type**|**Windows** or **Linux** based on your data sources|
 4. In **Resources** tab: add your **Log Analytics workspace**
-5. In **Collect and deliver** tab, 
+5. In **Collect and deliver** tab,
     |Field|Value|
     |--:|:--|
     |**Data source type**|**Custom Text Logs** or **Windows Event Logs**|
     |**Data source name**|`DataStreamLogs`|
-    |**File pattern**|Configure based on your log sources
+    |**File pattern**|Configure based on your log sources|
 6. Configure **Destination**:
     |Field|Value|
     |--:|:--|
@@ -266,21 +266,9 @@ targets:
 After completing the setup and assigning permissions:
 
 1. Wait a few minutes for **Azure** RBAC to propagate (can take up to 30 minutes)
-2. Test the connection using **Director**:
-    <Tabs groupId="integration-method">
-      <TabItem value="autodiscovery" label="Autodiscovery" default>
-        ```bash
-        # Autodiscovery will test connection automatically
-        ```
-      </TabItem>
-      <TabItem value="manual" label="Manual">
-        ```bash
-        vmetric-director -test-target sentinel
-        ```
-      </TabItem>
-    </Tabs>
+2. Start **Director** with your configuration and monitor the startup logs for connection status
 3. Check the logs for any permission-related or configuration errors
-4. For manual configuration: verify data appears in your Log Analytics workspace table
+4. Verify data appears in your Log Analytics workspace table
 
 :::tip Troubleshooting
 **For autodiscovery issues:**
@@ -315,7 +303,7 @@ The default cache duration is **5 minutes**. The cache is automatically invalida
 
 ### Dynamic Updates
 
-The autodiscovery feature continuously adapts to changes in your **Sentinel** environment thanks to which new DCRs are automatically detected, and changes to table schemas are recognized while custom tables and columns are discovered and integrated.
+The autodiscovery feature continuously adapts to changes in your **Sentinel** environment, enabling automatic detection of new DCRs, recognition of table schema changes, and discovery and integration of custom tables and columns.
 
   </TabItem>
   <TabItem value="manual" label="Manual">
@@ -349,7 +337,7 @@ For manual integration, you must define table schemas in advance, map data field
 
 > For a comprehensive understanding of phantom fields, see [Sentinel Phantom Fields](https://www.managedsentinel.com/sentinel-phantom-fields/) by ManagedSentinel.
 
-Among the common scenarios that cause these are log splitting with mismatched schemas, temporary fields in transformations, duplicate fields emerging from improper field mapping, and schema modifications without proper cleanup.
+Common scenarios that cause phantom fields include log splitting with mismatched schemas, temporary fields in transformations, duplicate fields emerging from improper field mapping, and schema modifications without proper cleanup.
 
 <Tabs groupId="integration-method">
   <TabItem value="autodiscovery" label="Autodiscovery" default>
@@ -362,7 +350,13 @@ Among the common scenarios that cause these are log splitting with mismatched sc
 
 **Cost Optimization** - Prevents unnecessary data ingestion thereby reducing storage costs while maintaining data accessibility.
 
-The guiding principles for autodiscovery include schema management (regularly review table schemas, update schemas when adding new fields, use autodiscovery to validate field usage), field mapping (let autodiscovery handle field validation, define critical fields explicitly when needed, and monitor for any dropped fields in logs), and cost monitoring (track ingestion volumes, monitor field usage patterns, and verify data accessibility).
+The guiding principles here are:
+
+* For _schema management_, regularly review table schemas, update schemas when adding new fields, use autodiscovery to validate field usage.
+
+* For _field mapping_, let autodiscovery handle field validation, define critical fields explicitly when needed, and monitor for any dropped fields in logs.
+
+* For _cost monitoring_, track ingestion volumes, monitor field usage patterns, and verify data accessibility.
 
   </TabItem>
   <TabItem value="manual" label="Manual">
@@ -374,14 +368,6 @@ The guiding principles for autodiscovery include schema management (regularly re
     **Pipeline Field Filtering** - Use `remove` processors to eliminate fields not present in your target table schema.
 
     **Manual Validation** - Regularly review ingested data to identify phantom fields and update pipeline configuration.
-
-    The guiding principles for manual configuration:
-
-    * For _schema management_, pre-define table schemas, document all expected fields, update pipelines when schemas change.
-
-    * For _field mapping_, use explicit field mapping in pipelines, implement field removal processors, validate data before ingestion.
-
-    * For _cost monitoring_, implement manual monitoring of phantom fields, regularly audit ingested data structure, track field usage patterns.
 
   </TabItem>
 </Tabs>
