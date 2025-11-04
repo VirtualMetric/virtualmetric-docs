@@ -4,7 +4,7 @@
 
 ## Synopsis
 
-Creates a target that writes log messages to Google Cloud Storage buckets with support for various file formats, authentication methods, and multipart uploads. The target handles large file uploads efficiently with configurable rotation based on size or event count. Google Cloud Storage provides enterprise-grade durability, security, and global availability with strong consistency.
+Creates a target that writes log messages to _Google Cloud Storage_ buckets with support for various file formats, authentication methods, and multipart uploads. The target handles large file uploads efficiently with configurable rotation based on size or event count. Google Cloud Storage provides enterprise-grade durability, security, and global availability with strong consistency.
 
 ## Schema
 ```yaml {1,3}
@@ -80,23 +80,25 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`bucket`|N*|-|Default GCS bucket name (used if `buckets` not specified)|
+|`bucket`|N*|-|Default GCS bucket name (acts as catch-all when `buckets` is also specified)|
 |`buckets`|N*|-|Array of bucket configurations for file distribution|
 |`buckets.bucket`|Y|-|GCS bucket name|
 |`buckets.name`|Y|-|File name template|
 |`buckets.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
 |`buckets.compression`|N|-|Compression algorithm. See [Compression](#compression) below|
 |`buckets.extension`|N|Matches `format`|File extension override|
-|`buckets.schema`|N*|-|Schema definition file path (required for Avro and Parquet formats)|
-|`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default file name template when `buckets` not used|
-|`format`|N|`"json"`|Default output format when `buckets` not used|
-|`compression`|N|-|Default compression when `buckets` not used|
-|`extension`|N|Matches `format`|Default file extension when `buckets` not used|
-|`schema`|N|-|Default schema path when `buckets` not used|
+|`buckets.schema`|N**|-|Schema definition file path (required for Avro and Parquet formats)|
+|`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default file name template (used with `bucket` for catch-all)|
+|`format`|N|`"json"`|Default output format (used with `bucket` for catch-all)|
+|`compression`|N|-|Default compression (used with `bucket` for catch-all)|
+|`extension`|N|Matches `format`|Default file extension (used with `bucket` for catch-all)|
+|`schema`|N|-|Default schema path (used with `bucket` for catch-all)|
 |`max_size`|N|`0`|Maximum file size in bytes before rotation|
 |`batch_size`|N|`100000`|Maximum number of messages per file|
 
-\* = Either `bucket` or `buckets` must be specified. When using `buckets`, schema is conditionally required for Avro and Parquet formats.
+\* = Either `bucket` or `buckets` must be specified.
+
+\*\* = Conditionally required for Avro and Parquet formats when using `buckets`.
 
 :::note
 When `max_size` is reached, the current file is uploaded to GCS and a new file is created. For unlimited file size, set the field to `0`.
@@ -151,6 +153,23 @@ Google Cloud Storage is available in multiple regions worldwide:
 |`asia-northeast1`|Tokyo, Japan|
 |`asia-southeast1`|Singapore|
 |`australia-southeast1`|Sydney, Australia|
+
+### Bucket Routing
+
+The target supports flexible bucket routing through pipeline configuration or explicit bucket settings:
+
+**Configuration-based routing**: Define multiple buckets in the target configuration, each with its own format, compression, and schema settings. Logs are routed to specific buckets based on configuration.
+
+**Pipeline-based routing**: Use the `bucket` field in pipeline processors to dynamically route logs to different buckets at runtime. This enables conditional routing based on log content, source, or other attributes.
+
+**Catch-all routing**: When a log doesn't match any specific bucket configuration or when no `bucket` field is set in the pipeline, logs are routed to the catch-all bucket (configured via the `bucket` field in target properties).
+
+**Routing priority**:
+1. Pipeline `bucket` field (highest priority)
+2. Configured buckets in `buckets` array (if bucket name matches)
+3. Default `bucket` field (catch-all, lowest priority)
+
+This multi-level routing enables flexible data distribution strategies, such as routing different log types to different buckets based on content analysis, source system, severity level, or any other runtime decision.
 
 ### File Formats
 
@@ -238,7 +257,76 @@ targets:
       bucket: "datastream-logs"
 ```
 
-### Multiple Buckets
+### Pipeline-Based Routing
+
+Dynamic bucket routing using pipeline processors to analyze log content and route to appropriate buckets:
+```yaml
+targets:
+  - name: smart_routing_gcs
+    type: gcs
+    pipelines:
+      - dynamic_routing
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-central1"
+      buckets:
+        - bucket: "security-events"
+          name: "security-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+        - bucket: "application-events"
+          name: "app-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+        - bucket: "system-events"
+          name: "system-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+      bucket: "other-events"
+      name: "other-{{.Timestamp}}.json"
+      format: "json"
+
+pipelines:
+  - name: dynamic_routing
+    processors:
+      - set:
+          field: "_vmetric.bucket"
+          value: "security-events"
+          if: "ctx.event_type == 'security'"
+      - set:
+          field: "_vmetric.bucket"
+          value: "application-events"
+          if: "ctx.event_type == 'application'"
+      - set:
+          field: "_vmetric.bucket"
+          value: "system-events"
+          if: "ctx.event_type == 'system'"
+```
+
+### Multiple Buckets with Catch-All
+
+Configuration for routing different log types to specific buckets with a catch-all for unmatched logs:
+```yaml
+targets:
+  - name: multi_bucket_routing
+    type: gcs
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-central1"
+      buckets:
+        - bucket: "security-logs"
+          name: "security-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+        - bucket: "application-logs"
+          name: "app-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+      bucket: "general-logs"
+      name: "general-{{.Timestamp}}.json"
+      format: "json"
+```
+
+### Multiple Buckets with Different Formats
 
 Configuration for distributing data across multiple GCS buckets with different formats:
 ```yaml
