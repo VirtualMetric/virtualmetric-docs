@@ -123,6 +123,66 @@ targets:
 
 ## Details
 
+### Data Sending Options
+
+DataStream supports two approaches for submitting events to Google SecOps:
+
+**Unstructured Logs**:
+- Send raw log data to SecOps
+- SecOps applies built-in parsers to convert logs into UDM format
+- Simpler configuration requiring only `default_log_type`
+- SecOps handles parsing and normalization
+- May encounter parsing issues with proprietary or uncommon log formats
+- Best for standard log types with existing SecOps parser support
+
+**Pre-Structured UDM Events**:
+- Transform data into UDM format before sending
+- Bypass SecOps parsing entirely
+- Complete control over UDM field mapping
+- Requires understanding of UDM schema structure
+- Eliminates parsing errors and inconsistencies
+- Best for custom data sources or precise field control
+
+The choice between approaches depends on data complexity and control requirements. Unstructured logs offer simpler setup with SecOps-managed parsing. Pre-structured UDM provides precision but requires upstream transformation.
+
+### Working with Unstructured Data
+
+When using `send_events_as: unstructured`, log type assignment follows a hierarchical resolution:
+
+**Log Type Assignment Hierarchy**:
+
+1. **Event-level override**: Events with `__logType` field use that value
+2. **Default assignment**: Events without `__logType` use `default_log_type` configuration
+3. **Custom log types**: Use `custom_log_types` array for unsupported or deprecated types
+
+**Standard Log Types**:
+
+SecOps maintains a dynamic list of supported log types (e.g., `FIREWALL_LOG`, `WINDOWS_EVENT`, `SYSLOG`). The supported types evolve over time as SecOps adds new parsers and deprecates old ones.
+
+**Custom Log Type Definition**:
+
+For log sources without SecOps parser support, define custom log types:
+
+```yaml
+custom_log_types:
+  - log_type: PROPRIETARY_APP_LOG
+    description: Internal application security logs
+  - log_type: LEGACY_FIREWALL
+    description: Deprecated firewall format
+```
+
+Custom log types bypass standard SecOps parsing. Events are stored but may require custom SecOps rules for analysis.
+
+**Log Text Field Selection**:
+
+By default, the entire JSON event is sent as log text. Use `log_text_field` to extract a specific field:
+
+```yaml
+log_text_field: message  # Send only the 'message' field content
+```
+
+This is useful when the raw log text exists in a specific field while other fields contain metadata.
+
 ### Regions
 
 Valid SecOps ingestion regions:
