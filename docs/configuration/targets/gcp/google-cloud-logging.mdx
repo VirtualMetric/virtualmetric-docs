@@ -1,0 +1,346 @@
+# Google Cloud Logging
+
+<span className="theme-doc-version-badge badge badge--secondary">GCP Logging Target</span>
+
+Send processed telemetry data to Google Cloud Logging service.
+
+## Synopsis
+
+The Google Cloud Logging target forwards events to Google Cloud Logging (formerly Stackdriver Logging) with configurable severity levels, labels, and authentication methods.
+
+## Schema
+
+```yaml {2,4,5,6}
+targets:
+  - name: <string>
+    type: gcplogging
+    properties:
+      project_id: <string>
+      log_name: <string>
+      authentication:
+        method: <auto|manual|secret>
+```
+
+## Configuration
+
+### Base Target Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Y | Unique identifier for this target |
+| `description` | string | N | Human-readable description |
+| `type` | string | Y | Must be `gcplogging` |
+| `pipelines` | array | N | Pipeline names to apply before sending |
+| `status` | boolean | N | Enable (true) or disable (false) this target |
+
+### Connection Settings
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `project_id` | string | Y | Google Cloud project ID |
+| `log_name` | string | Y | Log name within the project |
+
+### Authentication
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `authentication.method` | string | N | Authentication method (`auto`, `manual`, `secret`). Default: `auto` |
+| `credentials` | string | Y* | JSON service account credentials |
+
+\* `credentials` required when authentication method is `manual` or `secret`
+
+### Log Settings
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `severity` | string | N | Default log severity level. Default: `DEFAULT` |
+| `labels` | map | N | Custom labels to attach to all log entries |
+
+### Batch Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `batch_size` | integer | N | Maximum log entries per batch. Default: `1000` |
+| `timeout` | integer | N | Request timeout in seconds. Default: `30` |
+| `max_retries` | integer | N | Maximum retry attempts for failed sends. Default: `3` |
+| `retry_delay` | integer | N | Delay between retries in seconds. Default: `1` |
+
+### Normalization
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `field_format` | string | N | Apply format normalization (`ECS`, `ASIM`, `UDM`) |
+
+## Details
+
+### Severity Levels
+
+Valid severity levels for Google Cloud Logging:
+
+| Severity | Description |
+|----------|-------------|
+| `DEFAULT` | Default severity (no specific level) |
+| `DEBUG` | Debug or trace information |
+| `INFO` | Informational messages |
+| `NOTICE` | Normal but significant events |
+| `WARNING` | Warning events |
+| `ERROR` | Error events |
+| `CRITICAL` | Critical events requiring immediate action |
+| `ALERT` | Alert requiring immediate notification |
+| `EMERGENCY` | Emergency requiring immediate response |
+
+### Authentication Methods
+
+**Auto (Default)**:
+- Uses Application Default Credentials (ADC)
+- Checks `GOOGLE_APPLICATION_CREDENTIALS` environment variable
+- Falls back to compute metadata service for GCE/GKE
+
+**Manual**:
+- Inline JSON service account credentials
+- Credentials embedded directly in configuration
+
+**Secret**:
+- Service account credentials from environment variable
+- More secure than inline credentials for production
+
+:::note Service Account Permissions
+Service account requires the **Logs Writer** role (`roles/logging.logWriter`) to write logs to Google Cloud Logging.
+:::
+
+### Log Entry Structure
+
+Each log entry sent to Google Cloud Logging includes:
+- **Timestamp**: Event timestamp from pipeline
+- **Severity**: Configured or default severity level
+- **Payload**: Event message content
+- **Labels**: Custom labels for filtering and organization
+
+### Labels for Log Organization
+
+Labels enable efficient log filtering and organization:
+- **Resource labels**: Identify the source resource
+- **User labels**: Custom categorization
+- **System labels**: Automatic GCP-assigned labels
+
+Labels are key-value pairs attached to every log entry.
+
+### Performance Considerations
+
+**Batch Processing**:
+- Events are buffered until `batch_size` is reached
+- Flush occurs on batch limit or service shutdown
+- Larger batches reduce API calls but increase latency
+
+**Retry Logic**:
+- Failed sends are retried up to `max_retries` times
+- Exponential backoff between retries using `retry_delay`
+- Permanent failures are logged but not re-queued
+
+:::warning Quota Limits
+Google Cloud Logging has API quota limits. Monitor your usage to avoid throttling. Configure appropriate `batch_size` and `retry_delay` for your ingestion volume.
+:::
+
+## Examples
+
+### Basic Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Sending logs to Google Cloud Logging using auto authentication from Application Default Credentials...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: gcp-logs
+        type: gcplogging
+        properties:
+          project_id: my-project-id
+          log_name: application-logs
+          authentication:
+            method: auto
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Service Account
+
+<ExampleGrid>
+  <CommentCol>
+    Using explicit service account credentials for authentication...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: gcp-logs-manual
+        type: gcplogging
+        properties:
+          project_id: my-project-id
+          log_name: security-logs
+          authentication:
+            method: manual
+            credentials: |
+              {
+                "type": "service_account",
+                "project_id": "my-project-id",
+                "private_key_id": "key-id",
+                "private_key": "-----BEGIN PRIVATE KEY-----\n...",
+                "client_email": "logging@my-project.iam.gserviceaccount.com",
+                "client_id": "123456789",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token"
+              }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Secret Authentication
+
+<ExampleGrid>
+  <CommentCol>
+    Loading service account credentials from environment variable for better security...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: gcp-logs-secret
+        type: gcplogging
+        properties:
+          project_id: my-project-id
+          log_name: audit-logs
+          authentication:
+            method: secret
+            credentials: "${GCP_LOGGING_CREDENTIALS}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Severity and Labels
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring specific severity level and custom labels for log organization...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: gcp-logs-labeled
+        type: gcplogging
+        properties:
+          project_id: my-project-id
+          log_name: firewall-logs
+          severity: WARNING
+          labels:
+            environment: production
+            application: firewall
+            datacenter: us-central1
+          authentication:
+            method: auto
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high-volume log ingestion with larger batches and retry configuration...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: gcp-logs-high-volume
+        type: gcplogging
+        properties:
+          project_id: my-project-id
+          log_name: access-logs
+          batch_size: 1000
+          timeout: 30
+          max_retries: 3
+          retry_delay: 1
+          authentication:
+            method: secret
+            credentials: "${GCP_LOGGING_CREDENTIALS}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Severity
+
+<ExampleGrid>
+  <CommentCol>
+    Forwarding error logs with ERROR severity for immediate visibility...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: gcp-error-logs
+        type: gcplogging
+        properties:
+          project_id: my-project-id
+          log_name: application-errors
+          severity: ERROR
+          labels:
+            log_type: error
+            alert: true
+          authentication:
+            method: auto
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Debug Logs
+
+<ExampleGrid>
+  <CommentCol>
+    Sending debug-level logs for development and troubleshooting...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: gcp-debug-logs
+        type: gcplogging
+        properties:
+          project_id: my-project-id
+          log_name: debug-logs
+          severity: DEBUG
+          labels:
+            environment: development
+            purpose: debugging
+          authentication:
+            method: auto
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Production Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Production-ready configuration with performance tuning, retry logic, and comprehensive labels...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: gcp-logs-production
+        type: gcplogging
+        properties:
+          project_id: production-project
+          log_name: production-logs
+          severity: INFO
+          batch_size: 1000
+          timeout: 30
+          max_retries: 3
+          retry_delay: 2
+          labels:
+            environment: production
+            application: datastream
+            region: us-central1
+            team: platform
+            compliance: required
+          authentication:
+            method: secret
+            credentials: "${GCP_LOGGING_CREDENTIALS}"
+    ```
+  </CodeCol>
+</ExampleGrid>

@@ -1,0 +1,452 @@
+# Snowflake (S3 Staging)
+
+<span className="theme-doc-version-badge badge badge--secondary">Data Warehouse Target</span>
+
+Send processed telemetry data to Snowflake using Amazon S3 as the staging location.
+
+## Synopsis
+
+The Snowflake S3 target stages telemetry files to Amazon S3, then executes COPY INTO commands on Snowflake to load data into tables. This pattern provides cost-effective bulk loading for large-scale data warehouse operations.
+
+## Schema
+
+```yaml {2,4-7,9-10,12}
+targets:
+  - name: <string>
+    type: amazonsnowflake
+    properties:
+      account: <string>
+      username: <string>
+      password: <string>
+      database: <string>
+      staging_bucket: <string>
+      region: <string>
+      table: <string>
+      name: <string>
+```
+
+## Configuration
+
+### Base Target Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Y | Unique identifier for this target |
+| `description` | string | N | Human-readable description |
+| `type` | string | Y | Must be `amazonsnowflake` |
+| `pipelines` | array | N | Pipeline names to apply before sending |
+| `status` | boolean | N | Enable (true) or disable (false) this target |
+
+### Snowflake Connection
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `account` | string | Y | Snowflake account identifier (e.g., `abc123.us-east-1`) |
+| `username` | string | Y | Snowflake username |
+| `password` | string | Y | Snowflake password |
+| `database` | string | Y | Snowflake database name |
+| `schema` | string | N | Snowflake schema name. Default: `PUBLIC` |
+| `warehouse` | string | N | Snowflake virtual warehouse name |
+| `role` | string | N | Snowflake role name |
+
+### S3 Staging Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `staging_bucket` | string | Y | S3 bucket name for staging files |
+| `staging_prefix` | string | N | S3 prefix path. Default: `snowflake-staging/` |
+| `region` | string | Y | AWS region for S3 bucket |
+| `key` | string | N | AWS access key ID (uses default credentials chain if omitted) |
+| `secret` | string | N | AWS secret access key |
+| `session` | string | N | AWS session token for temporary credentials |
+
+### Table Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `table` | string | Y* | Catch-all table name for all events |
+| `schema` | string | Y* | Avro/Parquet schema definition |
+| `name` | string | Y* | File naming template. Default: `vmetric.{{.Timestamp}}.{{.Extension}}` |
+| `format` | string | N | File format (`csv`, `json`, `avro`, `orc`, `parquet`, `xml`). Default: `parquet` |
+| `compression` | string | N | Compression algorithm |
+| `extension` | string | N | File extension override |
+| `tables` | array | N | Multiple table configurations |
+
+\* At least one of `table` (catch-all) or `tables` (multiple) must be configured. For Avro/Parquet formats, `schema` is required.
+
+### Batch Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `batch_size` | integer | N | Maximum events per file before flush |
+| `max_size` | integer | N | Maximum file size in bytes before flush |
+| `timeout` | integer | N | COPY INTO command timeout in seconds. Default: `300` |
+| `part_size` | integer | N | S3 multipart upload part size in MB |
+
+### Normalization
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `field_format` | string | N | Apply format normalization (`ECS`, `ASIM`, `UDM`) |
+
+### Debug Options
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `debug.status` | boolean | N | Enable debug logging for this target |
+| `debug.dont_send_logs` | boolean | N | Log events without sending to Snowflake |
+
+## Details
+
+### Architecture Overview
+
+The Snowflake S3 target implements a two-stage loading pattern:
+
+1. **Stage Files to S3**: Events are written to files in S3 using the configured format
+2. **Execute COPY INTO**: SQL commands load data from S3 into Snowflake tables
+
+This pattern provides cost-effective bulk loading with automatic schema management and optimized data warehouse performance.
+
+### Snowflake Connection
+
+**Account Identifier**:
+- Format: `<account_locator>.<region>` (e.g., `abc123.us-east-1`)
+- Account locator is visible in your Snowflake URL
+- Region is the cloud region where your Snowflake account is deployed
+
+**Authentication**:
+- Uses username/password authentication
+- Credentials are used to connect to Snowflake SQL API v2
+- Supports optional warehouse and role specification
+
+**Database and Schema**:
+- Database name is required and must be a valid SQL identifier
+- Schema defaults to `PUBLIC` if not specified
+- Both database and schema names are validated for SQL compliance
+
+:::note Snowflake Permissions
+The Snowflake user requires permissions to:
+- Execute SQL statements using the specified warehouse
+- Write data to the target database and schema
+- Access the S3 staging location (configured separately in Snowflake)
+:::
+
+### S3 Staging Operations
+
+**File Upload**:
+- Files are staged to `s3://bucket/prefix/table/filename` structure
+- Uses AWS SDK multipart upload for large files
+- Supports AWS credentials chain (access key, IAM role, instance profile)
+
+**Cleanup**:
+- Staged files are automatically deleted after successful COPY INTO execution
+- Failed uploads remain in S3 for troubleshooting
+
+### File Format Support
+
+**Valid Formats**:
+- **CSV**: Comma-separated values with optional headers
+- **JSON**: Newline-delimited JSON objects
+- **AVRO**: Schema-based binary format (requires schema)
+- **ORC**: Optimized row columnar format
+- **PARQUET**: Columnar storage format (requires schema)
+- **XML**: XML document format
+
+**Schema Requirements**:
+- Avro and Parquet formats require `schema` field with valid schema definition
+- Schema must match the expected table structure in Snowflake
+- Other formats use schema inference from data
+
+### Multi-Table Routing
+
+**Catch-All Table**:
+- Use `table` field to send all events to a single table
+- Simplest configuration for single-destination scenarios
+
+**Multiple Tables**:
+- Use `tables` array to route different event types to different tables
+- Each table entry specifies `table`, `schema`, `name`, `format` fields
+- Events routed based on SystemS3 field in pipeline
+
+**Example Configuration**:
+```yaml
+tables:
+  - table: security_events
+    schema: security_schema.avsc
+    name: security.{{.Timestamp}}.parquet
+    format: parquet
+  - table: access_logs
+    schema: access_schema.avsc
+    name: access.{{.Timestamp}}.parquet
+    format: parquet
+```
+
+### Performance Considerations
+
+**Batch Processing**:
+- Events are buffered until `batch_size` or `max_size` limits are reached
+- Larger batches reduce S3 API calls and COPY INTO operations
+- Balance batch size against latency requirements
+
+**Upload Optimization**:
+- Multipart uploads automatically handle large files
+- Configure `part_size` for optimal network performance
+- Default part size is AWS SDK default (5 MB)
+
+**COPY INTO Performance**:
+- COPY INTO commands are executed with configurable timeout
+- Failed COPY operations return errors for retry logic
+- Warehouse must be running (resumed) for COPY INTO to succeed
+
+:::warning Warehouse State
+Ensure the virtual warehouse is running before sending data. COPY INTO commands will fail if the warehouse is suspended. Configure warehouse auto-resume or manual resume procedures.
+:::
+
+### Error Handling
+
+**Upload Failures**:
+- Failed S3 uploads are retried based on sender configuration
+- Permanent failures prevent COPY INTO execution
+- Check S3 bucket permissions and network connectivity
+
+**COPY INTO Failures**:
+- Schema mismatches between files and tables cause failures
+- Invalid SQL identifiers (database, schema, table names) are rejected at validation
+- Check Snowflake query history for detailed error messages
+
+## Examples
+
+### Basic Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Sending telemetry to Snowflake using S3 staging with Parquet format...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-warehouse
+        type: amazonsnowflake
+        properties:
+          account: abc123.us-east-1
+          username: datastream_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: PRODUCTION_DATA
+          schema: TELEMETRY
+          warehouse: COMPUTE_WH
+          staging_bucket: datastream-staging
+          region: us-east-1
+          table: EVENTS
+          schema: event_schema.avsc
+          name: events.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With AWS Credentials
+
+<ExampleGrid>
+  <CommentCol>
+    Using explicit AWS credentials for S3 staging access...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-secure
+        type: amazonsnowflake
+        properties:
+          account: xyz789.us-west-2
+          username: security_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: SECURITY_ANALYTICS
+          schema: LOGS
+          warehouse: SECURITY_WH
+          role: SECURITY_ADMIN
+          staging_bucket: security-logs-staging
+          staging_prefix: snowflake/
+          region: us-west-2
+          key: "${AWS_ACCESS_KEY}"
+          secret: "${AWS_SECRET_KEY}"
+          table: SECURITY_EVENTS
+          schema: security_schema.avsc
+          name: security.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Table Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Routing different event types to separate Snowflake tables...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-multi-table
+        type: amazonsnowflake
+        properties:
+          account: abc123.us-east-1
+          username: analytics_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: ANALYTICS
+          schema: PRODUCTION
+          warehouse: ANALYTICS_WH
+          staging_bucket: analytics-staging
+          region: us-east-1
+          tables:
+            - table: AUTHENTICATION_EVENTS
+              schema: auth_schema.avsc
+              name: auth.{{.Timestamp}}.parquet
+              format: parquet
+            - table: NETWORK_EVENTS
+              schema: network_schema.avsc
+              name: network.{{.Timestamp}}.parquet
+              format: parquet
+            - table: APPLICATION_LOGS
+              schema: app_schema.avsc
+              name: app.{{.Timestamp}}.parquet
+              format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high-volume ingestion with batch limits and compression...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-high-volume
+        type: amazonsnowflake
+        properties:
+          account: abc123.us-east-1
+          username: streaming_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: HIGH_VOLUME_DATA
+          schema: STREAMING
+          warehouse: LARGE_WH
+          staging_bucket: streaming-staging
+          region: us-east-1
+          batch_size: 100000
+          max_size: 134217728
+          part_size: 16
+          timeout: 600
+          table: STREAMING_EVENTS
+          schema: streaming_schema.avsc
+          name: stream.{{.Timestamp}}.parquet
+          format: parquet
+          compression: snappy
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### JSON Format
+
+<ExampleGrid>
+  <CommentCol>
+    Using JSON format for flexible schema evolution and debugging...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-json
+        type: amazonsnowflake
+        properties:
+          account: abc123.us-east-1
+          username: dev_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: DEVELOPMENT
+          schema: TEST_DATA
+          warehouse: DEV_WH
+          staging_bucket: dev-staging
+          region: us-east-1
+          table: TEST_EVENTS
+          name: test.{{.Timestamp}}.json
+          format: json
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Applying ECS normalization before loading to Snowflake...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-normalized
+        type: amazonsnowflake
+        properties:
+          account: abc123.us-east-1
+          username: security_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: SECURITY_DATA
+          schema: NORMALIZED
+          warehouse: SECURITY_WH
+          staging_bucket: security-staging
+          region: us-east-1
+          field_format: ECS
+          table: ECS_EVENTS
+          schema: ecs_schema.avsc
+          name: ecs.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Production Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Production-ready configuration with performance tuning, AWS credentials, and multi-table routing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-production
+        type: amazonsnowflake
+        properties:
+          account: production.us-east-1
+          username: production_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: PRODUCTION_ANALYTICS
+          schema: TELEMETRY
+          warehouse: PRODUCTION_WH
+          role: DATA_ENGINEER
+          staging_bucket: production-staging-bucket
+          staging_prefix: datastream/snowflake/
+          region: us-east-1
+          key: "${AWS_ACCESS_KEY}"
+          secret: "${AWS_SECRET_KEY}"
+          batch_size: 50000
+          max_size: 67108864
+          part_size: 10
+          timeout: 300
+          field_format: ASIM
+          tables:
+            - table: SECURITY_EVENTS
+              schema: security_schema.avsc
+              name: security.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+            - table: AUDIT_LOGS
+              schema: audit_schema.avsc
+              name: audit.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+            - table: NETWORK_FLOWS
+              schema: network_schema.avsc
+              name: network.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+    ```
+  </CodeCol>
+</ExampleGrid>
