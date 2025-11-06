@@ -146,11 +146,23 @@ const sidebars: SidebarsConfig = {
             },
             {
               type: "category",
-              label: "Google Cloud (GCS)",
+              label: "Google Cloud (GCP)",
               items: [
-                "configuration/targets/gcs/bigquery",
-                "configuration/targets/gcs/google-cloud-pubsub",
-                "configuration/targets/gcs/google-cloud-storage",
+                "configuration/targets/gcp/google-secops",
+                "configuration/targets/gcp/google-chronicle",
+                "configuration/targets/gcp/google-bigquery",
+                "configuration/targets/gcp/google-cloud-logging",
+                "configuration/targets/gcp/google-cloud-pubsub",
+                "configuration/targets/gcp/google-cloud-storage",
+              ],
+            },
+            {
+              type: "category",
+              label: "IBM Cloud",
+              items: [
+                "configuration/targets/ibm/ibm-cos",
+                "configuration/targets/ibm/ibm-event-streams",
+                "configuration/targets/ibm/ibm-cloud-logs",
               ],
             },
             {
@@ -159,7 +171,13 @@ const sidebars: SidebarsConfig = {
               items: [
                 "configuration/targets/mq/apache-kafka",
                 "configuration/targets/mq/confluent-cloud",
+                "configuration/targets/mq/synadia-cloud",
                 "configuration/targets/mq/redpanda",
+                "configuration/targets/mq/warpstream",
+                "configuration/targets/mq/aivenkafka",
+                "configuration/targets/mq/nats",
+                "configuration/targets/mq/rabbitmq", 
+                "configuration/targets/mq/mqtt",
               ],
             },
             {
@@ -168,7 +186,13 @@ const sidebars: SidebarsConfig = {
               items: [
                 "configuration/targets/analytics/clickhouse",
                 "configuration/targets/analytics/elasticsearch",
-                "configuration/targets/analytics/splunk-hec",
+                "configuration/targets/analytics/elastic-security",
+                "configuration/targets/analytics/splunk",
+                "configuration/targets/analytics/splunk-security",
+                "configuration/targets/analytics/databricks-s3",
+                "configuration/targets/analytics/databricks-blob",
+                "configuration/targets/analytics/snowflake-s3",
+                "configuration/targets/analytics/snowflake-blob",
               ],
             },
             {
@@ -176,7 +200,6 @@ const sidebars: SidebarsConfig = {
               label: "Cloud Storage",
               items: [
                 "configuration/targets/cloud-storage/minio",
-                "configuration/targets/cloud-storage/ibm-cos",
                 "configuration/targets/cloud-storage/cloudflare-r2",
                 "configuration/targets/cloud-storage/digitalocean-spaces",
                 "configuration/targets/cloud-storage/scaleway-os",

@@ -1,0 +1,486 @@
+# Databricks (Azure Blob Storage)
+
+<span className="theme-doc-version-badge badge badge--secondary">Data Warehouse Target</span>
+
+Send processed telemetry data to Databricks using Azure Blob Storage as the staging location.
+
+## Synopsis
+
+The Databricks Azure Blob target stages telemetry files to Azure Blob Storage, then executes COPY INTO commands on Databricks SQL warehouses to load data into Unity Catalog tables.
+
+## Schema
+
+```yaml {2,4-6,8-11,13-15,17}
+targets:
+  - name: <string>
+    type: azdatabricks
+    properties:
+      server_hostname: <string>
+      http_path: <string>
+      access_token: <string>
+      catalog: <string>
+      namespace: <string>
+      account: <string>
+      staging_container: <string>
+      staging_prefix: <string>
+      tenant_id: <string>
+      client_id: <string>
+      client_secret: <string>
+      table: <string>
+      schema: <string>
+      name: <string>
+      format: <string>
+      compression: <string>
+      extension: <string>
+      tables: <array>
+      batch_size: <integer>
+      max_size: <integer>
+      timeout: <integer>
+      field_format: <string>
+      debug:
+        status: <boolean>
+        dont_send_logs: <boolean>
+```
+
+## Configuration
+
+### Base Target Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Y | Unique identifier for this target |
+| `description` | string | N | Human-readable description |
+| `type` | string | Y | Must be `azdatabricks` |
+| `pipelines` | array | N | Pipeline names to apply before sending |
+| `status` | boolean | N | Enable (true) or disable (false) this target |
+
+### Databricks Connection
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `server_hostname` | string | Y | Databricks workspace URL (e.g., `abc123.azuredatabricks.net`) |
+| `http_path` | string | Y | SQL warehouse HTTP path (e.g., `/sql/1.0/warehouses/abc123def456`) |
+| `access_token` | string | Y | Databricks personal access token |
+| `catalog` | string | Y | Unity Catalog name |
+| `namespace` | string | N | Databricks schema name. Default: `default` |
+
+### Azure Blob Staging Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `account` | string | Y | Azure storage account name |
+| `staging_container` | string | Y | Azure Blob container name for staging files |
+| `staging_prefix` | string | N | Blob prefix path. Default: `databricks-staging/` |
+| `tenant_id` | string | Y | Azure AD tenant ID |
+| `client_id` | string | Y | Service principal client ID |
+| `client_secret` | string | Y | Service principal client secret |
+
+### Table Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `table` | string | Y* | Catch-all table name for all events |
+| `schema` | string | Y* | Avro/Parquet schema definition |
+| `name` | string | Y* | File naming template. Default: `vmetric.{{.Timestamp}}.{{.Extension}}` |
+| `format` | string | N | File format (`csv`, `json`, `avro`, `orc`, `parquet`, `text`). Default: `parquet` |
+| `compression` | string | N | Compression algorithm |
+| `extension` | string | N | File extension override |
+| `tables` | array | N | Multiple table configurations |
+
+\* At least one of `table` (catch-all) or `tables` (multiple) must be configured. For Avro/Parquet formats, `schema` is required.
+
+### Batch Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `batch_size` | integer | N | Maximum events per file before flush |
+| `max_size` | integer | N | Maximum file size in bytes before flush |
+| `timeout` | integer | N | COPY INTO command timeout in seconds. Default: `300` |
+
+### Normalization
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `field_format` | string | N | Apply format normalization (`ECS`, `ASIM`, `UDM`) |
+
+### Debug Options
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `debug.status` | boolean | N | Enable debug logging for this target |
+| `debug.dont_send_logs` | boolean | N | Log events without sending to Databricks |
+
+## Details
+
+### Architecture Overview
+
+The Databricks Azure Blob target implements a two-stage loading pattern:
+
+1. **Stage Files to Azure Blob**: Events are written to files in Azure Blob Storage using the configured format
+2. **Execute COPY INTO**: SQL commands load data from Blob Storage into Databricks Unity Catalog tables using ABFSS paths
+
+### Unity Catalog Integration
+
+**Catalog Structure**:
+- Tables are organized within Unity Catalog using three-level namespace: `catalog.namespace.table`
+- The `catalog` field specifies the Unity Catalog name
+- The `namespace` field specifies the schema (defaults to `default`)
+- Table names are validated to ensure they are valid SQL identifiers
+
+**Warehouse ID Extraction**:
+- The target automatically extracts the warehouse ID from the `http_path`
+- Example: `/sql/1.0/warehouses/abc123def456` → `abc123def456`
+- This warehouse ID is used for all COPY INTO operations
+
+:::note Unity Catalog Permissions
+The Databricks access token requires permissions to:
+- Execute SQL statements on the specified warehouse
+- Write data to the target catalog and schema
+- Access the Azure Blob staging location (configured separately in Databricks)
+:::
+
+### Azure Blob Staging Operations
+
+**File Upload**:
+- Files are staged to `https://{account}.blob.core.windows.net/{container}/{prefix}/{table}/{filename}` structure
+- Uses Azure SDK for secure uploads with service principal authentication
+- Supports Azure AD authentication through client credentials
+
+**ABFSS Path Construction**:
+- The target automatically constructs ABFSS paths for COPY INTO commands
+- Format: `abfss://{container}@{account}.dfs.core.windows.net/{prefix}/{table}/{filename}`
+- ABFSS protocol is used for direct Databricks access to Azure Data Lake Storage Gen2
+
+**Cleanup**:
+- Staged files are automatically deleted after successful COPY INTO execution
+- Failed uploads remain in Blob Storage for troubleshooting
+
+### Service Principal Authentication
+
+**Azure AD Integration**:
+- Uses service principal (client credentials) for Azure Blob Storage authentication
+- Requires `tenant_id`, `client_id`, and `client_secret` configuration
+- Service principal must have Storage Blob Data Contributor role on the container
+
+**Required Permissions**:
+- **Storage Blob Data Contributor**: Write and delete blobs in staging container
+- **Storage Blob Data Reader**: Optional, for Databricks direct access
+
+:::warning Service Principal Permissions
+Ensure the service principal has appropriate permissions on both the staging container (for DataStream uploads) and the Databricks workspace (for COPY INTO access).
+:::
+
+### File Format Support
+
+**Valid Formats**:
+- **CSV**: Comma-separated values with optional headers
+- **JSON**: Newline-delimited JSON objects
+- **AVRO**: Schema-based binary format (requires schema)
+- **ORC**: Optimized row columnar format
+- **PARQUET**: Columnar storage format (requires schema)
+- **TEXT**: Plain text with delimiters
+
+**Schema Requirements**:
+- Avro and Parquet formats require `schema` field with valid schema definition
+- Schema must match the expected table structure in Databricks
+- Other formats use schema inference from data
+
+### Multi-Table Routing
+
+**Catch-All Table**:
+- Use `table` field to send all events to a single table
+- Simplest configuration for single-destination scenarios
+
+**Multiple Tables**:
+- Use `tables` array to route different event types to different tables
+- Each table entry specifies `table`, `schema`, `name`, `format` fields
+- Events routed based on SystemS3 field in pipeline
+
+**Example Configuration**:
+```yaml
+tables:
+  - table: security_events
+    schema: security_schema.avsc
+    name: security.{{.Timestamp}}.parquet
+    format: parquet
+  - table: access_logs
+    schema: access_schema.avsc
+    name: access.{{.Timestamp}}.parquet
+    format: parquet
+```
+
+### Performance Considerations
+
+**Batch Processing**:
+- Events are buffered until `batch_size` or `max_size` limits are reached
+- Larger batches reduce Blob API calls and COPY INTO operations
+- Balance batch size against latency requirements
+
+**Upload Optimization**:
+- Azure SDK automatically handles large blob uploads
+- Uses block blobs for efficient data transfer
+- Connection pooling optimizes network performance
+
+**COPY INTO Performance**:
+- COPY INTO commands are executed with configurable timeout
+- Failed COPY operations return errors for retry logic
+- Warehouse must be running for COPY INTO to succeed
+
+:::warning Warehouse State
+Ensure the SQL warehouse is running before sending data. COPY INTO commands will fail if the warehouse is stopped. Configure warehouse auto-start or manual start procedures.
+:::
+
+### Error Handling
+
+**Upload Failures**:
+- Failed Blob uploads are retried based on sender configuration
+- Permanent failures prevent COPY INTO execution
+- Check service principal permissions and network connectivity
+
+**COPY INTO Failures**:
+- Schema mismatches between files and tables cause failures
+- Invalid SQL identifiers (catalog, schema, table names) are rejected at validation
+- Check Databricks query history for detailed error messages
+
+## Examples
+
+### Basic Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Sending telemetry to Databricks using Azure Blob staging with Parquet format...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-warehouse
+        type: azdatabricks
+        properties:
+          server_hostname: abc123.azuredatabricks.net
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: production_data
+          namespace: telemetry
+          account: datastreamstaging
+          staging_container: databricks-staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          table: events
+          schema: event_schema.avsc
+          name: events.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Custom Staging Prefix
+
+<ExampleGrid>
+  <CommentCol>
+    Using custom blob prefix for organized staging file structure...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-organized
+        type: azdatabricks
+        properties:
+          server_hostname: xyz789.azuredatabricks.net
+          http_path: /sql/1.0/warehouses/xyz789def123
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: security_analytics
+          namespace: logs
+          account: securitystorage
+          staging_container: staging
+          staging_prefix: datastream/databricks/
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          table: security_events
+          schema: security_schema.avsc
+          name: security.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Table Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Routing different event types to separate Databricks tables...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-multi-table
+        type: azdatabricks
+        properties:
+          server_hostname: abc123.azuredatabricks.net
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: analytics
+          namespace: production
+          account: analyticsstorage
+          staging_container: staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          tables:
+            - table: authentication_events
+              schema: auth_schema.avsc
+              name: auth.{{.Timestamp}}.parquet
+              format: parquet
+            - table: network_events
+              schema: network_schema.avsc
+              name: network.{{.Timestamp}}.parquet
+              format: parquet
+            - table: application_logs
+              schema: app_schema.avsc
+              name: app.{{.Timestamp}}.parquet
+              format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high-volume ingestion with batch limits and compression...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-high-volume
+        type: azdatabricks
+        properties:
+          server_hostname: abc123.azuredatabricks.net
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: high_volume_data
+          namespace: streaming
+          account: streamingstorage
+          staging_container: high-volume-staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          batch_size: 100000
+          max_size: 134217728
+          timeout: 600
+          table: streaming_events
+          schema: streaming_schema.avsc
+          name: stream.{{.Timestamp}}.parquet
+          format: parquet
+          compression: snappy
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### JSON Format
+
+<ExampleGrid>
+  <CommentCol>
+    Using JSON format for flexible schema evolution and debugging...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-json
+        type: azdatabricks
+        properties:
+          server_hostname: abc123.azuredatabricks.net
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: development
+          namespace: test_data
+          account: devstorage
+          staging_container: dev-staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          table: test_events
+          name: test.{{.Timestamp}}.json
+          format: json
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Applying ASIM normalization before loading to Databricks...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-normalized
+        type: azdatabricks
+        properties:
+          server_hostname: abc123.azuredatabricks.net
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: security_data
+          namespace: normalized
+          account: securitystorage
+          staging_container: security-staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          field_format: ASIM
+          table: asim_events
+          schema: asim_schema.avsc
+          name: asim.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Production Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Production-ready configuration with performance tuning and multi-table routing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-production
+        type: azdatabricks
+        properties:
+          server_hostname: production.azuredatabricks.net
+          http_path: /sql/1.0/warehouses/prod123abc456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: production_analytics
+          namespace: telemetry
+          account: productionstorage
+          staging_container: production-staging
+          staging_prefix: datastream/databricks/
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          batch_size: 50000
+          max_size: 67108864
+          timeout: 300
+          field_format: ECS
+          tables:
+            - table: security_events
+              schema: security_schema.avsc
+              name: security.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+            - table: audit_logs
+              schema: audit_schema.avsc
+              name: audit.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+            - table: network_flows
+              schema: network_schema.avsc
+              name: network.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+    ```
+  </CodeCol>
+</ExampleGrid>
