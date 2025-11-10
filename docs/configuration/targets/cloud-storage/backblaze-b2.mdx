@@ -161,6 +161,23 @@ Some formats support built-in compression to reduce storage costs and transfer t
 
 Files are rotated based on size (`max_size` parameter) or event count (`batch_size` parameter), whichever limit is reached first. Template variables in file names enable dynamic file naming for time-based partitioning.
 
+### Bucket Routing
+
+The target supports flexible bucket routing through pipeline configuration or explicit bucket settings:
+
+**Configuration-based routing**: Define multiple buckets in the target configuration, each with its own format, compression, and schema settings. Logs are routed to specific buckets based on configuration.
+
+**Pipeline-based routing**: Use the `bucket` field in pipeline processors to dynamically route logs to different buckets at runtime. This enables conditional routing based on log content, source, or other attributes.
+
+**Catch-all routing**: When a log doesn't match any specific bucket configuration or when no `bucket` field is set in the pipeline, logs are routed to the catch-all bucket (configured via the `bucket` field in target properties).
+
+**Routing priority**:
+1. Pipeline `bucket` field (highest priority)
+2. Configured buckets in `buckets` array (if bucket name matches)
+3. Default `bucket` field (catch-all, lowest priority)
+
+This multi-level routing enables flexible data distribution strategies, such as routing different log types to different buckets based on content analysis, source system, severity level, or any other runtime decision.
+
 ### Templates
 
 The following template variables can be used in file names:
@@ -231,6 +248,31 @@ targets:
           format: "parquet"
           schema: "<schema definition>"
           compression: "snappy"
+```
+
+### Multiple Buckets with Catch-All
+
+Configuration for routing different log types to specific buckets with a catch-all for unmatched logs:
+
+```yaml
+targets:
+  - name: multi_bucket_routing
+    type: backblazes3
+    properties:
+      key: "0012a3b4c5d6e7f8901234"
+      secret: "K001abcdefghijklmnopqrstuvwxyz0123456789"
+      region: "us-west-004"
+      endpoint: "https://s3.us-west-004.backblazeb2.com"
+      buckets:
+        - bucket: "security-logs"
+          name: "security-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+        - bucket: "application-logs"
+          name: "app-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+      bucket: "general-logs"
+      name: "general-{{.Timestamp}}.json"
+      format: "json"
 ```
 
 ### Parquet Format
