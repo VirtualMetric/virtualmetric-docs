@@ -63,13 +63,14 @@ The following fields are used to define the target:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`account`|Y||Azure storage account name|
-|`tenant_id`|N(1)|-|Azure tenant ID (required unless using managed identity or function app)|
-|`client_id`|N(1)|-|Azure client ID (required unless using managed identity or function app)|
-|`client_secret`|N(1)|-|Azure client secret (required unless using managed identity or function app)|
-|`container`|N(2)|`"vmetric"`|Default/fallback container name (catch-all for unmatched events)|
+|`tenant_id`|N*|-|Azure tenant ID (required unless using managed identity or function app)|
+|`client_id`|N*|-|Azure client ID (required unless using managed identity or function app)|
+|`client_secret`|N*|-|Azure client secret (required unless using managed identity or function app)|
+|`container`|N**|`"vmetric"`|Default container name (acts as catch-all when `containers` is also specified)|
 
-(1) = Conditionally required (see authentication methods above)
-(2) = Required if you want a catch-all container for unmatched events, or if not using the `containers` array
+\* = Conditionally required. See authentication methods below.
+
+\*\* = Required if you want a catch-all container for unmatched events, or if not using the `containers` array.
 
 ### Connection
 
@@ -98,39 +99,31 @@ The following fields can be used for files:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Blob name template|
-|`format`|N|`"json"`|File format (`json`, `multijson`, `avro`, `parquet`)|
-|`extension`|N|Matches `format`|Custom file extension|
-|`compression`|N|`"zstd"`|Compression algorithm|
-|`schema`|N|-|Data schema for Avro/Parquet formats. Can be a built-in schema name, a path to a schema file, or an inline schema definition|
+|`containers`|N*|-|Array of container configurations for file distribution|
+|`containers.container`|Y|-|Container name|
+|`containers.name`|Y|-|Blob name template|
+|`containers.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
+|`containers.compression`|N|`"zstd"`|Compression algorithm. See [Compression](#compression) below|
+|`containers.extension`|N|Matches `format`|File extension override|
+|`containers.schema`|N**|-|Schema definition (required for Avro and Parquet formats)|
+|`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default blob name template (used with `container` for catch-all)|
+|`format`|N|`"json"`|Default output format (used with `container` for catch-all)|
+|`extension`|N|Matches `format`|Default file extension (used with `container` for catch-all)|
+|`compression`|N|`"zstd"`|Default compression algorithm (used with `container` for catch-all)|
+|`schema`|N|-|Default schema definition (used with `container` for catch-all)|
 |`no_buffer`|N|`false`|Disable write buffering|
-|`field_format`|N|-|Data normalization format. See applicable Normalization section|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
 
-### Multiple Containers
+\* = Either `container` or `containers` must be specified.
 
-You can define multiple output containers with different settings:
-
-```yaml
-targets:
-  - name: multi_container_blob
-    type: azblob
-    properties:
-      containers:
-        - container: "security-logs"
-          name: "security_{{.Year}}_{{.Month}}_{{.Day}}.parquet"
-          format: "parquet"
-          schema: "CommonSecurityLog"
-        - container: "system-logs"
-          name: "system_{{.Year}}_{{.Month}}_{{.Day}}.json"
-          format: "json"
-```
+\*\* = Conditionally required for Avro and Parquet formats when using `containers`.
 
 ### Scheduler
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`interval`|N|realtime|Execution frequency|
-|`cron`|N|-|Cron expression for scheduled execution|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
 
 ### Debug Options
 
@@ -141,45 +134,36 @@ targets:
 
 ## Details
 
-The Azure Blob Storage target supports writing to multiple containers with various file formats and schemas. When using the `SystemS3` field in your logs, the value will be used to route the message to the appropriate container.
+The Azure Blob Storage target supports writing to multiple containers with various file formats and schemas. The target provides enterprise-grade cloud storage integration with comprehensive file format support.
 
-### Container Routing and Catch-All Behavior
+### Authentication Methods
 
-The target uses a routing system to direct events to the appropriate container:
+The target supports multiple authentication methods:
 
-1. **Explicit Container Matching**: If an event has a `SystemS3` field, the target looks for a container defined in the `containers` array with a matching name
-2. **Catch-All Container**: If no matching container is found (or if `SystemS3` is not set), the event is routed to the default `container` specified at the root level
+**Service Principal Authentication**: Use `tenant_id`, `client_id`, and `client_secret` for explicit credential-based authentication.
 
-The `container` and `schema` properties at the root level serve as a catch-all mechanism. This is particularly useful for automation scenarios where systems may look for specific containers with specific schemas. If no matching container is found in the `containers` array, these events will fall back to the default container instead of being dropped.
+**Managed Identity**: When deployed on Azure infrastructure (VMs, App Services, Container Instances), can leverage managed identity without explicit credentials.
 
-The target supports the following built-in schema templates for structured data formats:
-- `Syslog` - Standard schema for Syslog messages
-- `CommonSecurityLog` - Schema compatible with Common Security Log Format (CSL)
+**Function App**: When `function_app` is specified, authentication is handled through the Function App token, and direct storage credentials are not required.
 
-You can also reference custom schema files by name (without the .json extension). The system will search for schema files in:
-1. User schema directory: `<user-path>/schemas/`
-2. Package schema directory: `<package-path>/schemas/`
+### Container Routing
 
-Schema files are searched recursively in these directories, and filename matching is case-insensitive.
+The target supports flexible container routing through pipeline configuration or explicit container settings:
 
-### Templates
+**Configuration-based routing**: Define multiple containers in the target configuration, each with its own format, compression, and schema settings. Logs are routed to specific containers based on configuration.
 
-The following template variables can be used in the blob name:
+**Pipeline-based routing**: Use the `container` field in pipeline processors to dynamically route logs to different containers at runtime. This enables conditional routing based on log content, source, or other attributes.
 
-|Variable|Description|Example|
-|---|---|---|
-|`{{.Year}}`|Current year|`2024`|
-|`{{.Month}}`|Current month|`01`|
-|`{{.Day}}`|Current day|`15`|
-|`{{.Timestamp}}`|Current timestamp in nanoseconds|`1703688533123456789`|
-|`{{.Format}}`|File format|`json`|
-|`{{.Extension}}`|File extension|`json`|
-|`{{.Compression}}`|Compression type|`zstd`|
-|`{{.TargetName}}`|Target name|`my_logs`|
-|`{{.TargetType}}`|Target type|`azblob`|
-|`{{.Table}}`|Container name|`logs`|
+**Catch-all routing**: When a log doesn't match any specific container configuration or when no `container` field is set in the pipeline, logs are routed to the catch-all container (configured via the `container` field in target properties).
 
-### Formats
+**Routing priority**:
+1. Pipeline `container` field (highest priority)
+2. Configured containers in `containers` array (if container name matches)
+3. Default `container` field (catch-all, lowest priority)
+
+This multi-level routing enables flexible data distribution strategies, such as routing different log types to different containers based on content analysis, source system, severity level, or any other runtime decision.
+
+### File Formats
 
 |Format|Description|
 |---|---|
@@ -199,6 +183,43 @@ Some formats support built-in compression to reduce storage costs and transfer t
 |Avro|`zstd`|`deflate`, `snappy`, `zstd`|
 |Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
 
+### File Management
+
+Files are rotated based on size (`max_size` parameter) or event count (`batch_size` parameter), whichever limit is reached first. Template variables in blob names enable dynamic file naming for time-based partitioning.
+
+### Schema Support
+
+The target supports the following built-in schema templates for structured data formats:
+- `Syslog` - Standard schema for Syslog messages
+- `CommonSecurityLog` - Schema compatible with Common Security Log Format (CSL)
+
+You can also reference custom schema files by name (without the .json extension). The system will search for schema files in:
+1. User schema directory: `<user-path>/schemas/`
+2. Package schema directory: `<package-path>/schemas/`
+
+Schema files are searched recursively in these directories, and filename matching is case-insensitive.
+
+### Templates
+
+The following template variables can be used in blob names:
+
+|Variable|Description|Example|
+|---|---|---|
+|`{{.Year}}`|Current year|`2024`|
+|`{{.Month}}`|Current month|`01`|
+|`{{.Day}}`|Current day|`15`|
+|`{{.Timestamp}}`|Current timestamp in nanoseconds|`1703688533123456789`|
+|`{{.Format}}`|File format|`json`|
+|`{{.Extension}}`|File extension|`json`|
+|`{{.Compression}}`|Compression type|`zstd`|
+|`{{.TargetName}}`|Target name|`my_logs`|
+|`{{.TargetType}}`|Target type|`azblob`|
+|`{{.Table}}`|Container name|`logs`|
+
+### Multiple Containers
+
+Single target can write to multiple Azure Blob Storage containers with different configurations, enabling data distribution strategies (e.g., raw data to one container, processed data to another).
+
 :::note
 Files with no messages (i.e. with `counter=0`) are automatically skipped during upload.
 :::
@@ -207,7 +228,7 @@ Files with no messages (i.e. with `counter=0`) are automatically skipped during 
 
 The following upload configurations are available.
 
-### JSON
+### Basic Configuration
 
 The minimum configuration for a JSON blob storage:
 
@@ -220,6 +241,57 @@ targets:
       tenant_id: "00000000-0000-0000-0000-000000000000"
       client_id: "00000000-0000-0000-0000-000000000000"
       client_secret: "your-client-secret"
+      container: "logs"
+```
+
+### Pipeline-Based Routing
+
+Dynamic container routing using pipeline processors to analyze log content and route to appropriate containers:
+
+```yaml
+targets:
+  - name: smart_routing_blob
+    type: azblob
+    pipelines:
+      - dynamic_routing
+    properties:
+      account: "mystorageaccount"
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      containers:
+        - container: "security-events"
+          name: "security_{{.Year}}_{{.Month}}_{{.Day}}.parquet"
+          format: "parquet"
+          schema: "CommonSecurityLog"
+          compression: "zstd"
+        - container: "application-events"
+          name: "app_{{.Year}}_{{.Month}}_{{.Day}}.json"
+          format: "json"
+        - container: "system-events"
+          name: "system_{{.Year}}_{{.Month}}_{{.Day}}.avro"
+          format: "avro"
+          schema: "Syslog"
+          compression: "snappy"
+      container: "other-events"
+      name: "other_{{.Timestamp}}.json"
+      format: "json"
+
+pipelines:
+  - name: dynamic_routing
+    processors:
+      - set:
+          field: "_vmetric.container"
+          value: "security-events"
+          if: "ctx.event_type == 'security'"
+      - set:
+          field: "_vmetric.container"
+          value: "application-events"
+          if: "ctx.event_type == 'application'"
+      - set:
+          field: "_vmetric.container"
+          value: "system-events"
+          if: "ctx.event_type == 'system'"
 ```
 
 ### Multiple Containers with Catch-All
@@ -235,9 +307,6 @@ targets:
       tenant_id: "00000000-0000-0000-0000-000000000000"
       client_id: "00000000-0000-0000-0000-000000000000"
       client_secret: "your-client-secret"
-      # Catch-all container for unmatched events
-      container: "general-logs"
-      schema: "Syslog"
       containers:
         - container: "security-logs"
           name: "security_{{.Year}}_{{.Month}}_{{.Day}}.parquet"
@@ -252,9 +321,13 @@ targets:
           format: "avro"
           schema: "Syslog"
           compression: "snappy"
+      container: "general-logs"
+      name: "general_{{.Timestamp}}.json"
+      format: "json"
+      schema: "Syslog"
 ```
 
-### Parquet
+### Parquet Format
 
 Configuration for daily partitioned Parquet files:
 
@@ -323,9 +396,10 @@ targets:
       tenant_id: "00000000-0000-0000-0000-000000000000"
       client_id: "00000000-0000-0000-0000-000000000000"
       client_secret: "your-client-secret"
+      container: "logs"
       debug:
         status: true
-        dont_send_logs: true  # Test mode that doesn't actually upload
+        dont_send_logs: true
 ```
 
 ### High Volume with Batching
