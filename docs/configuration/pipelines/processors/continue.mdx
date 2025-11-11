@@ -11,16 +11,15 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Continues to the next processor in the pipeline chain.
+Drops the current event from processing.
 
 ## Schema
 
-```yaml {2}
+```yaml
 - continue:
     description: <text>
     if: <script>
     ignore_failure: <boolean>
-    ignore_missing: <boolean>
     on_failure: <processor[]>
     on_success: <processor[]>
     tag: <string>
@@ -35,46 +34,50 @@ The following fields are used to define the processor:
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if operation fails|
-|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
 |`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
 |`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
 |`tag`|N|-|Identifier|
 
 ## Details
 
-Explicitly continues execution to the next processor in the pipeline sequence. This processor is primarily used for flow control in conditional processing scenarios or to make pipeline logic more explicit.
+Drops the current event from processing by returning an error that signals the pipeline to discard the event. When this processor executes, the event is not sent to any configured targets and no further processors run.
 
-The continue processor acts as a no-operation that allows pipeline execution to proceed normally. It's useful in conditional blocks where you want to explicitly indicate continuation rather than implicit flow.
+Despite its name, the `continue` processor does NOT continue processing. It drops events from the pipeline, identical in behavior to the <Topic id="return">`return`</Topic>, <Topic id="final">`final`</Topic>, and <Topic id="drop">`drop`</Topic> processors.
 
-:::note
-The continue processor doesn't modify any data or fields. It serves purely as a control flow mechanism to make pipeline logic more readable and explicit.
+The event is dropped after any `on_success` processors execute, allowing for cleanup operations, logging, or metrics collection before the event is discarded.
+
+:::warning Misleading Name
+The `continue` processor name is misleading. It does NOT continue to the next processor - it **drops the event completely**. Use <Topic id="return">`return`</Topic>, <Topic id="final">`final`</Topic>, or <Topic id="drop">`drop`</Topic> for clearer intent.
 :::
 
-This processor is most commonly used within conditional logic blocks, success/failure chains, or when you need to clearly indicate that processing should continue despite certain conditions.
+:::note Event Dropping Processors
+All these processors drop events identically: `continue`, <Topic id="return">`return`</Topic>, <Topic id="final">`final`</Topic>, and <Topic id="drop">`drop`</Topic>. They differ only in semantic naming. Use processor names that clearly communicate intent to avoid confusion.
+:::
 
 :::warning
-While the continue processor doesn't perform any operations itself, it can still trigger success/failure chains if configured, allowing for complex flow control patterns.
+The `continue` processor with success/failure chains will execute those chains before dropping the event. This allows for cleanup operations, logging, or metrics collection, but the event will still be discarded and not sent to any targets.
 :::
 
 ## Examples
 
-### Basic Continue Usage
+### Basic Event Dropping
 
 <ExampleGrid>
   <CommentCol>
-    Explicitly continuing pipeline execution...
+    Dropping events using continue processor...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - if:
-        condition: "logEntry.level == 'INFO'"
-        processors:
-          - continue:
-              description: "INFO level logs proceed normally"
+    - continue:
+        if: "logEntry.level == 'INFO'"
+        description: "Drop INFO level logs"
+    - set:
+        field: processed
+        value: true
     ```
   </CodeCol>
   <CommentCol>
-    allows processing to continue:
+    event is dropped, subsequent processors skipped:
   </CommentCol>
   <CodeCol>
     ```json
@@ -86,104 +89,100 @@ While the continue processor doesn't perform any operations itself, it can still
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Continue
+### Conditional Event Filtering
 
 <ExampleGrid>
   <CommentCol>
-    Using continue in conditional logic...
+    Dropping successful events conditionally...
   </CommentCol>
   <CodeCol>
     ```yaml
     - continue:
         if: "logEntry.status == 'success'"
-        description: "Continue processing successful events"
+        description: "Drop successful events"
     - set:
         field: processed
         value: true
     ```
   </CodeCol>
   <CommentCol>
-    continues only when condition matches:
+    event is dropped when condition matches:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "status": "success",
-      "processed": true
+      "status": "success"
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Continue with Success Chain
+### Drop with Metrics Collection
 
 <ExampleGrid>
   <CommentCol>
-    Triggering additional processing on continue...
+    Recording metrics before dropping event...
   </CommentCol>
   <CodeCol>
     ```yaml
     - continue:
-        description: "Continue and log the action"
+        description: "Drop event with metrics"
         on_success:
           - set:
-              field: flow_status
-              value: "continued"
+              field: drop_reason
+              value: "filtered_by_continue"
     ```
   </CodeCol>
   <CommentCol>
-    executes success chain:
+    records metadata before event is dropped:
   </CommentCol>
   <CodeCol>
     ```json
     {
       "original_data": "value",
-      "flow_status": "continued"
+      "drop_reason": "filtered_by_continue"
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Documentation in Complex Flow
+### Filtering Within Conditional Blocks
 
 <ExampleGrid>
   <CommentCol>
-    Using continue for pipeline documentation...
+    Dropping events within conditional logic...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - if:
-        condition: "logEntry.type == 'audit'"
+    - iff:
+        if: "logEntry.type == 'audit'"
         processors:
           - continue:
-              description: "Audit logs proceed to enrichment"
-              tag: "audit_flow_marker"
+              if: "logEntry.severity < 5"
+              description: "Drop low severity audit logs"
           - enrich:
               field: user_id
               target: user_info
     ```
   </CodeCol>
   <CommentCol>
-    makes pipeline flow explicit:
+    low severity audit events are dropped:
   </CommentCol>
   <CodeCol>
     ```json
     {
       "type": "audit",
-      "user_id": "123",
-      "user_info": {
-        "name": "John Doe"
-      }
+      "severity": 3
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Error Handling Flow
+### Drop on Validation Failure
 
 <ExampleGrid>
   <CommentCol>
-    Using continue in error recovery...
+    Dropping events that fail validation...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -195,11 +194,11 @@ While the continue processor doesn't perform any operations itself, it can still
               field: email_valid
               value: false
           - continue:
-              description: "Continue despite invalid email"
+              description: "Drop events with invalid email"
     ```
   </CodeCol>
   <CommentCol>
-    continues processing after error handling:
+    event is dropped after validation failure:
   </CommentCol>
   <CodeCol>
     ```json

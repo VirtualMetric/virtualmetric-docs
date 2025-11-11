@@ -11,7 +11,7 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Terminates the processing of a pipeline gracefully without raising errors.
+Drops the current event from processing and terminates the pipeline gracefully.
 
 ## Schema
 
@@ -40,7 +40,9 @@ The following fields are used to define the processor:
 
 ## Details
 
-This processor is particularly useful for creating breakpoints, implementing conditional termination, optimizing execution by early termination, and preventing further pipelines from running.
+Drops the current event from processing by returning an error that signals the pipeline to discard the event. When this processor executes, the event is not sent to any configured targets and no further processors run.
+
+This processor provides graceful pipeline termination, useful for creating breakpoints, implementing conditional termination, optimizing execution by early termination, and preventing further pipelines from running.
 
 Typical uses:
 
@@ -75,10 +77,16 @@ Typical uses:
       value: test_value
    ```
 
+The event is dropped after any `on_success` processors execute, allowing for cleanup operations, logging, or metrics collection before the event is discarded.
+
+:::note Final vs Return vs Continue vs Drop
+All these processors drop events identically: `final`, <Topic id="return">`return`</Topic>, <Topic id="continue">`continue`</Topic>, and <Topic id="drop">`drop`</Topic>. Use `final` for graceful pipeline termination with clear semantic intent.
+:::
+
 It is good practice to use detailed description to document the finalization points. Also, consider adding cleanup tasks using `on_success`, test conditional finalization thoroughly, and use tags for tracking finalization points in logs.
 
 :::warning
-Once `final` is used, no further processors in any pipeline will execute. Use with caution in multi-pipeline setups, and consider using `if` to prevent unintended early termination.
+Once `final` is used, no further processors in any pipeline will execute, and the event will be dropped (not sent to targets). Use with caution in multi-pipeline setups, and consider using `if` to prevent unintended early termination.
 :::
 
 ## Examples
