@@ -15,13 +15,14 @@ Extracts and decodes Unix file permission information.
 
 ## Schema
 
-```yaml {2-3}
+```yaml {2}
 - unix_permission:
     field: <ident>
     target_field: <string>
-    input_format: <string>
-    output_format: <string>
-    include_special: <boolean>
+    format: <string>
+    add_security_notes: <boolean>
+    add_commands: <boolean>
+    expand_special: <boolean>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -37,11 +38,12 @@ The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|-|Source field containing Unix permission data|
+|`field`|Y|-|Source field containing Unix permission data (string, int, or array of strings)|
 |`target_field`|N|`{field}_decoded`|Target field to store decoded permission information|
-|`input_format`|N|`auto`|Input format: `auto`, `octal`, `symbolic`, `decimal`|
-|`output_format`|N|`detailed`|Output format: `detailed`, `octal`, `symbolic`, `rwx`|
-|`include_special`|N|`true`|Include special permission bits (setuid, setgid, sticky)|
+|`format`|N|`auto`|Input format: `auto`, `octal`, `symbolic`, `numeric`|
+|`add_security_notes`|N|`false`|Add security risk warnings for dangerous permissions|
+|`add_commands`|N|`false`|Add chmod command examples to output|
+|`expand_special`|N|`false`|Add detailed descriptions for special permission bits|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if decoding fails|
@@ -54,13 +56,15 @@ The following fields are used to define the processor:
 
 Decodes Unix file permissions from various formats including octal notation (755), symbolic notation (rwxr-xr-x), and decimal values. The processor extracts owner, group, and other permissions along with special permission bits.
 
-The processor can automatically detect the input format or work with explicitly specified formats, providing flexible parsing for different Unix permission representations.
+The processor supports automatic format detection through the `format` field set to `auto`, or explicit format specification using `octal`, `symbolic`, or `numeric` values. Auto-detection analyzes the input pattern to determine the appropriate format parser.
 
-:::note
 Unix permissions consist of three sets of three bits each: owner (user), group, and other. Each set contains read (r), write (w), and execute (x) permissions. Special bits include setuid, setgid, and sticky bit.
-:::
 
-When `include_special` is enabled, the processor also decodes special permission bits that affect how files and directories behave in Unix systems.
+When `add_security_notes` is enabled, the processor analyzes permission combinations and adds security risk warnings to the output. Dangerous permission patterns like world-writable files (777) or setuid binaries with write permissions trigger security advisories.
+
+When `add_commands` is enabled, the processor generates chmod command examples in the output, providing ready-to-use Unix commands for setting the decoded permissions.
+
+When `expand_special` is enabled, the processor adds detailed descriptions for special permission bits (setuid, setgid, sticky bit), explaining how these bits affect file and directory behavior in Unix systems.
 
 :::warning
 If the input permission data is malformed or contains invalid permission values, the processor will fail unless `ignore_failure` is set to `true`.
@@ -132,7 +136,7 @@ If the input permission data is malformed or contains invalid permission values,
     ```yaml
     - unix_permission:
         field: file_perms
-        input_format: symbolic
+        format: symbolic
         target_field: perm_info
     ```
   </CodeCol>
@@ -171,7 +175,7 @@ If the input permission data is malformed or contains invalid permission values,
 
 <ExampleGrid>
   <CommentCol>
-    Including special permission bits...
+    Expanding special permission bits...
   </CommentCol>
   <CodeCol>
     ```json
@@ -182,12 +186,12 @@ If the input permission data is malformed or contains invalid permission values,
     ```yaml
     - unix_permission:
         field: exec_mode
-        include_special: true
+        expand_special: true
         target_field: exec_perms
     ```
   </CodeCol>
   <CommentCol>
-    decodes setuid bit:
+    decodes setuid bit with descriptions:
   </CommentCol>
   <CodeCol>
     ```json
@@ -198,6 +202,7 @@ If the input permission data is malformed or contains invalid permission values,
         "symbolic": "rwsr-xr-x",
         "special_bits": {
           "setuid": true,
+          "setuid_description": "Executes with owner privileges",
           "setgid": false,
           "sticky": false
         },
@@ -212,11 +217,55 @@ If the input permission data is malformed or contains invalid permission values,
   </CodeCol>
 </ExampleGrid>
 
-### Output Format Options
+### Security Risk Analysis
 
 <ExampleGrid>
   <CommentCol>
-    Converting to symbolic output only...
+    Adding security warnings for dangerous permissions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_mode": "777"
+    }
+    ```
+    ```yaml
+    - unix_permission:
+        field: file_mode
+        add_security_notes: true
+        target_field: perms
+    ```
+  </CodeCol>
+  <CommentCol>
+    includes security risk warnings:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_mode": "777",
+      "perms": {
+        "octal": "777",
+        "symbolic": "rwxrwxrwx",
+        "security_warnings": [
+          "World-writable: any user can modify file",
+          "World-executable: security risk for binaries"
+        ],
+        "owner": {
+          "read": true,
+          "write": true,
+          "execute": true
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Command Generation
+
+<ExampleGrid>
+  <CommentCol>
+    Generating chmod commands...
   </CommentCol>
   <CodeCol>
     ```json
@@ -227,54 +276,25 @@ If the input permission data is malformed or contains invalid permission values,
     ```yaml
     - unix_permission:
         field: dir_mode
-        output_format: symbolic
+        add_commands: true
         target_field: dir_perms
     ```
   </CodeCol>
   <CommentCol>
-    outputs symbolic notation:
+    includes ready-to-use chmod commands:
   </CommentCol>
   <CodeCol>
     ```json
     {
       "dir_mode": "2775",
-      "dir_perms": "rwxrwsr-x"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Multiple Permission Values
-
-<ExampleGrid>
-  <CommentCol>
-    Processing array of permission values...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "file_modes": ["644", "755", "600"]
-    }
-    ```
-    ```yaml
-    - unix_permission:
-        field: file_modes
-        output_format: rwx
-        target_field: rwx_permissions
-    ```
-  </CodeCol>
-  <CommentCol>
-    converts each to rwx format:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "file_modes": ["644", "755", "600"],
-      "rwx_permissions": [
-        "rw-r--r--",
-        "rwxr-xr-x",
-        "rw-------"
-      ]
+      "dir_perms": {
+        "octal": "2775",
+        "symbolic": "rwxrwsr-x",
+        "commands": {
+          "octal": "chmod 2775 filename",
+          "symbolic": "chmod u=rwx,g=rws,o=rx filename"
+        }
+      }
     }
     ```
   </CodeCol>

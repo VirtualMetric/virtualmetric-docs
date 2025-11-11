@@ -11,15 +11,15 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Decodes hexadecimal strings to ASCII representation.
+Decodes hexadecimal strings into ASCII text, color codes, hex dumps, or Intel HEX firmware format.
 
 ## Schema
 
-```yaml {2-3}
+```yaml {2}
 - hex_decode:
     field: <ident>
     target_field: <string>
-    encoding: <string>
+    format: <string>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -37,7 +37,7 @@ The following fields are used to define the processor:
 |---|---|---|---|
 |`field`|Y|-|Source field containing hexadecimal data to decode|
 |`target_field`|N|Same as `field`|Target field to store decoded result|
-|`encoding`|N|`utf8`|Character encoding: `utf8`, `ascii`, `utf16le`, `utf16be`|
+|`format`|N|`ascii`|Output format: `ascii`, `utf8`, `color`, `dump`, `intel_hex`|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if decoding fails|
@@ -48,145 +48,165 @@ The following fields are used to define the processor:
 
 ## Details
 
-Converts hexadecimal-encoded strings to their ASCII or Unicode text representation. The processor automatically handles common hex string formats including those with and without delimiters.
+Decodes hexadecimal strings into various output formats depending on the `format` parameter.
 
-The processor supports various character encodings and can process both individual strings and arrays of hexadecimal strings.
+The processor supports four specialized decode formats:
 
-:::note
-The processor automatically removes common separators like spaces, colons, and hyphens from hexadecimal input. This allows processing of hex strings in various formats like "48:65:6C:6C:6F" or "48 65 6C 6C 6F".
-:::
+**ascii/utf8**: Converts hex-encoded strings to text representation. Automatically strips spaces, newlines, tabs, and "0x"/"0X" prefixes from input.
 
-The `encoding` parameter determines how the decoded bytes are interpreted as characters. UTF-8 is the default and handles most international characters.
+**color**: Parses hex color codes (3 or 6 digits, with or without "#" prefix) into RGB components with color names for common colors. Returns structured data with name, hex, R, G, B fields.
 
-:::warning
-If the input contains invalid hexadecimal characters (anything other than 0-9, A-F, a-f), the processor will fail unless `ignore_failure` is set to `true`.
-:::
+**dump**: Parses hexdump format (address, hex bytes, ASCII representation) and extracts binary data with file type detection for PNG, JPEG, ZIP, ELF based on magic bytes.
+
+**intel_hex**: Decodes Intel HEX firmware format into structured records with length, address, record type, data, checksum, and validation status.
+
+Default target field behavior: if not specified, overwrites the source field with decoded result.
 
 ## Examples
 
-### Basic Hex to ASCII
+### Basic ASCII Decoding
 
 <ExampleGrid>
   <CommentCol>
-    Converting hexadecimal to readable text...
+    Converting hexadecimal to text...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "hex_data": "48656C6C6F20576F726C64"
+      "hex_field": "48656c6c6f20576f726c6421"
     }
     ```
     ```yaml
     - hex_decode:
-        field: hex_data
-        target_field: decoded_text
+        field: hex_field
+        target_field: decoded_field
+        format: ascii
     ```
   </CodeCol>
   <CommentCol>
-    decodes to ASCII text:
+    decodes to readable text:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "hex_data": "48656C6C6F20576F726C64",
-      "decoded_text": "Hello World"
+      "hex_field": "48656c6c6f20576f726c6421",
+      "decoded_field": "Hello World!"
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Hex with Separators
+### Color Code Decoding
 
 <ExampleGrid>
   <CommentCol>
-    Processing hex with colon separators...
+    Parsing hex color into RGB components...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "mac_address": "48:65:6C:6C:6F"
+      "color_field": "#FF0000"
     }
     ```
     ```yaml
     - hex_decode:
-        field: mac_address
-        target_field: decoded_value
+        field: color_field
+        target_field: color_info
+        format: color
     ```
   </CodeCol>
   <CommentCol>
-    automatically handles separators:
+    extracts color information:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "mac_address": "48:65:6C:6C:6F",
-      "decoded_value": "Hello"
+      "color_field": "#FF0000",
+      "color_info": {
+        "name": "Red",
+        "hex": "FF0000",
+        "r": 255,
+        "g": 0,
+        "b": 0
+      }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Array Processing
+### Hex Dump Format
 
 <ExampleGrid>
   <CommentCol>
-    Decoding multiple hex strings...
+    Parsing hexdump with file type detection...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "hex_array": [
-        "48656C6C6F",
-        "576F726C64"
-      ]
+      "dump_field": "00000000: 89504e47 0d0a1a0a 00000000 494844522  .PNG........IHDR"
     }
     ```
     ```yaml
     - hex_decode:
-        field: hex_array
-        target_field: decoded_array
+        field: dump_field
+        target_field: dump_info
+        format: dump
     ```
   </CodeCol>
   <CommentCol>
-    processes each array element:
+    extracts data with file type:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "hex_array": [...],
-      "decoded_array": [
-        "Hello",
-        "World"
-      ]
+      "dump_field": "00000000: 89504e47...",
+      "dump_info": {
+        "data": [137, 80, 78, 71, ...],
+        "size": 16,
+        "addresses": ["00000000"],
+        "file_type": "PNG"
+      }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### In-Place Decoding
+### Intel HEX Format
 
 <ExampleGrid>
   <CommentCol>
-    Replacing hex field with decoded text...
+    Decoding Intel HEX firmware record...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "encoded_message": "44617461537472656616D"
+      "intel_hex_field": ":10010000214601360121470136007EFE09D2190140"
     }
     ```
     ```yaml
     - hex_decode:
-        field: encoded_message
+        field: intel_hex_field
+        target_field: intel_record
+        format: intel_hex
     ```
   </CodeCol>
   <CommentCol>
-    overwrites original field:
+    parses structured record:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "encoded_message": "DataStream"
+      "intel_hex_field": ":10010000214601360121470136007EFE09D2190140",
+      "intel_record": {
+        "length": 16,
+        "address": 256,
+        "record_type": 0,
+        "type_name": "Data",
+        "data": [33, 70, 1, 54, ...],
+        "data_hex": "214601360121470136007EFE09D21901",
+        "checksum": 64,
+        "valid": true
+      }
     }
     ```
   </CodeCol>

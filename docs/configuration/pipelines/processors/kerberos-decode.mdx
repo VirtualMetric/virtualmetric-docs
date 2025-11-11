@@ -11,17 +11,19 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Extracts and decodes Kerberos ticket information.
+Decodes Kerberos authentication data including tickets, PAC structures, flags, encryption types, error codes, and principals.
 
 ## Schema
 
-```yaml {2-3}
+```yaml {2}
 - kerberos_decode:
     field: <ident>
     target_field: <string>
-    ticket_type: <string>
-    extract_principals: <boolean>
-    decode_times: <boolean>
+    format: <string>
+    decode_type: <string>
+    parse_timestamps: <boolean>
+    resolve_names: <boolean>
+    simplify_output: <boolean>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -37,11 +39,13 @@ The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|-|Source field containing Kerberos ticket data|
-|`target_field`|N|`{field}_decoded`|Target field to store decoded ticket information|
-|`ticket_type`|N|`auto`|Ticket type: `auto`, `tgt`, `service`, `renewal`|
-|`extract_principals`|N|`true`|Extract client and service principal names|
-|`decode_times`|N|`true`|Decode ticket timestamps to readable format|
+|`field`|Y|-|Source field containing Kerberos data (string, byte array, numeric, or array of strings)|
+|`target_field`|N|`{field}_decoded`|Target field to store decoded information|
+|`format`|N|Auto-detect|Input format: `base64`, `hex`, `string`|
+|`decode_type`|N|`auto`|Decode type: `auto`, `ticket`, `pac`, `flags`, `enctype`, `error`, `principal`|
+|`parse_timestamps`|N|`false`|Convert Kerberos timestamps to readable format|
+|`resolve_names`|N|`false`|Resolve principal names and service descriptions|
+|`simplify_output`|N|`false`|Simplified output with interpretations|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if decoding fails|
@@ -52,19 +56,15 @@ The following fields are used to define the processor:
 
 ## Details
 
-Decodes Kerberos ticket data to extract authentication and authorization information. The processor can handle various Kerberos ticket types including Ticket Granting Tickets (TGT) and service tickets.
+Decodes multiple Kerberos data types with automatic type detection: ticket flags (FORWARDABLE, RENEWABLE, etc.), encryption types (AES, RC4, DES), error codes (KDC errors, application errors), principals (user@REALM, service/host@REALM), PAC structures, and base64-encoded ticket data.
 
-The decoded output includes principal names, ticket validity periods, encryption types, and ticket flags that indicate the ticket's capabilities and restrictions.
+The processor supports six decode types via `decode_type`: **flags** (ticket flags with bit interpretation), **enctype** (encryption type names with weak/deprecated detection), **error** (error code names with severity categories), **principal** (principal parsing with service type detection), **pac** (PAC buffer parsing with type identification), **ticket** (base64 ticket data with message type detection).
 
-:::note
-Kerberos tickets contain encoded authentication information including encrypted session keys, principal names, and validity timestamps. The processor extracts the readable portions without requiring decryption keys.
-:::
+Auto-detection logic analyzes input patterns: principals contain "@", hex values (0x...) are flags/errors, base64 strings are tickets, numeric values check against error/enctype/flags mappings. Supports arrays of strings for batch processing.
 
-When `extract_principals` is enabled, the processor extracts and formats client and service principal names for easy identification of the authentication parties.
+When `resolve_names` is enabled, principals are resolved to service descriptions (HTTP/→web service, HOST/→host services, krbtgt/→ticket granting service). When `simplify_output` is enabled, flags are interpreted into semantic meanings (can_be_forwarded, is_renewable, pre_authenticated).
 
-:::warning
-Kerberos ticket parsing requires properly formatted ticket data. Corrupted or truncated tickets will cause the processor to fail unless `ignore_failure` is set to `true`.
-:::
+Numeric inputs are decoded as potential flags, error codes, and encryption types simultaneously, showing all possible interpretations.
 
 ## Examples
 
