@@ -11,16 +11,15 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Finalizes processing and prevents further pipeline execution.
+Drops the current event from processing and prevents pipeline execution.
 
 ## Schema
 
-```yaml {2}
+```yaml
 - return:
     description: <text>
     if: <script>
     ignore_failure: <boolean>
-    ignore_missing: <boolean>
     on_failure: <processor[]>
     on_success: <processor[]>
     tag: <string>
@@ -35,34 +34,37 @@ The following fields are used to define the processor:
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if operation fails|
-|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
 |`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
 |`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
 |`tag`|N|-|Identifier|
 
 ## Details
 
-Terminates pipeline execution immediately, preventing any subsequent processors from running. This processor is used to implement early termination logic, conditional exit points, and optimization paths that skip unnecessary processing.
+Drops the current event from processing by returning an error that signals the pipeline to discard the event. When this processor executes, the event is not sent to any configured targets and no further processors run.
 
-When the return processor executes, it stops the current pipeline and marks the processing as complete. The data processed up to this point is preserved and passed to the next stage.
+This processor is used for filtering unwanted events, implementing conditional drop logic, preventing specific data from reaching downstream systems, or optimizing performance by skipping unnecessary processing for certain event types.
+
+The event is dropped after any `on_success` processors execute, allowing for cleanup operations, logging, or metrics collection before the event is discarded.
+
+:::note Return vs Final
+Both `return` and `final` processors drop events from processing. Use `return` for conditional filtering and early exit logic. The <Topic id="final">final</Topic> processor provides identical functionality with different semantic meaning for graceful pipeline termination.
+:::
 
 :::note
 The return processor immediately stops pipeline execution. Any processors defined after a return statement will not be executed unless the return is conditional and the condition is not met.
 :::
 
-This processor is commonly used for implementing business logic that requires early exit conditions, such as filtering logic, error handling, or optimization scenarios.
-
 :::warning
-Return processors with success/failure chains will execute those chains before terminating the pipeline. This allows for cleanup operations or additional processing before exit.
+Return processors with success/failure chains will execute those chains before dropping the event. This allows for cleanup operations, logging, or metrics collection, but the event will still be discarded and not sent to any targets.
 :::
 
 ## Examples
 
-### Basic Early Exit
+### Event Filtering
 
 <ExampleGrid>
   <CommentCol>
-    Stopping pipeline execution early...
+    Dropping events after marking as processed...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -70,14 +72,14 @@ Return processors with success/failure chains will execute those chains before t
         field: processed
         value: true
     - return:
-        description: "Exit after initial processing"
+        description: "Drop event after marking"
     - set:
         field: additional_processing
         value: true
     ```
   </CodeCol>
   <CommentCol>
-    skips remaining processors:
+    event is dropped, remaining processors skipped:
   </CommentCol>
   <CodeCol>
     ```json
@@ -88,17 +90,17 @@ Return processors with success/failure chains will execute those chains before t
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Return
+### Conditional Event Filtering
 
 <ExampleGrid>
   <CommentCol>
-    Exiting based on field conditions...
+    Filtering events based on skip flag...
   </CommentCol>
   <CodeCol>
     ```yaml
     - return:
         if: "logEntry.skip_processing == true"
-        description: "Skip processing when flag is set"
+        description: "Drop events marked for skipping"
     - set:
         field: full_processing
         value: true
@@ -108,7 +110,7 @@ Return processors with success/failure chains will execute those chains before t
     ```
   </CodeCol>
   <CommentCol>
-    returns early when condition matches:
+    event is dropped when condition matches:
   </CommentCol>
   <CodeCol>
     ```json
@@ -119,11 +121,11 @@ Return processors with success/failure chains will execute those chains before t
   </CodeCol>
 </ExampleGrid>
 
-### Error Handling Return
+### Drop on Validation Failure
 
 <ExampleGrid>
   <CommentCol>
-    Using return for error scenarios...
+    Dropping events that fail validation...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -135,14 +137,14 @@ Return processors with success/failure chains will execute those chains before t
               field: error
               value: "Missing required field"
           - return:
-              description: "Exit due to validation failure"
+              description: "Drop invalid events"
     - set:
         field: validation_passed
         value: true
     ```
   </CodeCol>
   <CommentCol>
-    exits pipeline on validation failure:
+    event is dropped on validation failure:
   </CommentCol>
   <CodeCol>
     ```json
@@ -153,49 +155,49 @@ Return processors with success/failure chains will execute those chains before t
   </CodeCol>
 </ExampleGrid>
 
-### Return with Cleanup
+### Drop with Metrics Collection
 
 <ExampleGrid>
   <CommentCol>
-    Performing cleanup before exit...
+    Recording metrics before dropping event...
   </CommentCol>
   <CodeCol>
     ```yaml
     - return:
-        description: "Exit with cleanup operations"
+        description: "Drop event with metrics"
         on_success:
           - set:
-              field: exit_timestamp
+              field: drop_timestamp
               value: "{{now}}"
           - set:
-              field: pipeline_status
-              value: "completed_early"
+              field: drop_reason
+              value: "filtered_event"
     ```
   </CodeCol>
   <CommentCol>
-    executes cleanup before termination:
+    records metadata before event is dropped:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "exit_timestamp": "2024-01-15T10:30:00Z",
-      "pipeline_status": "completed_early"
+      "drop_timestamp": "2024-01-15T10:30:00Z",
+      "drop_reason": "filtered_event"
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Performance Optimization
+### Filter Debug Logs
 
 <ExampleGrid>
   <CommentCol>
-    Optimizing pipeline for specific data types...
+    Filtering debug logs in production...
   </CommentCol>
   <CodeCol>
     ```yaml
     - return:
         if: "logEntry.log_level == 'DEBUG' && logEntry.environment == 'production'"
-        description: "Skip debug logs in production"
+        description: "Drop debug logs in production"
         on_success:
           - set:
               field: filtered_out
@@ -208,7 +210,7 @@ Return processors with success/failure chains will execute those chains before t
     ```
   </CodeCol>
   <CommentCol>
-    skips expensive processing for debug logs:
+    debug events are dropped, expensive processing skipped:
   </CommentCol>
   <CodeCol>
     ```json
@@ -221,24 +223,24 @@ Return processors with success/failure chains will execute those chains before t
   </CodeCol>
 </ExampleGrid>
 
-### Multi-Path Exit Strategy
+### Tiered Event Filtering
 
 <ExampleGrid>
   <CommentCol>
-    Different exit points for different scenarios...
+    Filtering events based on priority tiers...
   </CommentCol>
   <CodeCol>
     ```yaml
     - return:
         if: "logEntry.priority == 'low'"
-        description: "Quick exit for low priority events"
+        description: "Drop low priority events"
         on_success:
           - set:
               field: processing_level
               value: "minimal"
     - return:
         if: "logEntry.priority == 'medium'"
-        description: "Standard processing complete"
+        description: "Drop medium priority events"
         on_success:
           - set:
               field: processing_level
@@ -251,7 +253,7 @@ Return processors with success/failure chains will execute those chains before t
     ```
   </CodeCol>
   <CommentCol>
-    exits at different points based on priority:
+    low and medium priority events dropped, only high priority proceeds:
   </CommentCol>
   <CodeCol>
     ```json
