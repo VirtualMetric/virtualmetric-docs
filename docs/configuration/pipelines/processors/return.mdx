@@ -42,20 +42,20 @@ The following fields are used to define the processor:
 
 Drops the current event from processing by returning an error that signals the pipeline to discard the event. When this processor executes, the event is not sent to any configured targets and no further processors run.
 
+:::note
+The `return` processor immediately stops pipeline execution. Any processors defined after a return statement will not be executed unless the return is conditional and the condition is not met.
+:::
+
 This processor is used for filtering unwanted events, implementing conditional drop logic, preventing specific data from reaching downstream systems, or optimizing performance by skipping unnecessary processing for certain event types.
 
 The event is dropped after any `on_success` processors execute, allowing for cleanup operations, logging, or metrics collection before the event is discarded.
 
 :::note Return vs Final
-Both `return` and `final` processors drop events from processing. Use `return` for conditional filtering and early exit logic. The <Topic id="final">final</Topic> processor provides identical functionality with different semantic meaning for graceful pipeline termination.
-:::
-
-:::note
-The return processor immediately stops pipeline execution. Any processors defined after a return statement will not be executed unless the return is conditional and the condition is not met.
+Both `return` and `final` processors drop events from processing. Use `return` for conditional filtering and early exit logic. The <Topic id="final">`final`</Topic> processor provides identical functionality with different semantics for graceful pipeline termination.
 :::
 
 :::warning
-Return processors with success/failure chains will execute those chains before dropping the event. This allows for cleanup operations, logging, or metrics collection, but the event will still be discarded and not sent to any targets.
+The `return` processors with success/failure chains will execute those chains before dropping the event. This allows for cleanup operations, logging, or metrics collection, but the event will still be discarded and not sent to any targets.
 :::
 
 ## Examples
