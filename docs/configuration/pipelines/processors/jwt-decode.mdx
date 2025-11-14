@@ -15,14 +15,14 @@ Decodes JSON Web Tokens into header, claims, and signature components.
 
 ## Schema
 
-```yaml {2-3}
+```yaml {2}
 - jwt_decode:
     field: <ident>
     target_field: <string>
-    verify_signature: <boolean>
-    secret: <string>
-    algorithm: <string>
-    extract_claims: <array>
+    extract_header: <boolean>
+    extract_claims: <boolean>
+    extract_signature: <boolean>
+    parse_dates: <boolean>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -40,10 +40,10 @@ The following fields are used to define the processor:
 |---|---|---|---|
 |`field`|Y|-|Source field containing JWT token to decode|
 |`target_field`|N|`{field}_decoded`|Target field to store decoded JWT components|
-|`verify_signature`|N|`false`|Verify JWT signature using provided secret|
-|`secret`|N|-|Secret key for signature verification|
-|`algorithm`|N|`HS256`|JWT signing algorithm for verification|
-|`extract_claims`|N|-|Array of specific claims to extract to separate fields|
+|`extract_header`|N|`false`|Extract JWT header (algorithm, token type)|
+|`extract_claims`|N|`true`|Extract JWT claims/payload (defaults to true if no extract flags specified)|
+|`extract_signature`|N|`false`|Include signature as hex string|
+|`parse_dates`|N|`false`|Parse timestamp claims into readable date formats|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if decoding fails|
@@ -54,18 +54,18 @@ The following fields are used to define the processor:
 
 ## Details
 
-Decodes JSON Web Tokens (JWT) into their constituent parts: header, payload (claims), and signature. The processor can extract the token structure without verification or optionally verify the signature using a provided secret.
+Decodes JSON Web Tokens (JWT) into their constituent parts: header, payload (claims), and signature. The processor extracts token structure without verifying cryptographic signatures.
 
-The decoded result includes the header information (algorithm, token type), all claims from the payload, and signature verification status when enabled.
+JWT tokens consist of three base64-encoded parts separated by dots: header.payload.signature. The processor decodes each part and presents them in a structured format. The "Bearer " prefix is automatically removed if present.
 
-:::note
-JWT tokens consist of three base64-encoded parts separated by dots: header.payload.signature. The processor decodes each part and presents them in a structured format.
-:::
+By default, only claims are extracted. Use `extract_header` and `extract_signature` flags to include additional token components.
 
-When `extract_claims` is specified, the processor creates additional fields for specific claims, making them easily accessible for further processing.
+When `parse_dates` is enabled, timestamp claims (exp, iat, nbf, auth_time, updated_at) are converted into multiple readable formats with `*_timestamp`, `*_datetime`, and `*_readable` suffixes.
+
+The processor adds convenience fields at root level for standard claims: subject, issuer, audience, expiration, issued_at, not_before, jwt_id. Additional fields include `is_expired` and `expires_in_seconds` for expiration checking.
 
 :::warning
-If signature verification is enabled but fails, the processor will still decode the token structure but mark it as invalid. Set `ignore_failure` to `true` to continue processing invalid tokens.
+This processor decodes JWT tokens without verifying signatures. Do NOT use decoded data for security-critical decisions without proper validation.
 :::
 
 ## Examples
@@ -74,7 +74,7 @@ If signature verification is enabled but fails, the processor will still decode 
 
 <ExampleGrid>
   <CommentCol>
-    Decoding JWT token structure...
+    Decoding JWT token claims...
   </CommentCol>
   <CodeCol>
     ```json
@@ -85,144 +85,156 @@ If signature verification is enabled but fails, the processor will still decode 
     ```yaml
     - jwt_decode:
         field: auth_token
-        target_field: token_info
     ```
   </CodeCol>
   <CommentCol>
-    extracts header and payload:
+    extracts claims with convenience fields at root level:
   </CommentCol>
   <CodeCol>
     ```json
     {
       "auth_token": "eyJhbGciOiJIUzI1N...",
-      "token_info": {
-        "header": {
-          "alg": "HS256",
-          "typ": "JWT"
-        },
-        "payload": {
+      "auth_token_decoded": {
+        "claims": {
           "sub": "1234567890",
           "name": "John Doe",
           "iat": 1516239022
         },
-        "signature": "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        "subject": "1234567890",
+        "issued_at": 1516239022
       }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### With Signature Verification
+### Extracting Header and Signature
 
 <ExampleGrid>
   <CommentCol>
-    Verifying JWT signature with secret...
+    Extracting all JWT components...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "user_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
     }
     ```
     ```yaml
     - jwt_decode:
-        field: user_token
-        verify_signature: true
-        secret: "your-256-bit-secret"
-        target_field: verified_token
+        field: token
+        extract_header: true
+        extract_claims: true
+        extract_signature: true
     ```
   </CodeCol>
   <CommentCol>
-    includes signature verification:
+    includes header, claims, and signature:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "user_token": "eyJhbGciOiJIUzI1N...",
-      "verified_token": {
-        "header": {...},
-        "payload": {...},
-        "signature_valid": true,
-        "verification_algorithm": "HS256"
+      "token": "eyJhbGciOiJIUzI1N...",
+      "token_decoded": {
+        "header": {
+          "alg": "HS256",
+          "typ": "JWT"
+        },
+        "claims": {
+          "sub": "1234567890",
+          "name": "John Doe",
+          "iat": 1516239022
+        },
+        "signature": "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+        "subject": "1234567890",
+        "issued_at": 1516239022
       }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Extracting Specific Claims
+### Parsing Date Claims
 
 <ExampleGrid>
   <CommentCol>
-    Extracting specific claims to separate fields...
+    Converting timestamp claims to readable formats...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "session_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      "session_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3MzU2ODk2MDAsIm5iZiI6MTUxNjIzOTAyMn0.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ"
     }
     ```
     ```yaml
     - jwt_decode:
         field: session_token
-        extract_claims: ["sub", "exp", "iat"]
-        target_field: token_data
+        parse_dates: true
     ```
   </CodeCol>
   <CommentCol>
-    creates fields for extracted claims:
+    adds timestamp, datetime, and readable date fields:
   </CommentCol>
   <CodeCol>
     ```json
     {
       "session_token": "eyJhbGciOiJIUzI1N...",
-      "token_data": {...},
-      "user_id": "1234567890",
-      "expires_at": 1735689600,
-      "issued_at": 1516239022
+      "session_token_decoded": {
+        "claims": {
+          "sub": "1234567890",
+          "iat": 1516239022,
+          "iat_timestamp": 1516239022,
+          "iat_datetime": "2018-01-18T01:30:22Z",
+          "iat_readable": "2018-01-18 01:30:22 UTC",
+          "exp": 1735689600,
+          "exp_timestamp": 1735689600,
+          "exp_datetime": "2025-01-01T00:00:00Z",
+          "exp_readable": "2025-01-01 00:00:00 UTC"
+        },
+        "subject": "1234567890",
+        "issued_at": 1516239022,
+        "expiration": 1735689600,
+        "is_expired": false,
+        "expires_in_seconds": 219450578
+      }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Array of Tokens
+### Bearer Token Prefix
 
 <ExampleGrid>
   <CommentCol>
-    Processing multiple JWT tokens...
+    Handling Authorization header with Bearer prefix...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "tokens": [
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
-      ]
+      "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
     }
     ```
     ```yaml
     - jwt_decode:
-        field: tokens
-        target_field: decoded_tokens
+        field: authorization
     ```
   </CodeCol>
   <CommentCol>
-    decodes each token:
+    automatically strips Bearer prefix before decoding:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "tokens": [...],
-      "decoded_tokens": [
-        {
-          "header": {"alg": "HS256"},
-          "payload": {...}
+      "authorization": "Bearer eyJhbGciOiJIUzI1N...",
+      "authorization_decoded": {
+        "claims": {
+          "sub": "1234567890",
+          "name": "John Doe",
+          "iat": 1516239022
         },
-        {
-          "header": {"alg": "RS256"},
-          "payload": {...}
-        }
-      ]
+        "subject": "1234567890",
+        "issued_at": 1516239022
+      }
     }
     ```
   </CodeCol>

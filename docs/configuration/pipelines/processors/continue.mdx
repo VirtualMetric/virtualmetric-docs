@@ -11,16 +11,15 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Continues to the next processor in the pipeline chain.
+Skips the remaining processors for the current item in a foreach loop and immediately proceeds to the next item, similar to `continue` in programming languages.
 
 ## Schema
 
-```yaml {2}
+```yaml
 - continue:
     description: <text>
     if: <script>
     ignore_failure: <boolean>
-    ignore_missing: <boolean>
     on_failure: <processor[]>
     on_success: <processor[]>
     tag: <string>
@@ -35,177 +34,184 @@ The following fields are used to define the processor:
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if operation fails|
-|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
 |`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
 |`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
 |`tag`|N|-|Identifier|
 
 ## Details
 
-Explicitly continues execution to the next processor in the pipeline sequence. This processor is primarily used for flow control in conditional processing scenarios or to make pipeline logic more explicit.
+The `continue` processor skips to the next iteration when used inside a **foreach processor**. It behaves like a `continue` statement in programming languages, allowing you to skip processing for certain items while continuing with the rest of the collection.
 
-The continue processor acts as a no-operation that allows pipeline execution to proceed normally. It's useful in conditional blocks where you want to explicitly indicate continuation rather than implicit flow.
+**Behavior:**
+- Inside a **foreach processor**: Skips remaining processors for the current item and moves to the next item
+- Outside a foreach context: Acts as an early exit from the current processing scope
 
-:::note
-The continue processor doesn't modify any data or fields. It serves purely as a control flow mechanism to make pipeline logic more readable and explicit.
+The processor executes any `on_success` handlers before continuing to the next iteration, allowing for logging or metrics collection.
+
+:::note Continue vs Return
+`continue` skips to the next iteration within a loop, while `return` exits the entire block. Use `continue` for selective item processing and `return` for complete exit logic.
 :::
 
-This processor is most commonly used within conditional logic blocks, success/failure chains, or when you need to clearly indicate that processing should continue despite certain conditions.
-
-:::warning
-While the continue processor doesn't perform any operations itself, it can still trigger success/failure chains if configured, allowing for complex flow control patterns.
+:::tip Primary Use Case
+The `continue` processor is most valuable inside foreach loops where you need to filter or skip certain items without affecting the processing of other items in the collection.
 :::
 
 ## Examples
 
-### Basic Continue Usage
+### Skip Items in Foreach Loop
 
 <ExampleGrid>
   <CommentCol>
-    Explicitly continuing pipeline execution...
+    Processing only specific items in a collection...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - if:
-        condition: "logEntry.level == 'INFO'"
+    - foreach:
+        field: items
         processors:
           - continue:
-              description: "INFO level logs proceed normally"
-    ```
-  </CodeCol>
-  <CommentCol>
-    allows processing to continue:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "level": "INFO",
-      "message": "User logged in"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Conditional Continue
-
-<ExampleGrid>
-  <CommentCol>
-    Using continue in conditional logic...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - continue:
-        if: "logEntry.status == 'success'"
-        description: "Continue processing successful events"
-    - set:
-        field: processed
-        value: true
-    ```
-  </CodeCol>
-  <CommentCol>
-    continues only when condition matches:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "status": "success",
-      "processed": true
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Continue with Success Chain
-
-<ExampleGrid>
-  <CommentCol>
-    Triggering additional processing on continue...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - continue:
-        description: "Continue and log the action"
-        on_success:
+              if: "ctx._item.status == 'ignored'"
+              description: "Skip ignored items"
           - set:
-              field: flow_status
-              value: "continued"
-    ```
-  </CodeCol>
-  <CommentCol>
-    executes success chain:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "original_data": "value",
-      "flow_status": "continued"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Documentation in Complex Flow
-
-<ExampleGrid>
-  <CommentCol>
-    Using continue for pipeline documentation...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - if:
-        condition: "logEntry.type == 'audit'"
-        processors:
-          - continue:
-              description: "Audit logs proceed to enrichment"
-              tag: "audit_flow_marker"
+              field: ctx._item.processed
+              value: true
           - enrich:
-              field: user_id
-              target: user_info
+              field: ctx._item.id
+              target: ctx._item.details
     ```
   </CodeCol>
   <CommentCol>
-    makes pipeline flow explicit:
+    skips ignored items, processes others:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "type": "audit",
-      "user_id": "123",
-      "user_info": {
-        "name": "John Doe"
-      }
+      "items": [
+        {"id": 1, "status": "active", "processed": true},
+        {"id": 2, "status": "ignored"},
+        {"id": 3, "status": "active", "processed": true}
+      ]
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Error Handling Flow
+### Conditional Item Processing
 
 <ExampleGrid>
   <CommentCol>
-    Using continue in error recovery...
+    Skipping items based on validation...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - validate:
-        field: email
-        pattern: ".*@.*"
-        on_failure:
-          - set:
-              field: email_valid
-              value: false
+    - foreach:
+        field: transactions
+        processors:
           - continue:
-              description: "Continue despite invalid email"
+              if: "ctx._item.amount < 100"
+              description: "Skip small transactions"
+              on_success:
+                - set:
+                    field: ctx._item.processed_tier
+                    value: "skipped"
+          - set:
+              field: ctx._item.requires_review
+              value: true
+          - complex_validation:
+              field: ctx._item
     ```
   </CodeCol>
   <CommentCol>
-    continues processing after error handling:
+    processes only transactions over threshold:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "email": "invalid-email",
-      "email_valid": false
+      "transactions": [
+        {"amount": 50, "processed_tier": "skipped"},
+        {"amount": 500, "requires_review": true}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Recovery in Loop
+
+<ExampleGrid>
+  <CommentCol>
+    Continuing on item-level errors...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - foreach:
+        field: users
+        processors:
+          - enrich:
+              field: ctx._item.user_id
+              target: ctx._item.profile
+              on_failure:
+                - set:
+                    field: ctx._item.enrichment_failed
+                    value: true
+                - continue:
+                    description: "Skip enrichment for this user"
+          - validate:
+              field: ctx._item.profile
+              exists: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing other users on enrichment failure:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "users": [
+        {"user_id": "123", "profile": {...}},
+        {"user_id": "456", "enrichment_failed": true},
+        {"user_id": "789", "profile": {...}}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Filter and Transform Collection
+
+<ExampleGrid>
+  <CommentCol>
+    Selectively transforming items...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - foreach:
+        field: events
+        processors:
+          - continue:
+              if: "ctx._item.type != 'security'"
+              description: "Process only security events"
+          - set:
+              field: ctx._item.priority
+              value: "high"
+          - threat_analysis:
+              field: ctx._item.indicators
+          - set:
+              field: ctx._item.analyzed
+              value: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies security processing only to relevant events:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "events": [
+        {"type": "info"},
+        {"type": "security", "priority": "high", "analyzed": true},
+        {"type": "debug"}
+      ]
     }
     ```
   </CodeCol>

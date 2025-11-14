@@ -15,13 +15,13 @@ Extracts and decodes Windows Security Identifier (SID) information.
 
 ## Schema
 
-```yaml {2-3}
+```yaml {2}
 - sid_decode:
     field: <ident>
     target_field: <string>
-    resolve_names: <boolean>
-    include_domain: <boolean>
-    expand_groups: <boolean>
+    format: <string>
+    resolve_well_known: <boolean>
+    add_components: <boolean>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -37,11 +37,11 @@ The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|-|Source field containing SID string to decode|
+|`field`|Y|-|Source field containing SID to decode (string, byte array, or array of strings)|
 |`target_field`|N|`{field}_decoded`|Target field to store decoded SID information|
-|`resolve_names`|N|`true`|Resolve SID to account names when possible|
-|`include_domain`|N|`true`|Include domain information in resolved names|
-|`expand_groups`|N|`false`|Expand group SIDs to show member information|
+|`format`|N|Auto-detect|Input format: `string`, `hex`, `base64` (auto-detects if not specified)|
+|`resolve_well_known`|N|`false`|Resolve well-known SIDs to account names|
+|`add_components`|N|`false`|Add parsed SID components (revision, authority, sub-authorities, domain info)|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if decoding fails|
@@ -52,56 +52,43 @@ The following fields are used to define the processor:
 
 ## Details
 
-Decodes Windows Security Identifiers (SIDs) to extract account information, authority details, and relative identifiers. The processor can resolve well-known SIDs to their account names and provide detailed breakdowns of SID components.
+Decodes Windows Security Identifiers (SIDs) from multiple input formats (string, hex, base64, byte arrays) into standardized SID strings with optional component parsing and well-known SID resolution.
 
-The processor supports both standard SID strings (S-1-5-21-...) and well-known SID aliases commonly used in Windows security contexts.
+The processor supports three input formats with automatic detection: standard SID strings (S-1-5-21-...), hexadecimal binary SIDs, and base64-encoded binary SIDs. Byte arrays are processed directly as binary SID data.
 
-:::note
-Windows SIDs follow the format S-R-I-S where S is the revision level, R is the identifier authority, I is the issuer identifier, and S are sub-authorities. The processor breaks down each component for analysis.
-:::
+Default behavior returns the SID string only. Use `add_components` to extract revision, authority, authority name, sub-authorities, domain identification, and RID information. Use `resolve_well_known` to map SIDs to account names like "Local System", "Administrators", "Domain Admins".
 
-When `resolve_names` is enabled, the processor attempts to resolve SIDs to their corresponding account names using well-known SID mappings and domain lookups.
+When `add_components` is enabled for domain SIDs (S-1-5-21-...), the processor identifies domain context, extracts domain_id, RID, and RID type (well-known, user, group/computer). Well-known RIDs (500=Administrator, 512=Domain Admins, etc.) are automatically resolved.
 
-:::warning
-SID resolution may not be available for all SIDs, especially domain-specific or custom SIDs. The processor will still decode the SID structure even when name resolution fails.
-:::
+The processor handles arrays of SIDs, processing each element independently with consistent error handling via `ignore_failure`.
 
 ## Examples
 
-### Basic SID Decoding
+### Basic String SID
 
 <ExampleGrid>
   <CommentCol>
-    Decoding Windows SID structure...
+    Decoding SID string...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "user_sid": "S-1-5-21-3623811015-3361044348-30300820-1013"
+      "user_sid": "S-1-5-21-1234567890-1234567890-1234567890-1001"
     }
     ```
     ```yaml
     - sid_decode:
         field: user_sid
-        target_field: sid_info
     ```
   </CodeCol>
   <CommentCol>
-    extracts SID components:
+    returns SID string by default:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "user_sid": "S-1-5-21-3623811015-3361044348-30300820-1013",
-      "sid_info": {
-        "revision": 1,
-        "authority": "NT_AUTHORITY",
-        "authority_value": 5,
-        "domain_identifier": "21-3623811015-3361044348-30300820",
-        "relative_id": 1013,
-        "type": "user",
-        "domain_sid": "S-1-5-21-3623811015-3361044348-30300820"
-      }
+      "user_sid": "S-1-5-21-1234567890-1234567890-1234567890-1001",
+      "user_sid_decoded": "S-1-5-21-1234567890-1234567890-1234567890-1001"
     }
     ```
   </CodeCol>
@@ -111,53 +98,126 @@ SID resolution may not be available for all SIDs, especially domain-specific or 
 
 <ExampleGrid>
   <CommentCol>
-    Resolving well-known SIDs to names...
+    Resolving well-known SID to account name...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "account_sid": "S-1-5-32-544"
+      "sid": "S-1-5-18"
     }
     ```
     ```yaml
     - sid_decode:
-        field: account_sid
-        resolve_names: true
-        target_field: account_info
+        field: sid
+        resolve_well_known: true
     ```
   </CodeCol>
   <CommentCol>
-    includes resolved account name:
+    adds name and well-known flag:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "account_sid": "S-1-5-32-544",
-      "account_info": {
-        "revision": 1,
-        "authority": "NT_AUTHORITY",
-        "relative_id": 544,
-        "type": "alias",
-        "name": "Administrators",
-        "domain": "BUILTIN",
-        "well_known": true
+      "sid": "S-1-5-18",
+      "sid_decoded": {
+        "sid": "S-1-5-18",
+        "name": "Local System",
+        "is_well_known": true
       }
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Multiple SIDs
+### Component Parsing
 
 <ExampleGrid>
   <CommentCol>
-    Processing array of SID values...
+    Extracting SID component details...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "group_sids": [
-        "S-1-5-32-545",
+      "sid": "S-1-5-21-1234567890-1234567890-1234567890-1001"
+    }
+    ```
+    ```yaml
+    - sid_decode:
+        field: sid
+        add_components: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    parses all SID components:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sid": "S-1-5-21-1234567890-1234567890-1234567890-1001",
+      "sid_decoded": {
+        "sid": "S-1-5-21-1234567890-1234567890-1234567890-1001",
+        "revision": 1,
+        "authority": 5,
+        "authority_name": "NT Authority",
+        "sub_authorities": [21, 1234567890, 1234567890, 1234567890, 1001],
+        "sub_authority_count": 5,
+        "is_domain_sid": true,
+        "domain_id": "1234567890-1234567890-1234567890",
+        "rid": 1001,
+        "rid_type": "user"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Hex Binary SID
+
+<ExampleGrid>
+  <CommentCol>
+    Decoding binary SID from hex...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hex_sid": "010100000000000512000000"
+    }
+    ```
+    ```yaml
+    - sid_decode:
+        field: hex_sid
+        format: hex
+        resolve_well_known: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to SID string with name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hex_sid": "010100000000000512000000",
+      "hex_sid_decoded": {
+        "sid": "S-1-5-18",
+        "name": "Local System",
+        "is_well_known": true
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array of SIDs
+
+<ExampleGrid>
+  <CommentCol>
+    Processing multiple SIDs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sids": [
+        "S-1-5-18",
         "S-1-5-32-544",
         "S-1-1-0"
       ]
@@ -165,74 +225,34 @@ SID resolution may not be available for all SIDs, especially domain-specific or 
     ```
     ```yaml
     - sid_decode:
-        field: group_sids
-        resolve_names: true
-        target_field: decoded_groups
+        field: sids
+        resolve_well_known: true
     ```
   </CodeCol>
   <CommentCol>
-    decodes each SID:
+    resolves each SID:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "group_sids": [...],
-      "decoded_groups": [
+      "sids": [...],
+      "sids_decoded": [
         {
-          "name": "Users",
-          "type": "alias",
-          "well_known": true
+          "sid": "S-1-5-18",
+          "name": "Local System",
+          "is_well_known": true
         },
         {
-          "name": "Administrators", 
-          "type": "alias",
-          "well_known": true
+          "sid": "S-1-5-32-544",
+          "name": "Administrators",
+          "is_well_known": true
         },
         {
+          "sid": "S-1-1-0",
           "name": "Everyone",
-          "type": "universal",
-          "well_known": true
+          "is_well_known": true
         }
       ]
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Domain SID Analysis
-
-<ExampleGrid>
-  <CommentCol>
-    Analyzing domain-specific SIDs...
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "domain_user": "S-1-5-21-1004336348-1177238915-682003330-512"
-    }
-    ```
-    ```yaml
-    - sid_decode:
-        field: domain_user
-        include_domain: true
-        target_field: user_details
-    ```
-  </CodeCol>
-  <CommentCol>
-    includes domain context:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "domain_user": "S-1-5-21-1004336348-1177238915-682003330-512",
-      "user_details": {
-        "authority": "NT_AUTHORITY",
-        "domain_identifier": "21-1004336348-1177238915-682003330",
-        "relative_id": 512,
-        "type": "group",
-        "name": "Domain Admins",
-        "domain_context": true
-      }
     }
     ```
   </CodeCol>

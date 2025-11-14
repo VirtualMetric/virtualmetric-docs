@@ -11,7 +11,7 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Terminates the pipeline successfully, ignoring any previous errors.
+Recovers from errors that occurred in previous processors, allowing the pipeline to continue execution. Acts like a try-catch mechanism in programming languages.
 
 ## Schema
 
@@ -20,7 +20,6 @@ Terminates the pipeline successfully, ignoring any previous errors.
     description: <text>
     if: <script>
     ignore_failure: <boolean>
-    ignore_missing: <boolean>
     on_failure: <processor[]>
     on_success: <processor[]>
     tag: <string>
@@ -35,16 +34,25 @@ The following fields are used to define the processor:
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if operation fails|
-|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
 |`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
 |`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
 |`tag`|N|-|Identifier|
 
 ## Details
 
-Rescues the pipeline from the conditions specified in `on_failure`, effectively ignoring any errors that occurred in previous processors. This is used for scenarios where you want to prevent failures from propagating.
+The `recover` processor clears error states from previous processors, allowing the pipeline to continue execution as if no error occurred. It functions similarly to exception handling in programming languages, where errors are caught and handled gracefully.
 
-The processor acts as a boundary, catching any previous failures and treating them as successful completions. This allows pipelines to continue processing subsequent log entries without being halted by errors in earlier processors.
+**Error Recovery Mechanism:**
+- Clears any error state from processors in the current `on_failure` chain
+- Allows the pipeline to continue with subsequent processors
+- Does not modify event data—purely handles error state
+- Can be conditional using the `if` field
+
+**Common Use Cases:**
+- **Parsing Failures**: Recover when optional parsing fails (e.g., grok patterns, date formats)
+- **Enrichment Failures**: Continue when external enrichment services are unavailable
+- **Validation Failures**: Proceed with default values when validation fails
+- **Optional Processing**: Make certain processing steps non-critical
 
 :::note
 The recover processor doesn't modify any data or fields. It serves purely as an error recovery mechanism to prevent pipeline termination due to previous failures.
