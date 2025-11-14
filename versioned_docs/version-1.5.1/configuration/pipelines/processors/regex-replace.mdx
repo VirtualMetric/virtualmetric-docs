@@ -1,0 +1,271 @@
+---
+description: Replaces text patterns using regular expressions
+sidebar_custom_props: 
+  customIcon: 🔄
+  customCategory: Parse
+---
+
+# Regex Replace
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Pattern Matching</span><span className="theme-doc-version-badge badge badge--secondary">Data Transformation</span>
+
+## Synopsis
+
+A text processing processor that finds and replaces text patterns using regular expressions, providing powerful pattern-based text transformation capabilities for data cleaning, formatting, and normalization.
+
+## Schema
+
+```yaml {2-4}
+- regex_replace:
+    field: <ident>
+    regex: <string>
+    replacement: <string>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the text to process|
+|`regex`|Y|-|Regular expression pattern to match|
+|`replacement`|Y|-|Replacement text or pattern|
+|`target_field`|N|`field`|Field to store the modified text|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if regex processing fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor uses regular expressions to find and replace text patterns within string fields. It supports both simple text replacement and complex pattern matching with capture groups and backreferences.
+
+:::note
+This processor is an alias for the `gsub` processor, providing the same functionality with a more descriptive name.
+:::
+
+Regular expression patterns support full regex syntax including character classes, quantifiers, anchors, and grouping. The replacement string can include backreferences ($1, $2, etc.) to captured groups from the regex pattern.
+
+The processor handles all occurrences of the pattern within the text, making it suitable for comprehensive text cleaning and transformation tasks.
+
+:::warning
+Test regex patterns thoroughly to avoid unintended matches or performance issues with complex patterns.
+:::
+
+## Examples
+
+### Basic Text Replacement
+
+<ExampleGrid>
+  <CommentCol>
+    Replacing simple text patterns...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Error: Failed to connect to server"
+    }
+    ```
+    ```yaml
+    - regex_replace:
+        field: message
+        regex: "Error:"
+        replacement: "WARNING:"
+    ```
+  </CodeCol>
+  <CommentCol>
+    updates the error level:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "WARNING: Failed to connect to server"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Pattern Matching with Capture Groups
+
+<ExampleGrid>
+  <CommentCol>
+    Using capture groups for reformatting...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": "2024-01-15 14:30:25"
+    }
+    ```
+    ```yaml
+    - regex_replace:
+        field: timestamp
+        regex: "(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"
+        replacement: "$2/$3/$1 $4:$5:$6"
+        target_field: formatted_timestamp
+    ```
+  </CodeCol>
+  <CommentCol>
+    reformats the date:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": "2024-01-15 14:30:25",
+      "formatted_timestamp": "01/15/2024 14:30:25"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Email Masking
+
+<ExampleGrid>
+  <CommentCol>
+    Masking email addresses for privacy...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_info": "Contact john.doe@example.com for support"
+    }
+    ```
+    ```yaml
+    - regex_replace:
+        field: user_info
+        regex: "([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})"
+        replacement: "***@$2"
+    ```
+  </CodeCol>
+  <CommentCol>
+    masks the username portion:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_info": "Contact ***@example.com for support"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Log Level Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Normalizing various log level formats...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_line": "[ERR] Database connection failed",
+      "log_line2": "WARN: Memory usage high"
+    }
+    ```
+    ```yaml
+    - regex_replace:
+        field: log_line
+        regex: "\\[(ERR|ERROR)\\]"
+        replacement: "[ERROR]"
+    - regex_replace:
+        field: log_line2
+        regex: "WARN:"
+        replacement: "[WARNING]"
+    ```
+  </CodeCol>
+  <CommentCol>
+    standardizes log levels:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_line": "[ERROR] Database connection failed",
+      "log_line2": "[WARNING] Memory usage high"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URL Path Extraction
+
+<ExampleGrid>
+  <CommentCol>
+    Extracting paths from URLs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request_url": "https://api.example.com/v1/users/123?param=value"
+    }
+    ```
+    ```yaml
+    - regex_replace:
+        field: request_url
+        regex: "https?://[^/]+(/[^?]*)"
+        replacement: "$1"
+        target_field: url_path
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts just the path:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request_url": "https://api.example.com/v1/users/123?param=value",
+      "url_path": "/v1/users/123"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Pattern Replacement
+
+<ExampleGrid>
+  <CommentCol>
+    Applying multiple regex replacements...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_text": "User ID: 12345, Phone: (555) 123-4567, Email: user@domain.com"
+    }
+    ```
+    ```yaml
+    - regex_replace:
+        field: raw_text
+        regex: "\\d{5}"
+        replacement: "XXXXX"
+    - regex_replace:
+        field: raw_text
+        regex: "\\(\\d{3}\\) \\d{3}-\\d{4}"
+        replacement: "XXX-XXX-XXXX"
+    - regex_replace:
+        field: raw_text
+        regex: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+        replacement: "***@***.***"
+    ```
+  </CodeCol>
+  <CommentCol>
+    sanitizes sensitive information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_text": "User ID: XXXXX, Phone: XXX-XXX-XXXX, Email: ***@***.***"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

@@ -1,0 +1,372 @@
+# Confluent Cloud
+
+<span className="theme-doc-version-badge badge badge--secondary">Confluent</span><span className="theme-doc-version-badge badge badge--secondary">Message Queue</span>
+
+## Synopsis
+
+Creates a target that writes log messages to Confluent Cloud topics with support for batching, compression, and authentication. The target handles message delivery efficiently with configurable batch limits based on size or event count.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: confluentcloud
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    client_id: <string>
+    topic: <string>
+    algorithm: <string>
+    username: <string>
+    password: <string>
+    compression: <string>
+    compression_level: <string>
+    acknowledgments: <string>
+    allow_auto_topic_creation: <boolean>
+    disable_idempotent_write: <boolean>
+    max_bytes: <numeric>
+    max_events: <numeric>
+    field_format: <string>
+    tls:
+      status: <boolean>
+      insecure_skip_verify: <boolean>
+      min_tls_version: <string>
+      max_tls_version: <string>
+      cert_name: <string>
+      key_name: <string>
+      passphrase: <string>
+    interval: <string|numeric>
+    cron: <string>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `confluentcloud`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Confluent Cloud Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|Y|-|Confluent Cloud bootstrap server (e.g., `pkc-xxxxx.us-east-1.aws.confluent.cloud`)|
+|`port`|N|`9092`|Confluent Cloud broker port|
+|`client_id`|N|-|Client identifier for connection tracking|
+|`topic`|Y|-|Kafka topic name for message delivery|
+
+### Authentication
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`algorithm`|Y|`"plain"`|Authentication mechanism (must be `plain` for Confluent Cloud)|
+|`username`|Y|-|Confluent Cloud API Key|
+|`password`|Y|-|Confluent Cloud API Secret|
+
+:::note
+Confluent Cloud uses SASL/PLAIN authentication. Use your Confluent Cloud API Key as the username and API Secret as the password.
+:::
+
+### Producer Settings
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`compression`|N|`"none"`|Message compression: `none`, `gzip`, `snappy`, `lz4`, `zstd`|
+|`compression_level`|N|-|Compression level (algorithm-specific)|
+|`acknowledgments`|N|`"all"`|Acknowledgment level: `none`, `leader`, `all`|
+|`allow_auto_topic_creation`|N|`false`|Allow automatic topic creation if topic doesn't exist|
+|`disable_idempotent_write`|N|`false`|Disable idempotent producer (not recommended)|
+
+### Batch Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`max_bytes`|N|`0`|Maximum batch size in bytes (0 = unlimited)|
+|`max_events`|N|`1000`|Maximum number of events per batch|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+:::note
+Batches are sent when either `max_bytes` or `max_events` limit is reached, whichever comes first.
+:::
+
+### TLS Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`true`|Enable TLS/SSL encryption (always enabled for Confluent Cloud)|
+|`tls.insecure_skip_verify`|N|`false`|Skip certificate verification (not recommended)|
+|`tls.min_tls_version`|N|`"tls1.2"`|Minimum TLS version: `tls1.2`, `tls1.3`|
+|`tls.max_tls_version`|N|`"tls1.3"`|Maximum TLS version: `tls1.2`, `tls1.3`|
+|`tls.cert_name`|N|`"cert.pem"`|Client certificate file name for mTLS|
+|`tls.key_name`|N|`"key.pem"`|Private key file name for mTLS|
+|`tls.passphrase`|N|-|Passphrase for encrypted private key|
+
+:::note
+Confluent Cloud requires TLS encryption. The `tls.status` field should always be `true`.
+:::
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+
+## Details
+
+Confluent Cloud is a fully managed Apache Kafka service. This target type allows you to connect to Confluent Cloud clusters using the standard Kafka protocol with SASL/PLAIN authentication.
+
+### Authentication
+
+Confluent Cloud uses API Keys for authentication. When creating the target:
+- Set `algorithm` to `"plain"`
+- Use your Confluent Cloud API Key as the `username`
+- Use your Confluent Cloud API Secret as the `password`
+- Enable TLS with `tls.status: true`
+
+API Keys can be created in the Confluent Cloud Console under your cluster settings.
+
+### Connection Requirements
+
+- TLS must be enabled (Confluent Cloud requires encrypted connections)
+- SASL/PLAIN authentication is required
+- Bootstrap server address format: `pkc-xxxxx.region.cloud-provider.confluent.cloud`
+- Port is typically 9092
+
+### Message Delivery Guarantees
+
+The `acknowledgments` setting controls delivery guarantees:
+
+|Level|Behavior|Use Case|
+|---|---|---|
+|`none`|No acknowledgment from broker|Maximum throughput, lowest durability|
+|`leader`|Acknowledgment from partition leader only|Balanced throughput and durability|
+|`all`|Acknowledgment from all in-sync replicas|Maximum durability (recommended)|
+
+### Compression
+
+Message compression reduces network bandwidth and storage costs:
+
+|Algorithm|Compression Ratio|CPU Usage|Speed|
+|---|---|---|---|
+|`none`|None|Minimal|Fastest|
+|`gzip`|High|High|Slow|
+|`snappy`|Medium|Low|Fast|
+|`lz4`|Medium|Low|Fast|
+|`zstd`|High|Medium|Medium|
+
+## Examples
+
+### Basic Configuration
+
+The minimum configuration for a Confluent Cloud target:
+
+```yaml
+targets:
+  - name: basic_confluent
+    type: confluentcloud
+    properties:
+      address: "pkc-xxxxx.us-east-1.aws.confluent.cloud"
+      topic: "application-logs"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      tls:
+        status: true
+```
+
+### With Compression
+
+Configuration with zstd compression:
+
+```yaml
+targets:
+  - name: compressed_confluent
+    type: confluentcloud
+    properties:
+      address: "pkc-xxxxx.us-east-1.aws.confluent.cloud"
+      topic: "application-logs"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      compression: "zstd"
+      tls:
+        status: true
+```
+
+### High Throughput
+
+Configuration optimized for maximum throughput:
+
+```yaml
+targets:
+  - name: high_throughput_confluent
+    type: confluentcloud
+    properties:
+      address: "pkc-xxxxx.us-east-1.aws.confluent.cloud"
+      topic: "high-volume-logs"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      compression: "lz4"
+      acknowledgments: "leader"
+      max_bytes: 1048576
+      max_events: 10000
+      tls:
+        status: true
+```
+
+### High Reliability
+
+Configuration optimized for maximum durability:
+
+```yaml
+targets:
+  - name: reliable_confluent
+    type: confluentcloud
+    pipelines:
+      - checkpoint
+    properties:
+      address: "pkc-xxxxx.us-east-1.aws.confluent.cloud"
+      topic: "critical-logs"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      compression: "zstd"
+      acknowledgments: "all"
+      max_events: 100
+      disable_idempotent_write: false
+      tls:
+        status: true
+        min_tls_version: "tls1.3"
+```
+
+### With Field Normalization
+
+Using field normalization for standard format:
+
+```yaml
+targets:
+  - name: normalized_confluent
+    type: confluentcloud
+    properties:
+      address: "pkc-xxxxx.us-east-1.aws.confluent.cloud"
+      topic: "normalized-logs"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      field_format: "cim"
+      compression: "snappy"
+      tls:
+        status: true
+```
+
+### Azure Region
+
+Configuration for Confluent Cloud on Azure:
+
+```yaml
+targets:
+  - name: confluent_azure
+    type: confluentcloud
+    properties:
+      address: "pkc-yyyyy.eastus.azure.confluent.cloud"
+      topic: "azure-logs"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      compression: "zstd"
+      acknowledgments: "all"
+      tls:
+        status: true
+```
+
+### GCP Region
+
+Configuration for Confluent Cloud on GCP:
+
+```yaml
+targets:
+  - name: confluent_gcp
+    type: confluentcloud
+    properties:
+      address: "pkc-zzzzz.us-central1.gcp.confluent.cloud"
+      topic: "gcp-logs"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      compression: "zstd"
+      acknowledgments: "all"
+      tls:
+        status: true
+```
+
+### With Client ID
+
+Configuration with client ID for tracking:
+
+```yaml
+targets:
+  - name: confluent_tracked
+    type: confluentcloud
+    properties:
+      address: "pkc-xxxxx.us-east-1.aws.confluent.cloud"
+      topic: "tracked-logs"
+      client_id: "datastream-producer-01"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      compression: "lz4"
+      tls:
+        status: true
+```
+
+### Scheduled Batching
+
+Configuration with scheduled batch delivery:
+
+```yaml
+targets:
+  - name: scheduled_confluent
+    type: confluentcloud
+    properties:
+      address: "pkc-xxxxx.us-east-1.aws.confluent.cloud"
+      topic: "scheduled-logs"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      max_events: 5000
+      interval: "5m"
+      compression: "gzip"
+      tls:
+        status: true
+```
+
+### Auto Topic Creation
+
+Configuration with automatic topic creation enabled:
+
+```yaml
+targets:
+  - name: auto_topic_confluent
+    type: confluentcloud
+    properties:
+      address: "pkc-xxxxx.us-east-1.aws.confluent.cloud"
+      topic: "dynamic-logs"
+      algorithm: "plain"
+      username: "ABCDEFGHIJ123456"
+      password: "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12"
+      allow_auto_topic_creation: true
+      compression: "snappy"
+      max_events: 500
+      tls:
+        status: true
+```

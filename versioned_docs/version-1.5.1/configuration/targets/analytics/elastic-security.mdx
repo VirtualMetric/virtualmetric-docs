@@ -1,0 +1,353 @@
+# Elastic Security
+
+<span className="theme-doc-version-badge badge badge--secondary">SIEM Platform</span><span className="theme-doc-version-badge badge badge--secondary">Observability</span>
+
+Send processed telemetry data to Elastic Security SIEM platform.
+
+## Synopsis
+
+The Elastic Security target sends security telemetry to Elastic Security (formerly Elastic SIEM) using the Elasticsearch Bulk API with security-optimized index patterns and ECS normalization. This target extends standard Elasticsearch configuration with security-specific index management and detection rule integration.
+
+## Schema
+
+```yaml {2,4,6-7}
+targets:
+  - name: <string>
+    type: elastic
+    properties:
+      index: <string>
+      endpoints:
+        - endpoint: <string>
+          username: <string>
+          password: <string>
+      max_payload_size_kb: <integer>
+      batch_size: <integer>
+      timeout: <integer>
+      use_compression: <boolean>
+      write_action: <string>
+      field_format: <string>
+      pipeline: <string>
+      filter_path: <string>
+      insecure_skip_verify: <boolean>
+      debug:
+        status: <boolean>
+        dont_send_logs: <boolean>
+```
+
+## Configuration
+
+### Base Target Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Y | Unique identifier for this target |
+| `description` | string | N | Human-readable description |
+| `type` | string | Y | Must be `elastic` |
+| `pipelines` | array | N | Pipeline names to apply before sending |
+| `status` | boolean | N | Enable (true) or disable (false) this target |
+
+### Elastic Security Connection
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `index` | string | Y | Default security index name (e.g., `logs-security.events-default`) |
+| `endpoints` | array | Y | Array of Elasticsearch endpoint configurations |
+| `endpoints[].endpoint` | string | Y | Elasticsearch URL (e.g., `https://elastic.example.com:9200`) |
+| `endpoints[].username` | string | N | Basic authentication username |
+| `endpoints[].password` | string | N | Basic authentication password |
+
+### Bulk API Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `max_payload_size_kb` | integer | N | Maximum bulk request size in KB. Default: `4096` |
+| `batch_size` | integer | N | Maximum number of events per batch. Default: `10000` |
+| `timeout` | integer | N | Connection timeout in seconds. Default: `30` |
+| `use_compression` | boolean | N | Enable GZIP compression. Default: `true` |
+| `write_action` | string | N | Bulk API action (`index`, `create`). Default: `create` |
+
+### Security Platform Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `field_format` | string | N | Apply ECS normalization. Recommended: `ECS` |
+| `pipeline` | string | N | Elasticsearch ingest pipeline name |
+| `filter_path` | string | N | Response filter path. Default: `errors,items.*.error,items.*._index,items.*.status` |
+
+### TLS Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `insecure_skip_verify` | boolean | N | Skip TLS certificate verification. Default: `false` |
+
+### Debug Options
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `debug.status` | boolean | N | Enable debug logging for this target |
+| `debug.dont_send_logs` | boolean | N | Log events without sending to Elastic Security |
+
+## Details
+
+### Security Index Patterns
+
+**Recommended Index Patterns**:
+- `logs-security.events-*`: Security events and alerts
+- `logs-security.auth-*`: Authentication and authorization logs
+- `logs-security.network-*`: Network traffic and firewall logs
+- `logs-security.endpoint-*`: Endpoint security events
+- `logs-security.threat-*`: Threat intelligence indicators
+
+**Index Naming Convention**:
+- Format: `logs-{dataset}-{namespace}`
+- Dataset: Security data category
+- Namespace: Environment or team identifier (e.g., `default`, `production`)
+
+:::note Data Stream Compatibility
+Use index patterns compatible with Elastic data streams for automatic index lifecycle management and rollover.
+:::
+
+### ECS Normalization
+
+**Elastic Common Schema (ECS)**:
+- Apply `field_format: ECS` for automatic field normalization
+- Ensures compatibility with Elastic Security detection rules
+- Provides consistent field naming across data sources
+- Enables pre-built dashboards and visualizations
+
+**Critical ECS Fields**:
+- `@timestamp`: Event timestamp (ISO 8601)
+- `event.category`: Event categorization (authentication, network, process, file)
+- `event.type`: Event type (start, end, info, error)
+- `source.ip` / `destination.ip`: Network addresses
+- `user.name`: Username for authentication events
+- `process.name`: Process information for endpoint events
+
+### Detection Rule Integration
+
+**Rule Compatibility**:
+- Elastic Security detection rules require ECS-normalized data
+- Custom rules can reference specific index patterns
+- Pre-built rules work automatically with standard ECS fields
+
+**Index Configuration**:
+- Configure indices in Elastic Security � Management � Index Patterns
+- Create index patterns matching your configured target indices
+- Enable index patterns in Detection Rules
+
+### Performance Optimization
+
+**Batch Configuration**:
+- Larger batches reduce API calls and improve throughput
+- Balance batch size against memory usage and latency
+- Default `batch_size: 10000` suitable for most workloads
+
+**Compression**:
+- GZIP compression enabled by default
+- Reduces network bandwidth by 70-90%
+- Minimal CPU overhead for compression/decompression
+
+**Load Balancing**:
+- Configure multiple endpoints for high availability
+- Events distributed randomly across endpoints
+- Automatic failover to available endpoints
+
+:::warning Index Mapping
+Ensure Elasticsearch index mappings match ECS field types. Incorrect mappings cause ingestion failures. Use index templates for automatic mapping configuration.
+:::
+
+### Security Best Practices
+
+**Authentication**:
+- Use API keys instead of basic authentication for production
+- Create service account with minimal required privileges
+- Rotate credentials periodically
+
+**TLS Configuration**:
+- Always enable TLS for production deployments
+- Verify server certificates (`insecure_skip_verify: false`)
+- Use certificate pinning for enhanced security
+
+**Index Security**:
+- Configure index-level permissions for data isolation
+- Use separate indices for different security zones
+- Enable audit logging for index access
+
+## Examples
+
+### Basic Security Events
+
+<ExampleGrid>
+  <CommentCol>
+    Sending security events to Elastic Security with ECS normalization...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: elastic-security-events
+        type: elastic
+        properties:
+          index: logs-security.events-default
+          field_format: ECS
+          endpoints:
+            - endpoint: https://elastic.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Authentication Logs
+
+<ExampleGrid>
+  <CommentCol>
+    Forwarding authentication logs to dedicated security index...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: elastic-auth-logs
+        type: elastic
+        properties:
+          index: logs-security.auth-production
+          field_format: ECS
+          use_compression: true
+          endpoints:
+            - endpoint: https://elastic.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Availability Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Multiple Elasticsearch endpoints for high availability and load balancing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: elastic-security-ha
+        type: elastic
+        properties:
+          index: logs-security.events-default
+          field_format: ECS
+          batch_size: 10000
+          max_payload_size_kb: 4096
+          use_compression: true
+          endpoints:
+            - endpoint: https://elastic-node1.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+            - endpoint: https://elastic-node2.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+            - endpoint: https://elastic-node3.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Ingest Pipeline
+
+<ExampleGrid>
+  <CommentCol>
+    Using Elasticsearch ingest pipeline for additional processing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: elastic-security-pipeline
+        type: elastic
+        properties:
+          index: logs-security.network-default
+          field_format: ECS
+          pipeline: security-enrichment
+          endpoints:
+            - endpoint: https://elastic.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Threat Intelligence
+
+<ExampleGrid>
+  <CommentCol>
+    Forwarding threat intelligence indicators to Elastic Security...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: elastic-threat-intel
+        type: elastic
+        properties:
+          index: logs-security.threat-default
+          field_format: ECS
+          write_action: create
+          endpoints:
+            - endpoint: https://elastic.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Endpoint Security Events
+
+<ExampleGrid>
+  <CommentCol>
+    Sending endpoint detection events to Elastic Security...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: elastic-endpoint-security
+        type: elastic
+        properties:
+          index: logs-security.endpoint-default
+          field_format: ECS
+          batch_size: 5000
+          use_compression: true
+          endpoints:
+            - endpoint: https://elastic.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Production Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Production-ready Elastic Security configuration with HA, compression, and ECS normalization...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: elastic-security-production
+        type: elastic
+        properties:
+          index: logs-security.events-production
+          field_format: ECS
+          batch_size: 10000
+          max_payload_size_kb: 4096
+          timeout: 30
+          use_compression: true
+          write_action: create
+          insecure_skip_verify: false
+          endpoints:
+            - endpoint: https://elastic-node1.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+            - endpoint: https://elastic-node2.example.com:9200
+              username: "${ELASTIC_USERNAME}"
+              password: "${ELASTIC_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>

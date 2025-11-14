@@ -1,0 +1,228 @@
+---
+description: Extracts and decodes Kerberos ticket information
+sidebar_custom_props:
+  customCategory: Decode
+  customIcon: 🎟️
+---
+
+# Kerberos Decode
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Security</span>
+
+## Synopsis
+
+Decodes Kerberos authentication data including tickets, PAC structures, flags, encryption types, error codes, and principals.
+
+## Schema
+
+```yaml {2}
+- kerberos_decode:
+    field: <ident>
+    target_field: <string>
+    format: <string>
+    decode_type: <string>
+    parse_timestamps: <boolean>
+    resolve_names: <boolean>
+    simplify_output: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing Kerberos data (string, byte array, numeric, or array of strings)|
+|`target_field`|N|`{field}_decoded`|Target field to store decoded information|
+|`format`|N|Auto-detect|Input format: `base64`, `hex`, `string`|
+|`decode_type`|N|`auto`|Decode type: `auto`, `ticket`, `pac`, `flags`, `enctype`, `error`, `principal`|
+|`parse_timestamps`|N|`false`|Convert Kerberos timestamps to readable format|
+|`resolve_names`|N|`false`|Resolve principal names and service descriptions|
+|`simplify_output`|N|`false`|Simplified output with interpretations|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if decoding fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Decodes multiple Kerberos data types with automatic type detection: ticket flags (FORWARDABLE, RENEWABLE, etc.), encryption types (AES, RC4, DES), error codes (KDC errors, application errors), principals (user@REALM, service/host@REALM), PAC structures, and base64-encoded ticket data.
+
+The processor supports six decode types via `decode_type`: **flags** (ticket flags with bit interpretation), **enctype** (encryption type names with weak/deprecated detection), **error** (error code names with severity categories), **principal** (principal parsing with service type detection), **pac** (PAC buffer parsing with type identification), **ticket** (base64 ticket data with message type detection).
+
+Auto-detection logic analyzes input patterns: principals contain "@", hex values (0x...) are flags/errors, base64 strings are tickets, numeric values check against error/enctype/flags mappings. Supports arrays of strings for batch processing.
+
+When `resolve_names` is enabled, principals are resolved to service descriptions (HTTP/→web service, HOST/→host services, krbtgt/→ticket granting service). When `simplify_output` is enabled, flags are interpreted into semantic meanings (can_be_forwarded, is_renewable, pre_authenticated).
+
+Numeric inputs are decoded as potential flags, error codes, and encryption types simultaneously, showing all possible interpretations.
+
+## Examples
+
+### Basic Ticket Decoding
+
+<ExampleGrid>
+  <CommentCol>
+    Decoding Kerberos ticket structure...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "krb_ticket": "YIIBqgYJKoZIhvcSAQICAgOCAZsEggGXMIIBkwIBAQIBAQIBAQ..."
+    }
+    ```
+    ```yaml
+    - kerberos_decode:
+        field: krb_ticket
+        target_field: ticket_info
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts ticket information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "krb_ticket": "YIIBqgYJKoZIhvcSAQICAgOCAZsEggGXMIIBkwIBAQIBAQIBAQ...",
+      "ticket_info": {
+        "ticket_type": "service",
+        "client_principal": "user@DOMAIN.COM",
+        "service_principal": "HTTP/server.domain.com@DOMAIN.COM",
+        "realm": "DOMAIN.COM",
+        "encryption_type": "aes256-cts-hmac-sha1-96",
+        "ticket_flags": ["forwardable", "renewable"]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Time Decoding
+
+<ExampleGrid>
+  <CommentCol>
+    Including ticket validity timestamps...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "auth_ticket": "YIIBqgYJKoZIhvcSAQICAgOCAZsEggGXMIIBkwIBAQIBAQIBAQ..."
+    }
+    ```
+    ```yaml
+    - kerberos_decode:
+        field: auth_ticket
+        decode_times: true
+        target_field: ticket_details
+    ```
+  </CodeCol>
+  <CommentCol>
+    includes timestamp information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "auth_ticket": "YIIBqgYJKoZIhvcSAQI...",
+      "ticket_details": {
+        "client_principal": "admin@CORP.COM",
+        "service_principal": "krbtgt/CORP.COM@CORP.COM",
+        "auth_time": "2024-01-15T10:30:00Z",
+        "start_time": "2024-01-15T10:30:00Z",
+        "end_time": "2024-01-15T20:30:00Z",
+        "renew_till": "2024-01-22T10:30:00Z"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### TGT Ticket Analysis
+
+<ExampleGrid>
+  <CommentCol>
+    Analyzing Ticket Granting Ticket...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tgt_data": "YIIBqgYJKoZIhvcSAQICAgOCAZsEggGXMIIBkwIBAQIBAQIBAQ..."
+    }
+    ```
+    ```yaml
+    - kerberos_decode:
+        field: tgt_data
+        ticket_type: tgt
+        target_field: tgt_info
+    ```
+  </CodeCol>
+  <CommentCol>
+    identifies TGT-specific information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tgt_data": "YIIBqgYJKoZIhvcSAQI...",
+      "tgt_info": {
+        "ticket_type": "tgt",
+        "client_principal": "jdoe@EXAMPLE.COM",
+        "service_principal": "krbtgt/EXAMPLE.COM@EXAMPLE.COM",
+        "is_initial": true,
+        "is_renewable": true,
+        "renewable_until": "2024-01-22T10:30:00Z"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Tickets
+
+<ExampleGrid>
+  <CommentCol>
+    Processing array of ticket data...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ticket_cache": [
+        "YIIBqgYJKoZIhvcSAQICAgOCAZsEggGXMIIBkwIBAQIBAQIBAQ...",
+        "MIIBqgYJKoZIhvcSAQICAgOCAZsEggGXMIIBkwIBAQIBAQIBAQ..."
+      ]
+    }
+    ```
+    ```yaml
+    - kerberos_decode:
+        field: ticket_cache
+        target_field: decoded_tickets
+    ```
+  </CodeCol>
+  <CommentCol>
+    decodes each ticket:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ticket_cache": [...],
+      "decoded_tickets": [
+        {
+          "ticket_type": "tgt",
+          "client_principal": "user1@DOMAIN.COM"
+        },
+        {
+          "ticket_type": "service", 
+          "service_principal": "HTTP/web.domain.com@DOMAIN.COM"
+        }
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
