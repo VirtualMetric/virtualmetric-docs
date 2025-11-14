@@ -11,7 +11,7 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Drops the current event from processing.
+Skips the remaining processors for the current item in a foreach loop and immediately proceeds to the next item, similar to `continue` in programming languages.
 
 ## Schema
 
@@ -40,171 +40,178 @@ The following fields are used to define the processor:
 
 ## Details
 
-Drops the current event from processing by returning an error that signals the pipeline to discard the event. When this processor executes, the event is not sent to any configured targets and no further processors run.
+The `continue` processor skips to the next iteration when used inside a **foreach processor**. It behaves like a `continue` statement in programming languages, allowing you to skip processing for certain items while continuing with the rest of the collection.
 
-Despite its name, the `continue` processor does NOT continue processing. It drops events from the pipeline, identical in behavior to the <Topic id="return">`return`</Topic>, <Topic id="final">`final`</Topic>, and <Topic id="drop">`drop`</Topic> processors.
+**Behavior:**
+- Inside a **foreach processor**: Skips remaining processors for the current item and moves to the next item
+- Outside a foreach context: Acts as an early exit from the current processing scope
 
-The event is dropped after any `on_success` processors execute, allowing for cleanup operations, logging, or metrics collection before the event is discarded.
+The processor executes any `on_success` handlers before continuing to the next iteration, allowing for logging or metrics collection.
 
-:::warning Misleading Name
-The `continue` processor name is misleading. It does NOT continue to the next processor - it **drops the event completely**. Use <Topic id="return">`return`</Topic>, <Topic id="final">`final`</Topic>, or <Topic id="drop">`drop`</Topic> for clearer intent.
+:::note Continue vs Return
+`continue` skips to the next iteration within a loop, while `return` exits the entire block. Use `continue` for selective item processing and `return` for complete exit logic.
 :::
 
-:::note Event Dropping Processors
-All these processors drop events identically: `continue`, <Topic id="return">`return`</Topic>, <Topic id="final">`final`</Topic>, and <Topic id="drop">`drop`</Topic>. They differ only in semantic naming. Use processor names that clearly communicate intent to avoid confusion.
-:::
-
-:::warning
-The `continue` processor with success/failure chains will execute those chains before dropping the event. This allows for cleanup operations, logging, or metrics collection, but the event will still be discarded and not sent to any targets.
+:::tip Primary Use Case
+The `continue` processor is most valuable inside foreach loops where you need to filter or skip certain items without affecting the processing of other items in the collection.
 :::
 
 ## Examples
 
-### Basic Event Dropping
+### Skip Items in Foreach Loop
 
 <ExampleGrid>
   <CommentCol>
-    Dropping events using continue processor...
+    Processing only specific items in a collection...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - continue:
-        if: "logEntry.level == 'INFO'"
-        description: "Drop INFO level logs"
-    - set:
-        field: processed
-        value: true
-    ```
-  </CodeCol>
-  <CommentCol>
-    event is dropped, subsequent processors skipped:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "level": "INFO",
-      "message": "User logged in"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Conditional Event Filtering
-
-<ExampleGrid>
-  <CommentCol>
-    Dropping successful events conditionally...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - continue:
-        if: "logEntry.status == 'success'"
-        description: "Drop successful events"
-    - set:
-        field: processed
-        value: true
-    ```
-  </CodeCol>
-  <CommentCol>
-    event is dropped when condition matches:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "status": "success"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Drop with Metrics Collection
-
-<ExampleGrid>
-  <CommentCol>
-    Recording metrics before dropping event...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - continue:
-        description: "Drop event with metrics"
-        on_success:
-          - set:
-              field: drop_reason
-              value: "filtered_by_continue"
-    ```
-  </CodeCol>
-  <CommentCol>
-    records metadata before event is dropped:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "original_data": "value",
-      "drop_reason": "filtered_by_continue"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Filtering Within Conditional Blocks
-
-<ExampleGrid>
-  <CommentCol>
-    Dropping events within conditional logic...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - iff:
-        if: "logEntry.type == 'audit'"
+    - foreach:
+        field: items
         processors:
           - continue:
-              if: "logEntry.severity < 5"
-              description: "Drop low severity audit logs"
+              if: "ctx._item.status == 'ignored'"
+              description: "Skip ignored items"
+          - set:
+              field: ctx._item.processed
+              value: true
           - enrich:
-              field: user_id
-              target: user_info
+              field: ctx._item.id
+              target: ctx._item.details
     ```
   </CodeCol>
   <CommentCol>
-    low severity audit events are dropped:
+    skips ignored items, processes others:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "type": "audit",
-      "severity": 3
+      "items": [
+        {"id": 1, "status": "active", "processed": true},
+        {"id": 2, "status": "ignored"},
+        {"id": 3, "status": "active", "processed": true}
+      ]
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Drop on Validation Failure
+### Conditional Item Processing
 
 <ExampleGrid>
   <CommentCol>
-    Dropping events that fail validation...
+    Skipping items based on validation...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - validate:
-        field: email
-        pattern: ".*@.*"
-        on_failure:
-          - set:
-              field: email_valid
-              value: false
+    - foreach:
+        field: transactions
+        processors:
           - continue:
-              description: "Drop events with invalid email"
+              if: "ctx._item.amount < 100"
+              description: "Skip small transactions"
+              on_success:
+                - set:
+                    field: ctx._item.processed_tier
+                    value: "skipped"
+          - set:
+              field: ctx._item.requires_review
+              value: true
+          - complex_validation:
+              field: ctx._item
     ```
   </CodeCol>
   <CommentCol>
-    event is dropped after validation failure:
+    processes only transactions over threshold:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "email": "invalid-email",
-      "email_valid": false
+      "transactions": [
+        {"amount": 50, "processed_tier": "skipped"},
+        {"amount": 500, "requires_review": true}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Recovery in Loop
+
+<ExampleGrid>
+  <CommentCol>
+    Continuing on item-level errors...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - foreach:
+        field: users
+        processors:
+          - enrich:
+              field: ctx._item.user_id
+              target: ctx._item.profile
+              on_failure:
+                - set:
+                    field: ctx._item.enrichment_failed
+                    value: true
+                - continue:
+                    description: "Skip enrichment for this user"
+          - validate:
+              field: ctx._item.profile
+              exists: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues processing other users on enrichment failure:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "users": [
+        {"user_id": "123", "profile": {...}},
+        {"user_id": "456", "enrichment_failed": true},
+        {"user_id": "789", "profile": {...}}
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Filter and Transform Collection
+
+<ExampleGrid>
+  <CommentCol>
+    Selectively transforming items...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - foreach:
+        field: events
+        processors:
+          - continue:
+              if: "ctx._item.type != 'security'"
+              description: "Process only security events"
+          - set:
+              field: ctx._item.priority
+              value: "high"
+          - threat_analysis:
+              field: ctx._item.indicators
+          - set:
+              field: ctx._item.analyzed
+              value: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies security processing only to relevant events:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "events": [
+        {"type": "info"},
+        {"type": "security", "priority": "high", "analyzed": true},
+        {"type": "debug"}
+      ]
     }
     ```
   </CodeCol>

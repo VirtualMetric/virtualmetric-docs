@@ -7,11 +7,11 @@ sidebar_custom_props:
 
 # Final
 
-<span className="theme-doc-version-badge badge badge--primary">Control Flow</span><span className="theme-doc-version-badge badge badge--secondary">Cribl Compatible</span>
+<span className="theme-doc-version-badge badge badge--primary">Control Flow</span><span className="theme-doc-version-badge badge badge--secondary">Pipeline</span>
 
 ## Synopsis
 
-Drops the current event from processing and terminates the pipeline gracefully.
+Completes all pipeline processing for the current event, indicating that the data is finalized and no further processing is needed.
 
 ## Schema
 
@@ -40,9 +40,15 @@ The following fields are used to define the processor:
 
 ## Details
 
-Drops the current event from processing by returning an error that signals the pipeline to discard the event. When this processor executes, the event is not sent to any configured targets and no further processors run.
+The `final` processor marks the event as complete and stops all further pipeline processing. It signals that the data has reached its final state and requires no additional transformation or enrichment.
 
-This processor provides graceful pipeline termination, useful for creating breakpoints, implementing conditional termination, optimizing execution by early termination, and preventing further pipelines from running.
+**Key Characteristics:**
+- Stops all subsequent processors in the current pipeline
+- Prevents execution of any additional pipelines configured for the event
+- The event continues to its configured destinations with its current state
+- Useful for creating explicit completion points in complex pipeline flows
+
+The processor executes any `on_success` handlers before finalizing, allowing for cleanup operations, logging, or final metadata updates.
 
 Typical uses:
 
@@ -77,16 +83,14 @@ Typical uses:
       value: test_value
    ```
 
-The event is dropped after any `on_success` processors execute, allowing for cleanup operations, logging, or metrics collection before the event is discarded.
-
-:::note Final vs Return vs Continue vs Drop
-All these processors drop events identically: `final`, <Topic id="return">`return`</Topic>, <Topic id="continue">`continue`</Topic>, and <Topic id="drop">`drop`</Topic>. Use `final` for graceful pipeline termination with clear semantic intent.
+:::note Final vs Return vs Continue
+All these processors control pipeline flow: `final` stops all pipeline processing, <Topic id="return">`return`</Topic> exits the current block, and <Topic id="continue">`continue`</Topic> skips to the next iteration. Use `final` for graceful pipeline termination with clear semantic intent.
 :::
 
 It is good practice to use detailed description to document the finalization points. Also, consider adding cleanup tasks using `on_success`, test conditional finalization thoroughly, and use tags for tracking finalization points in logs.
 
 :::warning
-Once `final` is used, no further processors in any pipeline will execute, and the event will be dropped (not sent to targets). Use with caution in multi-pipeline setups, and consider using `if` to prevent unintended early termination.
+Once `final` is used, no further processors in any pipeline will execute. The event will be sent to its configured destinations with its current state. Use with caution in multi-pipeline setups, and consider using `if` to prevent unintended early termination.
 :::
 
 ## Examples

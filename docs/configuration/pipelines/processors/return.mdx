@@ -2,7 +2,7 @@
 description: Finalizes processing and prevents further pipeline execution
 sidebar_custom_props:
   customCategory: Flow Control
-  customIcon: ⏹️
+  customIcon: ⤴️
 ---
 
 # Return
@@ -11,7 +11,7 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Drops the current event from processing and prevents pipeline execution.
+Exits early from the current processor block (group, pipeline, or foreach), similar to a `return` statement in programming languages.
 
 ## Schema
 
@@ -40,226 +40,172 @@ The following fields are used to define the processor:
 
 ## Details
 
-Drops the current event from processing by returning an error that signals the pipeline to discard the event. When this processor executes, the event is not sent to any configured targets and no further processors run.
+The `return` processor exits early from the current execution block, halting any remaining processors within that scope. It behaves like a `return` statement in typical programming languages, allowing you to exit a function or block early based on conditions.
 
-:::note
-The `return` processor immediately stops pipeline execution. Any processors defined after a return statement will not be executed unless the return is conditional and the condition is not met.
+**Scope Behavior:**
+- Inside a **foreach processor**: Exits the current item's processing and moves to the next item
+- Inside a **group processor**: Exits the group and continues with the next processor after the group
+- Inside a **pipeline processor**: Exits the nested pipeline and returns to the parent pipeline
+- At the **top level**: Completes processing of the current event and continues to the next event
+
+The processor executes any `on_success` handlers before exiting, allowing for cleanup operations, logging, or metrics collection.
+
+:::note Return vs Continue
+`return` exits the current block entirely, while `continue` (in foreach contexts) skips to the next iteration. Use `return` for early exit logic and `continue` for iteration control.
 :::
 
-This processor is used for filtering unwanted events, implementing conditional drop logic, preventing specific data from reaching downstream systems, or optimizing performance by skipping unnecessary processing for certain event types.
-
-The event is dropped after any `on_success` processors execute, allowing for cleanup operations, logging, or metrics collection before the event is discarded.
-
-:::note Return vs Final
-Both `return` and `final` processors drop events from processing. Use `return` for conditional filtering and early exit logic. The <Topic id="final">`final`</Topic> processor provides identical functionality with different semantics for graceful pipeline termination.
-:::
-
-:::warning
-The `return` processors with success/failure chains will execute those chains before dropping the event. This allows for cleanup operations, logging, or metrics collection, but the event will still be discarded and not sent to any targets.
+:::tip Use Cases
+- Skip expensive processing for events that don't need it
+- Exit early after successful completion of a task
+- Implement conditional processing paths
+- Optimize performance by avoiding unnecessary operations
 :::
 
 ## Examples
 
-### Event Filtering
+### Early Exit from Group
 
 <ExampleGrid>
   <CommentCol>
-    Dropping events after marking as processed...
+    Exiting a processing group early...
   </CommentCol>
   <CodeCol>
     ```yaml
+    - group:
+        processors:
+          - set:
+              field: processed
+              value: true
+          - return:
+              if: "logEntry.skip_advanced == true"
+              description: "Exit group if advanced processing not needed"
+          - expensive_operation:
+              field: data
+          - complex_transform:
+              field: result
     - set:
-        field: processed
-        value: true
-    - return:
-        description: "Drop event after marking"
-    - set:
-        field: additional_processing
+        field: final_step
         value: true
     ```
   </CodeCol>
   <CommentCol>
-    event is dropped, remaining processors skipped:
+    exits the group early, skips expensive operations:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "processed": true
+      "processed": true,
+      "skip_advanced": true,
+      "final_step": true
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Conditional Event Filtering
+### Conditional Processing Path
 
 <ExampleGrid>
   <CommentCol>
-    Filtering events based on skip flag...
+    Implementing conditional logic with return...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - return:
-        if: "logEntry.skip_processing == true"
-        description: "Drop events marked for skipping"
     - set:
-        field: full_processing
+        field: validation_started
         value: true
+    - return:
+        if: "logEntry.already_validated == true"
+        description: "Skip validation if already done"
+    - validate:
+        field: required_field
+        exists: true
     - enrich:
         field: user_id
         target: user_details
     ```
   </CodeCol>
   <CommentCol>
-    event is dropped when condition matches:
+    skips validation steps when not needed:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "skip_processing": true
+      "validation_started": true,
+      "already_validated": true
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Drop on Validation Failure
+### Exit from Nested Pipeline
 
 <ExampleGrid>
   <CommentCol>
-    Dropping events that fail validation...
+    Exiting a nested pipeline early...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - validate:
-        field: required_field
-        exists: true
-        on_failure:
-          - set:
-              field: error
-              value: "Missing required field"
+    - pipeline:
+        name: "enrichment-pipeline"
+        processors:
+          - enrich:
+              field: ip_address
+              target: geo_data
           - return:
-              description: "Drop invalid events"
+              if: "logEntry.geo_data.country == 'US'"
+              description: "Skip international enrichment for US"
+          - international_enrichment:
+              field: geo_data
     - set:
-        field: validation_passed
+        field: enrichment_complete
         value: true
     ```
   </CodeCol>
   <CommentCol>
-    event is dropped on validation failure:
+    exits nested pipeline for US events:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "error": "Missing required field"
+      "ip_address": "192.0.2.1",
+      "geo_data": {"country": "US"},
+      "enrichment_complete": true
     }
     ```
   </CodeCol>
 </ExampleGrid>
 
-### Drop with Metrics Collection
+### Performance Optimization
 
 <ExampleGrid>
   <CommentCol>
-    Recording metrics before dropping event...
+    Skipping expensive processing for filtered events...
   </CommentCol>
   <CodeCol>
     ```yaml
     - return:
-        description: "Drop event with metrics"
+        if: "logEntry.log_level == 'DEBUG'"
+        description: "Skip expensive processing for debug logs"
         on_success:
           - set:
-              field: drop_timestamp
-              value: "{{now}}"
-          - set:
-              field: drop_reason
-              value: "filtered_event"
-    ```
-  </CodeCol>
-  <CommentCol>
-    records metadata before event is dropped:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "drop_timestamp": "2024-01-15T10:30:00Z",
-      "drop_reason": "filtered_event"
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Filter Debug Logs
-
-<ExampleGrid>
-  <CommentCol>
-    Filtering debug logs in production...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - return:
-        if: "logEntry.log_level == 'DEBUG' && logEntry.environment == 'production'"
-        description: "Drop debug logs in production"
-        on_success:
-          - set:
-              field: filtered_out
-              value: true
-    - enrich:
-        field: log_data
-        target: enriched_data
+              field: processing_tier
+              value: "minimal"
     - complex_analysis:
-        field: enriched_data
+        field: message
+    - ml_enrichment:
+        field: data
+    - threat_detection:
+        field: indicators
     ```
   </CodeCol>
   <CommentCol>
-    debug events are dropped, expensive processing skipped:
+    bypasses expensive operations for debug logs:
   </CommentCol>
   <CodeCol>
     ```json
     {
       "log_level": "DEBUG",
-      "environment": "production",
-      "filtered_out": true
-    }
-    ```
-  </CodeCol>
-</ExampleGrid>
-
-### Tiered Event Filtering
-
-<ExampleGrid>
-  <CommentCol>
-    Filtering events based on priority tiers...
-  </CommentCol>
-  <CodeCol>
-    ```yaml
-    - return:
-        if: "logEntry.priority == 'low'"
-        description: "Drop low priority events"
-        on_success:
-          - set:
-              field: processing_level
-              value: "minimal"
-    - return:
-        if: "logEntry.priority == 'medium'"
-        description: "Drop medium priority events"
-        on_success:
-          - set:
-              field: processing_level
-              value: "standard"
-    - set:
-        field: processing_level
-        value: "full"
-    - advanced_processing:
-        field: data
-    ```
-  </CodeCol>
-  <CommentCol>
-    low and medium priority events dropped, only high priority proceeds:
-  </CommentCol>
-  <CodeCol>
-    ```json
-    {
-      "priority": "medium",
-      "processing_level": "standard"
+      "processing_tier": "minimal"
     }
     ```
   </CodeCol>
