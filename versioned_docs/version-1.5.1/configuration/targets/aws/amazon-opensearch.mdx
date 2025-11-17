@@ -1,0 +1,536 @@
+# Amazon OpenSearch
+
+<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Search & Analytics</span>
+
+## Synopsis
+
+Creates an Amazon OpenSearch target that sends data using the Bulk API with AWS IAM authentication. Supports multiple endpoints, field normalization, customizable batch sizing, and automatic load balancing across OpenSearch nodes.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: amazonopensearch
+  status: <boolean>
+  pipelines: <pipeline[]>
+  properties:
+    index: <string>
+    max_payload_size_kb: <numeric>
+    batch_size: <numeric>
+    timeout: <numeric>
+    insecure_skip_verify: <boolean>
+    use_compression: <boolean>
+    write_action: <string>
+    filter_path: <string>
+    pipeline: <string>
+    field_format: <string>
+    endpoints:
+      - endpoint: <string>
+        use_iam: <boolean>
+        region: <string>
+        key: <string>
+        secret: <string>
+        session: <string>
+        username: <string>
+        password: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following are the fields used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y|-|Target name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `amazonopensearch`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### OpenSearch
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`index`|Y|-|Default OpenSearch index name|
+|`max_payload_size_kb`|N|`4096`|Maximum bulk request size in KB|
+|`batch_size`|N|`10000`|Maximum number of events per batch|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`insecure_skip_verify`|N|`false`|Skip TLS certificate verification|
+|`use_compression`|N|`true`|Enable GZIP compression|
+|`write_action`|N|`create`|Bulk API action (`index`, `create`, `update`, `delete`)|
+|`filter_path`|N|`errors,items.*.error,items.*._index,items.*.status`|Response filter path|
+|`pipeline`|N|-|Ingest pipeline name|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+### Endpoint
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`endpoint`|Y|-|OpenSearch domain URL (automatically appends `/_bulk` if not present)|
+|`use_iam`|N|`true`|Use AWS IAM authentication (recommended)|
+|`region`|Y*|-|AWS region for IAM authentication|
+|`key`|N*|-|AWS access key ID|
+|`secret`|N*|-|AWS secret access key|
+|`session`|N|-|AWS session token for temporary credentials|
+|`username`|N|-|Basic auth username (alternative to IAM)|
+|`password`|N|-|Basic auth password (alternative to IAM)|
+
+\* = Required when `use_iam` is `true`. If `key` and `secret` are not provided, the target will use the default AWS credential chain (environment variables, IAM role, etc.).
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+The target supports AWS IAM authentication using Signature V4, multiple endpoints, compression, and ingest pipelines. Data is batched for efficient delivery and can be automatically routed to different indices.
+
+URLs are automatically appended with `/_bulk` if the suffix is not present. Events are batched until either the batch size or payload size limit is reached.
+
+For load balancing, events are sent to randomly selected endpoints. If an endpoint fails, the next endpoint in the randomized list is tried until successful delivery or all endpoints fail.
+
+Each event is automatically enriched with a timestamp in RFC3339 format based on the log's epoch time. You can route events to different indices by setting the `index` field in a pipeline processor.
+
+:::warning
+Long timeout values may lead to connection pooling issues and increased resource consumption.
+:::
+
+:::warning
+Setting `max_payload_size_kb` too high might cause memory pressure and can exceed OpenSearch's `http.max_content_length` setting (default 100MB).
+:::
+
+### AWS IAM Authentication
+
+Amazon OpenSearch Service supports two authentication methods:
+
+**IAM Authentication** (recommended)
+- Uses AWS Signature V4 to sign HTTP requests
+- No passwords stored in configuration
+- Integrates with AWS IAM policies and roles
+- Supports temporary credentials from STS
+- Default authentication method for this target
+
+**Basic Authentication**
+- Traditional username and password
+- Requires fine-grained access control enabled on the domain
+- Less secure than IAM authentication
+
+When `use_iam` is `true`, the target signs all HTTP requests with AWS Signature V4. The signing process uses the service name `es` as required by Amazon OpenSearch Service.
+
+### AWS Credential Chain
+
+If `key` and `secret` are not provided in the endpoint configuration, the target uses the AWS SDK default credential chain:
+
+1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
+2. Shared credentials file (`~/.aws/credentials`)
+3. IAM role for EC2 instances
+4. IAM role for ECS tasks
+5. IAM role for Lambda functions
+
+This allows seamless integration when running on AWS infrastructure without hardcoding credentials.
+
+### Load Balancing and Failover
+
+When multiple endpoints are configured, the target uses randomized load balancing. For each batch:
+
+1. Endpoints are randomly shuffled
+2. The batch is sent to the first endpoint
+3. If it fails, the next endpoint in the shuffled list is tried
+4. This continues until successful delivery or all endpoints fail
+
+If only some endpoints fail but delivery eventually succeeds, the batch is cleared and a partial error is logged. If all endpoints fail, the batch is retained for retry and a complete failure error is returned.
+
+### JSON Message Handling
+
+The target intelligently handles messages that are already in JSON format:
+
+- If a message contains an `@timestamp` field or is ECS-normalized, it's treated as a structured JSON document
+- The JSON is parsed and sent as-is to OpenSearch
+- If parsing fails, the message is sent as plain text with an auto-generated timestamp
+
+This allows you to send both structured and unstructured logs through the same target.
+
+### Dynamic Index Routing
+
+Route events to different indices using pipeline processors by setting the `index` field:
+
+```yaml
+pipelines:
+  - name: route_by_type
+    processors:
+      - set:
+          field: index
+          value: "error-logs"
+          if: "level == 'error'"
+      - set:
+          field: index
+          value: "metrics"
+          if: "type == 'metric'"
+```
+
+This allows flexible routing without creating multiple target configurations.
+
+### Bulk API Error Handling
+
+The target parses the bulk API response to detect individual document errors:
+
+- Uses `filter_path` to reduce response size and focus on error details
+- Extracts error type, reason, and HTTP status for failed documents
+- Returns detailed error messages indicating which documents failed and why
+
+Common errors include:
+- Document version conflicts (for `create` action)
+- Mapping errors (field type mismatches)
+- Index not found or closed
+- Pipeline failures (when using ingest pipelines)
+
+### Write Actions
+
+The `write_action` field determines how documents are indexed:
+
+- **`create`** (default): Only index if document doesn't exist. Fails on duplicates.
+- **`index`**: Index or replace existing document. Always succeeds unless there's a system error.
+- **`update`**: Update existing document. Fails if document doesn't exist.
+- **`delete`**: Remove document. Use carefully.
+
+### Response Filtering
+
+The `filter_path` parameter filters the bulk API response to reduce network overhead:
+
+- **`errors`**: Boolean indicating if any operations failed
+- **`items.*.error`**: Error details for failed operations
+- **`items.*._index`**: Index name for each operation
+- **`items.*.status`**: HTTP status code for each operation
+
+For high-volume scenarios, this filtering significantly reduces response size and parsing overhead.
+
+### Field Normalization
+
+The `field_format` property allows normalizing log data to standard formats:
+
+- `ecs` - Elastic Common Schema
+
+Field normalization is applied before the logs are sent to OpenSearch, ensuring consistent indexing and search capabilities. ECS normalization maps common fields to OpenSearch's standard schema for improved compatibility with OpenSearch Dashboards and detection rules.
+
+### Compression
+
+Compression is enabled by default and uses gzip to reduce network bandwidth. This adds minimal CPU overhead but can significantly improve throughput for high-volume scenarios. Disable compression only if you have bandwidth to spare and want to reduce CPU usage.
+
+## Examples
+
+### Basic with IAM
+
+<ExampleGrid>
+  <CommentCol>
+    Simple OpenSearch output with IAM authentication...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: opensearch_output
+        type: amazonopensearch
+        properties:
+          index: "logs-%Y.%m.%d"
+          endpoints:
+            - endpoint: "https://search-domain.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+              key: "AKIAIOSFODNN7EXAMPLE"
+              secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### IAM Role
+
+<ExampleGrid>
+  <CommentCol>
+    Using IAM role credentials (no explicit keys needed)...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: iam_role_opensearch
+        type: amazonopensearch
+        properties:
+          index: "application-logs"
+          endpoints:
+            - endpoint: "https://search-domain.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+When using IAM role authentication on EC2, ECS, or Lambda, credentials are automatically retrieved from the instance metadata service or task role.
+:::
+
+### Temporary Credentials
+
+<ExampleGrid>
+  <CommentCol>
+    Using temporary STS credentials with session token...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: temp_creds_opensearch
+        type: amazonopensearch
+        properties:
+          index: "temp-logs"
+          endpoints:
+            - endpoint: "https://search-domain.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+              key: "ASIATEMP1234567890AB"
+              secret: "tempSecretKeyExample1234567890"
+              session: "FwoGZXIvYXdzEBYaDH...session-token"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Basic Authentication
+
+<ExampleGrid>
+  <CommentCol>
+    Using basic authentication instead of IAM...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: basic_auth_opensearch
+        type: amazonopensearch
+        properties:
+          index: "secure-logs"
+          use_compression: true
+          endpoints:
+            - endpoint: "https://search-domain.us-east-1.es.amazonaws.com"
+              use_iam: false
+              username: "admin"
+              password: "MyPassword123"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Ingest Pipeline
+
+<ExampleGrid>
+  <CommentCol>
+    Send data through an ingest pipeline for server-side processing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: pipeline_opensearch
+        type: amazonopensearch
+        properties:
+          index: "processed-logs"
+          pipeline: "log-processor"
+          write_action: "create"
+          endpoints:
+            - endpoint: "https://search-domain.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high-volume data ingestion with load balancing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: highvol_opensearch
+        type: amazonopensearch
+        properties:
+          index: "metrics"
+          batch_size: 20000
+          max_payload_size_kb: 8192
+          use_compression: true
+          timeout: 60
+          endpoints:
+            - endpoint: "https://search-domain1.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+            - endpoint: "https://search-domain2.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Field Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Using ECS field normalization for enhanced compatibility...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: ecs_opensearch
+        type: amazonopensearch
+        properties:
+          index: "normalized-logs"
+          field_format: "ecs"
+          endpoints:
+            - endpoint: "https://search-domain.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Index Action
+
+<ExampleGrid>
+  <CommentCol>
+    Using index action to allow document updates and overwrites...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: index_opensearch
+        type: amazonopensearch
+        properties:
+          index: "application-logs"
+          write_action: "index"
+          endpoints:
+            - endpoint: "https://search-domain.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Minimal Response
+
+<ExampleGrid>
+  <CommentCol>
+    Optimize for minimal response size by filtering to only errors...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: minimal_opensearch
+        type: amazonopensearch
+        properties:
+          index: "logs"
+          filter_path: "errors"
+          endpoints:
+            - endpoint: "https://search-domain.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Cross-Region
+
+<ExampleGrid>
+  <CommentCol>
+    Configuration with OpenSearch domains in different regions...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: multiregion_opensearch
+        type: amazonopensearch
+        properties:
+          index: "distributed-logs"
+          endpoints:
+            - endpoint: "https://search-domain.us-east-1.es.amazonaws.com"
+              region: "us-east-1"
+            - endpoint: "https://search-domain.eu-west-1.es.amazonaws.com"
+              region: "eu-west-1"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Performance Tuning
+
+### Batch Size vs Payload Size
+
+Events are batched until either limit is reached:
+
+- **`batch_size`**: Number of events per batch
+- **`max_payload_size_kb`**: Total size in kilobytes
+
+Tune these based on your average event size:
+- **Small events (&lt;1KB)**: Increase `batch_size`, keep default `max_payload_size_kb`
+- **Large events (>10KB)**: Keep default `batch_size`, increase `max_payload_size_kb`
+- **Mixed sizes**: Monitor both limits and adjust based on actual batch sizes
+
+### Timeout
+
+Setting appropriate timeouts helps balance reliability and performance:
+
+- **Short timeouts (10-30s)**: Fail fast, better for real-time scenarios
+- **Long timeouts (60s+)**: More tolerant of network issues, but may cause connection pooling problems
+
+### Compression
+
+Enable compression (default) for high-volume scenarios to reduce network bandwidth. Disable only if CPU is constrained and network bandwidth is abundant.
+
+### Filter Path
+
+The default `filter_path` provides detailed error information while minimizing response size. For even better performance in high-volume scenarios with low error rates, use `filter_path: "errors"` to only return the error flag.
+
+## Troubleshooting
+
+### IAM Authentication Errors
+
+If you encounter IAM authentication errors:
+- Verify AWS credentials are valid and not expired
+- Check IAM policy allows `es:ESHttpPost` and `es:ESHttpPut` actions
+- Ensure the region matches your OpenSearch domain region
+- For temporary credentials, verify the session token is included
+
+Common IAM error messages:
+- **Access denied**: IAM policy doesn't allow required actions
+- **Invalid signature**: Check system clock is synchronized
+- **Credential expired**: Refresh temporary credentials
+
+### Bulk API Errors
+
+Check logs for detailed error messages including:
+- Document index and position in batch
+- Error type and reason
+- HTTP status code
+
+Common issues:
+- **Version conflicts**: Switch to `index` action or handle conflicts in your application
+- **Mapping errors**: Ensure field types match index mapping
+- **Pipeline errors**: Verify ingest pipeline configuration
+
+### Payload Size Exceeded
+
+If you see "bulk request size exceeds limit" errors:
+1. Reduce `batch_size`
+2. Reduce `max_payload_size_kb`
+3. Check OpenSearch's `http.max_content_length` setting
+
+### Partial Endpoint Failures
+
+If some endpoints fail but delivery succeeds, check logs for partial failure errors indicating which endpoints are problematic. Verify network connectivity and OpenSearch domain health.
+
+### All Endpoints Failed
+
+If all endpoints fail:
+- Verify network connectivity to OpenSearch domains
+- Check OpenSearch cluster health in AWS Console
+- Ensure security groups allow traffic from your source
+- Review OpenSearch domain logs for errors
+- Verify IAM permissions for the credentials being used

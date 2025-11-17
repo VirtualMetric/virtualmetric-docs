@@ -1,0 +1,502 @@
+# Snowflake (Azure Blob Staging)
+
+<span className="theme-doc-version-badge badge badge--secondary">Data Warehouse Target</span>
+
+Send processed telemetry data to Snowflake using Azure Blob Storage as the staging location.
+
+## Synopsis
+
+The Snowflake Azure Blob target stages telemetry files to Azure Blob Storage, then executes COPY INTO commands on Snowflake to load data into tables.
+
+## Schema
+
+```yaml {2,4-7,9-10,12-14,16}
+targets:
+  - name: <string>
+    type: azsnowflake
+    properties:
+      account: <string>
+      username: <string>
+      password: <string>
+      database: <string>
+      schema: <string>
+      warehouse: <string>
+      role: <string>
+      storage_account: <string>
+      staging_container: <string>
+      staging_prefix: <string>
+      tenant_id: <string>
+      client_id: <string>
+      client_secret: <string>
+      table: <string>
+      schema: <string>
+      name: <string>
+      format: <string>
+      compression: <string>
+      extension: <string>
+      tables: <array>
+      batch_size: <integer>
+      max_size: <integer>
+      timeout: <integer>
+      field_format: <string>
+      debug:
+        status: <boolean>
+        dont_send_logs: <boolean>
+```
+
+## Configuration
+
+### Base Target Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Y | Unique identifier for this target |
+| `description` | string | N | Human-readable description |
+| `type` | string | Y | Must be `azsnowflake` |
+| `pipelines` | array | N | Pipeline names to apply before sending |
+| `status` | boolean | N | Enable (true) or disable (false) this target |
+
+### Snowflake Connection
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `account` | string | Y | Snowflake account identifier (e.g., `abc123.west-europe.azure`) |
+| `username` | string | Y | Snowflake username |
+| `password` | string | Y | Snowflake password |
+| `database` | string | Y | Snowflake database name |
+| `schema` | string | N | Snowflake schema name. Default: `PUBLIC` |
+| `warehouse` | string | N | Snowflake virtual warehouse name |
+| `role` | string | N | Snowflake role name |
+
+### Azure Blob Staging Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `storage_account` | string | Y | Azure storage account name |
+| `staging_container` | string | Y | Azure Blob container name for staging files |
+| `staging_prefix` | string | N | Blob prefix path. Default: `snowflake-staging/` |
+| `tenant_id` | string | Y | Azure AD tenant ID |
+| `client_id` | string | Y | Service principal client ID |
+| `client_secret` | string | Y | Service principal client secret |
+
+### Table Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `table` | string | Y* | Catch-all table name for all events |
+| `schema` | string | Y* | Avro/Parquet schema definition |
+| `name` | string | Y* | File naming template. Default: `vmetric.{{.Timestamp}}.{{.Extension}}` |
+| `format` | string | N | File format (`csv`, `json`, `avro`, `orc`, `parquet`, `xml`). Default: `parquet` |
+| `compression` | string | N | Compression algorithm |
+| `extension` | string | N | File extension override |
+| `tables` | array | N | Multiple table configurations (see below) |
+| `tables.table` | string | Y | Target table name |
+| `tables.schema` | string | Y* | Avro/Parquet schema definition for this table |
+| `tables.name` | string | Y | File naming template for this table |
+| `tables.format` | string | N | File format for this table |
+| `tables.compression` | string | N | Compression algorithm for this table |
+| `tables.extension` | string | N | File extension override for this table |
+
+\* At least one of `table` (catch-all) or `tables` (multiple) must be configured. For Avro/Parquet formats, `schema` is required.
+
+### Batch Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `batch_size` | integer | N | Maximum events per file before flush |
+| `max_size` | integer | N | Maximum file size in bytes before flush |
+| `timeout` | integer | N | COPY INTO command timeout in seconds. Default: `300` |
+
+### Normalization
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `field_format` | string | N | Apply format normalization (`ECS`, `ASIM`, `UDM`) |
+
+### Debug Options
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `debug.status` | boolean | N | Enable debug logging for this target |
+| `debug.dont_send_logs` | boolean | N | Log events without sending to Snowflake |
+
+## Details
+
+### Architecture Overview
+
+The Snowflake Azure Blob target implements a two-stage loading pattern:
+
+1. **Stage Files to Azure Blob**: Events are written to files in Azure Blob Storage using the configured format
+2. **Execute COPY INTO**: SQL commands load data from Blob Storage into Snowflake tables using azure:// paths
+
+### Snowflake Connection
+
+**Account Identifier**:
+- Format for Azure: `<account_locator>.<region>.azure` (e.g., `abc123.west-europe.azure`)
+- Account locator is visible in your Snowflake URL
+- Region is the Azure region where your Snowflake account is deployed
+
+**Authentication**:
+- Uses username/password authentication
+- Credentials are used to connect to Snowflake SQL API v2
+- Supports optional warehouse and role specification
+
+**Database and Schema**:
+- Database name is required and must be a valid SQL identifier
+- Schema defaults to `PUBLIC` if not specified
+- Both database and schema names are validated for SQL compliance
+
+:::note Snowflake Permissions
+The Snowflake user requires permissions to:
+- Execute SQL statements using the specified warehouse
+- Write data to the target database and schema
+- Access the Azure Blob staging location (configured separately in Snowflake)
+:::
+
+### Azure Blob Staging Operations
+
+**File Upload**:
+- Files are staged to `https://{storage_account}.blob.core.windows.net/{container}/{prefix}/{table}/{filename}` structure
+- Uses Azure SDK for secure uploads with service principal authentication
+- Supports Azure AD authentication through client credentials
+
+**Azure Path Construction**:
+- The target automatically constructs azure:// paths for COPY INTO commands
+- Format: `azure://{storage_account}.blob.core.windows.net/{container}/{prefix}/{table}/{filename}`
+- Azure protocol is used for direct Snowflake access to Azure Blob Storage
+
+**Cleanup**:
+- Staged files are automatically deleted after successful COPY INTO execution
+- Failed uploads remain in Blob Storage for troubleshooting
+
+### Service Principal Authentication
+
+**Azure AD Integration**:
+- Uses service principal (client credentials) for Azure Blob Storage authentication
+- Requires `tenant_id`, `client_id`, and `client_secret` configuration
+- Service principal must have Storage Blob Data Contributor role on the container
+
+**Required Permissions**:
+- **Storage Blob Data Contributor**: Write and delete blobs in staging container
+- **Storage Blob Data Reader**: Optional, for Snowflake direct access
+
+:::warning Service Principal Permissions
+Ensure the service principal has appropriate permissions on both the staging container (for DataStream uploads) and the Snowflake workspace (for COPY INTO access).
+:::
+
+### File Format Support
+
+**Valid Formats**:
+- **CSV**: Comma-separated values with optional headers
+- **JSON**: Newline-delimited JSON objects
+- **AVRO**: Schema-based binary format (requires schema)
+- **ORC**: Optimized row columnar format
+- **PARQUET**: Columnar storage format (requires schema)
+- **XML**: XML document format
+
+**Schema Requirements**:
+- Avro and Parquet formats require `schema` field with valid schema definition
+- Schema must match the expected table structure in Snowflake
+- Other formats use schema inference from data
+
+### Multi-Table Routing
+
+**Catch-All Table**:
+- Use `table` field to send all events to a single table
+- Simplest configuration for single-destination scenarios
+
+**Multiple Tables**:
+- Use `tables` array to route different event types to different tables
+- Each table entry specifies `table`, `schema`, `name`, `format` fields
+- Events routed based on SystemS3 field in pipeline
+
+**Example Configuration**:
+```yaml
+tables:
+  - table: SECURITY_EVENTS
+    schema: security_schema.avsc
+    name: security.{{.Timestamp}}.parquet
+    format: parquet
+  - table: ACCESS_LOGS
+    schema: access_schema.avsc
+    name: access.{{.Timestamp}}.parquet
+    format: parquet
+```
+
+### Performance Considerations
+
+**Batch Processing**:
+- Events are buffered until `batch_size` or `max_size` limits are reached
+- Larger batches reduce Blob API calls and COPY INTO operations
+- Balance batch size against latency requirements
+
+**Upload Optimization**:
+- Azure SDK automatically handles large blob uploads
+- Uses block blobs for efficient data transfer
+- Connection pooling optimizes network performance
+
+**COPY INTO Performance**:
+- COPY INTO commands are executed with configurable timeout
+- Failed COPY operations return errors for retry logic
+- Warehouse must be running (resumed) for COPY INTO to succeed
+
+:::warning Warehouse State
+Ensure the virtual warehouse is running before sending data. COPY INTO commands will fail if the warehouse is suspended. Configure warehouse auto-resume or manual resume procedures.
+:::
+
+### Error Handling
+
+**Upload Failures**:
+- Failed Blob uploads are retried based on sender configuration
+- Permanent failures prevent COPY INTO execution
+- Check service principal permissions and network connectivity
+
+**COPY INTO Failures**:
+- Schema mismatches between files and tables cause failures
+- Invalid SQL identifiers (database, schema, table names) are rejected at validation
+- Check Snowflake query history for detailed error messages
+
+## Examples
+
+### Basic Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Sending telemetry to Snowflake using Azure Blob staging with Parquet format...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-warehouse
+        type: azsnowflake
+        properties:
+          account: abc123.west-europe.azure
+          username: datastream_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: PRODUCTION_DATA
+          warehouse: COMPUTE_WH
+          storage_account: datastreamstaging
+          staging_container: snowflake-staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          table: EVENTS
+          schema: event_schema.avsc
+          name: events.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Custom Staging Prefix
+
+<ExampleGrid>
+  <CommentCol>
+    Using custom blob prefix for organized staging file structure...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-organized
+        type: azsnowflake
+        properties:
+          account: xyz789.west-europe.azure
+          username: security_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: SECURITY_ANALYTICS
+          warehouse: SECURITY_WH
+          role: SECURITY_ADMIN
+          storage_account: securitystorage
+          staging_container: staging
+          staging_prefix: datastream/snowflake/
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          table: SECURITY_EVENTS
+          schema: security_schema.avsc
+          name: security.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Table Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Routing different event types to separate Snowflake tables...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-multi-table
+        type: azsnowflake
+        properties:
+          account: abc123.west-europe.azure
+          username: analytics_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: ANALYTICS
+          warehouse: ANALYTICS_WH
+          storage_account: analyticsstorage
+          staging_container: staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          tables:
+            - table: AUTHENTICATION_EVENTS
+              schema: auth_schema.avsc
+              name: auth.{{.Timestamp}}.parquet
+              format: parquet
+            - table: NETWORK_EVENTS
+              schema: network_schema.avsc
+              name: network.{{.Timestamp}}.parquet
+              format: parquet
+            - table: APPLICATION_LOGS
+              schema: app_schema.avsc
+              name: app.{{.Timestamp}}.parquet
+              format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high-volume ingestion with batch limits and compression...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-high-volume
+        type: azsnowflake
+        properties:
+          account: abc123.west-europe.azure
+          username: streaming_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: HIGH_VOLUME_DATA
+          warehouse: LARGE_WH
+          storage_account: streamingstorage
+          staging_container: high-volume-staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          batch_size: 100000
+          max_size: 134217728
+          timeout: 600
+          table: STREAMING_EVENTS
+          schema: streaming_schema.avsc
+          name: stream.{{.Timestamp}}.parquet
+          format: parquet
+          compression: snappy
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### JSON Format
+
+<ExampleGrid>
+  <CommentCol>
+    Using JSON format for flexible schema evolution and debugging...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-json
+        type: azsnowflake
+        properties:
+          account: abc123.west-europe.azure
+          username: dev_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: DEVELOPMENT
+          warehouse: DEV_WH
+          storage_account: devstorage
+          staging_container: dev-staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          table: TEST_EVENTS
+          name: test.{{.Timestamp}}.json
+          format: json
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Applying ASIM normalization before loading to Snowflake...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-normalized
+        type: azsnowflake
+        properties:
+          account: abc123.west-europe.azure
+          username: security_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: SECURITY_DATA
+          warehouse: SECURITY_WH
+          storage_account: securitystorage
+          staging_container: security-staging
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          field_format: ASIM
+          table: ASIM_EVENTS
+          schema: asim_schema.avsc
+          name: asim.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Production Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Production-ready configuration with performance tuning and multi-table routing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: snowflake-production
+        type: azsnowflake
+        properties:
+          account: production.west-europe.azure
+          username: production_user
+          password: "${SNOWFLAKE_PASSWORD}"
+          database: PRODUCTION_ANALYTICS
+          warehouse: PRODUCTION_WH
+          role: DATA_ENGINEER
+          storage_account: productionstorage
+          staging_container: production-staging
+          staging_prefix: datastream/snowflake/
+          tenant_id: "${AZURE_TENANT_ID}"
+          client_id: "${AZURE_CLIENT_ID}"
+          client_secret: "${AZURE_CLIENT_SECRET}"
+          batch_size: 50000
+          max_size: 67108864
+          timeout: 300
+          field_format: ECS
+          tables:
+            - table: SECURITY_EVENTS
+              schema: security_schema.avsc
+              name: security.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+            - table: AUDIT_LOGS
+              schema: audit_schema.avsc
+              name: audit.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+            - table: NETWORK_FLOWS
+              schema: network_schema.avsc
+              name: network.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+    ```
+  </CodeCol>
+</ExampleGrid>

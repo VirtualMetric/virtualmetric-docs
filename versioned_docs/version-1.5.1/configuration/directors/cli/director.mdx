@@ -1,0 +1,367 @@
+---
+description: Command-line options
+pagination_prev: null
+pagination_next: null
+sidebar_label: Director
+---
+
+# CLI: Director
+
+## Overview
+
+**VirtualMetric Director&trade;** is the core orchestration and data processing engine of the **DataStream** platform, designed to manage high-volume log ingestion, processing, and routing with enterprise-grade performance and reliability. It serves as the central command center that coordinates devices, pipelines, routes, and targets to create comprehensive data processing workflows.
+
+**Director** handles everything from simple syslog collection to complex multi-protocol data ingestion scenarios, providing real-time processing capabilities, advanced routing logic, and seamless integration with various storage and analysis systems. Its architecture supports both standalone deployments and distributed enterprise environments with built-in scalability and fault tolerance.
+
+## Synopsis
+
+```bash
+vmetric-director [OPTIONS]
+```
+
+## Options
+
+The following command line options are available.
+
+### General Options
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-compare-version`|-|Compare with specified version|
+|`-config`|-|Run configuration wizard|
+|`-example`|-|Show configuration examples|
+|`-path`|-|Specify configuration file or directory path|
+|`-validate`|-|Validate configuration files|
+|`-version`|-|Display version information|
+
+### Operating Modes
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-console`|-|Run in console monitoring mode|
+|`-generator`|-|Generate test data|
+|`-mode`|`director`|Operating mode (`director`, `supervisor`, `console`, `pipeline`, `generator`, `update`)|
+|`-pipeline`|-|Execute pipeline processing mode|
+|`-sentinel`|-|Run network discovery and monitoring|
+|`-snmpwalk`|-|Perform SNMP device discovery|
+|`-stats`|-|Display performance statistics|
+|`-supervisor`|-|Run in supervisor mode|
+|`-update`|-|Run update process|
+
+### Service Management
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-agentless`|-|Run without installing as a service|
+|`-background`|-|Run in background mode|
+|`-info`|-|Display service information|
+|`-service`|-|Service operation (`install`, `uninstall`, `start`, `stop`, `restart`)|
+|`-service-name`|-|Custom service name for installation|
+|`-vpc`|-|Display product code|
+
+### Pipeline Operations
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-name`|-|Pipeline name for processing|
+|`-definition-id`|-|Pipeline definition identifier|
+|`-diff`|-|Show differences between actual and expected output|
+|`-expected`|-|Expected output file for validation|
+|`-export-json`|-|Export pipeline results as JSON|
+|`-extended`|-|Show extended processing information|
+|`-input`|-|Input data file or JSON string|
+|`-output`|-|Output file for processed data|
+|`-visualize`|-|Display pipeline processing visualization|
+
+### Console Monitoring
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-debug-level`|-|Set debug verbosity level (1-5)|
+|`-filter`|-|Filter console output by keywords|
+
+### Network Discovery
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-autodiscovery`|-|Enable automatic network discovery|
+|`-snmp-community`|-|SNMP community string|
+|`-snmp-device-id`|-|SNMP device identifier|
+|`-snmp-host`|-|Target SNMP host address|
+|`-snmp-oid`|`.1.3`|Starting OID for SNMP walk|
+|`-snmp-port`|`161`|SNMP port number|
+|`-snmp-version`|`2c`|SNMP version (1, 2c, 3)|
+
+### Data Generation
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-address`|`127.0.0.1:514`|Target address for generated data|
+|`-count`|`1000`|Number of messages to generate|
+|`-duration`|`300`|Total generation duration (seconds)|
+|`-file-path`|-|File path for file-based operations|
+|`-interval`|`1`|Interval between messages (seconds)|
+|`-message`|`VirtualMetric Test Message`|Message content|
+|`-now`|-|Generate messages immediately|
+|`-protocol`|`syslog`|Protocol for data generation|
+|`-severity`|`Error`|Syslog severity level|
+
+### Utility Options
+
+|Option|Default|Description|
+|--:|:--|---|
+|`-clear`|-|Clear statistics (used with -stats)|
+|`-pfx2pem`|-|Convert PFX certificate to PEM format|
+|`-stats`|-|Display performance statistics|
+
+## Common Uses
+
+The following are the valid switch combinations for the indicated tasks:
+
+### General Tasks
+
+- Display _version_ information:
+
+  ```
+  vmetric-director -version
+  ```
+
+- Show _example_ configuration:
+
+  ```
+  vmetric-director -example
+  ```
+
+- Run configuration tool:
+
+  ```
+  vmetric-director -config [config_file_path]
+  ```
+
+- Compare _version_:
+
+  ```
+  vmetric-director -compare-version [version_string]
+  ```
+
+- Convert _PFX_ certificate to _PEM_:
+
+  ```
+  vmetric-director -pfx2pem [certificate_path]
+  ```
+
+- Validate configuration:
+
+  ```
+  vmetric-director -validate
+  ```
+### Service Management
+
+- Install service:
+
+  ```
+  vmetric-director -service install [-service-name custom_name] [-path installation_path]
+  ```
+
+- Uninstall service:
+
+  ```
+  vmetric-director -service uninstall [-service-name custom_name]
+  ```
+
+- Start service:
+
+  ```
+  vmetric-director -service start [-service-name custom_name]
+  ```
+
+- Stop service:
+
+  ```
+  vmetric-director -service stop [-service-name custom_name]
+  ```
+
+- Restart service:
+
+  ```
+  vmetric-director -service restart [-service-name custom_name]
+  ```
+
+- Run in background (without service):
+
+  ```
+  vmetric-director -background [-mode director|supervisor]
+  ```
+
+- Run in _agentless_ mode:
+
+  ```
+  vmetric-director -agentless [-mode director|supervisor]
+  ```
+
+- Show service information:
+
+  ```
+  vmetric-director -info [-mode director|supervisor]
+  ```
+
+- Show _product code_:
+
+  ```
+  vmetric-director -vpc [-mode director|supervisor]
+  ```
+
+- Stop running process:
+
+  ```
+  vmetric-director -stop [-mode director|supervisor]
+  ```
+
+### Operational Modes
+
+- Console mode:
+
+  ```
+  vmetric-director -mode console [-filter filter_string] [-debug-level level]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -console [-filter filter_string] [-debug-level level]
+  ```
+
+- Pipeline mode:
+
+  ```
+  vmetric-director -mode pipeline -name [pipeline_name] [-path path] [-definition-id id] [-input input_file] [-output output_file] [-expected expected_file] [-filter filter] [-diff] [-validate] [-visualize] [-extended] [-export-json]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -pipeline -name [pipeline_name] [-path path] [-definition-id id] [-input input_file] [-output output_file] [-expected expected_file] [-filter filter] [-diff] [-validate] [-visualize] [-extended] [-export-json]
+  ```
+
+- Generator mode:
+  ```
+  vmetric-director -mode generator [-protocol syslog|tcp|http|netflow|vmf] [-address target_address] [-severity level] [-message message_text] [-count message_count] [-interval seconds] [-duration seconds] [-now] [-file-path file_path]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -generator [-protocol syslog|tcp|http|netflow|vmf] [-address target_address] [-severity level] [-message message_text] [-count message_count] [-interval seconds] [-duration seconds] [-now] [-file-path file_path]
+  ```
+
+- Sentinel mode:
+
+  ```
+  vmetric-director -mode sentinel [-autodiscovery]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -sentinel [-autodiscovery]
+  ```
+
+- SNMPWalk mode:
+
+  ```
+  vmetric-director -mode snmpwalk -snmp-device-id [device_id] -snmp-host [host] [-snmp-port port] [-snmp-version 1|2c|3] [-snmp-community community_string] [-snmp-oid oid]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -snmpwalk -snmp-device-id [device_id] -snmp-host [host] [-snmp-port port] [-snmp-version 1|2c|3] [-snmp-community community_string] [-snmp-oid oid]
+  ```
+
+- Update mode:
+
+  ```
+  vmetric-director -mode update
+  ```
+
+  -or-
+  
+  ```
+  vmetric-director -update
+  ```
+
+- Supervisor mode:
+
+  ```
+  vmetric-director -mode supervisor
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -supervisor
+  ```
+
+- Statistics mode:
+
+  ```
+  vmetric-director -mode stats [-clear]
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -stats [-clear]
+  ```
+
+- **Director** mode (default):
+
+  ```
+  vmetric-director
+  ```
+
+  -or-
+
+  ```
+  vmetric-director -mode director
+  ```
+  
+  -or-
+
+  ```
+  vmetric-director -director
+  ```
+
+## Protocol-Specific Generator Tasks
+
+The following can be used to simulate various log streaming protocols:
+
+- _Syslog_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol syslog -address 127.0.0.1:514 -severity Error -message "Test Message" -count 1000 -interval 1 -duration 300
+  ```
+
+- _TCP_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol tcp -address 127.0.0.1:9000 -message "Test Message" -count 1000 -interval 1 -duration 300
+  ```
+
+- _HTTP_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol http -address http://127.0.0.1:8080/logs -message "Test Message" -count 1000 -interval 1 -duration 300
+  ```
+
+- _Netflow_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol netflow -address 127.0.0.1:2055 -count 1000 -interval 1 -duration 300
+  ```
+
+- _VMF_ generator:
+
+  ```
+  vmetric-director -mode generator -protocol vmf -file-path input.json -message "Test Message" -count 1000 -interval 1 -duration 300
+  ```
