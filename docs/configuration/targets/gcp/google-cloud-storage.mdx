@@ -1,0 +1,449 @@
+# Google Cloud Storage
+
+<span className="theme-doc-version-badge badge badge--secondary">Google Cloud</span><span className="theme-doc-version-badge badge badge--secondary">Long-Term Storage</span>
+
+## Synopsis
+
+Creates a target that writes log messages to Google Cloud Storage buckets with support for various file formats, authentication methods, and multipart uploads. The target handles large file uploads efficiently with configurable rotation based on size or event count.
+
+## Schema
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: gcs
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    key: <string>
+    secret: <string>
+    project_id: <string>
+    region: <string>
+    endpoint: <string>
+    part_size: <numeric>
+    bucket: <string>
+    buckets:
+      - bucket: <string>
+        name: <string>
+        format: <string>
+        compression: <string>
+        extension: <string>
+        schema: <string>
+    name: <string>
+    format: <string>
+    compression: <string>
+    extension: <string>
+    schema: <string>
+    max_size: <numeric>
+    batch_size: <numeric>
+    timeout: <numeric>
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `gcs`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Google Cloud Storage Credentials
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`key`|N*|-|Google Cloud Storage HMAC access key ID for authentication|
+|`secret`|N*|-|Google Cloud Storage HMAC secret access key for authentication|
+|`project_id`|Y|-|Google Cloud project ID|
+|`region`|N|`us-central1`|Google Cloud region (e.g., `us-central1`, `europe-west1`, `asia-east1`)|
+|`endpoint`|N|`https://storage.googleapis.com`|Custom GCS-compatible endpoint URL|
+
+\* = Conditionally required. HMAC credentials (`key` and `secret`) are required unless using service account authentication with Application Default Credentials.
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`part_size`|N|`5`|Multipart upload part size in megabytes (minimum 5MB)|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="normalization-mapping">Normalization</Topic> section|
+
+### Files
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`bucket`|N*|-|Default GCS bucket name (acts as catch-all when `buckets` is also specified)|
+|`buckets`|N*|-|Array of bucket configurations for file distribution|
+|`buckets.bucket`|Y|-|GCS bucket name|
+|`buckets.name`|Y|-|File name template|
+|`buckets.format`|N|`"json"`|Output format: `json`, `multijson`, `avro`, `parquet`|
+|`buckets.compression`|N|-|Compression algorithm. See [Compression](#compression) below|
+|`buckets.extension`|N|Matches `format`|File extension override|
+|`buckets.schema`|N**|-|Schema definition file path (required for Avro and Parquet formats)|
+|`name`|N|`"vmetric.{{.Timestamp}}.{{.Extension}}"`|Default file name template (used with `bucket` for catch-all)|
+|`format`|N|`"json"`|Default output format (used with `bucket` for catch-all)|
+|`compression`|N|-|Default compression (used with `bucket` for catch-all)|
+|`extension`|N|Matches `format`|Default file extension (used with `bucket` for catch-all)|
+|`schema`|N|-|Default schema path (used with `bucket` for catch-all)|
+|`max_size`|N|`0`|Maximum file size in bytes before rotation|
+|`batch_size`|N|`100000`|Maximum number of messages per file|
+
+\* = Either `bucket` or `buckets` must be specified.
+
+\*\* = Conditionally required for Avro and Parquet formats when using `buckets`.
+
+:::note
+When `max_size` is reached, the current file is uploaded to GCS and a new file is created. For unlimited file size, set the field to `0`.
+:::
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="interval">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="cron">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+The Google Cloud Storage target provides enterprise-grade cloud storage integration with comprehensive file format support. GCS offers high durability (99.999999999%), strong consistency for read-after-write operations, and integration with Google Cloud's security and analytics ecosystem.
+
+### Authentication Methods
+
+Supports HMAC credentials (access key and secret key) for S3-compatible API access. When deployed on Google Cloud infrastructure, can leverage service account authentication with Application Default Credentials without explicit credentials. HMAC keys can be created through the Google Cloud Console for programmatic access.
+
+### Storage Classes
+
+Google Cloud Storage supports multiple storage classes for cost optimization:
+
+|Storage Class|Use Case|
+|---|---|
+|Standard|Frequently accessed data|
+|Nearline|Data accessed less than once per month|
+|Coldline|Data accessed less than once per quarter|
+|Archive|Data accessed less than once per year|
+
+### Available Regions
+
+Google Cloud Storage is available in multiple regions worldwide:
+
+|Region Code|Location|
+|---|---|
+|`us-central1`|Iowa, USA|
+|`us-east1`|South Carolina, USA|
+|`us-west1`|Oregon, USA|
+|`europe-west1`|Belgium|
+|`europe-west2`|London, UK|
+|`europe-west3`|Frankfurt, Germany|
+|`asia-east1`|Taiwan|
+|`asia-northeast1`|Tokyo, Japan|
+|`asia-southeast1`|Singapore|
+|`australia-southeast1`|Sydney, Australia|
+
+### Bucket Routing
+
+The target supports flexible bucket routing through pipeline configuration or explicit bucket settings:
+
+**Configuration-based routing**: Define multiple buckets in the target configuration, each with its own format, compression, and schema settings. Logs are routed to specific buckets based on configuration.
+
+**Pipeline-based routing**: Use the `bucket` field in pipeline processors to dynamically route logs to different buckets at runtime. This enables conditional routing based on log content, source, or other attributes.
+
+**Catch-all routing**: When a log doesn't match any specific bucket configuration or when no `bucket` field is set in the pipeline, logs are routed to the catch-all bucket (configured via the `bucket` field in target properties).
+
+**Routing priority**:
+1. Pipeline `bucket` field (highest priority)
+2. Configured buckets in `buckets` array (if bucket name matches)
+3. Default `bucket` field (catch-all, lowest priority)
+
+This multi-level routing enables flexible data distribution strategies, such as routing different log types to different buckets based on content analysis, source system, severity level, or any other runtime decision.
+
+### File Formats
+
+|Format|Description|
+|---|---|
+|`json`|Each log entry is written as a separate JSON line (JSONL format)|
+|`multijson`|All log entries are written as a single JSON array|
+|`avro`|Apache Avro format with schema|
+|`parquet`|Apache Parquet columnar format with schema|
+
+### Compression
+
+Some formats support built-in compression to reduce storage costs and transfer times. When supported, compression is applied at the file/block level before upload.
+
+|Format|Default|Compression Codecs|
+|---|---|---|
+|JSON|-|Not supported|
+|MultiJSON|-|Not supported|
+|Avro|`zstd`|`deflate`, `snappy`, `zstd`|
+|Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
+
+### File Management
+
+Files are rotated based on size (`max_size` parameter) or event count (`batch_size` parameter), whichever limit is reached first. Template variables in file names enable dynamic file naming for time-based partitioning.
+
+### Templates
+
+The following template variables can be used in file names:
+
+|Variable|Description|Example|
+|---|---|---|
+|`{{.Year}}`|Current year|`2024`|
+|`{{.Month}}`|Current month|`01`|
+|`{{.Day}}`|Current day|`15`|
+|`{{.Timestamp}}`|Current timestamp in nanoseconds|`1703688533123456789`|
+|`{{.Format}}`|File format|`json`|
+|`{{.Extension}}`|File extension|`json`|
+|`{{.Compression}}`|Compression type|`zstd`|
+|`{{.TargetName}}`|Target name|`my_logs`|
+|`{{.TargetType}}`|Target type|`gcs`|
+|`{{.Table}}`|Bucket name|`logs`|
+
+### Multipart Upload
+
+Large files automatically use multipart upload protocol with configurable part size (`part_size` parameter). Default 5MB part size balances upload efficiency and memory usage.
+
+### Multiple Buckets
+
+Single target can write to multiple GCS buckets with different configurations, enabling data distribution strategies (e.g., raw data to one bucket, processed data to another).
+
+### Schema Requirements
+
+Avro and Parquet formats require schema definition files. Schema files must be accessible at the path specified in the `schema` parameter during target initialization.
+
+### Integration with Google Cloud
+
+GCS integrates seamlessly with other Google Cloud services including BigQuery for analytics, Cloud Functions for serverless processing, and Cloud Logging for centralized logging.
+
+## Examples
+
+### Basic Configuration
+
+The minimum configuration for a JSON GCS target:
+```yaml
+targets:
+  - name: basic_gcs
+    type: gcs
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      bucket: "datastream-logs"
+```
+
+### Service Account Authentication
+
+Configuration using Application Default Credentials:
+```yaml
+targets:
+  - name: gcs_service_account
+    type: gcs
+    properties:
+      project_id: "my-project-123456"
+      region: "us-central1"
+      bucket: "datastream-logs"
+```
+
+### Pipeline-Based Routing
+
+Dynamic bucket routing using pipeline processors to analyze log content and route to appropriate buckets:
+```yaml
+targets:
+  - name: smart_routing_gcs
+    type: gcs
+    pipelines:
+      - dynamic_routing
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-central1"
+      buckets:
+        - bucket: "security-events"
+          name: "security-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+        - bucket: "application-events"
+          name: "app-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+        - bucket: "system-events"
+          name: "system-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+      bucket: "other-events"
+      name: "other-{{.Timestamp}}.json"
+      format: "json"
+
+pipelines:
+  - name: dynamic_routing
+    processors:
+      - set:
+          field: "_vmetric.bucket"
+          value: "security-events"
+          if: "ctx.event_type == 'security'"
+      - set:
+          field: "_vmetric.bucket"
+          value: "application-events"
+          if: "ctx.event_type == 'application'"
+      - set:
+          field: "_vmetric.bucket"
+          value: "system-events"
+          if: "ctx.event_type == 'system'"
+```
+
+### Multiple Buckets with Catch-All
+
+Configuration for routing different log types to specific buckets with a catch-all for unmatched logs:
+```yaml
+targets:
+  - name: multi_bucket_routing
+    type: gcs
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-central1"
+      buckets:
+        - bucket: "security-logs"
+          name: "security-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+        - bucket: "application-logs"
+          name: "app-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "json"
+      bucket: "general-logs"
+      name: "general-{{.Timestamp}}.json"
+      format: "json"
+```
+
+### Multiple Buckets with Different Formats
+
+Configuration for distributing data across multiple GCS buckets with different formats:
+```yaml
+targets:
+  - name: multi_bucket_export
+    type: gcs
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "europe-west1"
+      buckets:
+        - bucket: "raw-data-archive"
+          name: "raw-{{.Year}}-{{.Month}}-{{.Day}}.json"
+          format: "multijson"
+          compression: "gzip"
+        - bucket: "analytics-data"
+          name: "analytics-{{.Year}}/{{.Month}}/{{.Day}}/data_{{.Timestamp}}.parquet"
+          format: "parquet"
+          schema: "<schema definition>"
+          compression: "snappy"
+```
+
+### Parquet Format
+
+Configuration for daily partitioned Parquet files:
+```yaml
+targets:
+  - name: parquet_analytics
+    type: gcs
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-west1"
+      bucket: "analytics-lake"
+      name: "events/year={{.Year}}/month={{.Month}}/day={{.Day}}/part-{{.Timestamp}}.parquet"
+      format: "parquet"
+      schema: "<schema definition>"
+      compression: "snappy"
+      max_size: 536870912
+```
+
+### High Reliability
+
+Configuration with enhanced settings:
+```yaml
+targets:
+  - name: reliable_gcs
+    type: gcs
+    pipelines:
+      - checkpoint
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-east1"
+      bucket: "critical-logs"
+      name: "logs-{{.Timestamp}}.json"
+      format: "json"
+      timeout: 60
+      part_size: 10
+```
+
+### With Field Normalization
+
+Using field normalization for standard format:
+```yaml
+targets:
+  - name: normalized_gcs
+    type: gcs
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "europe-west2"
+      bucket: "normalized-logs"
+      name: "logs-{{.Timestamp}}.json"
+      format: "json"
+      field_format: "cim"
+```
+
+### BigQuery Integration
+
+Configuration optimized for BigQuery data lake:
+```yaml
+targets:
+  - name: bigquery_ready
+    type: gcs
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "us-central1"
+      bucket: "bigquery-staging"
+      name: "bq-import/{{.Year}}/{{.Month}}/{{.Day}}/data-{{.Timestamp}}.json"
+      format: "json"
+      compression: "gzip"
+      max_size: 1073741824
+```
+
+### Debug Configuration
+
+Configuration with debugging enabled:
+```yaml
+targets:
+  - name: debug_gcs
+    type: gcs
+    properties:
+      key: "GOOG1EXAMPLE1234567890ABCDEFGHIJ"
+      secret: "abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+      project_id: "my-project-123456"
+      region: "asia-east1"
+      bucket: "test-logs"
+      name: "test-{{.Timestamp}}.json"
+      format: "json"
+      debug:
+        status: true
+        dont_send_logs: true
+```

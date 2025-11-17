@@ -1,0 +1,459 @@
+# Databricks (S3 Staging)
+
+<span className="theme-doc-version-badge badge badge--secondary">Data Warehouse Target</span>
+
+Send processed telemetry data to Databricks using Amazon S3 as the staging location.
+
+## Synopsis
+
+The Databricks S3 target stages telemetry files to Amazon S3, then executes COPY INTO commands on Databricks SQL warehouses to load data into Unity Catalog tables.
+
+## Schema
+
+```yaml {2,4-6,8-10,12}
+targets:
+  - name: <string>
+    type: amazondatabricks
+    properties:
+      server_hostname: <string>
+      http_path: <string>
+      access_token: <string>
+      catalog: <string>
+      namespace: <string>
+      staging_bucket: <string>
+      staging_prefix: <string>
+      region: <string>
+      key: <string>
+      secret: <string>
+      session: <string>
+      table: <string>
+      schema: <string>
+      name: <string>
+      format: <string>
+      compression: <string>
+      extension: <string>
+      tables: <array>
+      batch_size: <integer>
+      max_size: <integer>
+      timeout: <integer>
+      part_size: <integer>
+      field_format: <string>
+      debug:
+        status: <boolean>
+        dont_send_logs: <boolean>
+```
+
+## Configuration
+
+### Base Target Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Y | Unique identifier for this target |
+| `description` | string | N | Human-readable description |
+| `type` | string | Y | Must be `amazondatabricks` |
+| `pipelines` | array | N | Pipeline names to apply before sending |
+| `status` | boolean | N | Enable (true) or disable (false) this target |
+
+### Databricks Connection
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `server_hostname` | string | Y | Databricks workspace URL (e.g., `abc123.cloud.databricks.com`) |
+| `http_path` | string | Y | SQL warehouse HTTP path (e.g., `/sql/1.0/warehouses/abc123def456`) |
+| `access_token` | string | Y | Databricks personal access token |
+| `catalog` | string | Y | Unity Catalog name |
+| `namespace` | string | N | Databricks schema name. Default: `default` |
+
+### S3 Staging Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `staging_bucket` | string | Y | S3 bucket name for staging files |
+| `staging_prefix` | string | N | S3 prefix path. Default: `databricks-staging/` |
+| `region` | string | Y | AWS region for S3 bucket |
+| `key` | string | N | AWS access key ID (uses default credentials chain if omitted) |
+| `secret` | string | N | AWS secret access key |
+| `session` | string | N | AWS session token for temporary credentials |
+
+### Table Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `table` | string | Y* | Catch-all table name for all events |
+| `schema` | string | Y* | Avro/Parquet schema definition |
+| `name` | string | Y* | File naming template. Default: `vmetric.{{.Timestamp}}.{{.Extension}}` |
+| `format` | string | N | File format (`csv`, `json`, `avro`, `orc`, `parquet`, `text`). Default: `parquet` |
+| `compression` | string | N | Compression algorithm |
+| `extension` | string | N | File extension override |
+| `tables` | array | N | Multiple table configurations (see below) |
+| `tables.table` | string | Y | Target table name |
+| `tables.schema` | string | Y* | Avro/Parquet schema definition for this table |
+| `tables.name` | string | Y | File naming template for this table |
+| `tables.format` | string | N | File format for this table |
+| `tables.compression` | string | N | Compression algorithm for this table |
+| `tables.extension` | string | N | File extension override for this table |
+
+\* At least one of `table` (catch-all) or `tables` (multiple) must be configured. For Avro/Parquet formats, `schema` is required.
+
+### Batch Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `batch_size` | integer | N | Maximum events per file before flush |
+| `max_size` | integer | N | Maximum file size in bytes before flush |
+| `timeout` | integer | N | COPY INTO command timeout in seconds. Default: `300` |
+| `part_size` | integer | N | S3 multipart upload part size in MB |
+
+### Normalization
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `field_format` | string | N | Apply format normalization (`ECS`, `ASIM`, `UDM`) |
+
+### Debug Options
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `debug.status` | boolean | N | Enable debug logging for this target |
+| `debug.dont_send_logs` | boolean | N | Log events without sending to Databricks |
+
+## Details
+
+### Architecture Overview
+
+The Databricks S3 target implements a two-stage loading pattern:
+
+1. **Stage Files to S3**: Events are written to files in S3 using the configured format
+2. **Execute COPY INTO**: SQL commands load data from S3 into Databricks Unity Catalog tables
+
+### Unity Catalog Integration
+
+**Catalog Structure**:
+- Tables are organized within Unity Catalog using three-level namespace: `catalog.namespace.table`
+- The `catalog` field specifies the Unity Catalog name
+- The `namespace` field specifies the schema (defaults to `default`)
+- Table names are validated to ensure they are valid SQL identifiers
+
+**Warehouse ID Extraction**:
+- The target automatically extracts the warehouse ID from the `http_path`
+- Example: `/sql/1.0/warehouses/abc123def456` � `abc123def456`
+- This warehouse ID is used for all COPY INTO operations
+
+:::note Unity Catalog Permissions
+The Databricks access token requires permissions to:
+- Execute SQL statements on the specified warehouse
+- Write data to the target catalog and schema
+- Access the S3 staging location (configured separately in Databricks)
+:::
+
+### S3 Staging Operations
+
+**File Upload**:
+- Files are staged to `s3://bucket/prefix/table/filename` structure
+- Uses AWS SDK multipart upload for large files
+- Supports AWS credentials chain (access key, IAM role, instance profile)
+
+**Cleanup**:
+- Staged files are automatically deleted after successful COPY INTO execution
+- Failed uploads remain in S3 for troubleshooting
+
+### File Format Support
+
+**Valid Formats**:
+- **CSV**: Comma-separated values with optional headers
+- **JSON**: Newline-delimited JSON objects
+- **AVRO**: Schema-based binary format (requires schema)
+- **ORC**: Optimized row columnar format
+- **PARQUET**: Columnar storage format (requires schema)
+- **TEXT**: Plain text with delimiters
+
+**Schema Requirements**:
+- Avro and Parquet formats require `schema` field with valid schema definition
+- Schema must match the expected table structure in Databricks
+- Other formats use schema inference from data
+
+### Multi-Table Routing
+
+**Catch-All Table**:
+- Use `table` field to send all events to a single table
+- Simplest configuration for single-destination scenarios
+
+**Multiple Tables**:
+- Use `tables` array to route different event types to different tables
+- Each table entry specifies `table`, `schema`, `name`, `format` fields
+- Events routed based on SystemS3 field in pipeline
+
+**Example Configuration**:
+```yaml
+tables:
+  - table: security_events
+    schema: security_schema.avsc
+    name: security.{{.Timestamp}}.parquet
+    format: parquet
+  - table: access_logs
+    schema: access_schema.avsc
+    name: access.{{.Timestamp}}.parquet
+    format: parquet
+```
+
+### Performance Considerations
+
+**Batch Processing**:
+- Events are buffered until `batch_size` or `max_size` limits are reached
+- Larger batches reduce S3 API calls and COPY INTO operations
+- Balance batch size against latency requirements
+
+**Upload Optimization**:
+- Multipart uploads automatically handle large files
+- Configure `part_size` for optimal network performance
+- Default part size is AWS SDK default (5 MB)
+
+**COPY INTO Performance**:
+- COPY INTO commands are executed with configurable timeout
+- Failed COPY operations return errors for retry logic
+- Warehouse must be running for COPY INTO to succeed
+
+:::warning Warehouse State
+Ensure the SQL warehouse is running before sending data. COPY INTO commands will fail if the warehouse is stopped. Configure warehouse auto-start or manual start procedures.
+:::
+
+### Error Handling
+
+**Upload Failures**:
+- Failed S3 uploads are retried based on sender configuration
+- Permanent failures prevent COPY INTO execution
+- Check S3 bucket permissions and network connectivity
+
+**COPY INTO Failures**:
+- Schema mismatches between files and tables cause failures
+- Invalid SQL identifiers (catalog, schema, table names) are rejected at validation
+- Check Databricks query history for detailed error messages
+
+## Examples
+
+### Basic Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Sending telemetry to Databricks using S3 staging with Parquet format...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-warehouse
+        type: amazondatabricks
+        properties:
+          server_hostname: abc123.cloud.databricks.com
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: production_data
+          namespace: telemetry
+          staging_bucket: datastream-staging
+          region: us-east-1
+          table: events
+          schema: event_schema.avsc
+          name: events.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With AWS Credentials
+
+<ExampleGrid>
+  <CommentCol>
+    Using explicit AWS credentials for S3 staging access...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-secure
+        type: amazondatabricks
+        properties:
+          server_hostname: xyz789.cloud.databricks.com
+          http_path: /sql/1.0/warehouses/xyz789def123
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: security_analytics
+          namespace: logs
+          staging_bucket: security-logs-staging
+          staging_prefix: databricks/
+          region: us-west-2
+          key: "${AWS_ACCESS_KEY}"
+          secret: "${AWS_SECRET_KEY}"
+          table: security_events
+          schema: security_schema.avsc
+          name: security.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Table Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Routing different event types to separate Databricks tables...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-multi-table
+        type: amazondatabricks
+        properties:
+          server_hostname: abc123.cloud.databricks.com
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: analytics
+          namespace: production
+          staging_bucket: analytics-staging
+          region: us-east-1
+          tables:
+            - table: authentication_events
+              schema: auth_schema.avsc
+              name: auth.{{.Timestamp}}.parquet
+              format: parquet
+            - table: network_events
+              schema: network_schema.avsc
+              name: network.{{.Timestamp}}.parquet
+              format: parquet
+            - table: application_logs
+              schema: app_schema.avsc
+              name: app.{{.Timestamp}}.parquet
+              format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high-volume ingestion with batch limits and compression...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-high-volume
+        type: amazondatabricks
+        properties:
+          server_hostname: abc123.cloud.databricks.com
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: high_volume_data
+          namespace: streaming
+          staging_bucket: streaming-staging
+          region: us-east-1
+          batch_size: 100000
+          max_size: 134217728
+          part_size: 16
+          timeout: 600
+          table: streaming_events
+          schema: streaming_schema.avsc
+          name: stream.{{.Timestamp}}.parquet
+          format: parquet
+          compression: snappy
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### JSON Format
+
+<ExampleGrid>
+  <CommentCol>
+    Using JSON format for flexible schema evolution and debugging...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-json
+        type: amazondatabricks
+        properties:
+          server_hostname: abc123.cloud.databricks.com
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: development
+          namespace: test_data
+          staging_bucket: dev-staging
+          region: us-east-1
+          table: test_events
+          name: test.{{.Timestamp}}.json
+          format: json
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Applying ECS normalization before loading to Databricks...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-normalized
+        type: amazondatabricks
+        properties:
+          server_hostname: abc123.cloud.databricks.com
+          http_path: /sql/1.0/warehouses/abc123def456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: security_data
+          namespace: normalized
+          staging_bucket: security-staging
+          region: us-east-1
+          field_format: ECS
+          table: ecs_events
+          schema: ecs_schema.avsc
+          name: ecs.{{.Timestamp}}.parquet
+          format: parquet
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Production Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Production-ready configuration with performance tuning, AWS credentials, and multi-table routing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: databricks-production
+        type: amazondatabricks
+        properties:
+          server_hostname: production.cloud.databricks.com
+          http_path: /sql/1.0/warehouses/prod123abc456
+          access_token: "${DATABRICKS_TOKEN}"
+          catalog: production_analytics
+          namespace: telemetry
+          staging_bucket: production-staging-bucket
+          staging_prefix: datastream/databricks/
+          region: us-east-1
+          key: "${AWS_ACCESS_KEY}"
+          secret: "${AWS_SECRET_KEY}"
+          batch_size: 50000
+          max_size: 67108864
+          part_size: 10
+          timeout: 300
+          field_format: ASIM
+          tables:
+            - table: security_events
+              schema: security_schema.avsc
+              name: security.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+            - table: audit_logs
+              schema: audit_schema.avsc
+              name: audit.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+            - table: network_flows
+              schema: network_schema.avsc
+              name: network.{{.Timestamp}}.parquet
+              format: parquet
+              compression: snappy
+    ```
+  </CodeCol>
+</ExampleGrid>
