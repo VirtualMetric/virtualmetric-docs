@@ -80,7 +80,7 @@ Each template card provides essential information for evaluation:
 - Installation status indicator (Available/Installed)
 
 **Visual Indicators:**
-- Color-coded status badges for installation state
+- **Installed badge**: Blue status tag displayed for already-installed templates
 - Icon representations for device types and target platforms
 - Template complexity indicators (Simple/Advanced/Enterprise)
 - Last update timestamps and version history
@@ -88,7 +88,7 @@ Each template card provides essential information for evaluation:
 ### Template Details
 
 **Comprehensive Template Information:**
-Clicking on any template card opens detailed documentation across three specialized views:
+Clicking on any template card opens detailed documentation across four specialized views:
 
 #### General Overview Tab
 
@@ -136,45 +136,98 @@ Clicking on any template card opens detailed documentation across three speciali
 - Schema compliance validation results
 - Performance metrics and processing statistics
 
+#### License Details Tab
+
+**Template Licensing Information:**
+- Complete license text for the specific template
+- Elastic License 2.0 terms and conditions
+- Copyright notices and attribution requirements
+- Usage restrictions and compliance guidelines
+
+**Read-Only Display:**
+- Full license text displayed in code editor format
+- Detailed terms specific to this template version
+- Reference to general licensing framework documentation
+
 ## Template Installation Process
+
+### Template Actions
+
+Template detail pages provide different actions based on installation status:
+
+**Uninstalled Templates:**
+- **Install Template** button available in header
+- Clicking triggers dependency check and installation process
+- Requires PIPELINE_CREATE permission
+
+**Installed Templates:**
+- **Installed badge** displayed next to template name (blue tag)
+- **Actions menu** provides management operations:
+  - **Manage Dependencies** - Update optional and required dependencies (only shown if dependencies exist)
+  - **See Installed Pipeline** - Navigate to the installed pipeline detail page
 
 ### Installation Workflow
 
 **Template Evaluation:**
-Before installation, users can thoroughly evaluate templates:
+Before installation, users can thoroughly evaluate templates through the detail view tabs:
 
 **Preview Capabilities:**
 - Complete pipeline logic review without installation
 - Sample data transformation testing
-- Dependency analysis and compatibility checking
+- License terms review
 - Resource requirement estimation
-
-**Installation Preparation:**
-- Automatic dependency resolution and validation
-- Conflict detection with existing pipeline configurations
-- Backup and rollback planning for production environments
 
 ### Dependency Management
 
-**Dependency Types:**
-Templates may include various types of dependencies:
+**Pipeline Dependencies Modal:**
+When installing a template with dependencies, a modal appears for dependency selection:
+
+**Dependency Categories:**
 
 **Required Dependencies:**
-- Essential processing components that cannot be excluded
+- Essential processing components that must be installed
 - Core libraries and shared processing modules
 - Schema definitions and validation rules
-- Automatic inclusion in all installations
+- Checkbox selection to confirm installation
+- Already installed dependencies shown with "Installed" indicator (disabled checkbox)
 
 **Optional Dependencies:**
 - Enhanced processing features and advanced transformations
 - Integration modules for specific target platforms
 - Performance optimization components
-- User-selectable during installation process
+- User-selectable checkboxes for installation
+- Already installed dependencies indicated and disabled
 
-**Dependency Resolution:**
-- Automatic detection and resolution of prerequisite components
-- Version compatibility checking and conflict resolution
-- Installation order optimization for complex dependency chains
+**Dependency List Features:**
+- Show More/Show Less buttons for lists exceeding 5 items
+- Clickable dependency names to view dependency details
+- Visual distinction between installed and available dependencies
+- Installation progress indicator during processing
+
+**Managing Dependencies:**
+For installed templates with dependencies, use **Manage Dependencies** action to:
+- Install additional optional dependencies
+- View currently installed required and optional dependencies
+- Update dependency selections for the installed template
+
+### Installation Completion
+
+**Installation Success:**
+Upon successful template installation:
+
+**Success Notification:**
+- Success toast message confirms template installation
+- Notification displays template installation confirmation
+
+**Automatic Redirection:**
+- User automatically redirected to installed pipeline detail page
+- Navigation to `/pipelines/{id}/general-overview` route
+- Immediate access to pipeline configuration and customization
+
+**Post-Installation Access:**
+- Template remains visible in Content Hub with **Installed** badge
+- Template detail page provides access to installed pipeline via **See Installed Pipeline** action
+- Full pipeline editing capabilities in Pipeline management section
 
 ## Post-Installation Management
 
