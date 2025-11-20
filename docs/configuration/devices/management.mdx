@@ -76,9 +76,6 @@ Clicking a device card navigates to that device type's management page.
 - **Azure Blob Storage** - Azure Blob container file reader
 - **Azure Event Hubs** - Azure Event Hubs consumer
 
-**Coming Soon (6 types, hidden by default):**
-- macOS, Oracle Solaris, AIX, FreeBSD, OpenBSD, NetBSD
-
 ## Device List View
 
 Clicking a device card opens the device list view showing all instances of that device type.
@@ -90,8 +87,11 @@ The table displays all configured devices of the selected type with the followin
 - **Director** - Assigned Director name
 - **Status** - Operational state (Enabled or Disabled)
 - **Connection Status** - Real-time connectivity (Connected or Not Connected)
-- **Tags** - Assigned device tags
 - **Actions Menu (⋮)** - Per-device operations
+
+:::info
+The ability to add a _pre-processing pipeline_ is available for all devices.
+:::
 
 ### Table Controls
 
@@ -104,15 +104,13 @@ The table displays all configured devices of the selected type with the followin
   - All - Show all devices
   - Enabled - Show only active devices
   - Disabled - Show only inactive devices
-- **Connection Status Dropdown** - Filter by connection state (Pull devices only)
+- **Connection Status Dropdown** - Filter by connection state (Only Windows and Linux devices)
   - All - Show all devices
   - Connected - Show only connected devices
   - Not Connected - Show only disconnected devices
-- **Refresh Button** - Reload table data with current filters
 
 **Primary Actions:**
 - **Create device** - Launch device creation wizard
-  - Requires DEVICE_CREATE permission
   - Disabled if no Director exists
   - Alert banner appears when no Directors configured
 
@@ -122,8 +120,6 @@ For Push devices, if no Directors exist, an info alert displays:
 - **Title** - "Directors not found"
 - **Subtitle** - Explanation that Director is required for Push device creation
 - **Action Button** - "Create director" navigates to Director creation wizard
-
-This alert does not appear for Pull devices as they can use Agent-based collection.
 
 ### Device Actions Menu
 
@@ -138,6 +134,9 @@ Each device row provides an Actions menu (⋮) with device-specific operations:
 
 **Configuration:**
 - **Clone Device** - Duplicate device configuration for quick setup
+  :::warning
+  Windows and Unix devices cannot be cloned
+  :::
 
 **Deletion:**
 - **Delete Device** - Remove device from platform
@@ -609,7 +608,7 @@ Persistent error notifications requiring user action:
 - Review error details before dismissing
 - Take corrective action based on error message
 
-## Device Management Best Practices
+## Best Practices
 
 ### Device Organization
 
