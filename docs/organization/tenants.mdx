@@ -35,10 +35,187 @@ The table displays all tenant organizations with their operational status and re
 
 ## Tenant Actions
 
-The **Action Menu** (⋮) provides tenant management operations:
+The **Action Menu** (⋮) in the tenant table provides quick access operations:
 
 - **View company details** - Access detailed tenant information and settings
 - **Log in to tenant** - Switch context to manage tenant-specific configurations
+
+## Tenant Detail View
+
+Selecting a tenant from the table opens the detailed tenant management interface with comprehensive operational controls organized into tabbed panels.
+
+### Detail View Navigation
+
+The tenant detail view provides four primary management panels:
+
+- **Tenant Details** - Company information, configuration settings, and resource limits
+- **Plan Usage** - Resource consumption tracking and capacity monitoring
+- **Activity Logs** - Tenant-specific audit trail and activity history
+- **Access Requests** - Temporary access management and permission delegation
+
+### Detail View Actions
+
+The **Actions** menu in the detail view provides tenant-specific operations that vary based on current tenant status:
+
+**Available for All Tenants:**
+- **Log in to tenant** - Switch context to the selected tenant organization
+
+**Active Tenant Operations:**
+- **Disable tenant** - Deactivate tenant access while preserving data
+
+**Inactive Tenant Operations:**
+- **Enable tenant** - Restore access to previously disabled tenant
+- **Delete tenant** - Permanently remove tenant and all associated data
+
+## Access Requests
+
+The **Access Requests** system enables time-limited permission delegation for tenant access, allowing administrators to grant temporary access to users with specific permissions and automatic expiration. This feature supports controlled collaboration and audit compliance for sensitive tenant operations.
+
+### Access Request Overview
+
+Navigate to the **Access Requests** tab within a tenant detail view to manage temporary access permissions.
+
+The access requests table displays:
+
+- **User** - Email address of the user requesting access
+- **Status** - Current request state (Active, Pending, Expired, Revoked, Rejected)
+- **Expiration** - Access expiration date and time with relative countdown
+- **Permissions** - Count of granted permissions with detailed breakdown
+- **Actions** - Request-specific operations menu
+
+### Access Request Status
+
+Access requests progress through defined lifecycle states:
+
+- **Pending** - Request created but not yet active
+- **Active** - Currently valid access with permissions applied
+- **Expired** - Access period ended, permissions automatically revoked
+- **Revoked** - Manually cancelled before expiration
+- **Rejected** - Request denied by administrator
+
+### Create Access Request
+
+1. **Navigate to Access Requests**
+   - Open tenant detail view
+   - Select **Access Requests** tab
+   - Click **Create new access request**
+
+2. **Select User and Duration**
+   - **User**: Choose target user from dropdown
+   - **Request Note**: Document justification for access
+   - **Expiration**: Set access end date/time or select preset duration
+
+3. **Configure Permissions**
+
+   Access requests support two configuration methods:
+
+   **Basic Configuration:**
+   - Select from predefined custom roles
+   - Single role selection grants complete permission set
+   - Simplified workflow for standard access patterns
+
+   **Advanced Configuration:**
+   - Granular permission selection by access group
+   - Select specific permissions from categorized groups
+   - Search and filter available permissions
+   - Select all or remove all permissions per group
+   - Save custom selections as reusable custom role
+
+4. **Review and Submit**
+   - Review selected permissions in summary panel
+   - Verify user, expiration, and permission details
+   - Submit request for activation
+
+### Access Request Actions
+
+The **Action Menu** (⋮) for each access request provides status-appropriate operations:
+
+**All Requests:**
+- **See details** - View complete request information including full permission list
+
+**Active Requests:**
+- **Extend access time** - Modify expiration date to extend access period
+
+**Active and Pending Requests:**
+- **Revoke access** - Immediately cancel access and remove permissions
+
+**All Requests:**
+- **Clone access request** - Duplicate configuration for similar access needs
+
+### Managing Pending Access Requests
+
+When access requests are submitted, administrators can review and respond to pending requests through the Access Requests interface.
+
+**Pending Request Actions:**
+
+The **Action Menu** (⋮) for pending requests provides:
+- **Manage request** - Open detailed request view with approval options
+
+**Request Detail Drawer:**
+
+When managing a pending request, a side panel displays comprehensive request information:
+
+**Request Information:**
+- **Requesting User** - Full name of the user requesting access
+- **Request Send For** - Email address of the requesting user
+- **Request Time Limit** - Duration of requested access period
+- **Request Note** - Justification provided by the requesting user
+- **Permission Status** - Current request state (Pending)
+- **Permissions Expires At** - Scheduled expiration date and time
+- **Full Permission List** - Complete breakdown of all requested permissions organized by access group
+
+**Approval Actions:**
+
+The drawer provides two response options:
+
+1. **Approve Request**
+   - Grants all requested permissions to the user
+   - Activates access immediately
+   - Changes request status from "Pending" to "Active"
+   - Records approving administrator and timestamp in audit trail
+
+2. **Reject Request**
+   - Denies access request without granting permissions
+   - Changes request status from "Pending" to "Rejected"
+   - Records rejecting administrator and timestamp in audit trail
+   - User must submit new request if access is still needed
+
+**Response Tracking:**
+
+After approval or rejection, the access request table displays:
+- **Action Taken By** - Administrator who approved or rejected the request
+- **Action Taken At** - Timestamp when the response was recorded
+
+**Notification Workflow:**
+- Success notifications confirm approval or rejection actions
+- Failed actions display error messages requiring retry
+- All actions are logged in tenant activity history
+
+### Permission Management
+
+**Custom Role Creation:**
+When using Advanced Configuration, administrators can save permission selections as reusable custom roles:
+
+1. Select desired permissions from access groups
+2. Click **Save as custom role**
+3. Provide role name and description
+4. Custom role becomes available for future Basic Configuration selections
+
+**Configuration Method Switching:**
+Administrators can switch between Basic and Advanced configuration methods during request creation. Switching between methods clears current selections.
+
+### Access Request Monitoring
+
+**Expiration Tracking:**
+The system displays expiration dates with relative time indicators:
+- Hover over expiration date to view countdown (e.g., "expires in 3 days")
+- Expired requests show "expired at" with timestamp
+- Visual status tags indicate current state
+
+**Search and Filtering:**
+- Search access requests by user email
+- Filter requests by status
+- Paginate through request history
 
 ## Multitenancy Management
 
