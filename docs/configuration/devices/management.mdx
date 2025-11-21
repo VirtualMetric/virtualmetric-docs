@@ -145,51 +145,123 @@ Each device row provides an Actions menu (⋮) with device-specific operations:
 
 The device creation process varies by device type and category (Push vs Pull).
 
-### Push Device Creation
+Device wizards have 3 steps, though the specific steps vary by device category. Each step is labeled with its specific name rather than a generic step number.
 
-Push devices use a multi-step wizard with device-specific configuration:
+### General Settings
 
-**Common Steps:**
-1. **General Settings** - Name, description, tags, Director assignment
-2. **Protocol Settings** - Network address, port, protocol configuration
-3. **Advanced Configuration** - TLS, buffering, performance tuning
+**Applies to:** Syslog, HTTP, UDP, TCP, Estreamer, AzureBlobStorage, AzureEventHubs
 
-**Device-Specific Variations:**
-- **Syslog** - Protocol (UDP/TCP), framing mode, RFC compliance
-- **HTTP** - HTTP method, authentication, endpoint paths
-- **TCP/UDP** - Delimiter handling, buffer sizes
-- **eStreamer** - Certificate authentication, event filtering
+Basic device configuration including name and Director assignment:
 
-### Pull Device Creation
+- **Name** - Unique device identifier
+- **Device Status** - Enable or disable device
+- **Directors** - Assign device to one or more Directors
+- **Pre-processing Pipeline** - Optional pipeline for input normalization
 
-Pull devices have different creation workflows depending on type:
+### Protocol Settings
 
-**Windows/Linux Agent Devices:**
+**Applies to:** Syslog, HTTP, UDP, TCP, Estreamer
 
-Multi-step wizard with Agent deployment workflow:
+Network protocol configuration for Push devices:
 
-1. **Setup Device**
-   - **Name** - Device identifier
-   - **Director** - Director assignment for Agent coordination
-   - **Deployment Type** - Agent-based or Agentless connection
+- **Protocol** - Communication protocol (UDP, TCP, HTTP, etc.)
+- **IP Address** - Network address to bind (0.0.0.0 for all interfaces)
+- **Port** - Network port number for listening
+- **Framing** - Message framing mode (delimiter, RFC6587, etc.)
+- **TLS Encryption** - Optional TLS/SSL configuration
+- **Certificate and Key** - TLS certificate files when encryption enabled
 
-2. **Log Type Selection**
-   - **Log Categories** - Accordion-based log type selection
-   - **Predefined Definitions** - Pre-configured log collection templates
-   - **Windows**: Event Logs (Basic/Custom), Security Events, DNS Logs (with advanced filtering), Firewall Logs
-   - **Linux**: System Events, Audit Events, Firewall Events (each with file path configuration)
+### Advanced Configuration
 
-3. **Review and Configure**
-   - Summary of selected configuration
-   - Validation before creation
+**Applies to:** Syslog, HTTP, UDP, TCP, Estreamer, AzureEventHubs
 
-**Azure Cloud Devices:**
+Performance tuning and advanced settings:
 
-Simplified wizard for cloud-based pull devices:
+- **Socket Address Reuse** - Enable SO_REUSEADDR for port sharing
+- **Workers** - Number of concurrent processing workers
+- **Max Connections** - Maximum concurrent connections limit
+- **Max Message Size** - Maximum message size in bytes
+- **Timeout** - Connection and read timeout settings
+- **Buffer Size** - Input buffer size for data reception
+- **Batch Size** - Number of messages per batch
+- **Queue Interval** - Queue processing interval
+- **Forwarding** - Optional forwarding to another destination
 
-1. **General Settings** - Name, description, Director assignment
-2. **Azure Properties** - Authentication, workspace, connection details
-3. **Advanced Configuration** - Performance tuning, retry logic
+### Setup Device
+
+**Applies to:** Windows, Linux
+
+Initial device configuration and deployment type selection:
+
+- **Name** - Device identifier
+- **Director** - Director assignment for Agent coordination
+- **Deployment Type** - Choose between Agent-based or Agentless connection
+  - **Agent** - Install VirtualMetric Agent on target system
+  - **Agentless** - Connect remotely without installing Agent
+
+### Install and Connect
+
+**Applies to:** Windows, Linux
+
+Agent installation or agentless connection configuration (varies by deployment type):
+
+**For Agent Deployment:**
+- **Installation Command** - Platform-specific PowerShell/Bash script
+- **Copy Button** - One-click copy installation command
+- **Connection Verification** - Verify Agent successfully connected to Director
+- **Connection Status** - Real-time connection state display
+
+**For Agentless Deployment:**
+- **IP Address** - Target server address
+- **Port** - WinRM or SSH connection port
+- **Authentication** - Username/password or Active Directory
+- **Username / Password** - Credentials for remote access
+- **Domain** - Windows domain for Active Directory authentication
+- **Connection Verification** - Test remote connection before proceeding
+
+### Review and Configure
+
+**Applies to:** Windows, Linux
+
+Log type selection and configuration review:
+
+- **Log Categories** - Accordion-based log type selection with predefined definitions
+- **Windows Log Types**:
+  - Event Logs (Basic/Custom modes with XML editor)
+  - Security Events (with log level filtering)
+  - DNS Logs (with include/exclude filters)
+  - Firewall Logs (with event type selection)
+- **Linux Log Types**:
+  - System Events (with file path configuration)
+  - Audit Events (with file path configuration)
+  - Firewall Events (with file path configuration)
+- **Pre-processing Pipeline** - Optional pipeline assignment per log type
+- **Configuration Summary** - Review all settings before creation
+
+### Azure Properties
+
+**Applies to:** AzureBlobStorage, AzureEventHubs
+
+Azure-specific authentication and resource configuration:
+
+- **Managed Identities** - Toggle for Azure Managed Identity authentication
+- **Authentication Method** - Service Principal or Connection String
+- **Tenant ID / Client ID / Client Secret** - Service Principal credentials
+- **Account / Container / Namespace** - Azure resource identifiers
+- **Connection String** - Alternative authentication method
+
+### File Properties
+
+**Applies to:** AzureBlobStorage
+
+File reading and processing configuration:
+
+- **Path Prefix** - Blob path prefix filter
+- **File Format** - Expected file format (JSON, Parquet, Avro, etc.)
+- **Batch Size** - Number of files to process per batch
+- **Poll Interval** - Frequency to check for new files
+- **Max Concurrent Files** - Maximum parallel file processing
+- **Delete After Read** - Remove files after successful processing
 
 ### Wizard Navigation
 

@@ -89,34 +89,106 @@ Each target row provides an Actions menu (⋮) with target-specific operations:
 
 The target creation process uses a multi-step wizard with target-specific configuration.
 
-All targets follow a similar creation workflow with these core steps:
+Target wizards have different numbers of steps (3 or 4) depending on the target type. Each step is labeled with its specific name rather than a generic step number.
 
-### General Information
+### General Settings
+
+**Applies to:** All targets (AzureBlobStorage, AzureDataExplorer, AzureEventHubs, Console, Elasticsearch, File, MicrosoftSentinel, MicrosoftSentinelDataLake, Splunk)
 
 - **Name** - Unique target identifier
-- **Description** - Optional explanation of target purpose
+- **Target Status** - Enable or disable target
+- **Post-processing Pipeline** - Optional pipeline for output normalization
 
-### Target-Specific Configuration
+### Azure Properties
 
-Configuration varies by target type:
+**Applies to:** AzureBlobStorage, AzureDataExplorer, AzureEventHubs, MicrosoftSentinel, MicrosoftSentinelDataLake
 
-**Azure Targets:**
-- **Authentication** - Service Principal or Connection String
+Azure-specific configuration including authentication and resource identification:
+
+- **Authentication** - Managed Identities, Service Principal, or Connection String
+- **Tenant ID / Client ID / Client Secret** - Service Principal credentials
 - **Workspace/Subscription** - Azure resource identification
 - **Resource Group** - Azure resource grouping
-- **Workspace ID** - Log Analytics workspace (for Sentinel targets)
+- **Container / Database / Namespace** - Target-specific resource names
 
-**Analytics Targets:**
+### File Properties
+
+**Applies to:** AzureBlobStorage, File
+
+File output configuration including format and compression:
+
+- **File Name** - Output file naming pattern with template support
+- **File Format** - Output format (JSON, Parquet, Avro, etc.)
+- **Compression** - Optional data compression (zstd, gzip, etc.)
+- **Schema** - Schema definition for structured formats
+
+### Advanced Configuration
+
+**Applies to:** AzureEventHubs
+
+Advanced Event Hubs-specific settings including retry logic and performance tuning:
+
+- **Max Retry** - Maximum number of retry attempts
+- **Retry Interval** - Delay between retry attempts
+- **Timeout** - Connection timeout settings
+- **Batch Configuration** - Batching and performance options
+
+### Console Properties
+
+**Applies to:** Console
+
+Console output format configuration for debugging and testing:
+
+- **Output Format** - Display format for console output
+- **Pretty Print** - Formatted JSON output option
+
+### Authentication
+
+**Applies to:** Elasticsearch, Splunk
+
+Authentication credentials and endpoint configuration:
+
 - **Endpoints** - Destination URLs or addresses
-- **Authentication** - API keys, tokens, or certificates
-- **Index/Stream Configuration** - Data routing and organization
+- **Username / Password** - Basic authentication credentials
+- **API Keys / Tokens** - Token-based authentication
+- **TLS Configuration** - Certificate and encryption settings
 
-**Storage Targets:**
-- **Path/Container** - Storage location specification
-- **File Format** - Output format (JSON, Parquet, Avro)
-- **Compression** - Optional data compression settings
+### Elasticsearch Properties
+
+**Applies to:** Elasticsearch
+
+Elasticsearch-specific index and document configuration:
+
+- **Index Name** - Target index or index pattern
+- **Document Type** - Document type for older Elasticsearch versions
+- **Pipeline** - Ingest pipeline for preprocessing
+- **Bulk Configuration** - Batch size and flush settings
+
+### Stream Properties
+
+**Applies to:** MicrosoftSentinel, MicrosoftSentinelDataLake
+
+Microsoft Sentinel stream and DCR configuration:
+
+- **Stream Name** - Custom stream name
+- **Table Name** - Target table in Log Analytics workspace
+- **Rule ID** - Data Collection Rule (DCR) identifier
+- **Endpoint** - DCR endpoint URL
+
+### Splunk HEC Properties
+
+**Applies to:** Splunk
+
+Splunk HTTP Event Collector configuration:
+
+- **Index** - Target Splunk index
+- **Source Type** - Event source type classification
+- **HEC Token** - HTTP Event Collector authentication token
+- **Channel** - HEC channel identifier
 
 ### Execution Settings
+
+**Applies to:** All targets (AzureBlobStorage, AzureDataExplorer, AzureEventHubs, Console, Elasticsearch, File, MicrosoftSentinel, MicrosoftSentinelDataLake, Splunk)
 
 This step configures target execution scheduling and debugging options.
 
@@ -215,12 +287,6 @@ Configure debugging options for target troubleshooting.
 - Events are logged but not sent to destination
 - Useful for testing configurations without affecting production systems
 - Allows validation of data format and transformation logic
-
-### Review and Create
-
-- Summary of all configuration
-- Validation before creation
-- Create Target button to finalize
 
 ### Wizard Navigation
 
