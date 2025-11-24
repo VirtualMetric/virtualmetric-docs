@@ -19,7 +19,7 @@ Navigate to the Directors management interface:
 
 ## Directors Overview
 
-The Directors dashboard provides centralized visibility and control over all Director instances across your infrastructure.
+The Directors dashboard provides centralized visibility and control over all Director instances across your infrastructure. Directors orchestrate data collection, processing, and routing, with support for distributed processing through Agent pre-processing capabilities.
 
 ### Directors Table
 
@@ -321,6 +321,82 @@ If Director has active dependencies, error modal displays:
 3. Reassign agents to different Director or delete
 4. Retry Director deletion after dependencies removed
 
+## Agent Pre-Processing Management
+
+Directors can configure Agents to perform pipeline-based pre-processing of logs before transmission. This distributed processing model reduces Director workload and enables edge-based data transformation.
+
+### Pre-Processing Architecture
+
+**Processing Flow with Agent Pre-Processing:**
+
+1. **Agent Collection** - Agent collects logs locally at endpoint
+2. **Agent Processing** - Agent executes configured pipeline transformations
+3. **Agent Transmission** - Agent sends pre-processed data to Director
+4. **Director Routing** - Director forwards data to targets (optional additional processing)
+
+**Processing Flow without Agent Pre-Processing:**
+
+1. **Agent Collection** - Agent collects logs locally at endpoint
+2. **Agent Transmission** - Agent sends raw data to Director
+3. **Director Processing** - Director executes pipeline transformations
+4. **Director Routing** - Director forwards processed data to targets
+
+### Configuring Agent Pre-Processing
+
+Agent pre-processing is configured through device settings in the Director interface:
+
+**Configuration Location:**
+- Navigate to **Home** > **Fleet Management** > **Devices**
+- Select the Agent device to configure
+- Assign pipeline to device configuration
+- Pipeline executes on Agent before data transmission
+
+**Pipeline Assignment:**
+- Same pipeline syntax as Director pipelines
+- All processor types available for Agent execution
+- Configuration managed centrally through Director
+- Changes synchronized automatically to Agents
+
+### Pre-Processing Use Cases
+
+**High-Volume Log Filtering:**
+- Filter non-essential logs at collection point
+- Reduce network bandwidth consumption
+- Distribute processing load across Agents
+- Improve Director scalability
+
+**Edge-Based Compliance:**
+- Mask sensitive data (PII, credentials) at source
+- Apply regulatory transformations before transmission
+- Ensure compliance before data leaves endpoint
+- Support data sovereignty requirements
+
+**Distributed Processing:**
+- Process data locally in remote offices
+- Minimize central Director processing load
+- Support intermittent connectivity scenarios
+- Optimize infrastructure costs
+
+### Configuration Best Practices
+
+**Pipeline Design:**
+- Use Agent pre-processing for filtering and basic transformations
+- Reserve complex processing (enrichment, external lookups) for Director
+- Balance processing load between Agents and Directors
+- Monitor Agent resource utilization
+
+**Performance Optimization:**
+- Assign lightweight pipelines to resource-constrained Agents
+- Use Director processing for computationally intensive operations
+- Test pipeline performance on Agent hardware before deployment
+- Monitor Agent CPU and memory usage
+
+**Operational Management:**
+- Configure pipelines centrally through Director interface
+- Use hot configuration reload to update Agent pipelines
+- Monitor Agent processing metrics through Director dashboard
+- Maintain pipeline version consistency across Agents
+
 ## Notifications
 
 The Directors interface provides automatic notifications for all operations:
@@ -365,6 +441,7 @@ Persistent error notifications requiring user action:
 - Download and deploy config updates promptly
 - Test configuration changes in non-production first
 - Maintain configuration version history
+- Review Agent pre-processing configurations when updating Director pipelines
 
 **Managed Directors:**
 - VirtualMetric handles configuration updates automatically

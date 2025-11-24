@@ -92,7 +92,7 @@ Deploy Directors in containerized environments for modern infrastructure managem
 - Native support for Unix/Linux system integration
 
 **Agent Connectivity:**
-- **Windows Agent**: Full support for Windows systems via VirtualMetric Agent
+- **Windows Agent**: Full support for Windows systems via VirtualMetric Agent with optional pre-processing
 - **Linux Agentless**: Complete support via SSH-based connections
 - **Windows Agentless**: Not supported (Microsoft deprecated WinRM support)
 
@@ -106,7 +106,7 @@ Deploy Directors in containerized environments for modern infrastructure managem
 **Agentless Connectivity:**
 - **Windows Agentless**: Full support via WinRM protocols
 - **Linux Agentless**: Complete support via SSH connections
-- **Universal Agent**: Support for both Windows and Linux systems
+- **Universal Agent**: Support for both Windows and Linux systems with optional pre-processing
 
 **Integration Benefits:**
 - Native Windows service integration
@@ -118,6 +118,79 @@ Deploy Directors in containerized environments for modern infrastructure managem
 - Windows-centric environments
 - Organizations requiring agentless Windows monitoring
 - Environments with existing Windows management infrastructure
+
+## Agent Pre-Processing Architecture
+
+VirtualMetric Agents support optional pipeline-based pre-processing before sending data to Directors. This distributed processing model reduces Director workload and enables edge-based data transformation.
+
+### Processing Models
+
+**Traditional Model:**
+- Agent collects logs locally at endpoint
+- Agent sends raw data to Director
+- Director processes data through pipelines
+- Director forwards processed data to targets
+
+**Pre-Processing Model:**
+- Agent collects logs locally at endpoint
+- Agent processes data through configured pipelines
+- Agent sends pre-processed data to Director
+- Director forwards data to targets (optional additional processing)
+
+### Pre-Processing Benefits
+
+**Performance Advantages:**
+- Reduced Director processing load through distributed computation
+- Lower network bandwidth consumption via edge-based filtering and transformation
+- Improved scalability for large-scale deployments with multiple Agents
+- Faster data delivery through parallel processing at collection points
+
+**Architectural Advantages:**
+- Edge-based filtering reduces unnecessary data transmission
+- Local transformation enables compliance requirements at data source
+- Distributed processing model supports horizontal scaling
+- Reduced central processing bottlenecks in high-volume environments
+
+### Pre-Processing Configuration
+
+Agent pre-processing is configured through the Director's device configuration for that Agent:
+
+- Pipelines assigned to Agent devices execute locally on the Agent
+- Same pipeline syntax and processors available as Director pipelines
+- Configuration managed centrally through Director for consistency
+- Hot configuration reload without Agent restart
+
+### Use Cases for Agent Pre-Processing
+
+**High-Volume Environments:**
+- Filter non-essential logs at collection point before transmission
+- Reduce network bandwidth for high-volume log sources
+- Distribute processing load across multiple Agent endpoints
+
+**Compliance and Privacy:**
+- Mask sensitive data (PII, credentials) at source before transmission
+- Apply regulatory transformations at data collection point
+- Ensure data compliance before leaving endpoint network
+
+**Edge Computing:**
+- Process data locally in remote or branch offices
+- Minimize data transmission to central Director
+- Support disconnected or intermittent connectivity scenarios
+
+**Cost Optimization:**
+- Reduce Director infrastructure requirements through distributed processing
+- Lower network bandwidth costs via edge-based filtering
+- Optimize central processing capacity allocation
+
+### Configuration Considerations
+
+When implementing Agent pre-processing:
+
+- Balance processing load between Agents and Directors based on infrastructure capacity
+- Consider network latency and bandwidth when deciding what to process at edge
+- Use Agent pre-processing for filtering and basic transformations
+- Reserve complex processing (enrichment, external lookups) for Director when possible
+- Monitor Agent resource utilization to prevent endpoint performance impact
 
 ## Installation Process
 
@@ -210,6 +283,7 @@ The standard installation process follows a guided setup through the DataStream 
 - Implement efficient parsing and transformation rules
 - Use appropriate batch sizes for different data sources
 - Monitor processing latency and throughput metrics
+- Consider Agent pre-processing for high-volume deployments to distribute processing load
 
 ### High Availability Planning
 

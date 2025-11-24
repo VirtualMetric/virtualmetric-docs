@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Interval controls how frequently a target or route executes, measured in time units or seconds. This provides simple, periodic execution without the complexity of cron expressions.
+Interval controls how frequently a target, route, or Agent device executes, measured in time units or seconds. This provides simple, periodic execution without the complexity of cron expressions.
 
 ## Schema
 
@@ -28,6 +28,17 @@ routes:
       interval: <string|numeric>
 ```
 
+### Agent Devices
+
+```yaml
+devices:
+  - name: <string>
+    type: windows
+    properties:
+      interval: <string|numeric>
+      pipeline: <string>
+```
+
 ## Configuration
 
 |Field|Required|Default|Description|
@@ -36,15 +47,18 @@ routes:
 
 ## Details
 
-The interval field determines how often a target or route processes queued data. When configured, the component will execute at regular intervals rather than continuously. This helps:
+The interval field determines how often a target, route, or Agent device processes queued data. When configured, the component will execute at regular intervals rather than continuously. This helps:
 
 - Control resource consumption
 - Batch data for more efficient processing
 - Reduce API call frequency to external services
 - Manage costs for volume-based services
 - Create time-based routing logic
+- Reduce Agent resource usage and network bandwidth consumption
 
 Between interval executions, data accumulates in the queue and is processed during the next execution window.
+
+For Agent devices with pre-processing pipelines, interval scheduling controls how frequently the Agent executes its pipeline transformations and transmits processed data to the Director.
 
 ### Format Options
 
