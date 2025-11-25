@@ -1,3 +1,6 @@
+import BucketRouting from '../_bucket-routing.mdx';
+import FileFormats from '../_file-formats.mdx';
+
 # Amazon S3
 
 <span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
@@ -124,46 +127,9 @@ The Amazon S3 target supports writing to different buckets with various file for
 
 Supports static credentials (access key and secret key) with optional session tokens for temporary credentials. When deployed on AWS infrastructure, can leverage IAM role-based authentication without explicit credentials.
 
-### File Formats
+<FileFormats />
 
-|Format|Description|
-|---|---|
-|`json`|Each log entry is written as a separate JSON line (JSONL format)|
-|`multijson`|All log entries are written as a single JSON array|
-|`avro`|Apache Avro format with schema|
-|`parquet`|Apache Parquet columnar format with schema|
-
-### Compression
-
-Some formats support built-in compression to reduce storage costs and transfer times. When supported, compression is applied at the file/block level before upload.
-
-|Format|Default|Compression Codecs|
-|---|---|---|
-|JSON|-|Not supported|
-|MultiJSON|-|Not supported|
-|Avro|`zstd`|`deflate`, `snappy`, `zstd`|
-|Parquet|`zstd`|`gzip`, `snappy`, `zstd`, `brotli`, `lz4`|
-
-### File Management
-
-Files are rotated based on size (`max_size` parameter) or event count (`batch_size` parameter), whichever limit is reached first. Template variables in file names enable dynamic file naming for time-based partitioning.
-
-### Bucket Routing
-
-The target supports flexible bucket routing through pipeline configuration or explicit bucket settings:
-
-**Configuration-based routing**: Define multiple buckets in the target configuration, each with its own format, compression, and schema settings. Logs are routed to specific buckets based on configuration.
-
-**Pipeline-based routing**: Use the `bucket` field in pipeline processors to dynamically route logs to different buckets at runtime. This enables conditional routing based on log content, source, or other attributes.
-
-**Catch-all routing**: When a log doesn't match any specific bucket configuration or when no `bucket` field is set in the pipeline, logs are routed to the catch-all bucket (configured via the `bucket` field in target properties).
-
-**Routing priority**:
-1. Pipeline `bucket` field (highest priority)
-2. Configured buckets in `buckets` array (if bucket name matches)
-3. Default `bucket` field (catch-all, lowest priority)
-
-This multi-level routing enables flexible data distribution strategies, such as routing different log types to different buckets based on content analysis, source system, severity level, or any other runtime decision.
+<BucketRouting />
 
 ### Templates
 
