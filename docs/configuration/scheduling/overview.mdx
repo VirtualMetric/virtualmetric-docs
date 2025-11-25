@@ -1,8 +1,13 @@
-# Overview
+---
+pagination_prev: null
+sidebar_label: Overview
+---
 
-## Overview
+# Scheduling: Overview
 
 Execution timing capabilities provide powerful control over when and how often your telemetry pipeline components execute. By adding temporal logic to targets and routes, you can optimize resource usage, reduce costs, implement time-based routing strategies, and align data processing with business requirements.
+
+Scheduling applies to both Director-based and Agent-based processing, enabling time-based control regardless of where pipeline execution occurs.
 
 ## What You Can Do
 
@@ -12,6 +17,7 @@ Execute components at specific times or regular intervals:
 
 - **Targets**: Control when data is sent to destinations
 - **Routes**: Control when data flows through specific paths
+- **Agent Processing**: Control when Agents process data with pipelines before transmission
 
 ### Optimize Resource Usage
 
@@ -54,7 +60,7 @@ Execute components at specific times using cron expressions.
 - Calendar-based patterns (monthly reports, weekend processing)
 - Complex time windows
 
-**Learn more:** <Topic id="cron">Cron Documentation</Topic>
+**Learn more:** <Topic id="cron-based-scheduling">Cron Documentation</Topic>
 
 ### Interval
 
@@ -66,7 +72,7 @@ Execute components at regular intervals using simple time units.
 - Predictable resource consumption
 - Straightforward configuration
 
-**Learn more:** <Topic id="interval">Interval Documentation</Topic>
+**Learn more:** <Topic id="interval-based-scheduling">Interval Documentation</Topic>
 
 ## Use Cases and Scenarios
 
@@ -337,6 +343,50 @@ targets:
 - Realtime monitoring in production
 - Environment-appropriate SLAs
 
+### Agent Pre-Processing with Scheduled Execution
+
+Control when Agents process and transmit data:
+
+```yaml
+# Agent device with scheduled pre-processing
+devices:
+  - name: windows_agent_01
+    type: windows
+    properties:
+      # Agent processes logs every 15 minutes
+      interval: "15m"
+      pipeline: "filter_and_mask"
+
+# Agent device with cron-based processing
+devices:
+  - name: windows_agent_02
+    type: windows
+    properties:
+      # Agent processes logs during business hours only
+      cron: "* 9-17 * * 1-5"
+      pipeline: "compliance_transform"
+
+# Agent device with realtime processing
+devices:
+  - name: windows_agent_03
+    type: windows
+    properties:
+      # No interval - continuous processing
+      pipeline: "realtime_filter"
+```
+
+**Benefits:**
+- Reduce Agent resource consumption through scheduled processing
+- Control network bandwidth by batching data transmission
+- Align Agent processing with business hours or maintenance windows
+- Distribute processing load across time for multiple Agents
+
+**Use Cases:**
+- **Edge Filtering**: Process and filter logs every 5 minutes at collection point before transmission
+- **Off-Hours Processing**: Run expensive Agent transformations during non-business hours
+- **Compliance Windows**: Ensure regulatory transformations occur during specific time windows
+- **Cost Management**: Batch Agent transmissions to reduce network and Director processing costs
+
 ## Configuration Patterns
 
 ### Combining Cron and Interval
@@ -427,6 +477,7 @@ Match timing configuration to expected data volume:
 - **High volume**: Use longer intervals or specific cron schedules
 - **Low volume**: Realtime or short intervals work well
 - **Variable volume**: Use time-based routing to handle peaks
+- **Agent pre-processing**: Use scheduled Agent processing to distribute load and reduce network bandwidth
 
 ### Monitor Queue Depth
 
@@ -524,6 +575,6 @@ Time-based execution provides essential control over telemetry pipeline behavior
 Start with simple intervals for regular processing, then add cron-based logic for complex time-aware workflows.
 
 **Next Steps:**
-- Read <Topic id="cron">Cron Documentation</Topic> for cron-based execution
-- Read <Topic id="interval">Interval Documentation</Topic> for interval-based execution
+- Read <Topic id="cron-based-scheduling">Cron Documentation</Topic> for cron-based execution
+- Read <Topic id="interval-based-scheduling">Interval Documentation</Topic> for interval-based execution
 - Explore target-specific documentation for integration details

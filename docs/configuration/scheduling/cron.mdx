@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Cron-based execution allows targets and routes to run at specific times using cron expressions. Instead of running continuously, the component will only process data when the cron schedule condition is met.
+Cron-based execution allows targets, routes, and Agent devices to run at specific times using cron expressions. Instead of running continuously, the component will only process data when the cron schedule condition is met.
 
 ## Schema
 
@@ -28,6 +28,17 @@ routes:
       cron: <string>
 ```
 
+### Agent Devices
+
+```yaml
+devices:
+  - name: <string>
+    type: windows
+    properties:
+      cron: <string>
+      pipeline: <string>
+```
+
 ## Configuration
 
 |Field|Required|Default|Description|
@@ -36,15 +47,18 @@ routes:
 
 ## Details
 
-The cron field accepts standard cron expressions to control when a target or route executes. This is useful for scenarios where you want to:
+The cron field accepts standard cron expressions to control when a target, route, or Agent device executes. This is useful for scenarios where you want to:
 
 - Process data at specific times of day
 - Run components during off-peak hours
 - Align execution with business schedules
 - Reduce resource consumption by limiting execution windows
 - Create time-based routing logic
+- Control when Agents process logs with pipelines before transmission
 
 When a cron schedule is configured, the component will only process queued data when the current time matches the cron expression. Between scheduled executions, data accumulates in the queue and is processed during the next scheduled window.
+
+For Agent devices with pre-processing pipelines, cron scheduling controls when the Agent executes its pipeline transformations and transmits processed data to the Director.
 
 ### Cron Expression Format
 

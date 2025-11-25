@@ -70,8 +70,8 @@ const sidebars: SidebarsConfig = {
           label: "Directors",
           items: [
             "configuration/directors/introduction",
-            "configuration/directors/configuration",
             "configuration/directors/deployment",
+            "configuration/directors/management",
             "configuration/directors/troubleshooting",
             {
               type: "category",
@@ -88,6 +88,7 @@ const sidebars: SidebarsConfig = {
           label: "Devices",
           items: [
             "configuration/devices/overview",
+            "configuration/devices/management",
             "configuration/devices/azure-blob-storage",
             "configuration/devices/azure-monitor",
             "configuration/devices/estreamer",
@@ -116,6 +117,7 @@ const sidebars: SidebarsConfig = {
           label: "Targets",
           items: [
             "configuration/targets/overview",
+            "configuration/targets/management",
             {
               type: "category",
               label: "Microsoft Azure",
@@ -391,7 +393,14 @@ const sidebars: SidebarsConfig = {
             },
           ],
         },
-        'configuration/routes',
+        {
+          type: "category",
+          label: "Routes",
+          items: [
+            'configuration/routes/overview',
+            'configuration/routes/management',
+          ]
+        },
         {
           type: "category",
           label: "Scheduling",
@@ -502,6 +511,7 @@ const sidebars: SidebarsConfig = {
       label: 'Release Notes',
       collapsible: false,
       items: [
+        "release-notes/v1.6.1",
         "release-notes/v1.6.0",
         "release-notes/v1.5.1",
         "release-notes/v1.5.0",
