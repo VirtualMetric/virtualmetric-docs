@@ -511,6 +511,7 @@ const sidebars: SidebarsConfig = {
       label: 'Release Notes',
       collapsible: false,
       items: [
+        "release-notes/v1.6.1",
         "release-notes/v1.6.0",
         "release-notes/v1.5.1",
         "release-notes/v1.5.0",
