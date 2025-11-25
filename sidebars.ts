@@ -70,8 +70,8 @@ const sidebars: SidebarsConfig = {
           label: "Directors",
           items: [
             "configuration/directors/introduction",
-            "configuration/directors/management",
             "configuration/directors/deployment",
+            "configuration/directors/management",
             "configuration/directors/troubleshooting",
             {
               type: "category",
