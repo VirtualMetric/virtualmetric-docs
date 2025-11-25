@@ -1,0 +1,341 @@
+---
+description: Converts DNS response code numbers to human-readable names
+sidebar_custom_props: 
+  customIcon: 📡
+  customCategory: Networking
+---
+
+# DNS Response Code
+
+<span className="theme-doc-version-badge badge badge--primary">Networking</span><span className="theme-doc-version-badge badge badge--secondary">ASIM Compatible</span>
+
+## Synopsis
+
+Converts DNS response code numbers to their corresponding human-readable names using ASIM lookup logic.
+
+## Schema
+
+```yaml {3}
+- dns_response_code:
+    description: <text>
+    field: <ident>
+    target_field: <ident>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y||Field containing the DNS response code number|
+|`target_field`|N|Same as `field`|Field to store the response code name|
+|`description`|N|-|Explanatory notes|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`ignore_missing`|N|`false`|Continue processing if the field is missing|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor accepts DNS response code numbers in various formats (string, integer, float) and converts them to standardized DNS response code names according to RFC specifications. It supports all standard DNS response codes including:
+
+- **Success codes**: NOERROR (successful query)
+- **Client error codes**: FORMERR (format error), NOTIMP (not implemented), REFUSED (query refused)
+- **Server error codes**: SERVFAIL (server failure), NXDOMAIN (domain does not exist)
+- **Zone error codes**: NOTAUTH (not authoritative), NOTZONE (name not in zone)
+- **Security codes**: BADKEY (bad key), BADTIME (bad time), BADALG (bad algorithm)
+- **Extension codes**: BADVERS (bad version), BADCOOKIE (bad cookie)
+
+:::info
+This processor follows RFC 1035, RFC 2136, RFC 2845, and other DNS-related RFCs for response code definitions, ensuring compatibility with standard DNS implementations.
+:::
+
+:::note
+Numbers in the Private Use range (3841-4095) are mapped to "Reserved for Private Use", while unrecognized numbers default to "Unassigned".
+:::
+
+:::tip
+Understanding DNS response codes is crucial for network troubleshooting. NXDOMAIN indicates the queried domain doesn't exist, while SERVFAIL suggests DNS server issues that may require investigation.
+:::
+
+## Examples
+
+### Successful Query
+
+<ExampleGrid>
+  <CommentCol>
+    A successful DNS query...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "response_code": 0
+    }
+    ```
+    ```yaml
+    - dns_response_code:
+        field: response_code
+    ```
+  </CodeCol>
+  <CommentCol>
+    returns the success status:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "response_code": "NOERROR"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Domain Not Found
+
+<ExampleGrid>
+  <CommentCol>
+    When a domain doesn't exist...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "dns_result": 3
+    }
+    ```
+    ```yaml
+    - dns_response_code:
+        field: dns_result
+        target_field: dns_status
+    ```
+  </CodeCol>
+  <CommentCol>
+    the error is clearly identified:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "dns_result": 3,
+      "dns_status": "NXDOMAIN"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Server Failure
+
+<ExampleGrid>
+  <CommentCol>
+    DNS server errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_code": "2"
+    }
+    ```
+    ```yaml
+    - dns_response_code:
+        field: error_code
+        target_field: server_status
+    ```
+  </CodeCol>
+  <CommentCol>
+    indicate infrastructure issues:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_code": "2",
+      "server_status": "SERVFAIL"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Query Refused
+
+<ExampleGrid>
+  <CommentCol>
+    Refused queries...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "rejection_code": 5
+    }
+    ```
+    ```yaml
+    - dns_response_code:
+        field: rejection_code
+    ```
+  </CodeCol>
+  <CommentCol>
+    show access control issues:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "rejection_code": "REFUSED"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Format Error
+
+<ExampleGrid>
+  <CommentCol>
+    Malformed DNS queries...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "query_error": 1
+    }
+    ```
+    ```yaml
+    - dns_response_code:
+        field: query_error
+        target_field: error_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    are flagged as format errors:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "query_error": 1,
+      "error_type": "FORMERR"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Authentication Issues
+
+<ExampleGrid>
+  <CommentCol>
+    DNSSEC authentication failures...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "auth_code": 17
+    }
+    ```
+    ```yaml
+    - dns_response_code:
+        field: auth_code
+        target_field: security_status
+    ```
+  </CodeCol>
+  <CommentCol>
+    show key validation problems:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "auth_code": 17,
+      "security_status": "BADKEY"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Zone Transfer Errors
+
+<ExampleGrid>
+  <CommentCol>
+    Zone authority issues...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "zone_error": 9
+    }
+    ```
+    ```yaml
+    - dns_response_code:
+        field: zone_error
+    ```
+  </CodeCol>
+  <CommentCol>
+    indicate authorization problems:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "zone_error": "NOTAUTH"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Cookie Extension Errors
+
+<ExampleGrid>
+  <CommentCol>
+    DNS cookie validation failures...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cookie_status": 23
+    }
+    ```
+    ```yaml
+    - dns_response_code:
+        field: cookie_status
+        target_field: cookie_result
+    ```
+  </CodeCol>
+  <CommentCol>
+    are identified for security analysis:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cookie_status": 23,
+      "cookie_result": "BADCOOKIE"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Unknown Response Codes
+
+<ExampleGrid>
+  <CommentCol>
+    Unrecognized response codes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "unknown_code": 999
+    }
+    ```
+    ```yaml
+    - dns_response_code:
+        field: unknown_code
+    ```
+  </CodeCol>
+  <CommentCol>
+    default to "Unassigned":
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "unknown_code": "Unassigned"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

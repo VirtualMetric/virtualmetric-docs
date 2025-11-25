@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Interval controls how frequently a target or route executes, measured in time units or seconds. This provides simple, periodic execution without the complexity of cron expressions.
+Interval controls how frequently a target, route, or Agent device executes, measured in time units or seconds. This provides simple, periodic execution without the complexity of cron expressions.
 
 ## Schema
 
@@ -18,23 +18,25 @@ targets:
 ```
 
 ### Routes
-```yaml
-targets:
-  - name: <string>
-    type: <string>
-    properties:
-      interval: <string|numeric>
-      # target-specific properties
-```
-
-### Routes
 
 ```yaml
 routes:
   - name: <string>
-    interval: <string|numeric>
     source: <string>
     destination: <string>
+    properties:
+      interval: <string|numeric>
+```
+
+### Agent Devices
+
+```yaml
+devices:
+  - name: <string>
+    type: windows
+    properties:
+      interval: <string|numeric>
+      pipeline: <string>
 ```
 
 ## Configuration
@@ -45,15 +47,18 @@ routes:
 
 ## Details
 
-The interval field determines how often a target or route processes queued data. When configured, the component will execute at regular intervals rather than continuously. This helps:
+The interval field determines how often a target, route, or Agent device processes queued data. When configured, the component will execute at regular intervals rather than continuously. This helps:
 
 - Control resource consumption
 - Batch data for more efficient processing
 - Reduce API call frequency to external services
 - Manage costs for volume-based services
 - Create time-based routing logic
+- Reduce Agent resource usage and network bandwidth consumption
 
 Between interval executions, data accumulates in the queue and is processed during the next execution window.
+
+For Agent devices with pre-processing pipelines, interval scheduling controls how frequently the Agent executes its pipeline transformations and transmits processed data to the Director.
 
 ### Format Options
 
@@ -297,9 +302,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: hourly_archive
-        interval: "1h"
         source: "processed_logs"
         destination: "s3_archive"
+        properties:
+          interval: "1h"
       
       - name: realtime_route
         source: "processed_logs"
@@ -318,9 +324,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: batch_route
-        interval: "15m"
         source: "application_logs"
         destination: "batch_processor"
+        properties:
+          interval: "15m"
       
       - name: stream_route
         source: "application_logs"
@@ -339,9 +346,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: cost_optimized_route
-        interval: "6h"
         source: "high_volume_logs"
         destination: "expensive_analytics"
+        properties:
+          interval: "6h"
       
       - name: cheap_storage_route
         source: "high_volume_logs"
@@ -360,9 +368,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: aggregated_route
-        interval: "5m"
         source: "metrics"
         destination: "aggregated_storage"
+        properties:
+          interval: "5m"
       
       - name: raw_route
         source: "metrics"
@@ -381,9 +390,10 @@ The first execution occurs immediately after component initialization. Subsequen
     ```yaml
     routes:
       - name: backup_route
-        interval: "30m"
         source: "critical_logs"
         destination: "backup_storage"
+        properties:
+          interval: "30m"
       
       - name: primary_route
         source: "critical_logs"

@@ -1,4 +1,9 @@
-# Overview
+---
+pagination_prev: null
+sidebar_label: Overview
+---
+
+# Content Hub: Overview
 
 The Content Hub provides a centralized repository of professionally-developed pipeline templates designed to accelerate DataStream deployment and standardize data processing workflows. These templates contain pre-built parsing, transformation, and enrichment logic for popular security devices, network equipment, and enterprise applications.
 
@@ -80,7 +85,7 @@ Each template card provides essential information for evaluation:
 - Installation status indicator (Available/Installed)
 
 **Visual Indicators:**
-- Color-coded status badges for installation state
+- **Installed badge**: Blue status tag displayed for already-installed templates
 - Icon representations for device types and target platforms
 - Template complexity indicators (Simple/Advanced/Enterprise)
 - Last update timestamps and version history
@@ -88,7 +93,7 @@ Each template card provides essential information for evaluation:
 ### Template Details
 
 **Comprehensive Template Information:**
-Clicking on any template card opens detailed documentation across three specialized views:
+Clicking on any template card opens detailed documentation across four specialized views:
 
 #### General Overview Tab
 
@@ -136,45 +141,98 @@ Clicking on any template card opens detailed documentation across three speciali
 - Schema compliance validation results
 - Performance metrics and processing statistics
 
+#### License Details Tab
+
+**Template Licensing Information:**
+- Complete license text for the specific template
+- Elastic License 2.0 terms and conditions
+- Copyright notices and attribution requirements
+- Usage restrictions and compliance guidelines
+
+**Read-Only Display:**
+- Full license text displayed in code editor format
+- Detailed terms specific to this template version
+- Reference to general licensing framework documentation
+
 ## Template Installation Process
+
+### Template Actions
+
+Template detail pages provide different actions based on installation status:
+
+**Uninstalled Templates:**
+- **Install Template** button available in header
+- Clicking triggers dependency check and installation process
+- Requires PIPELINE_CREATE permission
+
+**Installed Templates:**
+- **Installed badge** displayed next to template name (blue tag)
+- **Actions menu** provides management operations:
+  - **Manage Dependencies** - Update optional and required dependencies (only shown if dependencies exist)
+  - **See Installed Pipeline** - Navigate to the installed pipeline detail page
 
 ### Installation Workflow
 
 **Template Evaluation:**
-Before installation, users can thoroughly evaluate templates:
+Before installation, users can thoroughly evaluate templates through the detail view tabs:
 
 **Preview Capabilities:**
 - Complete pipeline logic review without installation
 - Sample data transformation testing
-- Dependency analysis and compatibility checking
+- License terms review
 - Resource requirement estimation
-
-**Installation Preparation:**
-- Automatic dependency resolution and validation
-- Conflict detection with existing pipeline configurations
-- Backup and rollback planning for production environments
 
 ### Dependency Management
 
-**Dependency Types:**
-Templates may include various types of dependencies:
+**Pipeline Dependencies Modal:**
+When installing a template with dependencies, a modal appears for dependency selection:
+
+**Dependency Categories:**
 
 **Required Dependencies:**
-- Essential processing components that cannot be excluded
+- Essential processing components that must be installed
 - Core libraries and shared processing modules
 - Schema definitions and validation rules
-- Automatic inclusion in all installations
+- Checkbox selection to confirm installation
+- Already installed dependencies shown with "Installed" indicator (disabled checkbox)
 
 **Optional Dependencies:**
 - Enhanced processing features and advanced transformations
 - Integration modules for specific target platforms
 - Performance optimization components
-- User-selectable during installation process
+- User-selectable checkboxes for installation
+- Already installed dependencies indicated and disabled
 
-**Dependency Resolution:**
-- Automatic detection and resolution of prerequisite components
-- Version compatibility checking and conflict resolution
-- Installation order optimization for complex dependency chains
+**Dependency List Features:**
+- Show More/Show Less buttons for lists exceeding 5 items
+- Clickable dependency names to view dependency details
+- Visual distinction between installed and available dependencies
+- Installation progress indicator during processing
+
+**Managing Dependencies:**
+For installed templates with dependencies, use **Manage Dependencies** action to:
+- Install additional optional dependencies
+- View currently installed required and optional dependencies
+- Update dependency selections for the installed template
+
+### Installation Completion
+
+**Installation Success:**
+Upon successful template installation:
+
+**Success Notification:**
+- Success toast message confirms template installation
+- Notification displays template installation confirmation
+
+**Automatic Redirection:**
+- User automatically redirected to installed pipeline detail page
+- Navigation to `/pipelines/{id}/general-overview` route
+- Immediate access to pipeline configuration and customization
+
+**Post-Installation Access:**
+- Template remains visible in Content Hub with **Installed** badge
+- Template detail page provides access to installed pipeline via **See Installed Pipeline** action
+- Full pipeline editing capabilities in Pipeline management section
 
 ## Post-Installation Management
 
@@ -195,7 +253,7 @@ Once installed, templates become fully integrated into the DataStream platform:
 - Usage statistics and performance monitoring
 - Change history and configuration audit trails
 
-### Template Maintenance
+{/* ### Template Maintenance
 
 **Update Management:**
 - Notification system for template updates and new versions
@@ -207,7 +265,111 @@ Once installed, templates become fully integrated into the DataStream platform:
 - Version control for customized template configurations
 - Backup and restore capabilities for pipeline modifications
 - Change approval workflows for production environments
-- Documentation generation for custom modifications
+- Documentation generation for custom modifications */}
+
+## Template Updates
+
+When Content Hub templates are updated by VirtualMetric, installed pipelines can receive these updates while preserving custom modifications through a merge workflow.
+
+### Update Notification System
+
+**Update Availability Indicators:**
+Installed templates with available updates display visual indicators throughout the platform:
+
+**Pipeline Overview:**
+- **Renew Icon** - Circular arrow icon displayed on pipeline cards
+- **Update Tooltip** - Hover over icon shows "Update available" message
+- **Card Click** - Clicking card navigates to pipeline detail view
+
+**Pipeline Detail View:**
+- **Warning Alert Banner** - Yellow alert displayed at top of page content
+- **Alert Title** - "Update available" notification
+- **Alert Subtitle** - Explanation that template source has updates
+- **Review Update Button** - Action button to access update review interface
+- **Actions Menu** - "Review Update" option added to pipeline actions menu
+
+### Review Update Interface
+
+**Accessing Update Review:**
+Navigate to update review through multiple entry points:
+- Click **Review Update** action button on warning alert banner
+- Select **Review Update** from pipeline Actions menu
+- Click Renew icon on pipeline overview card (redirects to detail, then review)
+
+**Review Update Page Structure:**
+
+**Left Panel - Pipeline Tree:**
+- **Resizable Sidebar** - Adjustable width navigation panel (292-600px)
+- **Main Pipeline** - Root pipeline with update indicator if applicable
+- **Child Pipelines** - Nested pipelines with individual update indicators
+- **Renew Icons** - Displayed on tree items with available updates
+- **Navigation** - Click tree items to view specific pipeline changes
+- **Selection Highlight** - Selected pipeline highlighted in tree
+
+**Right Panel - Merge Editor:**
+- **Side-by-Side Diff View** - Original vs updated YAML comparison
+- **Syntax Highlighting** - YAML syntax coloring for readability
+- **Line-by-Line Changes** - Visual indicators showing additions, deletions, modifications
+- **Original (Left)** - Read-only current pipeline content
+- **Modified (Right)** - Editable updated template content
+- **Manual Editing** - Ability to modify updated version before accepting
+- **Theme Support** - Respects user's light/dark theme preference
+
+### Update Application Workflow
+
+**Reviewing Changes:**
+
+1. **Select Pipeline**
+   - Click pipeline or child pipeline in tree navigation
+   - View changes for specific pipeline component
+   - Navigate between multiple pipelines with updates
+
+2. **Examine Differences**
+   - Review side-by-side comparison of changes
+   - Identify new features, modifications, and removals
+   - Understand impact of template updates
+
+3. **Customize Updates**
+   - Edit right-side (modified) content as needed
+   - Merge custom configurations with template updates
+   - Preserve organization-specific modifications
+   - Adjust updated content before application
+
+4. **Accept Changes**
+   - Click **Accept Changes** button to apply updates
+   - Success notification confirms update application
+   - Pipeline refreshes with updated content
+   - Process repeats for additional pipelines with updates
+
+**Update Completion:**
+When all pipeline updates are applied:
+- **Info Notification** - Blue banner confirms "All updates installed"
+- **Completion Message** - Indicates no pending updates
+- **Return Action** - Button to navigate back to pipeline detail view
+- **Status Update** - Renew icons removed from overview cards
+
+### Update Scenarios
+
+**Individual Pipeline Updates:**
+- Main pipeline has update, child pipelines unchanged
+- Update only affects root pipeline content
+- Child pipelines remain on current version
+
+**Child Pipeline Updates:**
+- One or more child pipelines have updates
+- Main pipeline may or may not have updates
+- Each child pipeline reviewed and updated independently
+
+**Complete Template Updates:**
+- Main pipeline and all child pipelines have updates
+- Navigate through tree reviewing each component
+- Apply updates systematically across entire template structure
+
+**Partial Updates:**
+- Accept some pipeline updates, skip others
+- Review Update interface remains accessible
+- Return later to apply remaining updates
+- Flexibility to staged rollout of template changes
 
 ## Best Practices
 

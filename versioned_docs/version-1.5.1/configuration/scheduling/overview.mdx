@@ -1,0 +1,529 @@
+# Overview
+
+## Overview
+
+Execution timing capabilities provide powerful control over when and how often your telemetry pipeline components execute. By adding temporal logic to targets and routes, you can optimize resource usage, reduce costs, implement time-based routing strategies, and align data processing with business requirements.
+
+## What You Can Do
+
+### Control Execution Timing
+
+Execute components at specific times or regular intervals:
+
+- **Targets**: Control when data is sent to destinations
+- **Routes**: Control when data flows through specific paths
+
+### Optimize Resource Usage
+
+Reduce system load by processing data during specific time windows:
+
+- Run expensive operations during off-peak hours
+- Batch data processing to reduce API calls
+- Schedule resource-intensive targets for low-traffic periods
+- Implement graduated data retention strategies
+
+### Implement Business Logic
+
+Align data processing with business schedules:
+
+- Process data only during business hours
+- Route critical logs differently during peak times
+- Archive data on specific days or times
+- Create time-based data tiers (hot, warm, cold)
+
+### Reduce Costs
+
+Minimize expenses by controlling when and how often components execute:
+
+- Batch API calls to reduce per-request costs
+- Route data to expensive services less frequently
+- Use cheaper storage during off-peak hours
+- Implement cost-effective retention policies
+
+## Timing Methods
+
+The platform provides two complementary approaches to time-based execution:
+
+### Cron
+
+Execute components at specific times using cron expressions.
+
+**Best for:**
+- Time-specific execution (daily at 3 AM, weekdays at 9 AM)
+- Business hour constraints
+- Calendar-based patterns (monthly reports, weekend processing)
+- Complex time windows
+
+**Learn more:** <Topic id="cron-based-scheduling">Cron Documentation</Topic>
+
+### Interval
+
+Execute components at regular intervals using simple time units.
+
+**Best for:**
+- Regular periodic execution (every 5 minutes, every hour)
+- Simple batching strategies
+- Predictable resource consumption
+- Straightforward configuration
+
+**Learn more:** <Topic id="interval-based-scheduling">Interval Documentation</Topic>
+
+## Use Cases and Scenarios
+
+### Time-Based Data Routing
+
+Route data to different destinations based on time:
+
+```yaml
+# Send to realtime analytics during business hours
+routes:
+  - name: business_hours_analytics
+    source: "application_logs"
+    destination: "realtime_splunk"
+    properties:
+      cron: "* 9-17 * * 1-5"
+
+# Archive all data once per day
+routes:
+  - name: daily_archive
+    source: "application_logs"
+    destination: "s3_archive"
+    properties:
+      cron: "0 0 * * *"
+
+# Default realtime processing
+routes:
+  - name: default_route
+    source: "application_logs"
+    destination: "basic_storage"
+```
+
+**Benefits:**
+- Realtime insights during business hours
+- Cost-effective archival during off-hours
+- Automatic failover to basic storage
+
+### Cost-Optimized Data Tiers
+
+Implement hot, warm, and cold data tiers:
+
+```yaml
+# Hot tier - realtime expensive analytics
+targets:
+  - name: hot_tier
+    type: elastic
+    properties:
+      index: "logs-hot"
+      endpoints:
+        - endpoint: "https://premium-es.example.com:9200"
+
+# Warm tier - hourly batch to moderate storage
+targets:
+  - name: warm_tier
+    type: elastic
+    properties:
+      interval: "1h"
+      index: "logs-warm"
+      endpoints:
+        - endpoint: "https://standard-es.example.com:9200"
+
+# Cold tier - daily archive to cheap storage
+targets:
+  - name: cold_tier
+    type: awss3
+    properties:
+      cron: "0 2 * * *"
+      bucket: "logs-cold"
+      region: "us-east-1"
+```
+
+**Benefits:**
+- Realtime access to recent data
+- Reduced costs for historical data
+- Automatic data lifecycle management
+
+### Business Hours Processing
+
+Process critical data differently during business hours:
+
+```yaml
+# High priority during business hours
+routes:
+  - name: business_hours_critical
+    source: "error_logs"
+    destination: "alert_system"
+    properties:
+      cron: "* 9-17 * * 1-5"
+
+# Batch processing after hours
+routes:
+  - name: after_hours_batch
+    source: "error_logs"
+    destination: "batch_processor"
+    properties:
+      cron: "0 18-8 * * *"
+```
+
+**Benefits:**
+- Immediate alerts during work hours
+- Efficient batch processing overnight
+- Reduced alert fatigue after hours
+
+### Periodic Backup and Compliance
+
+Implement automated backup and compliance workflows:
+
+```yaml
+# Hourly backup to secondary region
+targets:
+  - name: backup_target
+    type: awss3
+    properties:
+      interval: "1h"
+      bucket: "logs-backup"
+      region: "us-west-2"
+
+# Daily compliance archive
+targets:
+  - name: compliance_archive
+    type: awss3
+    properties:
+      cron: "0 1 * * *"
+      bucket: "logs-compliance"
+      region: "us-east-1"
+
+# Weekly long-term archive
+targets:
+  - name: longterm_archive
+    type: glacier
+    properties:
+      cron: "0 3 * * 0"
+      vault: "logs-longterm"
+```
+
+**Benefits:**
+- Disaster recovery protection
+- Regulatory compliance
+- Efficient long-term storage
+
+### Peak Load Management
+
+Handle varying data volumes throughout the day:
+
+```yaml
+# Realtime processing during low-traffic hours
+routes:
+  - name: night_realtime
+    source: "high_volume_logs"
+    destination: "realtime_processor"
+    properties:
+      cron: "* 0-6,22-23 * * *"
+
+# Batched processing during peak hours
+routes:
+  - name: peak_hours_batch
+    source: "high_volume_logs"
+    destination: "batch_processor"
+    properties:
+      cron: "*/15 7-21 * * *"
+```
+
+**Benefits:**
+- Reduced latency during low-traffic periods
+- System stability during peak hours
+- Efficient resource utilization
+
+### Multi-Region Data Distribution
+
+Distribute data across regions based on time zones:
+
+```yaml
+# US region during US business hours
+targets:
+  - name: us_target
+    type: splunk
+    properties:
+      cron: "* 9-17 * * 1-5"
+      endpoints:
+        - endpoint: "https://us-splunk.example.com:8088/services/collector"
+          token: "US-TOKEN"
+
+# EU region during EU business hours
+targets:
+  - name: eu_target
+    type: splunk
+    properties:
+      cron: "* 9-17 * * 1-5"
+      endpoints:
+        - endpoint: "https://eu-splunk.example.com:8088/services/collector"
+          token: "EU-TOKEN"
+
+# Global 24/7 backup
+targets:
+  - name: global_backup
+    type: awss3
+    properties:
+      interval: "1h"
+      bucket: "logs-global"
+```
+
+**Benefits:**
+- Reduced cross-region latency
+- Compliance with data sovereignty
+- 24/7 backup coverage
+
+### Graduated Retention Policy
+
+Implement automatic data lifecycle management:
+
+```yaml
+# Keep everything for 7 days
+targets:
+  - name: hot_storage
+    type: elastic
+    properties:
+      index: "logs-recent"
+
+# Archive weekly to cheaper storage
+targets:
+  - name: warm_storage
+    type: clickhouse
+    properties:
+      cron: "0 2 * * 0"
+      table: "logs_archive"
+
+# Monthly move to cold storage
+targets:
+  - name: cold_storage
+    type: awss3
+    properties:
+      cron: "0 3 1 * *"
+      bucket: "logs-cold-archive"
+```
+
+**Benefits:**
+- Fast access to recent data
+- Cost-effective long-term storage
+- Automated data lifecycle
+
+### Development vs Production
+
+Different schedules for different environments:
+
+```yaml
+# Development - batch every 30 minutes
+targets:
+  - name: dev_splunk
+    type: splunk
+    properties:
+      interval: "30m"
+      endpoints:
+        - endpoint: "https://dev-splunk.example.com:8088/services/collector"
+          token: "DEV-TOKEN"
+
+# Production - realtime processing
+targets:
+  - name: prod_splunk
+    type: splunk
+    properties:
+      # No interval - continuous realtime
+      endpoints:
+        - endpoint: "https://prod-splunk.example.com:8088/services/collector"
+          token: "PROD-TOKEN"
+```
+
+**Benefits:**
+- Reduced costs in development
+- Realtime monitoring in production
+- Environment-appropriate SLAs
+
+## Configuration Patterns
+
+### Combining Cron and Interval
+
+Use both for different components in the same pipeline:
+
+```yaml
+# Cron-based target for compliance
+targets:
+  - name: compliance_target
+    type: awss3
+    properties:
+      cron: "0 0 * * *"
+      bucket: "compliance-logs"
+
+# Interval-based target for monitoring
+targets:
+  - name: monitoring_target
+    type: elastic
+    properties:
+      interval: "5m"
+      index: "monitoring"
+
+# Realtime target for alerts
+targets:
+  - name: alert_target
+    type: splunk
+    properties:
+      # No cron or interval - realtime
+      index: "alerts"
+```
+
+### Conditional Time-Based Routes
+
+Create fallback routing with time constraints:
+
+```yaml
+routes:
+  # Priority 1: Business hours to premium service
+  - name: priority_route
+    source: "logs"
+    destination: "premium_target"
+    properties:
+      cron: "* 9-17 * * 1-5"
+
+  # Priority 2: Night hours to standard service
+  - name: night_route
+    source: "logs"
+    destination: "standard_target"
+    properties:
+      cron: "* 0-8,18-23 * * *"
+
+  # Priority 3: Weekend to basic service
+  - name: weekend_route
+    source: "logs"
+    destination: "basic_target"
+    properties:
+      cron: "* * * * 0,6"
+
+  # Default: fallback to archive
+  - name: fallback_route
+    source: "logs"
+    destination: "archive_target"
+```
+
+## Best Practices
+
+### Start Simple
+
+Begin with interval-based execution for straightforward use cases:
+
+```yaml
+properties:
+  interval: "5m"
+```
+
+Migrate to cron when you need specific timing:
+
+```yaml
+properties:
+  cron: "0 */6 * * *"
+```
+
+### Consider Data Volume
+
+Match timing configuration to expected data volume:
+
+- **High volume**: Use longer intervals or specific cron schedules
+- **Low volume**: Realtime or short intervals work well
+- **Variable volume**: Use time-based routing to handle peaks
+
+### Monitor Queue Depth
+
+Between scheduled executions, data accumulates in queues:
+
+- Monitor queue sizes to prevent memory issues
+- Adjust intervals if queues grow too large
+- Balance batch size with interval duration
+
+### Document Timezone Assumptions
+
+All cron schedules use system local time:
+
+```yaml
+# Runs at midnight system local time
+properties:
+  cron: "0 0 * * *"
+```
+
+Always document expected timezone in configuration comments.
+
+### Test Cron Expressions
+
+Validate cron expressions before deployment:
+
+- Use online cron validators
+- Test in development environment first
+- Document intended execution times
+
+### Plan for Failures
+
+Cron-based components don't retry immediately:
+
+- Failed executions wait for next scheduled time
+- Ensure monitoring alerts for execution failures
+- Consider redundant routes for critical data
+
+## Performance Impact
+
+### Memory Considerations
+
+Longer intervals mean larger queues:
+
+- **Short intervals (< 5m)**: Smaller queues, higher CPU
+- **Long intervals (> 1h)**: Larger queues, lower CPU
+- Balance based on available memory and data volume
+
+### Network Impact
+
+Timing configuration affects network patterns:
+
+- **Realtime**: Constant network usage
+- **Short intervals**: Frequent bursts
+- **Long intervals**: Large periodic bursts
+- Plan network capacity accordingly
+
+### Processing Latency
+
+Consider end-to-end latency requirements:
+
+- **Realtime needs**: Omit timing configuration
+- **Near-realtime (< 5m)**: Short intervals
+- **Batch processing**: Longer intervals or cron schedules
+- **Compliance**: Cron-based with guaranteed execution times
+
+## Migration Strategies
+
+### From Realtime to Scheduled
+
+Gradually introduce timing controls to reduce costs:
+
+1. Start with realtime (no timing configuration)
+2. Add long intervals (1h+) during testing
+3. Refine intervals based on actual needs
+4. Migrate to cron schedules for specific timing requirements
+
+### From Scheduled to Realtime
+
+Increase processing frequency for better latency:
+
+1. Start with daily cron schedules
+2. Move to hourly intervals
+3. Reduce to 15-minute intervals
+4. Remove timing configuration for realtime processing
+
+## Summary
+
+Time-based execution provides essential control over telemetry pipeline behavior. By combining cron and interval timing with routes and targets, you can:
+
+- Optimize resource usage and reduce costs
+- Implement sophisticated data lifecycle policies
+- Align processing with business requirements
+- Create resilient, efficient data pipelines
+
+Start with simple intervals for regular processing, then add cron-based logic for complex time-aware workflows.
+
+**Next Steps:**
+- Read <Topic id="cron-based-scheduling">Cron Documentation</Topic> for cron-based execution
+- Read <Topic id="interval-based-scheduling">Interval Documentation</Topic> for interval-based execution
+- Explore target-specific documentation for integration details

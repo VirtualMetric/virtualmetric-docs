@@ -1,0 +1,224 @@
+# TFTP
+
+<span className="theme-doc-version-badge badge badge--secondary">Pull</span>
+
+## Synopsis
+
+Creates a server that accepts file uploads using the TFTP protocol. Supports IP-based device mapping, multiple workers, and automatic file content processing.
+
+## Schema
+
+```yaml {1,2,4}
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: tftp
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    address: <string>
+    port: <numeric>
+    reuse: <boolean>
+    workers: <numeric>
+    buffer_size: <numeric>
+```
+
+## Configuration
+
+The following fields are used to define the device:
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `tftp`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`address`|N|`"0.0.0.0"`|Listen address|
+|`port`|Y||Listen port (typically 69)|
+
+### Performance
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`reuse`|N|`false`|Enable multi-worker mode|
+|`workers`|N|`4`|Number of worker processes when reuse enabled|
+|`buffer_size`|N|`9000`|Read buffer size in bytes|
+
+:::warning
+TFTP protocol does **not** support authentication. Deploy only on _trusted_ networks.
+:::
+
+## Key Features
+
+The following are unique features that **Director** offers.
+
+### IP-Based Device Mapping
+
+The server supports automatic device mapping based on client IP addresses: it maps incoming client IPs to device IDs, and  automatically associates uploads with devices. It also supports dynamic device discovery and maintains an IP-to-device mapping cache.
+
+### Files
+
+The server processes uploaded files by reading the file contents into memory, recording upload metadata (filename, timestamp, etc.), capturing the client information, and converting the content to consumable format.
+
+### Multiple Workers
+
+When `reuse` is enabled, the server uses multiple workers which maintain their own TFTP listeners and process files independently so that the files are automatically distributed.
+
+:::note
+The worker count will be capped at the number of available CPU cores.
+:::
+
+### Upload
+
+The device upload operations observe the following procedure:
+
+* The client initiates a TFTP upload
+
+* The server accepts the connection
+  
+* The client transfers the file
+
+* Finally, the server maps the client IP to the device, reads the file contents, applies the pipelines, and saves the processed data to a store.
+
+:::tip
+Configure clients to use binary mode for file transfers to avoid data corruption.
+:::
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic
+
+A basic server can be created easily:
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a simple TFTP server...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 1
+        name: basic_tftp
+        type: tftp
+        properties:
+          address: "0.0.0.0"
+          port: 69
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Device Mapping
+
+Devices can be automatically captured:
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring IP-based device mapping...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 2
+        name: mapped_tftp
+        type: tftp
+        properties:
+          address: "0.0.0.0"
+          port: 69
+          reuse: false
+          buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Devices
+
+Uploads from multiple devices can be handled easily:
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring server for multiple devices...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 4
+        name: multi_device_tftp
+        type: tftp
+        properties:
+          address: "0.0.0.0"
+          port: 69
+          reuse: true
+          workers: 2
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::warning
+Ensure all devices are configured to use the same TFTP server port.
+:::
+
+### High-Volume
+
+Performance can be enhanced for high file upload volumes:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 3
+        name: performant_tftp
+        type: tftp
+        properties:
+          address: "0.0.0.0"
+          port: 69
+          reuse: true
+          workers: 4
+          buffer_size: 32768
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Pipelines
+
+File contents can be handled according to requirements:
+
+<ExampleGrid>
+  <CommentCol>
+    Applying custom processing to uploaded files...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 5
+        name: pipeline_tftp
+        type: tftp
+        pipelines:
+          - config_parser
+          - field_extractor
+        properties:
+          address: "0.0.0.0"
+          port: 69
+          buffer_size: 16384
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed sequentially, and can modify or drop content before ingestion.
+:::

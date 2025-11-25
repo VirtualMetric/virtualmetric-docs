@@ -1,0 +1,348 @@
+# Synadia Cloud
+
+<span className="theme-doc-version-badge badge badge--secondary">Managed NATS</span><span className="theme-doc-version-badge badge badge--secondary">Message Queue</span>
+
+Send processed telemetry data to Synadia Cloud managed NATS service.
+
+## Synopsis
+
+The Synadia Cloud target publishes log messages to Synadia's managed NATS JetStream service with enterprise features including global distribution, automatic scaling, and managed infrastructure. This target extends the standard NATS configuration with Synadia Cloud-specific endpoints and authentication.
+
+## Schema
+
+```yaml {2,4,6-7}
+targets:
+  - name: <string>
+    type: synadia
+    properties:
+      url: <string>
+      subject: <string>
+      username: <string>
+      password: <string>
+      timeout: <integer>
+      batch_size: <integer>
+      max_retries: <integer>
+      retry_delay: <integer>
+      tls:
+        status: <boolean>
+        verify: <boolean>
+        cert_name: <string>
+        key_name: <string>
+        min_tls_version: <string>
+        max_tls_version: <string>
+      field_format: <string>
+      interval: <string|numeric>
+      cron: <string>
+      debug:
+        status: <boolean>
+        dont_send_logs: <boolean>
+```
+
+## Configuration
+
+### Base Target Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Y | Unique identifier for this target |
+| `description` | string | N | Human-readable description |
+| `type` | string | Y | Must be `synadia` |
+| `pipelines` | array | N | Pipeline names to apply before sending |
+| `status` | boolean | N | Enable (true) or disable (false) this target |
+
+### Synadia Cloud Connection
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | string | Y | Synadia Cloud NATS URL (e.g., `nats://connect.ngs.global:4222`) |
+| `subject` | string | Y | NATS subject name for message publishing |
+| `username` | string | Y | Synadia Cloud account username/NKey |
+| `password` | string | Y | Synadia Cloud account password/JWT |
+| `timeout` | integer | N | Connection timeout in seconds. Default: `30` |
+
+### Batch Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `batch_size` | integer | N | Number of messages to batch before publishing. Default: `1000` |
+| `max_retries` | integer | N | Maximum retry attempts for failed operations. Default: `3` |
+| `retry_delay` | integer | N | Delay between retry attempts in seconds. Default: `1` |
+
+### TLS Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tls.status` | boolean | N | Enable TLS encryption. Default: `false` |
+| `tls.verify` | boolean | N | Verify server TLS certificate. Default: `true` |
+| `tls.cert_name` | string | N* | Client certificate filename (PEM format) |
+| `tls.key_name` | string | N* | Client private key filename (PEM format) |
+| `tls.min_tls_version` | string | N | Minimum TLS version. Default: `tls1.2` |
+| `tls.max_tls_version` | string | N | Maximum TLS version. Default: `tls1.3` |
+
+\* Both `cert_name` and `key_name` must be provided together or omitted together
+
+### Normalization
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `field_format` | string | N | Apply format normalization (`ECS`, `ASIM`, `UDM`) |
+
+### Scheduler
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `interval` | string/numeric | N | Execution frequency (realtime by default) |
+| `cron` | string | N | Cron expression for scheduled execution |
+
+### Debug Options
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `debug.status` | boolean | N | Enable debug logging for this target |
+| `debug.dont_send_logs` | boolean | N | Log events without sending to Synadia Cloud |
+
+## Details
+
+### Authentication Methods
+
+**NKey Authentication (Recommended)**:
+- Use NKey-based authentication for enhanced security
+- Generate NKey credentials through Synadia Cloud console
+- Provides cryptographic authentication without password transmission
+
+**JWT Authentication**:
+- JSON Web Token-based authentication
+- Supports fine-grained permissions and expiration
+- Ideal for service-to-service communication
+
+**Username/Password**:
+- Traditional username/password authentication
+- Simpler setup for development and testing
+- Use environment variables for credential management
+
+:::note Synadia Cloud Credentials
+Obtain credentials from Synadia Cloud console. Configure accounts with appropriate subject permissions for the subjects your application publishes to.
+:::
+
+### Connection Endpoints
+
+**Global Endpoints**:
+- `nats://connect.ngs.global:4222` - Global load-balanced endpoint
+- Automatically routes to nearest regional cluster
+- Recommended for production deployments
+
+**Regional Endpoints**:
+- Specific regional endpoints available for latency optimization
+- Configure based on primary data source location
+- Check Synadia Cloud documentation for current regional endpoints
+
+### JetStream Integration
+
+Synadia Cloud fully supports NATS JetStream features:
+
+- **Stream Persistence**: Durable message storage
+- **Message Acknowledgment**: Guaranteed delivery semantics
+- **Message Replay**: Historical message retrieval
+- **Consumer Groups**: Load distribution across consumers
+
+### Performance Considerations
+
+**Batch Optimization**:
+- Larger batches reduce network overhead
+- Balance batch size against latency requirements
+- Synadia Cloud handles high-throughput workloads efficiently
+
+**Connection Pooling**:
+- Single connection handles multiple concurrent publishers
+- Automatic reconnection on connection loss
+- Configurable timeout for connection establishment
+
+**Global Distribution**:
+- Use global endpoint for automatic geographic routing
+- Consider regional endpoints for latency-sensitive applications
+- Multi-region publishing requires separate target configurations
+
+:::warning Subject Permissions
+Ensure Synadia Cloud account has publish permissions for configured subjects. Permission denials result in publish failures.
+:::
+
+### Security Best Practices
+
+**Credential Management**:
+- Store credentials in environment variables
+- Rotate credentials periodically
+- Use NKey authentication for enhanced security
+
+**TLS Configuration**:
+- TLS encryption available for sensitive data
+- Synadia Cloud supports TLS 1.2 and 1.3
+- Client certificates optional for mutual TLS
+
+## Examples
+
+### Basic Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Sending logs to Synadia Cloud using username/password authentication...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: synadia-logs
+        type: synadia
+        properties:
+          url: "nats://connect.ngs.global:4222"
+          subject: "logs.production"
+          username: "${SYNADIA_USERNAME}"
+          password: "${SYNADIA_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With NKey Authentication
+
+<ExampleGrid>
+  <CommentCol>
+    Using NKey-based authentication for enhanced security...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: synadia-nkey
+        type: synadia
+        properties:
+          url: "nats://connect.ngs.global:4222"
+          subject: "telemetry.events"
+          username: "${SYNADIA_NKEY_USER}"
+          password: "${SYNADIA_NKEY_SEED}"
+          timeout: 30
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high-volume telemetry ingestion with larger batches...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: synadia-high-volume
+        type: synadia
+        properties:
+          url: "nats://connect.ngs.global:4222"
+          subject: "metrics.streaming"
+          username: "${SYNADIA_USERNAME}"
+          password: "${SYNADIA_PASSWORD}"
+          batch_size: 1000
+          max_retries: 3
+          retry_delay: 1
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With TLS Encryption
+
+<ExampleGrid>
+  <CommentCol>
+    Enabling TLS encryption for secure data transmission...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: synadia-secure
+        type: synadia
+        properties:
+          url: "nats://connect.ngs.global:4222"
+          subject: "security.logs"
+          username: "${SYNADIA_USERNAME}"
+          password: "${SYNADIA_PASSWORD}"
+          tls:
+            status: true
+            verify: true
+            min_tls_version: tls1.2
+            max_tls_version: tls1.3
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Subject Publishing
+
+<ExampleGrid>
+  <CommentCol>
+    Publishing different event types to separate subjects...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: synadia-security
+        type: synadia
+        properties:
+          url: "nats://connect.ngs.global:4222"
+          subject: "logs.security"
+          username: "${SYNADIA_USERNAME}"
+          password: "${SYNADIA_PASSWORD}"
+
+      - name: synadia-application
+        type: synadia
+        properties:
+          url: "nats://connect.ngs.global:4222"
+          subject: "logs.application"
+          username: "${SYNADIA_USERNAME}"
+          password: "${SYNADIA_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Applying ECS normalization before publishing to Synadia Cloud...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: synadia-normalized
+        type: synadia
+        properties:
+          url: "nats://connect.ngs.global:4222"
+          subject: "logs.normalized"
+          username: "${SYNADIA_USERNAME}"
+          password: "${SYNADIA_PASSWORD}"
+          field_format: ECS
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Production Configuration
+
+<ExampleGrid>
+  <CommentCol>
+    Production-ready configuration with NKey authentication, TLS encryption, and batch optimization...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: synadia-production
+        type: synadia
+        properties:
+          url: "nats://connect.ngs.global:4222"
+          subject: "production.telemetry"
+          username: "${SYNADIA_NKEY_USER}"
+          password: "${SYNADIA_NKEY_SEED}"
+          timeout: 30
+          batch_size: 1000
+          max_retries: 3
+          retry_delay: 2
+          field_format: ASIM
+          tls:
+            status: true
+            verify: true
+            min_tls_version: tls1.2
+    ```
+  </CodeCol>
+</ExampleGrid>

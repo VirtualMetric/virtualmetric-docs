@@ -1,0 +1,486 @@
+---
+description: Groups multiple processors together for conditional execution and organization
+sidebar_custom_props: 
+  customIcon: 📦
+  customCategory: Flow Control
+---
+
+# Group
+
+<span className="theme-doc-version-badge badge badge--primary">Control Flow</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Groups multiple processors together into a named unit that can be executed conditionally and organized hierarchically with parent-child relationships.
+
+## Schema
+
+```yaml {3,5}
+- group:
+    description: <text>
+    name: <string>
+    parent_group: <string>
+    processors: <processor[]>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Unique name for the processor group|
+|`processors`|Y||Array of processors to execute within the group|
+|`parent_group`|N|-|Name of parent group that must execute before this group|
+|`description`|N|-|Explanatory notes|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`ignore_missing`|N|`false`|Continue processing if referenced fields are missing|
+|`on_failure`|N|-|See <Topic id="handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The group processor provides a way to organize and control the execution of multiple processors as a single unit. It offers several key features:
+
+- **Sequential execution**: All processors within the group are executed in the order they are defined
+- **Conditional execution**: The entire group can be conditionally executed based on the `if` condition
+- **Hierarchical organization**: Groups can be organized in parent-child relationships using `parent_group`
+- **Named tracking**: Each group has a unique name that is tracked during pipeline execution
+- **Failure handling**: Groups can have their own failure handling logic that applies to all contained processors
+
+The processor maintains execution state through the `config.PreviousGroup` field, which tracks the last successfully executed group. This enables conditional group execution based on the execution history.
+
+:::info
+Groups are particularly useful for organizing complex pipelines where certain sets of processors should only run under specific conditions or after other groups have completed successfully.
+:::
+
+:::note
+When a group specifies a `parent_group`, it will only execute if the specified parent group was the last group to execute successfully. This creates a chain of dependent group execution.
+:::
+
+:::tip
+Use meaningful group names and organize related processors together. This makes pipeline debugging easier and allows for better conditional logic based on processing history.
+:::
+
+## Examples
+
+### Basic Processor Grouping
+
+<ExampleGrid>
+  <CommentCol>
+    Group related processors together...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": "12345",
+      "action": "login"
+    }
+    ```
+    ```yaml
+    - group:
+        name: user_processing
+        processors:
+          - set:
+              field: event_type
+              value: user_event
+          - set:
+              field: timestamp
+              value: "{{@timestamp}}"
+          - convert:
+              field: user_id
+              type: integer
+    ```
+  </CodeCol>
+  <CommentCol>
+    for organized execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": 12345,
+      "action": "login",
+      "event_type": "user_event",
+      "timestamp": "2024-01-15T10:30:00Z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Group Execution
+
+<ExampleGrid>
+  <CommentCol>
+    Execute groups based on conditions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "error",
+      "severity": "high",
+      "message": "Database connection failed"
+    }
+    ```
+    ```yaml
+    - group:
+        name: error_processing
+        if: "event_type == 'error'"
+        processors:
+          - set:
+              field: alert_required
+              value: true
+          - set:
+              field: escalation_level
+              value: "{{severity}}"
+          - append:
+              field: tags
+              value: critical
+    ```
+  </CodeCol>
+  <CommentCol>
+    only when criteria are met:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "error",
+      "severity": "high",
+      "message": "Database connection failed",
+      "alert_required": true,
+      "escalation_level": "high",
+      "tags": ["critical"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Parent-Child Group Relationships
+
+<ExampleGrid>
+  <CommentCol>
+    Create dependent group execution...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_data": "user:john,action:login,ip:192.168.1.1"
+    }
+    ```
+    ```yaml
+    - group:
+        name: data_parsing
+        processors:
+          - kv:
+              field: raw_data
+              field_split: ","
+              value_split: ":"
+    - group:
+        name: data_enrichment
+        parent_group: data_parsing
+        processors:
+          - geoip:
+              field: ip
+          - set:
+              field: processed_at
+              value: "{{@timestamp}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    where enrichment only runs after parsing:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_data": "user:john,action:login,ip:192.168.1.1",
+      "user": "john",
+      "action": "login",
+      "ip": "192.168.1.1",
+      "geo": {"city": "San Francisco"},
+      "processed_at": "2024-01-15T10:30:00Z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling in Groups
+
+<ExampleGrid>
+  <CommentCol>
+    Handle group-level failures...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "email": "invalid-email",
+      "phone": "555-1234"
+    }
+    ```
+    ```yaml
+    - group:
+        name: validation
+        processors:
+          # Example processor that might fail
+          - validate_email:
+              field: email
+        on_failure:
+          - set:
+              field: validation_error
+              value: "Email validation failed"
+          - set:
+              field: validation_status
+              value: failed
+    ```
+  </CodeCol>
+  <CommentCol>
+    with group-specific error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "email": "invalid-email",
+      "phone": "555-1234",
+      "validation_error": "Email validation failed",
+      "validation_status": "failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Security Processing Pipeline
+
+<ExampleGrid>
+  <CommentCol>
+    Organize security-related processing...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source_ip": "192.168.1.100",
+      "user_agent": "Mozilla/5.0...",
+      "request_path": "/admin/login"
+    }
+    ```
+    ```yaml
+    - group:
+        name: threat_detection
+        if: "request_path contains '/admin'"
+        processors:
+          - geoip:
+              field: source_ip
+              target_field: geo_info
+          - set:
+              field: risk_score
+              value: 5
+          - append:
+              field: security_tags
+              value: admin_access
+        on_success:
+          - set:
+              field: threat_analysis_complete
+              value: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    for admin access attempts:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source_ip": "192.168.1.100",
+      "user_agent": "Mozilla/5.0...",
+      "request_path": "/admin/login",
+      "geo_info": {"country": "US"},
+      "risk_score": 5,
+      "security_tags": ["admin_access"],
+      "threat_analysis_complete": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Stage Data Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Create multi-stage processing pipeline...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_line": "2024-01-15 10:30:00 ERROR Database connection timeout"
+    }
+    ```
+    ```yaml
+    - group:
+        name: log_parsing
+        processors:
+          - grok:
+            field: log_line
+            patterns:
+              - "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}"
+    - group:
+        name: log_enrichment
+        parent_group: log_parsing
+        processors:
+          - date:
+              field: timestamp
+              target_field: "@timestamp"
+          - convert:
+              field: level
+              type: string
+    - group:
+        name: log_classification
+        parent_group: log_enrichment
+        if: "level == 'ERROR'"
+        processors:
+          - set:
+              field: alert_required
+              value: true
+          - set:
+              field: category
+              value: system_error
+    ```
+  </CodeCol>
+  <CommentCol>
+    with dependent execution stages:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_line": "2024-01-15 10:30:00 ERROR Database connection timeout",
+      "timestamp": "2024-01-15 10:30:00",
+      "level": "ERROR",
+      "message": "Database connection timeout",
+      "@timestamp": "2024-01-15T10:30:00Z",
+      "alert_required": true,
+      "category": "system_error"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Branching
+
+<ExampleGrid>
+  <CommentCol>
+    Create conditional processing branches...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_source": "web_server",
+      "status_code": 404,
+      "request_path": "/api/users"
+    }
+    ```
+    ```yaml
+    - group:
+        name: web_server_processing
+        if: "event_source == 'web_server'"
+        processors:
+          - http_status:
+              field: status_code
+          - append:
+              field: tags
+              value: web_traffic
+    - group:
+        name: database_processing
+        if: "event_source == 'database'"
+        processors:
+          - set:
+              field: db_category
+              value: query_log
+          - append:
+              field: tags
+              value: database_activity
+    ```
+  </CodeCol>
+  <CommentCol>
+    based on event characteristics:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_source": "web_server",
+      "status_code": "Not Found",
+      "request_path": "/api/users",
+      "tags": ["web_traffic"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Complex Group Hierarchy
+
+<ExampleGrid>
+  <CommentCol>
+    Build complex processing hierarchies...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "user_activity",
+      "user_id": "12345",
+      "action": "file_access",
+      "file_path": "/sensitive/data.txt"
+    }
+    ```
+    ```yaml
+    - group:
+        name: base_processing
+        processors:
+          - convert:
+              field: user_id
+              type: integer
+          - lowercase:
+              field: action
+    - group:
+        name: security_analysis
+        parent_group: base_processing
+        if: "file_path contains '/sensitive'"
+        processors:
+          - set:
+              field: security_risk
+              value: high
+          - append:
+              field: alerts
+              value: sensitive_file_access
+    - group:
+        name: compliance_logging
+        parent_group: security_analysis
+        processors:
+          - set:
+              field: compliance_logged
+              value: true
+          - set:
+              field: audit_required
+              value: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    with cascading execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_type": "user_activity",
+      "user_id": 12345,
+      "action": "file_access",
+      "file_path": "/sensitive/data.txt",
+      "security_risk": "high",
+      "alerts": ["sensitive_file_access"],
+      "compliance_logged": true,
+      "audit_required": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+```

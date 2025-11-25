@@ -1,0 +1,226 @@
+# Microsoft Sentinel
+
+<span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">Pull</span>
+
+## Synopsis
+
+Creates a collector that fetches security incidents from Microsoft Sentinel workspaces. Supports authentication, batch processing, and automatic incident tracking with incremental updates.
+
+## Schema
+
+```yaml {1,2,4}
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: sentinel
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    subscription_id: <string>
+    resource_group: <string>
+    workspace_name: <string>
+    batch_size: <numeric>
+```
+
+## Configuration
+
+The following fields are used to define the device:
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `sentinel`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional pre-processor pipelines|
+|`status`|N|`true`|Enable/disable the device|
+
+### Azure Authentication
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tenant_id`|Y||Azure tenant ID|
+|`client_id`|Y||Azure client ID|
+|`client_secret`|Y||Azure client secret|
+|`subscription_id`|Y||Azure subscription ID|
+
+### Workspaces
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`resource_group`|Y||Azure resource group name|
+|`workspace_name`|Y||Log Analytics workspace name|
+
+### Collection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`1000`|Number of incidents to fetch per batch|
+
+## Key Features
+
+### Incidents
+
+The collector captures comprehensive incident data such as basic incident details (ID, title, description), severity and status, classification and labels, owner information, temporal data (create, modify, activity dates and times), and information on resources.
+
+### Incremental Updates
+
+The collector tracks the last processed incident's timestamp, fetches only new incidents since the last checkpoint, orders incidents by creation time, and supports batch processing.
+
+### Normalization
+
+Incidents are automatically normalized with ECS field mapping in addition to using consistent timestamp formats, structured label handling, and owner information. (See <Topic id="appendix-ecs">Appendix</Topic> for details of ECS.)
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic
+
+A basic collector can be created as below:
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a simple Sentinel collector...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 1
+        name: basic_sentinel
+        type: sentinel
+        properties:
+          tenant_id: "00000000-0000-0000-0000-000000000000"
+          client_id: "11111111-1111-1111-1111-111111111111"
+          client_secret: "your-client-secret"
+          subscription_id: "22222222-2222-2222-2222-222222222222"
+          resource_group: "your-resource-group"
+          workspace_name: "your-workspace"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume
+
+Large numbers of incidents can be collected:
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing for high incident volumes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 2
+        name: volume_sentinel
+        type: sentinel
+        properties:
+          tenant_id: "00000000-0000-0000-0000-000000000000"
+          client_id: "11111111-1111-1111-1111-111111111111"
+          client_secret: "your-client-secret"
+          subscription_id: "22222222-2222-2222-2222-222222222222"
+          resource_group: "your-resource-group"
+          workspace_name: "your-workspace"
+          batch_size: 5000
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Pipelines
+
+Incidents can be enriched and processed:
+
+<ExampleGrid>
+  <CommentCol>
+    Applying custom processing to incidents...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 3
+        name: pipeline_sentinel
+        type: sentinel
+        pipelines:
+          - incident_enricher
+          - severity_classifier
+        properties:
+          tenant_id: "00000000-0000-0000-0000-000000000000"
+          client_id: "11111111-1111-1111-1111-111111111111"
+          client_secret: "your-client-secret"
+          subscription_id: "22222222-2222-2222-2222-222222222222"
+          resource_group: "your-resource-group"
+          workspace_name: "your-workspace"
+          batch_size: 1000
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Workspaces
+
+Information can be collected from multiple workspaces:
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring multiple workspace collectors...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 4
+        name: prod_sentinel
+        type: sentinel
+        properties:
+          tenant_id: "00000000-0000-0000-0000-000000000000"
+          client_id: "11111111-1111-1111-1111-111111111111"
+          client_secret: "your-client-secret"
+          subscription_id: "22222222-2222-2222-2222-222222222222"
+          resource_group: "prod-rg"
+          workspace_name: "prod-workspace"
+      - id: 5
+        name: dev_sentinel
+        type: sentinel
+        properties:
+          tenant_id: "00000000-0000-0000-0000-000000000000"
+          client_id: "11111111-1111-1111-1111-111111111111"
+          client_secret: "your-client-secret"
+          subscription_id: "22222222-2222-2222-2222-222222222222"
+          resource_group: "dev-rg"
+          workspace_name: "dev-workspace"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+:::note
+Each workspace collector maintains its own checkpoint, and can be configured independently.
+:::
+
+### Incident Fields
+
+The collector maps incident fields to standardized ECS fields:
+
+|Sentinel Field|ECS Field|Description|
+|---|---|---|
+|`Title`|`event.name`|Incident title|
+|`Description`|`event.description`|Incident description|
+|`Severity`|`event.severity`|Incident severity level|
+|`Status`|`event.outcome`|Current incident status|
+|`Classification`|`event.classification`|Incident classification|
+|`CreatedTimeUTC`|`event.created`|Incident creation time|
+|`LastModifiedTimeUTC`|`event.last_modified`|Last update time|
+|`FirstActivityTimeUTC`|`event.start`|First detected activity|
+|`LastActivityTimeUTC`|`event.end`|Latest detected activity|
+|`OwnerEmail`|`user.email`|Assigned owner's email|
+|`OwnerAssignedTo`|`user.name`|Assigned owner's name|
+|`ResourceId`|`cloud.resource_id`|Azure resource ID|
+|`Labels`|`labels`|Incident labels|
+
+:::note
+All timestamps are normalized at nanosecond level in UTC.
+:::

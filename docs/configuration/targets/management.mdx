@@ -1,0 +1,573 @@
+---
+sidebar_label: Management
+---
+
+# Targets: Management
+
+The **Targets** web interface provides comprehensive management for output destinations where processed telemetry data is forwarded.
+
+## Accessing Targets Dashboard
+
+Navigate to the Targets management interface:
+
+- Go to **Home** > **Fleet Management** > **Targets**
+
+-or-
+
+- Click the hamburger menu on the top left
+- Select **Fleet Management** > **Targets**
+
+## Targets Overview
+
+The Targets dashboard is where you manage all output destinations for **DataStream**. Targets are data senders that forward processed telemetry to external systems and convert from standardized pipeline output to destination-specific formats.
+
+### Dashboard Interface
+
+The overview page displays all available target types as cards organized by category.
+
+**Search and Filter:**
+- **Search targets** - Filter target types by name in the search field
+- Card count display shows "Viewing X targets" or "No targets found"
+
+**Target Cards:**
+
+Each target type displays as a card showing:
+- **Icon** - Visual identifier for the target type
+- **Title** - Target type name
+- **Description** - Brief explanation of target purpose
+- **Enabled Count** - Number of active instances
+- **Disabled Count** - Number of inactive instances
+
+Clicking a target card navigates to that target type's management page.
+
+## Target List View
+
+Clicking a target card opens the target list view showing all instances of that target type.
+
+### Target List Table
+
+The table displays all configured targets of the selected type with the following columns:
+- **Name** - Target instance name
+- **Description** - Descriptive note
+- **Postprocessing Pipeline** - Pipeline selected for postprocessing
+- **Status** - Operational state (Enabled or Disabled)
+
+Each line has its own **Actions** menu (⋮).
+
+### Table Controls
+
+**Search and Filter:**
+- **Search targets** - Filter by target name
+- **Status Dropdown** - Filter by operational status
+  - All - Show all targets
+  - Enabled - Show only active targets
+  - Disabled - Show only inactive targets
+- **Refresh Button** - Reload table data with current filters
+
+**Primary Actions:**
+- **Create target** - Launch target creation wizard
+
+### Target Actions Menu
+
+Each target row provides an Actions menu (⋮) with target-specific operations:
+
+**View Details:**
+- **See details** - Navigate to target detail view
+
+**Status Management:**
+- **Enable Target** - Activate disabled target
+- **Disable Target** - Deactivate enabled target
+
+**Configuration:**
+- **Clone Target** - Duplicate target configuration for quick setup
+
+**Deletion:**
+- **Delete Target** - Remove target from platform
+
+## Create Target Wizard
+
+The target creation process uses a multi-step wizard with target-specific configuration.
+
+Target wizards have different numbers of steps (3 or 4) depending on the target type. Each step is labeled with its specific name rather than a generic step number.
+
+### General Settings
+
+**Applies to:** All targets (AzureBlobStorage, AzureDataExplorer, AzureEventHubs, Console, Elasticsearch, File, MicrosoftSentinel, MicrosoftSentinelDataLake, Splunk)
+
+- **Name** - Unique target identifier
+- **Target Status** - Enable or disable target
+- **Post-processing Pipeline** - Optional pipeline for output normalization
+
+### Azure Properties
+
+**Applies to:** AzureBlobStorage, AzureDataExplorer, AzureEventHubs, MicrosoftSentinel, MicrosoftSentinelDataLake
+
+Azure-specific configuration including authentication and resource identification:
+
+- **Authentication** - Managed Identities, Service Principal, or Connection String
+- **Tenant ID / Client ID / Client Secret** - Service Principal credentials
+- **Workspace/Subscription** - Azure resource identification
+- **Resource Group** - Azure resource grouping
+- **Container / Database / Namespace** - Target-specific resource names
+
+### File Properties
+
+**Applies to:** AzureBlobStorage, File
+
+File output configuration including format and compression:
+
+- **File Name** - Output file naming pattern with template support
+- **File Format** - Output format (JSON, Parquet, Avro, etc.)
+- **Compression** - Optional data compression (zstd, gzip, etc.)
+- **Schema** - Schema definition for structured formats
+
+### Advanced Configuration
+
+**Applies to:** AzureEventHubs
+
+Advanced Event Hubs-specific settings including retry logic and performance tuning:
+
+- **Max Retry** - Maximum number of retry attempts
+- **Retry Interval** - Delay between retry attempts
+- **Timeout** - Connection timeout settings
+- **Batch Configuration** - Batching and performance options
+
+### Console Properties
+
+**Applies to:** Console
+
+Console output format configuration for debugging and testing:
+
+- **Output Format** - Display format for console output
+- **Pretty Print** - Formatted JSON output option
+
+### Authentication
+
+**Applies to:** Elasticsearch, Splunk
+
+Authentication credentials and endpoint configuration:
+
+- **Endpoints** - Destination URLs or addresses
+- **Username / Password** - Basic authentication credentials
+- **API Keys / Tokens** - Token-based authentication
+- **TLS Configuration** - Certificate and encryption settings
+
+### Elasticsearch Properties
+
+**Applies to:** Elasticsearch
+
+Elasticsearch-specific index and document configuration:
+
+- **Index Name** - Target index or index pattern
+- **Document Type** - Document type for older Elasticsearch versions
+- **Pipeline** - Ingest pipeline for preprocessing
+- **Bulk Configuration** - Batch size and flush settings
+
+### Stream Properties
+
+**Applies to:** MicrosoftSentinel, MicrosoftSentinelDataLake
+
+Microsoft Sentinel stream and DCR configuration:
+
+- **Stream Name** - Custom stream name
+- **Table Name** - Target table in Log Analytics workspace
+- **Rule ID** - Data Collection Rule (DCR) identifier
+- **Endpoint** - DCR endpoint URL
+
+### Splunk HEC Properties
+
+**Applies to:** Splunk
+
+Splunk HTTP Event Collector configuration:
+
+- **Index** - Target Splunk index
+- **Source Type** - Event source type classification
+- **HEC Token** - HTTP Event Collector authentication token
+- **Channel** - HEC channel identifier
+
+### Execution Settings
+
+**Applies to:** All targets (AzureBlobStorage, AzureDataExplorer, AzureEventHubs, Console, Elasticsearch, File, MicrosoftSentinel, MicrosoftSentinelDataLake, Splunk)
+
+This step configures target execution scheduling and debugging options.
+
+**Scheduling:**
+
+Enable scheduling to run the target at specific times rather than continuous processing.
+
+**Scheduling Toggle:**
+- **Enable Scheduling** - Toggle to activate scheduled execution
+- When disabled, target processes data continuously as it arrives
+- When enabled, target accumulates data and processes on schedule
+
+**Scheduling Method Selection:**
+
+Choose between two scheduling approaches using radio tiles:
+
+**Cron-Based Scheduling:**
+- Time-based scheduling using cron expressions
+- Suitable for specific time-of-day execution
+- Pattern dropdown with predefined options
+
+**Interval-Based Scheduling:**
+- Fixed interval execution
+- Suitable for regular periodic processing
+- Interval dropdown with predefined options
+
+**Cron-Based Configuration:**
+
+When Cron-based is selected:
+
+1. **Select Pattern Dropdown** - Choose from predefined cron patterns:
+   - Every minute (`* * * * *`)
+   - Every 5 minutes (`*/5 * * * *`)
+   - Every 10 minutes (`*/10 * * * *`)
+   - Every 30 minutes (`*/30 * * * *`)
+   - Every hour (`0 * * * *`)
+   - Every 2 hours (`0 */2 * * *`)
+   - Every 6 hours (`0 */6 * * *`)
+   - Daily at midnight (`0 0 * * *`)
+   - Daily at noon (`0 12 * * *`)
+   - Weekly (Monday) (`0 0 * * 1`)
+   - Monthly (1st) (`0 0 1 * *`)
+   - Weekdays only (`0 0 * * 1-5`)
+   - Weekends only (`0 0 * * 6,0`)
+   - **Custom** - Enter custom cron expression
+
+2. **Custom Cron Expression:**
+   - Info alert explains cron format and usage
+   - Input field for custom cron expression
+   - **Test Expression Button** - Validate and interpret cron pattern
+   - Result display shows human-readable interpretation
+   - Example: `0 */3 * * *` displays as "Every 3 hours"
+   - Link to Cron documentation chapter for detailed format reference
+
+**Interval-Based Configuration:**
+
+When Interval-based is selected:
+
+1. **Select Interval Dropdown** - Choose from predefined intervals:
+   - 30 seconds (`30s`)
+   - 1 minute (`1m`)
+   - 5 minutes (`5m`)
+   - 10 minutes (`10m`)
+   - 15 minutes (`15m`)
+   - 30 minutes (`30m`)
+   - 1 hour (`1h`)
+   - 2 hours (`2h`)
+   - 6 hours (`6h`)
+   - 12 hours (`12h`)
+   - 24 hours (`24h`)
+   - **Custom** - Enter custom interval
+
+2. **Custom Interval:**
+   - Info alert explains interval format
+   - Input field for custom interval value
+   - **Format specification:**
+     - Numbers without suffix interpreted as seconds
+     - Supported suffixes: `s` (seconds), `m` (minutes), `h` (hours)
+     - Examples: `90s`, `5m`, `2h`, `120` (interpreted as 120 seconds)
+   - Helper text shows format requirements
+   - Link to documentation for detailed interval format reference
+
+**Debugging:**
+
+Configure debugging options for target troubleshooting.
+
+**Enable Debugging Toggle:**
+- Activates debug logging for the target
+- Logs each event before sending to destination
+- Provides visibility into data flow and transformations
+
+**When Debugging is Enabled:**
+
+**Don't Send Debug Logs Toggle:**
+- Prevents actual data transmission to target
+- Events are logged but not sent to destination
+- Useful for testing configurations without affecting production systems
+- Allows validation of data format and transformation logic
+
+### Wizard Navigation
+
+**Progress Indicator:**
+- Visual step progress at top of wizard
+- Click steps to navigate (after validation)
+- Current step highlighted
+- Completed steps marked with checkmark
+
+**Navigation Buttons:**
+- **Cancel** - Exit wizard without creating target
+- **Back** - Return to previous step
+- **Next** - Advance to next step with validation
+- **Create target** - Finalize target creation (final step)
+
+## Target Detail View
+
+Clicking a target from the list opens the detailed management interface with tabbed panels.
+
+### Target Detail Tabs
+
+Tab structure varies by target type:
+
+**General Settings Tab:**
+- **Name** - Editable target name
+- **Description** - Editable target description
+- **Status** - Current operational state
+- **Edit Mode** - Click edit to modify general settings
+
+**Target-Specific Configuration Tabs:**
+
+Configuration tabs vary by target type:
+
+**Azure Targets:**
+- **Azure Properties** - Authentication, workspace, subscription details
+- **Stream Properties** - Stream configuration, DCR settings (Sentinel targets)
+
+**Analytics Targets:**
+- **Authentication** - Credentials and authentication methods
+- **Properties** - Endpoint configuration, index settings
+
+**Storage Targets:**
+- **File Properties** - Path, format, compression settings
+- **Azure Properties** - Cloud-specific configuration (Azure storage targets)
+
+**Execution Settings Tab:**
+
+Displays and allows editing of scheduling and debugging configuration:
+
+**Scheduling Section:**
+- Current scheduling status (Enabled/Disabled)
+- Scheduling method (Cron or Interval)
+- Current schedule pattern or interval
+- Edit mode allows modification of all scheduling settings
+
+**Debugging Section:**
+- Debug logging status (Enabled/Disabled)
+- Don't send logs status (Enabled/Disabled when debugging active)
+- Edit mode allows modification of debug settings
+
+### Target Actions Menu
+
+Each target detail view provides an Actions menu with context-specific operations:
+
+**View and Configuration:**
+- **See details** - Current view (disabled in dropdown)
+
+**Status Management:**
+- **Enable Target** - Activate disabled target
+- **Disable Target** - Deactivate enabled target
+
+**Advanced Operations:**
+- **Clone Target** - Duplicate configuration for new target
+- **Delete Target** - Remove target from platform
+
+## Target Operations
+
+### Enable/Disable Target
+
+**Enable Target:**
+
+Activate a disabled target to resume data forwarding:
+
+1. Navigate to target detail view or use Actions menu from list
+2. Click **Actions** menu
+3. Select **Enable Target**
+4. Success notification displays confirmation
+5. Target status updates to "Enabled"
+6. Target begins forwarding data based on configuration
+
+**Disable Target:**
+
+Deactivate an enabled target to pause data forwarding:
+
+1. Navigate to target detail view or use Actions menu from list
+2. Click **Actions** menu
+3. Select **Disable Target**
+4. Success notification displays confirmation
+5. Target status updates to "Disabled"
+6. Stops data forwarding but preserves configuration
+
+### Clone Target
+
+Duplicate an existing target configuration for quick setup:
+
+1. Navigate to target detail view or use Actions menu from list
+2. Click **Actions** menu
+3. Select **Clone Target**
+4. System navigates to target creation wizard
+5. Pre-fills form with cloned target configuration
+6. Modify name and other settings as needed
+7. Complete wizard to create new target
+
+### Delete Target
+
+**Delete Target Process:**
+
+Remove a target from the platform with dependency checking:
+
+1. Navigate to target detail view or use Actions menu from list
+2. Click **Actions** menu
+3. Select **Delete Target**
+4. Deletion modal appears with confirmation
+
+**Standard Deletion:**
+- Confirm target name matches
+- Click **Delete** to proceed
+- Success notification confirms deletion
+- Redirect to target list view
+
+**Deletion with Dependencies:**
+
+If target has active dependencies, error modal displays:
+
+**Error Modal Contents:**
+- "Cannot delete Target" message
+- **Routes** - List of routes using this target
+- **Action Required** - Remove or reassign dependencies before deletion
+
+**Dependency Resolution:**
+1. Note listed routes
+2. Edit routes to use different target or delete routes
+3. Retry target deletion after dependencies removed
+
+## Edit Mode Workflow
+
+Target detail tabs support inline editing with unsaved changes protection:
+
+**Enter Edit Mode:**
+1. Navigate to editable tab
+2. Click **Edit** button in top-right of tab
+3. Form fields become editable
+4. **Save** and **Cancel** buttons appear
+
+**Make Changes:**
+- Modify editable fields
+- Changes are not saved automatically
+- Form validation occurs on save
+
+**Save Changes:**
+1. Click **Save** button
+2. System validates changes
+3. Success notification displays confirmation
+4. Edit mode exits
+5. Tab displays updated values
+
+**Cancel Changes:**
+1. Click **Cancel** button
+2. Form reverts to original values
+3. Edit mode exits
+4. No changes are saved
+
+**Tab Navigation Protection:**
+
+If you attempt to navigate to another tab while in edit mode:
+- **Unsaved Changes Modal** appears
+- **Modal Contents:**
+  - "Unsaved changes" heading
+  - "You have unsaved changes. Are you sure you want to leave?" message
+  - **Discard Changes** - Exit edit mode and switch tabs
+  - **Continue Editing** - Return to current tab
+  - **Cancel** - Close modal
+
+## Notifications
+
+The Targets interface provides automatic notifications for all operations:
+
+### Success Notifications
+
+Auto-dismissing success messages (10-second timeout):
+
+- **Target Created** - New target successfully created
+- **Target Enabled** - Target successfully activated
+- **Target Disabled** - Target successfully deactivated
+- **Target Deleted** - Target successfully removed from platform
+- **Target Updated** - Target configuration successfully saved
+
+### Error Notifications
+
+Persistent error notifications requiring user action:
+
+- **Enable Failed** - Target could not be enabled
+- **Disable Failed** - Target could not be disabled
+- **Delete Failed** - Target deletion unsuccessful
+- **Update Failed** - Target configuration update failed
+
+### Notification Actions
+
+**Auto-Close:**
+- Success notifications auto-dismiss after 10 seconds
+- Hover to pause auto-close timer
+- Click X to manually dismiss
+
+**Manual Dismiss:**
+- Error notifications require manual dismissal
+- Review error details before dismissing
+- Take corrective action based on error message
+
+## Best Practices
+
+### Target Organization
+
+**Naming Conventions:**
+- Use descriptive, meaningful target names
+- Include destination or purpose in name (e.g., "azure-sentinel-security")
+- Maintain consistent naming pattern across targets
+- Avoid generic names like "target1" or "test"
+
+**Tag Usage:**
+- Apply tags for categorization (environment, purpose, destination)
+- Use tags for bulk filtering and management
+- Maintain consistent tag vocabulary across organization
+- Document tag meanings for team reference
+
+### Status Management
+
+**Enabled Status:**
+- Keep targets "Enabled" for active data forwarding
+- Monitor destination connectivity regularly
+- Review target logs for transmission issues
+
+**Disabled Status:**
+- Use "Disabled" status for maintenance windows
+- Disable targets during configuration changes
+- Document reason for disabling in external systems
+- Re-enable after maintenance completion
+
+### Execution Settings Configuration
+
+**Scheduling Usage:**
+- Use scheduling for batch-oriented destinations
+- Continuous processing appropriate for real-time systems
+- Consider data volume and destination capabilities
+- Test scheduled execution with small datasets first
+
+**Cron vs Interval:**
+- **Cron** - Best for specific time-of-day requirements
+- **Interval** - Best for regular periodic processing
+- Consider timezone implications for cron schedules
+- Document scheduling decisions for team reference
+
+**Debugging Configuration:**
+- Enable debugging during initial setup and testing
+- Use "Don't Send Debug Logs" to test configurations safely
+- Disable debugging in production to reduce overhead
+- Re-enable debugging when troubleshooting issues
+
+### Lifecycle Management
+
+**Creation:**
+- Configure all required fields before creation
+- Test target immediately after creation
+- Verify data delivery through associated routes
+
+**Maintenance:**
+- Review target detail tabs periodically
+- Keep target configurations synchronized
+- Monitor execution logs for patterns
+- Test configuration changes in non-production first
+
+**Deletion:**
+- Verify no active dependencies before deletion
+- Document reason for target removal
+- Archive target configurations for compliance
+- Update related documentation and diagrams

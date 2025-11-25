@@ -89,14 +89,16 @@ const config: Config = {
     ],
   ],
   plugins: [
-    require.resolve("docusaurus-lunr-search"),
+    [
+      require.resolve("docusaurus-lunr-search"),
+      {
+        excludeRoutes: ["/1.*/**/*"],
+        disableVersioning: true,
+      }
+    ],
     require.resolve('./plugins/validate-topics'),
     require.resolve('./plugins/validate-images'),
     require.resolve('./plugins/validate-includes'),
-    // DISABLED: Quote plugin was causing hot reload issues in development
-    // The getPathsToWatch() method was interfering with Docusaurus native file watching
-    // See PROJECT_CONTEXT.md for details and future re-enablement
-    // require.resolve('./plugins/validate-quotes'),
   ],
   themeConfig: {
     image: "telemetry-color.jpg",
@@ -133,18 +135,24 @@ const config: Config = {
           sidebarId: "userDocs",
           position: "left",
           label: "Docs",
-        },        
+        },
         {
           type: "docSidebar",
-          sidebarId: "tutorDocs",
+          sidebarId: "releaseDocs",
           position: "left",
-          label: "Tutorials",
+          label: "Release Notes",
         },
-        {
-          to: "/blog",
-          label: "Blog",
-          position: "left"
-        },
+        // {
+        //   type: "docSidebar",
+        //   sidebarId: "tutorDocs",
+        //   position: "left",
+        //   label: "Tutorials",
+        // },
+        // {
+        //   to: "/blog",
+        //   label: "Blog",
+        //   position: "left"
+        // },
         {
           to: "https://community.virtualmetric.com/",
           position: "left",
@@ -154,12 +162,6 @@ const config: Config = {
           to: "https://support.virtualmetric.com/",
           position: "left",
           label: "Support",
-        },
-        {
-          type: "docSidebar",
-          sidebarId: "releaseDocs",
-          position: "left",
-          label: "Release Notes",
         },
         {
           type: "search",
