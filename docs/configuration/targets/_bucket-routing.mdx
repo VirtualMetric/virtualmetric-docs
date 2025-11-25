@@ -1,0 +1,16 @@
+### Bucket Routing
+
+The target supports flexible bucket routing through pipeline configuration or explicit bucket settings:
+
+**Configuration-based routing**: Define multiple buckets in the target configuration, each with its own format, compression, and schema settings. Logs are routed to specific buckets based on configuration.
+
+**Pipeline-based routing**: Use the `bucket` field in pipeline processors to dynamically route logs to different buckets at runtime. This enables conditional routing based on log content, source, or other attributes.
+
+**Catch-all routing**: When a log doesn't match any specific bucket configuration or when no `bucket` field is set in the pipeline, logs are routed to the catch-all bucket (configured via the `bucket` field in target properties).
+
+**Routing priority**:
+1. Pipeline `bucket` field (highest priority)
+2. Configured buckets in `buckets` array (if bucket name matches)
+3. Default `bucket` field (catch-all, lowest priority)
+
+This multi-level routing enables flexible data distribution strategies, such as routing different log types to different buckets based on content analysis, source system, severity level, or any other runtime decision.
