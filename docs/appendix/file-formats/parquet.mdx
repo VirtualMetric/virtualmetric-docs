@@ -42,11 +42,20 @@ age: [35, 27, 42]
 
 |Encoding|Internal Name|Description|Use Case|
 |--:|:-:|:--|:--|
-|Plain|`PLAIN`|No encoding applied|Small datasets or unsorted data|
-|Dictionary|`PLAIN_DICTIONARY`|Values replaced with dictionary indices|Repeated string values|
-|Run Length|`RLE`|Consecutive identical values compressed|Sparse or repetitive data|
-|Bit Packing|`BIT_PACKED`|Pack values using minimum required bits|Boolean or small integer ranges|
-|Delta|`DELTA_BINARY_PACKED`|Store differences between consecutive values|Sorted numerical data|
+|Plain|`PLAIN`|Values encoded back to back without compression|Default fallback for all data types|
+|Dictionary|`RLE_DICTIONARY`|Values replaced with dictionary indices using RLE|Repeated string values, low-cardinality columns|
+|Run Length / Bit-Packing Hybrid|`RLE`|Combination of bit-packing and run length encoding|Repetition/definition levels, dictionary indices, booleans|
+|Delta Binary Packed|`DELTA_BINARY_PACKED`|Delta encoding with binary packing for integers|INT32, INT64 with sequential or clustered values|
+|Delta Length Byte Array|`DELTA_LENGTH_BYTE_ARRAY`|Delta-encoded lengths followed by concatenated data|Variable-length byte arrays|
+|Delta Byte Array|`DELTA_BYTE_ARRAY`|Incremental/front compression storing prefix lengths|BYTE_ARRAY, FIXED_LEN_BYTE_ARRAY with common prefixes|
+|Byte Stream Split|`BYTE_STREAM_SPLIT`|Scatters bytes to separate streams for better compression|FLOAT, DOUBLE, INT32, INT64 (added in Parquet 2.8)|
+
+### Deprecated Encodings
+
+|Encoding|Internal Name|Description|Replacement|
+|--:|:-:|:--|:--|
+|Plain Dictionary|`PLAIN_DICTIONARY`|Legacy dictionary encoding in data pages|Use `RLE_DICTIONARY` in data pages|
+|Bit Packed|`BIT_PACKED`|Fixed-width bit-packing without padding|Use `RLE` hybrid encoding|
 
 ## Compression Codecs
 
@@ -58,3 +67,4 @@ age: [35, 27, 42]
 |`LZO`|Fast decompression|Read-heavy workloads|
 |`BROTLI`|Modern compression algorithm|High compression ratio needs|
 |`LZ4`|Extremely fast compression|Low-latency applications|
+|`ZSTD`|Zstandard compression with configurable levels|Best balance of speed and compression ratio|
