@@ -36,14 +36,22 @@ pagination_next: null
 |Key|Description|Example Value|
 |--:|:--|:--|
 |`avro.schema`|JSON-encoded schema|JSON string defining the schema|
-|`avro.codec`|Compression codec used (optional)|`"null"` (default), `"deflate"`, `"snappy"`, `"bzip2"`, `"xz"`|
+|`avro.codec`|Compression codec used (optional)|`"null"` (default), `"deflate"`, `"snappy"`, `"bzip2"`, `"xz"`, `"zstandard"`|
 
 ## Compression Codecs
+
+### Required Codecs
 
 |Codec|Description|Best For|
 |--:|:--|:--|
 |`null`|No compression applied|Small files or testing|
-|`deflate`|Standard ZIP compression|General-purpose compression|
-|`snappy`|Fast compression/decompression|Real-time streaming applications|
+|`deflate`|Standard ZIP compression (RFC 1951)|General-purpose compression|
+
+### Optional Codecs
+
+|Codec|Description|Best For|
+|--:|:--|:--|
+|`snappy`|Fast compression/decompression with CRC32 checksum|Real-time streaming applications|
 |`bzip2`|High compression ratio|Storage-constrained environments|
-|`xz`|Modern compression algorithm|Maximum compression efficiency|
+|`xz`|XZ compression library|Maximum compression efficiency|
+|`zstandard`|Facebook's Zstandard compression with configurable levels|Best balance of speed and compression ratio|
