@@ -34,16 +34,36 @@ This guide provides solutions to common Director deployment and operational issu
    - Check timezone configuration matches your location
 
 **Additional Diagnostics:**
-```bash
-# Test DNS resolution
-nslookup portal.virtualmetric.com
 
-# Check outbound connectivity
-telnet portal.virtualmetric.com 443
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    # Test DNS resolution
+    Resolve-DnsName portal.virtualmetric.com
 
-# Verify certificate chain
-openssl s_client -connect portal.virtualmetric.com:443
-```
+    # Check outbound connectivity
+    Test-NetConnection -ComputerName portal.virtualmetric.com -Port 443
+
+    # Verify certificate chain
+    $uri = "https://portal.virtualmetric.com"
+    $request = [System.Net.HttpWebRequest]::Create($uri)
+    $request.GetResponse() | Out-Null
+    $request.ServicePoint.Certificate
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    # Test DNS resolution
+    nslookup portal.virtualmetric.com
+
+    # Check outbound connectivity
+    telnet portal.virtualmetric.com 443
+
+    # Verify certificate chain
+    openssl s_client -connect portal.virtualmetric.com:443
+    ```
+  </TabItem>
+</Tabs>
 
 ### Connection Drops Intermittently
 
@@ -101,16 +121,29 @@ openssl s_client -connect portal.virtualmetric.com:443
    - Examine Director service logs for specific error details
 
 **Common Solutions:**
-```bash
-# Windows: Check service status
-Get-Service VirtualMetricDirector
 
-# Linux: Check service status
-systemctl status virtualmetric-director
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    # Check service status
+    Get-Service VirtualMetricDirector
 
-# Check port usage
-netstat -tulpn | grep :443
-```
+    # Check port usage
+    Get-NetTCPConnection -LocalPort 443 -ErrorAction SilentlyContinue
+    # Or using netstat
+    netstat -an | Select-String ":443"
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    # Check service status
+    systemctl status virtualmetric-director
+
+    # Check port usage
+    netstat -tulpn | grep :443
+    ```
+  </TabItem>
+</Tabs>
 
 ### Installation Script Fails
 
@@ -177,16 +210,40 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    - Review error messages for specific issues
 
 **Diagnostic Commands:**
-```bash
-# Test syslog connectivity
-logger -n <director_ip> -P <port> "Test message"
 
-# Check listening ports
-netstat -tulpn | grep <director_ip>
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    # Test syslog connectivity (send UDP message)
+    $udpClient = New-Object System.Net.Sockets.UdpClient
+    $bytes = [Text.Encoding]::ASCII.GetBytes("<14>Test message from PowerShell")
+    $udpClient.Send($bytes, $bytes.Length, "<director_ip>", <port>)
+    $udpClient.Close()
 
-# Monitor network traffic
-tcpdump -i any port <port_number>
-```
+    # Check listening ports
+    Get-NetTCPConnection -LocalPort <port> -ErrorAction SilentlyContinue
+    Get-NetUDPEndpoint -LocalPort <port> -ErrorAction SilentlyContinue
+
+    # Monitor network traffic (requires Wireshark/tshark or Message Analyzer)
+    # Or use built-in packet capture:
+    netsh trace start capture=yes tracefile=C:\temp\trace.etl
+    # ... perform test ...
+    netsh trace stop
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    # Test syslog connectivity
+    logger -n <director_ip> -P <port> "Test message"
+
+    # Check listening ports
+    netstat -tulpn | grep <director_ip>
+
+    # Monitor network traffic
+    tcpdump -i any port <port_number>
+    ```
+  </TabItem>
+</Tabs>
 
 ### Data Processing Errors
 
@@ -349,16 +406,33 @@ tcpdump -i any port <port_number>
 - `performance.log` - Resource usage and performance metrics
 
 **Log Analysis Commands:**
-```bash
-# Monitor real-time logs
-tail -f /var/log/virtualmetric/director/application.log
 
-# Search for specific errors
-grep -i "error\|exception" /var/log/virtualmetric/director/*.log
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    # Monitor real-time logs
+    Get-Content "C:\ProgramData\VirtualMetric\Director\Logs\application.log" -Wait -Tail 50
 
-# Check recent connection events
-grep "connection" /var/log/virtualmetric/director/connection.log | tail -50
-```
+    # Search for specific errors
+    Select-String -Path "C:\ProgramData\VirtualMetric\Director\Logs\*.log" -Pattern "error|exception" -AllMatches
+
+    # Check recent connection events
+    Select-String -Path "C:\ProgramData\VirtualMetric\Director\Logs\connection.log" -Pattern "connection" | Select-Object -Last 50
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    # Monitor real-time logs
+    tail -f /var/log/virtualmetric/director/application.log
+
+    # Search for specific errors
+    grep -i "error\|exception" /var/log/virtualmetric/director/*.log
+
+    # Check recent connection events
+    grep "connection" /var/log/virtualmetric/director/connection.log | tail -50
+    ```
+  </TabItem>
+</Tabs>
 
 ### Performance Monitoring
 
