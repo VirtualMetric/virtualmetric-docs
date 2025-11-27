@@ -70,6 +70,9 @@ const config: Config = {
         },
         blog: {
           showReadingTime: true,
+          routeBasePath: 'release-notes',
+          blogTitle: 'Release Notes',
+          blogDescription: 'All release notes in one place',
           feedOptions: {
             type: ["rss", "atom"],
             xslt: true,
@@ -143,7 +146,7 @@ const config: Config = {
         //   label: "Tutorials",
         // },
         {
-          to: "/blog",
+          to: "/release-notes",
           label: "Release Notes",
           position: "left"
         },
