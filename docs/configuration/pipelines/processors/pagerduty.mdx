@@ -1,0 +1,247 @@
+---
+description: Sends incident alerts to PagerDuty via Events API v2
+sidebar_custom_props:
+  customIcon: 🔔
+  customCategory: Notification
+---
+
+# PagerDuty
+
+<span className="theme-doc-version-badge badge badge--primary">Notification</span>
+
+## Synopsis
+
+Sends incident alerts to PagerDuty using the Events API v2, supporting event actions (trigger, acknowledge, resolve), severity levels, deduplication keys, and custom details for incident management.
+
+## Schema
+
+```yaml {2-3}
+- pagerduty:
+    routing_key: <string>
+    summary: <string>
+    event_action: <string>
+    dedup_key: <string>
+    source: <string>
+    severity: <string>
+    component: <string>
+    group: <string>
+    class: <string>
+    custom_details: <map>
+    client: <string>
+    client_url: <string>
+    images: <image[]>
+    links: <link[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`routing_key`|Y|-|PagerDuty integration key (routing key). Defaults to `${PAGERDUTY_ROUTING_KEY}` env variable.|
+|`summary`|Y|-|Brief description of the incident|
+|`event_action`|N|`trigger`|Action to perform: `trigger`, `acknowledge`, or `resolve`|
+|`dedup_key`|N|-|Deduplication key to correlate trigger, acknowledge, and resolve events|
+|`source`|N|-|Source of the event (e.g., hostname, service name)|
+|`severity`|N|`info`|Severity level: `critical`, `error`, `warning`, or `info`|
+|`component`|N|-|Component of the source machine responsible for the event|
+|`group`|N|-|Logical grouping of components|
+|`class`|N|-|Type or classification of the event|
+|`custom_details`|N|-|Map of additional details to include with the incident|
+|`client`|N|`VirtualMetric`|Name of the monitoring client|
+|`client_url`|N|`https://www.virtualmetric.com`|URL of the monitoring client|
+|`images`|N|-|Array of image objects with `src`, `href`, and `alt` fields|
+|`links`|N|-|Array of link objects with `href` and `text` fields|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The pagerduty processor sends incident alerts to PagerDuty using the Events API v2.
+
+**Event Actions**: Control incident lifecycle through event actions:
+- `trigger`: Create a new incident or add to an existing open incident with the same dedup_key
+- `acknowledge`: Acknowledge an open incident (prevents escalation)
+- `resolve`: Close an open incident
+
+**Deduplication Keys**: The `dedup_key` field correlates related events. Multiple triggers with the same dedup_key are grouped into one incident. Use templates to create dynamic keys based on event data (e.g., `cpu-{{ .server }}`).
+
+**Severity Levels**: Visual and behavioral indicators in PagerDuty:
+- `critical`: Highest severity, immediate attention required
+- `error`: Error condition requiring attention
+- `warning`: Potential issue, monitoring recommended
+- `info`: Informational message
+
+**Custom Details**: The `custom_details` map passes additional context to responders. Values support template syntax for dynamic content.
+
+**Images and Links**: Enrich incidents with visual context and quick navigation:
+- Images: Include `src` (required), `href`, and `alt` fields
+- Links: Include `href` (required) and `text` fields
+
+**Template Support**: All string fields support Go template syntax with event field interpolation using `{{ .field_name }}`.
+
+## Examples
+
+### Basic Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Triggering a critical incident...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "High CPU Usage",
+      "server": "prod-server-01",
+      "cpu_usage": "95%"
+    }
+    ```
+    ```yaml
+    - pagerduty:
+        routing_key: "${PAGERDUTY_ROUTING_KEY}"
+        summary: "Alert: {{ .alert_name }} on {{ .server }}"
+        source: "{{ .server }}"
+        severity: "critical"
+        dedup_key: "cpu-{{ .server }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Critical incident created in PagerDuty...
+  </CommentCol>
+</ExampleGrid>
+
+### Resolve Incident
+
+<ExampleGrid>
+  <CommentCol>
+    Resolving a previously triggered incident...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "High CPU Usage",
+      "server": "prod-server-01"
+    }
+    ```
+    ```yaml
+    - pagerduty:
+        routing_key: "${PAGERDUTY_ROUTING_KEY}"
+        event_action: "resolve"
+        summary: "Resolved: {{ .alert_name }} on {{ .server }}"
+        source: "{{ .server }}"
+        severity: "info"
+        dedup_key: "cpu-{{ .server }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Incident with matching dedup_key is resolved...
+  </CommentCol>
+</ExampleGrid>
+
+### With Custom Details
+
+<ExampleGrid>
+  <CommentCol>
+    Including additional context in the incident...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "High CPU Usage",
+      "server": "prod-server-01",
+      "cpu_usage": "95%"
+    }
+    ```
+    ```yaml
+    - pagerduty:
+        routing_key: "${PAGERDUTY_ROUTING_KEY}"
+        summary: "Alert: {{ .alert_name }} on {{ .server }}"
+        source: "{{ .server }}"
+        severity: "critical"
+        component: "CPU"
+        dedup_key: "cpu-{{ .server }}"
+        custom_details:
+          cpu_usage: "{{ .cpu_usage }}"
+          server: "{{ .server }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Custom details appear in incident timeline...
+  </CommentCol>
+</ExampleGrid>
+
+### With Images and Links
+
+<ExampleGrid>
+  <CommentCol>
+    Adding visual context and navigation links...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "Schema Drift Detected",
+      "schema": "ASimNetworkSessionLogs"
+    }
+    ```
+    ```yaml
+    - pagerduty:
+        routing_key: "${PAGERDUTY_ROUTING_KEY}"
+        summary: "{{ .alert_name }}: {{ .schema }}"
+        source: "Data Pipeline"
+        severity: "warning"
+        component: "Schema Validation"
+        dedup_key: "schema-{{ .schema }}"
+        images:
+          - src: "https://example.com/chart.png"
+            href: "https://dashboard.example.com"
+            alt: "Monitoring Chart"
+        links:
+          - href: "https://dashboard.example.com/schema"
+            text: "View Schema Dashboard"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Incident includes embedded image and dashboard link...
+  </CommentCol>
+</ExampleGrid>
+
+### Schema Drift Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Alerting on schema validation failures...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - check_schema:
+          schema: "ASimNetworkSessionLogs"
+          target_field: "schema_check"
+          on_missing:
+            - pagerduty:
+                routing_key: "${PAGERDUTY_ROUTING_KEY}"
+                summary: "Schema Validation Failed: ASimNetworkSessionLogs"
+                source: "Data Pipeline"
+                severity: "critical"
+                component: "Schema Validation"
+                group: "Data Quality"
+                class: "Schema Drift"
+                dedup_key: "schema-ASimNetworkSessionLogs"
+                custom_details:
+                  is_valid: "{{ .schema_check.is_valid }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    PagerDuty incident triggered when schema validation fails...
+  </CommentCol>
+</ExampleGrid>
+

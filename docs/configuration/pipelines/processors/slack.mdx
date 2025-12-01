@@ -1,0 +1,249 @@
+---
+description: Sends alert notifications to Slack via webhook
+sidebar_custom_props:
+  customIcon: 🔔
+  customCategory: Notification
+---
+
+# Slack
+
+<span className="theme-doc-version-badge badge badge--primary">Notification</span>
+
+## Synopsis
+
+Sends alert notifications to Slack channels using incoming webhooks, supporting message attachments with customizable colors, additional fields, and branding options.
+
+## Schema
+
+```yaml {2-4}
+- slack:
+    webhook_url: <string>
+    title: <string>
+    message: <string>
+    username: <string>
+    icon_url: <string>
+    icon_emoji: <string>
+    channel: <string>
+    color: <string>
+    fields: <field[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`webhook_url`|Y|-|Slack incoming webhook URL. Defaults to `${SLACK_WEBHOOK_URL}` env variable.|
+|`title`|Y|-|Message title displayed prominently|
+|`message`|Y|-|Main message body text|
+|`username`|N|`VirtualMetric`|Bot username displayed in Slack|
+|`icon_url`|N|VirtualMetric icon|URL to image used as bot avatar|
+|`icon_emoji`|N|-|Emoji to use as bot avatar (overrides icon_url)|
+|`channel`|N|-|Channel to post to (overrides webhook default)|
+|`color`|N|`#47BEFF`|Attachment color: `good`, `warning`, `danger`, `info`, or hex code|
+|`fields`|N|-|Array of field objects with `title`, `value`, and `short` fields|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The slack processor sends notifications to Slack channels using incoming webhooks.
+
+**Webhook Setup**: Create an incoming webhook in Slack:
+1. Go to your Slack workspace's App Directory
+2. Search for "Incoming Webhooks" and add it
+3. Choose a channel and create the webhook
+4. Copy the webhook URL
+
+**Colors**: Visual severity indicators for the message attachment sidebar:
+- `good` / `green` / `success`: Green (#26A65B)
+- `warning` / `yellow`: Orange (#FFB655)
+- `danger` / `red` / `error` / `critical`: Red (#FB4946)
+- `info` / `blue`: Blue (#47BEFF) - default
+- Custom hex codes (e.g., `#FF5733`) for brand colors
+
+**Fields**: Structured data displayed in the attachment:
+```yaml
+fields:
+  - title: "Server"
+    value: "{{ .hostname }}"
+    short: true
+  - title: "CPU"
+    value: "{{ .cpu_usage }}%"
+    short: true
+```
+Set `short: true` to display fields side-by-side.
+
+**Channel Override**: The `channel` field overrides the webhook's default channel. Use `#channel-name` for public channels or `@username` for direct messages.
+
+**Template Support**: All string fields support Go template syntax with event field interpolation using `{{ .field_name }}`.
+
+## Examples
+
+### Basic Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Sending a simple alert notification...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "High CPU Usage",
+      "server": "prod-server-01",
+      "cpu_usage": "95%"
+    }
+    ```
+    ```yaml
+    - slack:
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        title: "Alert: {{ .alert_name }}"
+        message: "CPU usage is at {{ .cpu_usage }} on server {{ .server }}"
+        color: "danger"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Red-colored alert posted to Slack...
+  </CommentCol>
+</ExampleGrid>
+
+### With Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Including structured data as fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "Schema Drift Detected",
+      "schema": "ASimNetworkSessionLogs",
+      "missing": "3 required fields"
+    }
+    ```
+    ```yaml
+    - slack:
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        title: "{{ .alert_name }}"
+        message: "Schema validation failed"
+        color: "warning"
+        fields:
+          - title: "Schema"
+            value: "{{ .schema }}"
+            short: true
+          - title: "Missing Fields"
+            value: "{{ .missing }}"
+            short: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    Fields displayed side-by-side in attachment...
+  </CommentCol>
+</ExampleGrid>
+
+### Custom Username and Channel
+
+<ExampleGrid>
+  <CommentCol>
+    Overriding bot identity and target channel...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "bot_name": "AlertBot",
+      "channel": "#alerts"
+    }
+    ```
+    ```yaml
+    - slack:
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        username: "{{ .bot_name }}"
+        channel: "{{ .channel }}"
+        title: "System Alert"
+        message: "This is a test alert"
+        color: "info"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Message posted as AlertBot to #alerts channel...
+  </CommentCol>
+</ExampleGrid>
+
+### Color Options
+
+<ExampleGrid>
+  <CommentCol>
+    Using different severity colors...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    # Success - green sidebar
+    - slack:
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        title: "Deployment Complete"
+        message: "Version 2.0 deployed successfully"
+        color: "good"
+    ```
+    ```yaml
+    # Warning - orange sidebar
+    - slack:
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        title: "High Memory Usage"
+        message: "Memory usage at 85%"
+        color: "warning"
+    ```
+    ```yaml
+    # Danger - red sidebar
+    - slack:
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        title: "Service Down"
+        message: "API service not responding"
+        color: "danger"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Colors indicate severity at a glance...
+  </CommentCol>
+</ExampleGrid>
+
+### Schema Drift Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Alerting on schema validation failures...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - check_schema:
+          schema: "ASimNetworkSessionLogs"
+          target_field: "schema_check"
+          on_missing:
+            - slack:
+                webhook_url: "${SLACK_WEBHOOK_URL}"
+                title: "Schema Validation Failed: ASimNetworkSessionLogs"
+                message: "Schema validation detected missing required fields"
+                color: "danger"
+                fields:
+                  - title: "Schema"
+                    value: "ASimNetworkSessionLogs"
+                    short: true
+                  - title: "Valid"
+                    value: "{{ .schema_check.is_valid }}"
+                    short: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    Alert triggered automatically when schema drift detected...
+  </CommentCol>
+</ExampleGrid>
+

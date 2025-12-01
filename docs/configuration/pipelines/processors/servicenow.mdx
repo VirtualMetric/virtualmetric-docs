@@ -1,0 +1,273 @@
+---
+description: Creates and updates incidents in ServiceNow
+sidebar_custom_props:
+  customIcon: 🔔
+  customCategory: Notification
+---
+
+# ServiceNow
+
+<span className="theme-doc-version-badge badge badge--primary">Notification</span>
+
+## Synopsis
+
+Creates and updates incidents in ServiceNow using the Table API, supporting incident tracking via problem IDs, automatic state management, and configurable impact/urgency levels for IT service management integration.
+
+## Schema
+
+```yaml {2-5}
+- servicenow:
+    instance_url: <string>
+    username: <string>
+    password: <string>
+    short_description: <string>
+    detailed_description: <string>
+    caller_id: <string>
+    category: <string>
+    subcategory: <string>
+    company: <string>
+    assignment_group: <string>
+    assigned_to: <string>
+    impact: <string>
+    urgency: <string>
+    state: <string>
+    problem_id: <string>
+    cmdb_ci: <string>
+    close_notes: <string>
+    close_code: <string>
+    auto_close: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`instance_url`|Y|-|ServiceNow instance URL or name (e.g., `myinstance` or `myinstance.service-now.com`)|
+|`username`|Y|-|ServiceNow username. Defaults to `${SERVICENOW_USERNAME}` env variable.|
+|`password`|Y|-|ServiceNow password. Defaults to `${SERVICENOW_PASSWORD}` env variable.|
+|`short_description`|Y|-|Brief incident description (title)|
+|`detailed_description`|N|-|Full incident description with details|
+|`caller_id`|N|-|Sys_id or name of the user reporting the incident|
+|`category`|N|-|Incident category|
+|`subcategory`|N|-|Incident subcategory|
+|`company`|N|-|Company associated with the incident|
+|`assignment_group`|N|-|Group to assign the incident to|
+|`assigned_to`|N|-|Individual to assign the incident to|
+|`impact`|N|`low`|Business impact: `high`, `medium`, or `low`|
+|`urgency`|N|`low`|How quickly resolution is needed: `high`, `medium`, or `low`|
+|`state`|N|`new`|Incident state: `new`, `in_progress`, `on_hold`, `resolved`, or `closed`|
+|`problem_id`|N|-|Unique identifier for tracking related incidents|
+|`cmdb_ci`|N|-|Configuration Item from CMDB|
+|`close_notes`|N|`Closed automatically`|Notes when closing incident|
+|`close_code`|N|`Closed/Resolved by Caller`|Resolution code when closing|
+|`auto_close`|N|`false`|Automatically set close fields when state is closed|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The servicenow processor creates and updates incidents in ServiceNow using the Table API.
+
+**Instance URL**: Accepts either a full URL (`https://myinstance.service-now.com`) or just the instance name (`myinstance`). The processor automatically constructs the full URL when only the instance name is provided.
+
+**Incident Tracking**: The `problem_id` field enables incident correlation. When set, the processor searches for existing open incidents with the same problem_id:
+- If found: Updates the existing incident
+- If not found: Creates a new incident
+
+**State Management**: Control incident lifecycle through the `state` field:
+- `new`: Newly created incident (default)
+- `in_progress`: Work has started
+- `on_hold`: Waiting for external action
+- `resolved`: Issue fixed, awaiting verification
+- `closed`: Incident completed
+
+**Impact and Urgency**: These fields combine to determine incident priority:
+- `high` or `critical`: Value 1 in ServiceNow
+- `medium`: Value 2
+- `low`: Value 3 (default)
+
+**Auto Close**: When `auto_close: true` and state is `closed`, the processor automatically populates close_notes and close_code fields if not explicitly set.
+
+**Template Support**: All string fields support Go template syntax with event field interpolation using `{{ .field_name }}`.
+
+## Examples
+
+### Create Incident
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a new ServiceNow incident...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_name": "Schema Drift Detected",
+      "missing_fields": "EventCount, EventSchema",
+      "severity": "high"
+    }
+    ```
+    ```yaml
+    - servicenow:
+        instance_url: "myinstance"
+        username: "${SERVICENOW_USERNAME}"
+        password: "${SERVICENOW_PASSWORD}"
+        short_description: "Schema Drift: {{ .event_name }}"
+        detailed_description: "Missing fields detected: {{ .missing_fields }}"
+        impact: "{{ .severity }}"
+        urgency: "high"
+        state: "new"
+        problem_id: "schema-drift-001"
+        category: "Software"
+        cmdb_ci: "DataPipeline"
+    ```
+  </CodeCol>
+  <CommentCol>
+    High-priority incident created in ServiceNow...
+  </CommentCol>
+</ExampleGrid>
+
+### Update Existing Incident
+
+<ExampleGrid>
+  <CommentCol>
+    Updating an incident with the same problem_id...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event_name": "Schema Drift Resolved",
+      "missing_fields": "None",
+      "severity": "low"
+    }
+    ```
+    ```yaml
+    - servicenow:
+        instance_url: "myinstance"
+        username: "${SERVICENOW_USERNAME}"
+        password: "${SERVICENOW_PASSWORD}"
+        short_description: "Schema Drift: {{ .event_name }}"
+        detailed_description: "Issue resolved. Missing fields: {{ .missing_fields }}"
+        impact: "{{ .severity }}"
+        urgency: "low"
+        state: "resolved"
+        problem_id: "schema-drift-001"
+        category: "Software"
+        cmdb_ci: "DataPipeline"
+        auto_close: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    Existing incident updated to resolved state...
+  </CommentCol>
+</ExampleGrid>
+
+### Template Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Using templates for dynamic incident details...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "High CPU Usage",
+      "server": "prod-server-01",
+      "cpu_usage": "95%"
+    }
+    ```
+    ```yaml
+    - servicenow:
+        instance_url: "myinstance"
+        username: "${SERVICENOW_USERNAME}"
+        password: "${SERVICENOW_PASSWORD}"
+        short_description: "[{{ .alert_name }}] on {{ .server }}"
+        detailed_description: "CPU usage is at {{ .cpu_usage }} on server {{ .server }}"
+        impact: "high"
+        urgency: "high"
+        state: "new"
+        problem_id: "cpu-{{ .server }}"
+        cmdb_ci: "{{ .server }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Incident created with templated values from event data...
+  </CommentCol>
+</ExampleGrid>
+
+### Schema Drift Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Creating incidents when schema validation fails...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - check_schema:
+          schema: "ASimNetworkSessionLogs"
+          target_field: "schema_check"
+          on_missing:
+            - servicenow:
+                instance_url: "myinstance"
+                username: "${SERVICENOW_USERNAME}"
+                password: "${SERVICENOW_PASSWORD}"
+                short_description: "Schema Validation Failed: ASimNetworkSessionLogs"
+                detailed_description: "Schema validation failed. Missing required fields detected."
+                impact: "high"
+                urgency: "high"
+                state: "new"
+                problem_id: "schema-ASimNetworkSessionLogs"
+                category: "Data Quality"
+                subcategory: "Schema Validation"
+                cmdb_ci: "Data Pipeline"
+    ```
+  </CodeCol>
+  <CommentCol>
+    ServiceNow incident created when schema drift is detected...
+  </CommentCol>
+</ExampleGrid>
+
+### With Assignment
+
+<ExampleGrid>
+  <CommentCol>
+    Assigning incident to specific group and individual...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "Database Connection Failed",
+      "server": "db-server-01"
+    }
+    ```
+    ```yaml
+    - servicenow:
+        instance_url: "myinstance"
+        username: "${SERVICENOW_USERNAME}"
+        password: "${SERVICENOW_PASSWORD}"
+        short_description: "{{ .alert_name }} on {{ .server }}"
+        detailed_description: "Database connection cannot be established"
+        impact: "high"
+        urgency: "high"
+        state: "new"
+        problem_id: "db-{{ .server }}"
+        assignment_group: "Database Team"
+        category: "Database"
+        cmdb_ci: "{{ .server }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Incident routed to Database Team for investigation...
+  </CommentCol>
+</ExampleGrid>
+
