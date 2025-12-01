@@ -14,7 +14,7 @@ A naive approach routes the event three times, creating three copies flowing thr
 
 ## Staged Routes
 
-DataStream solves this with staged routing. Instead of immediately sending events to destinations, the `reroute` processor can stage them for later commit. Each subsequent stage to the same destination overwrites the previous version, ensuring only the final, most-normalized form is delivered.
+DataStream solves this with staged routing. Instead of immediately sending events to destinations, the <Topic id="processors-reroute">reroute</Topic> processor can stage them for later commit. Each subsequent stage to the same destination overwrites the previous version, ensuring only the final, most-normalized form is delivered.
 
 ```yaml
 processors:
@@ -50,7 +50,7 @@ When `staging: true` is set on a `reroute` processor:
 
 1. The event is stored in a staging area keyed by destination name
 2. Subsequent staged routes to the same destination overwrite the previous staged version
-3. The `commit` processor moves all staged events to their final destinations
+3. The <Topic id="processors-commit">commit</Topic> processor moves all staged events to their final destinations
 4. Without commit, staged events are discarded at pipeline end
 
 This overwrite behavior is the key innovation—progressive normalization naturally produces the best version for each tier.
@@ -95,7 +95,7 @@ processors:
 
 ### Conditional Tier Selection
 
-Use schema validation to determine the highest achievable normalization tier:
+Use <Topic id="processors-check-schema">check_schema</Topic> validation to determine the highest achievable normalization tier:
 
 ```yaml
 processors:
@@ -209,7 +209,7 @@ With `clone: true`, the reroute sends a copy while preserving the original desti
 
 ## Integration with Schema Drift Detection
 
-Multi-tier pipelines pair naturally with schema drift detection to ensure each tier receives valid, properly normalized data:
+Multi-tier pipelines pair naturally with <Topic id="pipelines-schema-drift-detection">schema drift detection</Topic> to ensure each tier receives valid, properly normalized data:
 
 ```yaml
 processors:
