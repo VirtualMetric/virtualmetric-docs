@@ -1,0 +1,197 @@
+# Schema Drift Detection
+
+Schema drift occurs when vendors change their log formats without warning—field names shift, structures reorganize, or data types change. These silent changes break normalization pipelines that continue running as if nothing happened, causing data quality issues downstream.
+
+## The Challenge
+
+Organizations ingesting logs from multiple vendors face a critical question: what happens when a vendor changes their field names or log structure? Without detection mechanisms, pipelines continue processing malformed data, leading to:
+
+- Missing fields in normalized output
+- Type mismatches causing ingestion failures
+- Extra fields consuming storage without value
+- Compliance gaps from incomplete data
+
+## Detection Approaches
+
+DataStream supports two validation strategies that can be combined based on operational requirements:
+
+### Schema-on-Write
+
+Strict enforcement at ingestion time keeps stored data clean. Events failing validation are flagged immediately, enabling real-time alerting and fallback processing.
+
+```yaml
+processors:
+  - check_schema:
+      schema: "ASimNetworkSessionLogs"
+      target_field: "schema_check"
+      check_mode: "both"
+  - reroute:
+      if: "schema_check.is_valid == false"
+      destination: "quarantine"
+```
+
+### Schema-on-Read
+
+Flexible adaptation allows analytics to continue despite minor deviations. Validation results are stored with the event for later analysis without blocking ingestion.
+
+```yaml
+processors:
+  - check_schema:
+      schema: "ASimNetworkSessionLogs"
+      target_field: "schema_check"
+      check_mode: "missing"
+      validate_recommended: false
+      validate_optional: false
+```
+
+## Validation Levels
+
+The `check_schema` processor validates events against official schema definitions, checking for:
+
+|Level|Behavior|Impact on Validity|
+|---|---|---|
+|Required fields|Always checked when `check_mode` includes `missing`|Missing required fields invalidate the event|
+|Recommended fields|Checked only when `validate_recommended: true`|Configurable impact on validity|
+|Optional fields|Checked only when `validate_optional: true`|Configurable impact on validity|
+|Extra fields|Checked when `check_mode` includes `extra`|Never affects validity (informational only)|
+|Type mismatches|Always checked for present fields|Follows field requirement level|
+
+## Check Modes
+
+The `check_mode` parameter controls what the processor validates:
+
+|Mode|Detects Missing Fields|Detects Extra Fields|
+|---|---|---|
+|`missing`|Yes|No|
+|`extra`|No|Yes|
+|`both`|Yes|Yes|
+
+## Validation Results
+
+The processor writes a structured result to the specified `target_field`:
+
+```json
+{
+  "is_valid": false,
+  "missing_required_fields": ["EventSchema", "EventVendor"],
+  "missing_recommended_fields": ["DvcAction", "EventSeverity"],
+  "missing_optional_fields": ["SrcNatIpAddr"],
+  "extra_fields": ["CustomField1", "VendorSpecific"],
+  "type_mismatches": [
+    {
+      "field": "EventCount",
+      "expected_type": "INT32",
+      "actual_type": "STRING"
+    }
+  ]
+}
+```
+
+## Conditional Processing Chains
+
+The processor supports conditional processor chains that execute based on validation findings:
+
+```yaml
+processors:
+  - check_schema:
+      schema: "ASimNetworkSessionLogs"
+      target_field: "schema_check"
+      check_mode: "both"
+      on_missing:
+        - set:
+            field: "drift_type"
+            value: "missing_fields"
+      on_extra:
+        - set:
+            field: "drift_type"
+            value: "extra_fields"
+      on_type_mismatch:
+        - set:
+            field: "drift_type"
+            value: "type_mismatch"
+```
+
+## Automated Response
+
+Detected schema drift can trigger automated responses through notification processors:
+
+### Alerting
+
+Send immediate notifications when drift is detected:
+
+```yaml
+processors:
+  - check_schema:
+      schema: "ASimNetworkSessionLogs"
+      target_field: "schema_check"
+      check_mode: "both"
+      on_missing:
+        - slack:
+            title: "Schema Drift Detected"
+            message: "Missing fields in {{ .EventVendor }} logs"
+            color: "warning"
+        - pagerduty:
+            summary: "Schema drift: {{ .schema_check.missing_required_fields }}"
+            severity: "warning"
+```
+
+### Fallback Normalization
+
+Route events with drift to alternative processing:
+
+```yaml
+processors:
+  - check_schema:
+      schema: "ASimNetworkSessionLogs"
+      target_field: "schema_check"
+      check_mode: "missing"
+  - reroute:
+      if: "schema_check.is_valid == false"
+      destination: "fallback_normalizer"
+  - reroute:
+      if: "schema_check.is_valid == true"
+      destination: "sentinel"
+```
+
+### Field Enrichment
+
+Automatically populate missing fields with defaults:
+
+```yaml
+processors:
+  - check_schema:
+      schema: "ASimNetworkSessionLogs"
+      target_field: "schema_check"
+      check_mode: "missing"
+      on_missing:
+        - set:
+            if: "EventVendor == null"
+            field: "EventVendor"
+            value: "Unknown"
+        - set:
+            if: "EventProduct == null"
+            field: "EventProduct"
+            value: "Unknown"
+```
+
+## Supported Schemas
+
+The processor supports validation against:
+
+- **ASIM schemas**: Microsoft Sentinel's Advanced Security Information Model tables (ASimNetworkSessionLogs, ASimAuthenticationEventLogs, etc.)
+- **OCSF schemas**: Open Cybersecurity Schema Framework categories
+
+Schema names are specified in the `schema` field and can use template syntax for dynamic selection:
+
+```yaml
+processors:
+  - check_schema:
+      schema: "{{ .target_table }}"
+      target_field: "schema_check"
+      check_mode: "both"
+```
+
+## Integration with Multi-Tier Pipelines
+
+Schema drift detection integrates with staged routing to validate data at each normalization tier. See <Topic id="pipelines-multi-tier">Multi-Tier Pipelines</Topic> for patterns combining schema validation with progressive normalization.
+
