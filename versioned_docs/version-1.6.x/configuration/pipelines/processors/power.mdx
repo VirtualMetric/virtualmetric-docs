@@ -1,0 +1,275 @@
+---
+description: Raises a numeric value to a power
+sidebar_custom_props:
+  customCategory: Arithmetic
+  customIcon: ⚡
+---
+
+# Power
+
+<span className="theme-doc-version-badge badge badge--primary">Arithmetic</span><span className="theme-doc-version-badge badge badge--secondary">Data Analysis</span>
+
+## Synopsis
+
+Raises a numeric value to a specified power and returns the result.
+
+## Schema
+
+```yaml {2-4}
+- power:
+    field: <ident>
+    left_operand: <string>
+    right_operand: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the power operation result|
+|`left_operand`|Y|-|Base value to be raised to a power - can be a literal value or field reference|
+|`right_operand`|Y|-|Exponent value - can be a literal value or field reference|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if power operation fails|
+|`ignore_missing`|N|`false`|Skip if referenced fields don't exist|
+|`on_failure`|N|-|Error handling processors|
+|`on_success`|N|-|Success handling processors|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Raises a numeric value (the base) to a specified power (the exponent) and stores the result in the target field. The processor handles various special cases and mathematical constraints associated with exponentiation.
+
+:::note
+The processor uses the `math.Pow` function from Go's standard library to perform the calculation, which provides accurate results for a wide range of inputs.
+:::
+
+The processor is useful for exponential calculations, scaling operations, scientific computations, and implementing mathematical formulas that involve powers.
+
+:::warning
+The processor handles several special mathematical cases:
+- 0^0 is considered indeterminate and will cause an error
+- Negative numbers raised to non-integer powers will result in complex numbers and cause an error
+- Very large results might overflow and cause an error
+- Results that are not finite numbers (NaN or Infinity) will cause an error
+
+Always provide appropriate error handling for operations that might encounter these edge cases.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Raising a number to a power...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "math": {}
+    }
+    ```
+    ```yaml
+    - power:
+        field: math.result
+        left_operand: "2"
+        right_operand: "8"
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates the result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "math": {
+        "result": 256
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Square and Cube
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating square and cube of a value...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": 5,
+      "calculation": {}
+    }
+    ```
+    ```yaml
+    - power:
+        field: calculation.square
+        left_operand: "value"
+        right_operand: "2"
+    - power:
+        field: calculation.cube
+        left_operand: "value"
+        right_operand: "3"
+    ```
+  </CodeCol>
+  <CommentCol>
+    computes common powers:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": 5,
+      "calculation": {
+        "square": 25,
+        "cube": 125
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Scientific
+
+<ExampleGrid>
+  <CommentCol>
+    Implementing scientific notation...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "scientific": {
+        "coefficient": 2.5,
+        "exponent": 4
+      }
+    }
+    ```
+    ```yaml
+    - power:
+        field: scientific.value
+        left_operand: "10"
+        right_operand: "scientific.exponent"
+    - multiply:
+        field: scientific.result
+        left_operand: "scientific.coefficient"
+        right_operand: "scientific.value"
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates 2.5 × 10^4:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "scientific": {
+        "coefficient": 2.5,
+        "exponent": 4,
+        "value": 10000,
+        "result": 25000
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Area and Volume
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating area and volume from side length...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cube": {
+        "side": 3.5
+      }
+    }
+    ```
+    ```yaml
+    - power:
+        field: cube.face_area
+        left_operand: "cube.side"
+        right_operand: "2"
+    - power:
+        field: cube.volume
+        left_operand: "cube.side"
+        right_operand: "3"
+    ```
+  </CodeCol>
+  <CommentCol>
+    computes geometric properties:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cube": {
+        "side": 3.5,
+        "face_area": 12.25,
+        "volume": 42.875
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Compound Interest
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating compound interest...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "finance": {
+        "principal": 1000,
+        "rate": 0.05,
+        "years": 10
+      }
+    }
+    ```
+    ```yaml
+    - set:
+        field: finance.rate_factor
+        value: "{{finance.rate + 1}}"
+    - power:
+        field: finance.growth_factor
+        left_operand: "finance.rate_factor"
+        right_operand: "finance.years"
+    - multiply:
+        field: finance.final_amount
+        left_operand: "finance.principal"
+        right_operand: "finance.growth_factor"
+    ```
+  </CodeCol>
+  <CommentCol>
+    implements compound interest formula:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "finance": {
+        "principal": 1000,
+        "rate": 0.05,
+        "years": 10,
+        "rate_factor": 1.05,
+        "growth_factor": 1.6289,
+        "final_amount": 1628.9
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

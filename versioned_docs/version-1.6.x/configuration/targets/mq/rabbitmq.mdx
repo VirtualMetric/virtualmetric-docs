@@ -1,0 +1,276 @@
+# RabbitMQ
+
+<span className="theme-doc-version-badge badge badge--secondary">RabbitMQ</span><span className="theme-doc-version-badge badge badge--secondary">Message Queue</span>
+
+## Synopsis
+
+Creates a target that publishes log messages to RabbitMQ exchanges or queues with support for batching, routing, TLS encryption, and automatic retry logic. RabbitMQ is a widely-used open-source message broker for reliable message delivery.
+
+## Schema
+
+```yaml {1,3,7}
+- name: <string>
+  description: <string>
+  type: rabbitmq
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    url: <string>
+    exchange: <string>
+    routing_key: <string>
+    queue: <string>
+    content_type: <string>
+    delivery_mode: <integer>
+    mandatory: <boolean>
+    immediate: <boolean>
+    timeout: <integer>
+    batch_size: <integer>
+    max_retries: <integer>
+    retry_delay: <integer>
+    field_format: <string>
+    tls:
+      status: <boolean>
+      verify: <boolean>
+      cert_name: <string>
+      key_name: <string>
+      min_tls_version: <string>
+      max_tls_version: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `rabbitmq`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`url`|Y|-|RabbitMQ server URL (e.g., `amqp://localhost:5672` or `amqps://host:5671`)|
+|`timeout`|N|`30`|Connection timeout in seconds|
+
+### Routing Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`exchange`|N*|-|RabbitMQ exchange name|
+|`routing_key`|N|-|Routing key for message delivery (defaults to queue name if queue is specified)|
+|`queue`|N*|-|RabbitMQ queue name (queue will be declared as durable)|
+
+\* = Conditionally required. Either `exchange` or `queue` must be specified. If `queue` is specified without `routing_key`, the queue name is used as the routing key.
+
+### Message Properties
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`content_type`|N|`application/json`|Message content type|
+|`delivery_mode`|N|`2`|Delivery mode: `1` (non-persistent), `2` (persistent)|
+|`mandatory`|N|`false`|Require message to be routed to at least one queue|
+|`immediate`|N|`false`|Require immediate delivery to consumer (deprecated in RabbitMQ 3.x)|
+
+### Batch Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`1000`|Number of messages to batch before publishing (minimum 1)|
+|`max_retries`|N|`3`|Maximum retry attempts for failed publish operations|
+|`retry_delay`|N|`1`|Delay between retry attempts in seconds|
+
+### Processing
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="pipelines-normalization-field-mapping">Normalization</Topic> section|
+
+### TLS Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS encryption|
+|`tls.verify`|N|`true`|Verify server TLS certificate|
+|`tls.cert_name`|N*|-|Client certificate filename (PEM format)|
+|`tls.key_name`|N*|-|Client private key filename (PEM format)|
+|`tls.min_tls_version`|N|`tls1.2`|Minimum TLS version: `tls1.0`, `tls1.1`, `tls1.2`, `tls1.3`|
+|`tls.max_tls_version`|N|`tls1.3`|Maximum TLS version: `tls1.0`, `tls1.1`, `tls1.2`, `tls1.3`|
+
+\* = Conditionally required. Both `cert_name` and `key_name` must be provided together or omitted together.
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="scheduling-interval-based">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="scheduling-cron-based">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+The RabbitMQ target publishes log messages to RabbitMQ exchanges or directly to queues. Messages are accumulated in batches and published when the batch size is reached. Each message is published with automatic retry logic for handling transient failures.
+
+The target maintains a persistent connection to the RabbitMQ server with thread-specific channels for concurrent operations. If a queue is specified during initialization, it is automatically declared as a durable queue.
+
+Message timestamps are set to the log event epoch time, and messages can be configured as persistent (surviving broker restarts) or non-persistent for maximum throughput.
+
+### Prerequisites
+
+1. A running RabbitMQ server
+2. Network connectivity to the RabbitMQ server
+3. Valid authentication credentials (included in the URL)
+4. Exchange must exist if publishing to an exchange (unless auto-creation is enabled)
+5. TLS certificates if using encrypted connections
+
+:::note
+Either `exchange` or `queue` must be specified. When using `queue`, the queue is automatically declared as durable. When using `exchange`, ensure the exchange exists on the RabbitMQ server.
+:::
+
+:::warning
+Both `tls.cert_name` and `tls.key_name` must be provided together when using client certificate authentication. Providing only one will result in a configuration error.
+:::
+
+:::note
+The `immediate` flag is deprecated in RabbitMQ 3.x and later. Setting it to true may cause errors with modern RabbitMQ servers.
+:::
+
+## Examples
+
+### Basic Queue
+
+Minimum configuration for publishing to a queue:
+
+```yaml
+targets:
+  - name: basic_rabbitmq
+    type: rabbitmq
+    properties:
+      url: "amqp://guest:guest@localhost:5672"
+      queue: "logs"
+```
+
+### Exchange with Routing
+
+Configuration for publishing to an exchange with routing key:
+
+```yaml
+targets:
+  - name: exchange_rabbitmq
+    type: rabbitmq
+    properties:
+      url: "amqp://logger:password@rabbitmq.example.com:5672"
+      exchange: "logs.topic"
+      routing_key: "application.logs"
+```
+
+### Persistent Messages
+
+Configuration with persistent message delivery:
+
+```yaml
+targets:
+  - name: persistent_rabbitmq
+    type: rabbitmq
+    properties:
+      url: "amqp://logger:password@rabbitmq.example.com:5672"
+      queue: "durable_logs"
+      delivery_mode: 2
+```
+
+### With TLS
+
+Configuration with TLS encryption:
+
+```yaml
+targets:
+  - name: secure_rabbitmq
+    type: rabbitmq
+    properties:
+      url: "amqps://logger:password@rabbitmq.example.com:5671"
+      queue: "secure_logs"
+      tls:
+        status: true
+        verify: true
+        min_tls_version: "tls1.2"
+```
+
+### With Client Certificate
+
+Configuration using mutual TLS with client certificates:
+
+```yaml
+targets:
+  - name: mtls_rabbitmq
+    type: rabbitmq
+    properties:
+      url: "amqps://rabbitmq.example.com:5671"
+      queue: "secure_logs"
+      tls:
+        status: true
+        verify: true
+        cert_name: "client.pem"
+        key_name: "client-key.pem"
+        min_tls_version: "tls1.2"
+```
+
+### Custom Batch Size
+
+Configuration with custom batching and retry settings:
+
+```yaml
+targets:
+  - name: batch_rabbitmq
+    type: rabbitmq
+    properties:
+      url: "amqp://logger:password@rabbitmq.example.com:5672"
+      queue: "highvolume_logs"
+      batch_size: 5000
+      max_retries: 5
+      retry_delay: 2
+      timeout: 60
+```
+
+### With Normalization
+
+Configuration using field normalization:
+
+```yaml
+targets:
+  - name: normalized_rabbitmq
+    type: rabbitmq
+    properties:
+      url: "amqp://logger:password@rabbitmq.example.com:5672"
+      exchange: "logs.ecs"
+      routing_key: "normalized"
+      field_format: "ecs"
+```
+
+### With Pipeline
+
+Using a pipeline for additional log processing:
+
+```yaml
+targets:
+  - name: pipeline_rabbitmq
+    type: rabbitmq
+    pipelines:
+      - enrich_logs
+    properties:
+      url: "amqp://logger:password@rabbitmq.example.com:5672"
+      queue: "enriched_logs"
+```

@@ -1,0 +1,309 @@
+---
+description: Performs and caches DNS lookups
+sidebar_custom_props: 
+  customIcon: 🔍
+  customCategory: Enrich
+---
+
+# DNS Lookup
+
+<span className="theme-doc-version-badge badge badge--primary">Enrich</span><span className="theme-doc-version-badge badge badge--secondary">Cribl Compatible</span>
+
+## Synopsis
+
+Performs DNS lookups on domains or IP addresses, and caches the results.
+
+## Schema
+
+```yaml {2-6}
+- dns_lookup:
+    field: <ident>
+    type: <string>
+    resource_type: <string>
+    target_field: <ident>
+    dns_server: <string>
+    cache_ttl: <number>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing domain/IP to lookup|
+|`type`|Y|-|Lookup type: `forward` or `reverse`|
+|`resource_type`|N|`A`|DNS record type for forward lookups: `A`, `AAAA`, `MX`, `TXT`|
+|`target_field`|N|`field`|Field to store lookup results|
+|`dns_server`|N|-|Custom DNS server (e.g., "8.8.8.8:53")|
+|`cache_ttl`|N|`30`|Cache TTL in minutes|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if lookup fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor does both forward and reverse lookups, and can handle multiple DNS record types and custom DNS servers. IPv6 addresses are fully supported for both forward and reverse lookups.
+
+:::note
+Private IP addresses typically won't have PTR records.
+:::
+
+All results are cached to improve performance.
+
+:::note
+Cache entries expire based on the configured TTL. Large cache sizes can impact memory usage.
+:::
+
+Multiple results are returned as arrays. Non-string field values will cause errors. Conditional execution and success/failure handling are also supported.
+
+:::warning
+DNS lookups can introduce latency to event processing.
+:::
+
+## Examples
+
+### Forward
+
+<ExampleGrid>
+  <CommentCol>
+    Looking up IPv4 addresses for a domain...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com"
+    }
+    ```
+    ```yaml
+    - dns_lookup:
+        field: domain
+        type: forward
+        resource_type: A
+        target_field: ip_addresses
+        cache_ttl: 30
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds the resolved IPs to the event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com",
+      "ip_addresses": ["93.184.216.34"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### IPv4 Reverse
+
+<ExampleGrid>
+  <CommentCol>
+    Looking up the hostname for IPv4 address...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8"
+    }
+    ```
+    ```yaml
+    - dns_lookup:
+        field: ip
+        type: reverse
+        target_field: hostname
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds the resolved hostname to the event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8",
+      "hostname": ["dns.google"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### IPv6 Reverse
+
+<ExampleGrid>
+  <CommentCol>
+    Looking up the hostname for IPv6 address...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "2001:4860:4860::8888"
+    }
+    ```
+    ```yaml
+    - dns_lookup:
+        field: ip
+        type: reverse
+        target_field: hostname
+    ```
+  </CodeCol>
+  <CommentCol>
+    resolves the IPv6 address to the hostname:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "2001:4860:4860::8888",
+      "hostname": ["dns.google"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### MX Record
+
+<ExampleGrid>
+  <CommentCol>
+    Looking up mail servers for a domain...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "gmail.com"
+    }
+    ```
+    ```yaml
+    - dns_lookup:
+        field: domain
+        type: forward
+        resource_type: MX
+        target_field: mail_servers
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds the MX records to the event:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "gmail.com",
+      "mail_servers": [
+        "alt1.gmail-smtp-in.l.google.com 10",
+        "alt2.gmail-smtp-in.l.google.com 20"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom Server
+
+<ExampleGrid>
+  <CommentCol>
+    Using **Cloudflare** DNS for lookups...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com"
+    }
+    ```
+    ```yaml
+    - dns_lookup:
+        field: domain
+        type: forward
+        resource_type: A
+        dns_server: "1.1.1.1:53"
+        target_field: ip_addresses
+    ```
+  </CodeCol>
+  <CommentCol>
+    resolves the specified DNS server:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "example.com",
+      "ip_addresses": ["93.184.216.34"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Private IPs
+
+<ExampleGrid>
+  <CommentCol>
+    Handling lookup failures for private IPs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "192.168.1.1"
+    }
+    ```
+    ```yaml
+    - dns_lookup:
+        field: ip
+        type: reverse
+        target_field: hostname
+        ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues the execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "192.168.1.1"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Performing the look up only for debug events...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8",
+      "level": "info"
+    }
+    ```
+    ```yaml
+    - dns_lookup:
+        field: ip
+        type: reverse
+        target_field: hostname
+        if: "ctx.level == 'debug'"
+    ```
+  </CodeCol>
+  <CommentCol>
+    skips irrelevant information:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ip": "8.8.8.8",
+      "level": "info"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

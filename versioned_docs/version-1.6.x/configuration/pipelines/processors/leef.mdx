@@ -1,0 +1,175 @@
+---
+description: Parses LEEF messages
+sidebar_custom_props: 
+  customIcon: 📩
+  customCategory: Parse
+---
+
+# LEEF
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span>
+
+## Synopsis
+
+Parses Log Event Extended Format (LEEF) messages into structured objects.
+
+:::note
+For details of LEEF, see <Topic id="appendix-leef">Appendix</Topic>.
+:::
+
+## Schema
+
+```yaml {2}
+- leef:
+    field: <ident>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the LEEF message string|
+|`target_field`|N|`leef`|Field to store parsed LEEF data|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`ignore_missing`|N|`false`|If `true`, skip if field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor identifies and extracts the LEEF version, header fields (`vendor`, `product`, `version`, and `event ID`), and attribute pairs. Field names are automatically normalized for consistent processing.
+
+:::note
+Different LEEF versions and custom delimiters are handled automatically. If a hex delimiter is specified&mdash;e.g. "`x09`" for tab&mdash;it will be used for attribute parsing.
+:::
+
+:::warning
+The processor expects valid LEEF formatted messages starting with "`LEEF:`". Invalid messages will cause the processor to fail unless `ignore_failure` is set to `true`.
+:::
+
+## Examples
+
+### Basic Parsing
+
+<ExampleGrid>
+  <CommentCol>
+    Parsing the LEEF message...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "LEEF:1.0|CB|CB|5.1.0|process.event|procname=powershell.exe\tpid=1234\tseverity=3"
+    }
+    ```
+    ```yaml
+    - leef:
+        field: message
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts the header and the attribute fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "leef": {
+        "leefVersion": "1.0",
+        "deviceVendor": "CB",
+        "deviceProduct": "CB",
+        "deviceVersion": "5.1.0",
+        "deviceEventClassId": "process.event",
+        "procname": "powershell.exe",
+        "pid": 1234,
+        "severity": 3
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keep Original
+
+<ExampleGrid>
+  <CommentCol>
+    Storing parsed results in a specific field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_event": "LEEF:2.0|Vendor|Product|1.0|Alert|src=10.0.0.1\tdst=8.8.8.8\tproto=TCP"
+    }
+    ```
+    ```yaml
+    - leef:
+        field: raw_event
+        target_field: parsed_event
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates structured event data:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "parsed_event": {
+        "leefVersion": "2.0",
+        "deviceVendor": "Vendor",
+        "deviceProduct": "Product",
+        "deviceVersion": "1.0",
+        "deviceEventClassId": "Alert",
+        "src": "10.0.0.1",
+        "dst": "8.8.8.8",
+        "proto": "TCP"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling invalid LEEF messages gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": "Invalid LEEF Message"
+    }
+    ```
+    ```yaml
+    - leef:
+        field: event
+        ignore_failure: true
+        on_failure:
+          - append:
+              field: tags
+              value: "leef_parse_error"
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds an error tag without failing:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": "Invalid LEEF Message",
+      "tags": ["leef_parse_error"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

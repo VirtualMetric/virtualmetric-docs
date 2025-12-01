@@ -1,0 +1,248 @@
+---
+description: Filters events using regexes
+sidebar_custom_props: 
+  customIcon: 🎯
+  customCategory: Flow Control
+---
+
+# Regex Filter
+
+<span className="theme-doc-version-badge badge badge--primary">Filter</span><span className="theme-doc-version-badge badge badge--secondary">Cribl Compatible</span>
+
+## Synopsis
+
+Filters out events based on regular expression matches.
+
+## Schema
+
+```yaml {2-3}
+- regex_filter:
+    field: <ident>
+    regex: <string>
+    regexes: <string[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field to match against patterns|
+|`regex`|N|-|Single regex pattern to match|
+|`regexes`|N|-|Additional patterns to match|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if matching fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor uses Golang regular expressions to match field content.
+ 
+If either the primary `regex` or any pattern in `regexes` matches, the event is dropped from the pipeline. This is useful for filtering out unwanted events.
+
+Multiple patterns can be specified, and any match will trigger the filter.
+
+:::warning[caution]
+Complex regular expressions may impact performance.
+:::
+
+The processor can be nicely dove-tailed with conditional execution, field value validation, and error handling and success/failure processors.
+
+If no patterns are specified, all events pass through. Empty field content is treated as non-matching. Matching success triggers event dropping.
+
+:::warning
+Invalid regex patterns and non-string field values will cause errors unless `ignore_failure` is set. Missing fields can be skipped by setting `ignore_missing`.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Messages containing errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "error occurred"
+    }
+    ```
+    ```yaml
+    - regex_filter:
+        field: message
+        regex: "error.*"
+    ```
+  </CodeCol>
+  <CommentCol>
+    are dropped when the event matches:
+  </CommentCol>
+  <CodeCol>
+    ```text
+    Event dropped from pipeline
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Pattern
+
+<ExampleGrid>
+  <CommentCol>
+    Filtering out both errors and warnings...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "warning: system overload"
+    }
+    ```
+    ```yaml
+    - regex_filter:
+        field: message
+        regexes: 
+          - "error.*"
+          - "warning.*"
+    ```
+  </CodeCol>
+  <CommentCol>
+    drops both the warning and the event:
+  </CommentCol>
+  <CodeCol>
+    ```text
+    Event dropped from pipeline
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Non-Matching Event
+
+<ExampleGrid>
+  <CommentCol>
+    Allowing non-matching messages through...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "success message"
+    }
+    ```
+    ```yaml
+    - regex_filter:
+        field: message
+        regex: "error.*"
+    ```
+  </CodeCol>
+  <CommentCol>
+    lets the event to continue:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "success message"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Filtering only when a condition is met...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "error message",
+      "level": "info"
+    }
+    ```
+    ```yaml
+    - regex_filter:
+        if: "ctx.level == 'error'"
+        field: message
+        regex: "error.*"
+    ```
+  </CodeCol>
+  <CommentCol>
+    skips the event upon match:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "error message",
+      "level": "info"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Missing Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Handling missing fields gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {}
+    ```
+    ```yaml
+    - regex_filter:
+        field: nonexistent
+        regex: "error.*"
+        ignore_missing: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    continues the execution:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {}
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Non-String Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Handling non-string field values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": 123
+    }
+    ```
+    ```yaml
+    - regex_filter:
+        field: message
+        regex: "error.*"
+        ignore_failure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    skips filtering upon invalid types:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": 123
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

@@ -1,0 +1,257 @@
+---
+description: Calculates cryptographic and non-cryptographic checksums of field values
+sidebar_custom_props:
+  customCategory: Arithmetic
+  customIcon: 🔢
+---
+
+# Checksum
+
+<span className="theme-doc-version-badge badge badge--primary">Arithmetic</span><span className="theme-doc-version-badge badge badge--secondary">Cryptography</span>
+
+## Synopsis
+
+Calculates cryptographic and non-cryptographic checksums of field values.
+
+## Schema
+
+```yaml {2-3}
+- checksum:
+    field: <ident>
+    algorithm: <string>
+    target_field: <string>
+    output_format: <string>
+    include_fields: <array>
+    exclude_fields: <array>
+    uppercase: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing data to checksum|
+|`algorithm`|Y|-|Checksum algorithm (crc32, crc64, adler32, fnv32, fnv64, fnv128, md5, sha1, sha256, sha512)|
+|`target_field`|N|`{field}_{algorithm}`|Target field to store checksum result|
+|`output_format`|N|`hex`|Output format (hex, base64, decimal)|
+|`include_fields`|N|-|Array of fields to include for object checksums|
+|`exclude_fields`|N|-|Array of fields to exclude from object checksums|
+|`uppercase`|N|`false`|Output checksum in uppercase format|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if checksum calculation fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Calculates checksums using various algorithms ranging from simple CRC checksums to cryptographic hashes like SHA-256. The processor supports different data types including strings, byte arrays, objects, and arrays.
+
+The processor handles multiple algorithm types including non-cryptographic checksums (CRC32, CRC64, Adler32, FNV variants) and cryptographic hashes (MD5, SHA-1, SHA-2 family). For object checksums, it can selectively include or exclude specific fields.
+
+:::note
+When calculating checksums for objects, fields are processed in alphabetical order to ensure consistent results. The processor formats object data as `field:value` pairs joined with pipes (|) for reliable checksum calculation.
+:::
+
+The processor supports various output formats including hexadecimal (default), base64, and decimal. For large checksums, decimal format may fall back to hexadecimal representation to prevent overflow.
+
+:::warning
+MD5 and SHA-1 algorithms are considered cryptographically weak and should only be used for non-security purposes like data integrity verification or deduplication.
+:::
+
+## Examples
+
+### Basic File Checksum
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating SHA-256 checksum of file content...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_content": "Hello, World!"
+    }
+    ```
+    ```yaml
+    - checksum:
+        field: file_content
+        algorithm: sha256
+        target_field: file_hash
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates cryptographic hash:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_content": "Hello, World!",
+      "file_hash": "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Object Checksum with Field Selection
+
+<ExampleGrid>
+  <CommentCol>
+    Creating checksum from specific object fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "id": 12345,
+        "name": "john.doe",
+        "email": "john@example.com",
+        "password": "secret123",
+        "last_login": "2024-01-15T10:30:00Z"
+      }
+    }
+    ```
+    ```yaml
+    - checksum:
+        field: user
+        algorithm: crc32
+        include_fields: ["id", "name", "email"]
+        target_field: user_signature
+        output_format: hex
+        uppercase: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates checksum from selected fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {...},
+      "user_signature": "A3B7F2E1"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Fast CRC Verification
+
+<ExampleGrid>
+  <CommentCol>
+    Using fast CRC32 for data verification...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "packet_data": "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    }
+    ```
+    ```yaml
+    - checksum:
+        field: packet_data
+        algorithm: crc32
+        output_format: decimal
+        target_field: data_crc
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces numeric CRC value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "packet_data": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+      "data_crc": "2748146285"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array Content Checksum
+
+<ExampleGrid>
+  <CommentCol>
+    Checksumming array data for deduplication...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_entries": [
+        "INFO: User logged in",
+        "WARN: High memory usage",
+        "ERROR: Database timeout"
+      ]
+    }
+    ```
+    ```yaml
+    - checksum:
+        field: log_entries
+        algorithm: fnv64
+        target_field: content_hash
+        output_format: base64
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates content fingerprint:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_entries": [...],
+      "content_hash": "qJdK8R9eFQA="
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Configuration Integrity Check
+
+<ExampleGrid>
+  <CommentCol>
+    Verifying configuration integrity with excluded sensitive fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "config": {
+        "server": "prod-db-01",
+        "port": 5432,
+        "database": "analytics",
+        "username": "analyst",
+        "password": "secret",
+        "ssl": true
+      }
+    }
+    ```
+    ```yaml
+    - checksum:
+        field: config
+        algorithm: sha1
+        exclude_fields: ["password"]
+        target_field: config_checksum
+        uppercase: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates integrity hash without sensitive data:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "config": {...},
+      "config_checksum": "8F4A5E2D9B3C6F1A7E8D4B2F9A1C5E7B8D2F4A6C"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

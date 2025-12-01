@@ -1,0 +1,195 @@
+---
+description: Parses human-readable data sizes (e.g., "1kb") to byte values
+sidebar_custom_props:
+  customCategory: Parse
+  customIcon: 💾
+---
+
+# Data Size
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Data Analysis</span>
+
+## Synopsis
+
+Parses human-readable data sizes (e.g., "1kb") to byte values.
+
+## Schema
+
+```yaml {2-3}
+- data_size:
+    field: <ident>
+    target_field: <string>
+    output_format: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing human-readable data size|
+|`target_field`|N|Same as `field`|Target field to store parsed byte value|
+|`output_format`|N|`bytes`|Output format: `bytes` (number) or `detailed` (object)|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if parsing fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Converts human-readable data size strings to numerical byte values. Supports common size units including bytes (B), kilobytes (KB), megabytes (MB), gigabytes (GB), terabytes (TB), and their binary equivalents (KiB, MiB, GiB, TiB).
+
+The processor recognizes various formats including "1.5GB", "512 MB", "2TB", and handles both decimal (1000-based) and binary (1024-based) calculations depending on the unit suffix.
+
+:::note
+The processor supports both decimal units (KB, MB, GB using 1000-based calculations) and binary units (KiB, MiB, GiB using 1024-based calculations). Units are case-insensitive.
+:::
+
+When `output_format` is set to "detailed", the processor returns an object containing both the original value, parsed number, unit, and calculated bytes.
+
+:::warning
+If the input string cannot be parsed as a valid data size, the processor will fail unless `ignore_failure` is set to `true`. Invalid units or malformed size strings will trigger errors.
+:::
+
+## Examples
+
+### Basic Size Parsing
+
+<ExampleGrid>
+  <CommentCol>
+    Converting readable size to bytes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_size": "1.5GB"
+    }
+    ```
+    ```yaml
+    - data_size:
+        field: file_size
+        target_field: size_bytes
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to byte value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "file_size": "1.5GB",
+      "size_bytes": 1500000000
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Binary Units
+
+<ExampleGrid>
+  <CommentCol>
+    Using binary (1024-based) units...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "memory_usage": "512 MiB"
+    }
+    ```
+    ```yaml
+    - data_size:
+        field: memory_usage
+        target_field: memory_bytes
+    ```
+  </CodeCol>
+  <CommentCol>
+    calculates using 1024-based units:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "memory_usage": "512 MiB",
+      "memory_bytes": 536870912
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Detailed Output
+
+<ExampleGrid>
+  <CommentCol>
+    Getting detailed parsing information...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "disk_space": "2.5 TB"
+    }
+    ```
+    ```yaml
+    - data_size:
+        field: disk_space
+        output_format: detailed
+        target_field: disk_info
+    ```
+  </CodeCol>
+  <CommentCol>
+    returns detailed breakdown:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "disk_space": "2.5 TB",
+      "disk_info": {
+        "original": "2.5 TB",
+        "value": 2.5,
+        "unit": "TB",
+        "bytes": 2500000000000,
+        "type": "decimal"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Case Units
+
+<ExampleGrid>
+  <CommentCol>
+    Processing case-insensitive units...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "bandwidth": "100 mb"
+    }
+    ```
+    ```yaml
+    - data_size:
+        field: bandwidth
+    ```
+  </CodeCol>
+  <CommentCol>
+    handles case variations:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "bandwidth": "100 mb",
+      "bandwidth": 100000000
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

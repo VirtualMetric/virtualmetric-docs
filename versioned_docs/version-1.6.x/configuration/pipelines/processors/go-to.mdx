@@ -1,0 +1,249 @@
+---
+description: Jumps to specific points in the processing pipeline
+sidebar_custom_props:
+  customCategory: Flow Control
+  customIcon: 🎯
+---
+
+# Go To
+
+<span className="theme-doc-version-badge badge badge--primary">Control Flow</span><span className="theme-doc-version-badge badge badge--secondary">Pipeline</span>
+
+## Synopsis
+
+Jumps to specific points in the processing pipeline.
+
+## Schema
+
+```yaml {2}
+- go_to:
+    target: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`target`|Y|-|Tag of the target processor to jump to|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if operation fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Transfers control to a specific processor identified by its tag, allowing for non-linear pipeline execution. This enables complex control flow patterns including loops, conditional branching, and jump-based logic.
+
+The go_to processor searches for a processor with the specified tag and continues execution from that point, skipping all processors in between.
+
+:::note
+The target processor must have a unique tag within the pipeline. The go_to processor will jump to the first processor found with the matching tag.
+:::
+
+This processor is useful for implementing conditional processing paths, error recovery flows, and complex business logic that requires non-sequential execution.
+
+:::warning
+Be careful to avoid infinite loops when using go_to processors. Ensure that your pipeline logic has proper exit conditions to prevent endless processing cycles.
+:::
+
+## Examples
+
+### Basic Jump
+
+<ExampleGrid>
+  <CommentCol>
+    Jumping to a specific processor...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - set:
+        field: step
+        value: "start"
+    - go_to:
+        target: "validation_step"
+    - set:
+        field: skipped
+        value: true
+    - set:
+        field: step
+        value: "validation"
+        tag: "validation_step"
+    ```
+  </CodeCol>
+  <CommentCol>
+    skips intermediate processor:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "step": "validation"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Jump
+
+<ExampleGrid>
+  <CommentCol>
+    Jumping based on field conditions...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - go_to:
+        target: "error_handler"
+        if: "logEntry.error_code != null"
+    - set:
+        field: normal_processing
+        value: true
+    - set:
+        field: error_handled
+        value: true
+        tag: "error_handler"
+    ```
+  </CodeCol>
+  <CommentCol>
+    jumps when error exists:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "error_code": "404",
+      "error_handled": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Recovery Flow
+
+<ExampleGrid>
+  <CommentCol>
+    Using go_to for error recovery...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - validate:
+        field: user_input
+        pattern: "^[a-zA-Z]+$"
+        on_failure:
+          - set:
+              field: validation_error
+              value: true
+          - go_to:
+              target: "cleanup"
+    - set:
+        field: processed
+        value: true
+    - set:
+        field: completed
+        value: true
+        tag: "cleanup"
+    ```
+  </CodeCol>
+  <CommentCol>
+    jumps to cleanup on validation failure:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_input": "123invalid",
+      "validation_error": true,
+      "completed": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Path Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Creating multiple processing paths...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - go_to:
+        target: "admin_flow"
+        if: "logEntry.user_role == 'admin'"
+    - go_to:
+        target: "user_flow"
+        if: "logEntry.user_role == 'user'"
+    - set:
+        field: user_type
+        value: "standard"
+        tag: "user_flow"
+    - go_to:
+        target: "final_step"
+    - set:
+        field: user_type
+        value: "administrator"
+        tag: "admin_flow"
+    - set:
+        field: processing_complete
+        value: true
+        tag: "final_step"
+    ```
+  </CodeCol>
+  <CommentCol>
+    routes based on user role:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_role": "admin",
+      "user_type": "administrator",
+      "processing_complete": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Loop Implementation
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a simple processing loop...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - set:
+        field: counter
+        value: 0
+        tag: "loop_start"
+    - math:
+        field: counter
+        operation: "add"
+        value: 1
+    - go_to:
+        target: "loop_start"
+        if: "logEntry.counter < 3"
+    - set:
+        field: loop_complete
+        value: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    increments counter until condition met:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "counter": 3,
+      "loop_complete": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

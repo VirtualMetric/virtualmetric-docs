@@ -1,0 +1,304 @@
+# Microsoft Sentinel
+
+<span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">SIEM</span>
+
+## Synopsis
+
+Creates a target that ingests log messages into Microsoft Sentinel workspace tables using Data Collection Rules (DCRs). Supports automatic table selection, field normalization, and filtering options.
+
+:::tip
+For more details on Microsoft Sentinel integration, refer to <Topic id="sentinel-overview">Microsoft Sentinel Overview</Topic> and <Topic id="sentinel-integration">Microsoft Sentinel Integration</Topic>. For Director Proxy deployment, see <Topic id="about-director-proxy">VirtualMetric Director Proxy</Topic>. For cost-optimized ingestion with extended retention, see <Topic id="targets-microsoft-sentinel-data-lake">Microsoft Sentinel data lake</Topic>.
+:::
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: sentinel
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    function_app: <string>
+    function_token: <string>
+    rule_id: <string>
+    endpoint: <string>
+    streams:
+      - name: <string>
+        rule_id: <string>
+    stream: <string[]>
+    buffer_size: <numeric>
+    batch_size: <numeric>
+    keep_phantom_fields: <boolean>
+    drop_unknown_stream_events: <boolean>
+    cache:
+      timeout: <numeric>
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+### Core Settings
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `sentinel`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Authentication
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tenant_id`|N*|-|Azure tenant ID (required for direct authentication)|
+|`client_id`|N*|-|Azure client ID (required for direct authentication)|
+|`client_secret`|N*|-|Client secret (required for direct authentication)|
+|`function_app`|N*|-|Director Proxy endpoint URL (required for proxy forwarding)|
+|`function_token`|N*|-|Director Proxy authentication token (required with `function_app`)|
+
+\* = Conditionally required. Use either direct authentication (`tenant_id`, `client_id`, `client_secret`) OR Director Proxy forwarding (`function_app`, `function_token`).
+
+### Stream Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`endpoint`|Y||DCR ingestion endpoint or Resource ID|
+|`rule_id`|N||Default Data Collection Rule (DCR) ID|
+|`streams`|N|-|Detailed stream configurations|
+|`stream`|N|-|Legacy string array of stream names|
+|`buffer_size`|N|`1048576`|Buffer size in bytes (1MB)|
+|`batch_size`|N|`1000`|Maximum number of messages per batch|
+|`keep_phantom_fields`|N|`false`|Keep fields not defined in DCR schema|
+|`drop_unknown_stream_events`|N|`true`|Silently drop events for undefined streams|
+|`cache.timeout`|N|`300`|Stream cache timeout in seconds|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="pipelines-normalization-field-mapping">Normalization</Topic> section|
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="scheduling-interval-based">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="scheduling-cron-based">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Automatic Table Selection
+
+When `streams` is not specified, tables are automatically selected based on input type:
+
+|Input Type|Target Table|
+|:-:|---|
+|Windows Event Log|`Custom-WindowsEvent`|
+|Windows Application Log|`Custom-WindowsEvent`|
+|Windows System Log|`Custom-WindowsEvent`|
+|Windows Security Log|`Custom-SecurityEvent`|
+|Syslog|`Custom-Syslog`|
+|Linux Audit Report|`Custom-CommonSecurityLog`|
+|Windows Audit Report|`Custom-CommonSecurityLog`|
+
+### Available Tables
+
+**Standard Tables** (Prefix: `Custom-`)
+> `WindowsEvent` `SecurityEvent` `CommonSecurityLog` `Syslog`
+
+**ASim Tables** (Prefix: `Custom-` or `Microsoft-`)
+> `ASimAuditEventLogs` `ASimAuthenticationEventLogs` `ASimDhcpEventLogs` `ASimDnsActivityLogs` `ASimFileEventLogs` `ASimNetworkSessionLogs` `ASimProcessEventLogs` `ASimRegistryEventLogs` `ASimUserManagementActivityLogs` `ASimWebSessionLogs`
+
+## Details
+
+The Microsoft Sentinel target enables direct ingestion into Microsoft Sentinel tables with flexible configuration options. It supports using the `SystemS3` field to route messages to specific stream tables, using the format `Custom-TableName`.
+
+### Deployment Models
+
+The target supports two deployment models:
+
+**Direct Authentication** - Director connects directly to Azure using service principal credentials (`tenant_id`, `client_id`, `client_secret`). This model requires Director to have network connectivity to Azure endpoints and credentials for the target subscription.
+
+**Director Proxy Forwarding** - Director sends processed data to VirtualMetric Director Proxy (Azure Function) deployed in customer environment. Director Proxy uses Azure Managed Identity for credential-free access to Microsoft Sentinel, eliminating the need to share Azure credentials with Director.
+
+The Director Proxy model is particularly valuable for MSSP deployments where customers maintain complete control over Azure credentials while enabling centralized data processing and routing by the MSSP's Director infrastructure.
+
+The target automatically detects table schemas and can clean messages to remove phantom fields that aren't defined in the schema when `keep_phantom_fields` is set to `false`. 
+
+:::warning
+Disabling `keep_phantom_fields` may result in data loss for undefined fields.
+:::
+
+Data is buffered until either the batch size limit is reached or an explicit flush is triggered. Each stream type has different limits based on the Log Analytics ingestion API.
+
+:::warning
+Enabling `drop_unknown_stream_events` silently discards unmatched events.
+:::
+
+### Field Normalization
+
+The `field_format` property allows normalizing log data to standard formats:
+
+- `csl` - Common Security Log
+- `asim` - Advanced Security Information Model
+
+Field normalization is applied before the logs are sent to Sentinel, ensuring consistent indexing and search capabilities.
+
+### Preconfigured Schemas
+
+The target includes built-in schema definitions for standard tables like:
+- Syslog
+- Common Security Log
+- Security Event
+- Windows Event
+- ASim tables (various types)
+
+These predefined schemas ensure proper column mapping and validation when sending data to Sentinel.
+
+:::warning
+Large buffer sizes or batch sizes increase memory usage.
+:::
+
+## Autodiscovery
+
+**Director** provides an autodiscovery feature that automatically configures _Data Collection Rules_ and their associated streams.
+
+The required permissions are:
+
+- For **Data Collection Rules**
+
+  |Role|Scope|
+  |---|---|
+  |`Monitoring Metrics Publisher`|Each DCR with name starting with `vmetric`|
+
+- For **Resource Groups**
+
+  |Role|Scope|
+  |---|---|
+  |`Monitoring Reader`|Resource Group containing your DCE|
+
+:::warning
+Always assign the `Monitoring Reader` role at the **Resource Group** level, not at the **Subscription** level.
+:::
+
+The feature uses _Resource IDs_ to discover DCRs and their configurations. It then automatically detects table schemas and validates fields, and prevents phantom fields through schema validation.
+
+Autodiscovery adapts to environment changes automatically.
+
+## Examples
+
+### Basic
+
+Configuration using Resource ID-based autodiscovery:
+
+```yaml
+targets:
+  - name: auto_sentinel
+    type: sentinel
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+```
+
+### Managed Identity
+
+Using _Managed Identity Authentication_ instead of _App Registration_:
+
+```yaml
+targets:
+  - name: managed_identity_sentinel
+    type: sentinel
+    properties:
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+```
+
+### Director Proxy
+
+Configuration using Director Proxy for credential-free forwarding:
+
+```yaml
+targets:
+  - name: proxy_sentinel
+    type: sentinel
+    properties:
+      function_app: "https://my-director-proxy.azurewebsites.net/api/Sentinel"
+      function_token: "your-proxy-authentication-token"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+```
+
+### Filtered
+
+Using specific stream filtering and custom cache timeout:
+
+```yaml
+targets:
+  - name: filtered_autodiscovery
+    type: sentinel
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+      streams:
+        - name: "Custom-WindowsEvent"
+        - name: "Custom-SecurityEvent"
+      cache:
+        timeout: 300  # 5 minutes
+      keep_phantom_fields: false
+      drop_unknown_stream_events: true
+```
+
+### High-Volume
+
+Optimization for high-volume ingestion:
+
+```yaml
+targets:
+  - name: optimized_sentinel
+    type: sentinel
+    pipelines:
+      - normalization
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+      buffer_size: 5242880  # 5MB
+      batch_size: 5000
+      field_format: "asim"
+      streams:
+        - name: "Custom-ASimProcessEventLogs"
+        - name: "Custom-ASimNetworkSessionLogs"
+```
+
+### With Debugging
+
+Configuration with debug options:
+
+```yaml
+targets:
+  - name: debug_sentinel
+    type: sentinel
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+      debug:
+        status: true
+        dont_send_logs: true  # Test mode that doesn't actually upload
+```

@@ -1,0 +1,197 @@
+---
+description: Removes fields
+sidebar_custom_props:
+  customIcon: 🗑️
+  customCategory: Data Manipulation
+---
+
+# Remove
+
+<span className="theme-doc-version-badge badge badge--primary">Mutate</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Removes one or more fields from the document. Can handle both single fields and arrays of fields to remove.
+
+## Schema
+
+```yaml {2}
+- remove:
+    field: <ident|ident[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field or array of fields to remove|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`ignore_missing`|N|`false`|If `true`, continue silently if field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor supports template variables in field names and can remove nested fields using dot notation.
+
+:::note
+When multiple fields are specified, the processor attempts to remove all of them. If `ignore_missing` is set to `true`, execution continues for the remaining fields even if a field removal fails.
+:::
+
+:::warning
+Be careful when removing nested fields as it might affect the structure of your document. Always ensure parent fields exist before attempting to remove child fields.
+:::
+
+## Examples
+
+### Single Field
+
+<ExampleGrid>
+  <CommentCol>
+    Remove a single field from the document...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "id": "12345",
+        "password": "secret",
+        "email": "user@example.com"
+      }
+    }
+    ```
+    ```yaml
+    - remove:
+        field: user.password
+    ```
+  </CodeCol>
+  <CommentCol>
+    to avoid disclosing sensitive data:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "id": "12345",
+        "email": "user@example.com"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Remove multiple fields at once...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "debug": true,
+      "temp_data": ["a", "b", "c"],
+      "result": "success",
+      "message": "Operation completed"
+    }
+    ```
+    ```yaml
+    - remove:
+        field: 
+          - debug
+          - temp_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    cleaning up temporary fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "result": "success",
+      "message": "Operation completed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Templates
+
+<ExampleGrid>
+  <CommentCol>
+    Remove fields using template variables...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "type": "user_data",
+      "user_data_temp": "temporary",
+      "user_data_cache": "cached"
+    }
+    ```
+    ```yaml
+    - remove:
+        field: 
+          - "{{{type}}}_temp"
+          - "{{{type}}}_cache"
+    ```
+  </CodeCol>
+  <CommentCol>
+    with dynamic field names:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "type": "user_data"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle missing fields gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "field1": "value1"
+    }
+    ```
+    ```yaml
+    - remove:
+        field: 
+          - field1
+          - field2
+        ignore_missing: true
+        on_failure:
+          - append:
+              field: tags
+              value: removal_incomplete
+    ```
+  </CodeCol>
+  <CommentCol>
+    with appropriate errors:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["removal_incomplete"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

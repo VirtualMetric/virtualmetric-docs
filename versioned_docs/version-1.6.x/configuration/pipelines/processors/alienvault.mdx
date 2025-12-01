@@ -1,0 +1,585 @@
+---
+description: Retrieves threat intelligence from AlienVault
+sidebar_custom_props: 
+  customIcon: 👽
+  customCategory: Threat Intelligence
+  customTag:
+    - Enrichment
+---
+
+# AlienVault
+
+<span className="theme-doc-version-badge badge badge--primary">Enrichment</span><span className="theme-doc-version-badge badge badge--secondary">Threat Intelligence</span>
+
+## Synopsis
+
+Enriches events by retrieving threat intelligence from AlienVault's [Open Threat Exchange](https://otx.alienvault.com/) (OTX) API.
+
+## Schema
+
+```yaml
+- alienvault:
+    field: <ident>
+    api_key: <string>
+    query_type: <enum>
+    section: <enum>
+    target_field: <ident>
+    include_details: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|N|`"ip"`|Field containing the indicator to look up|
+|`api_key`|N|`${ALIENVAULT_API_KEY}`|AlienVault OTX API key|
+|`query_type`|N|`"ip"`|Type of indicator. Options: `ip`, `domain`, `hostname`, `url`, `file`, `cve`|
+|`section`|N|`"general"`|Section of data to retrieve. Available sections vary by query type|
+|`target_field`|N|`field`|Field to store the intelligence data|
+|`include_details`|N|`false`|Include detailed responses like configurations, pulse info, products, references and exploits|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if API call fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor supports multiple indicator types including IP addresses, domains, URLs, file hashes, and CVEs.
+
+### Query Types
+
+Multiple query types are available each of which supports specific sections.
+
+The returned intelligence can vary by indicator type and section, and not all indicators will have intelligence data.
+
+:::note
+API rate limits may apply.
+:::
+
+Some sections may require a valid API key, and some may return empty results. Also, IPv4 addresses are automatically validated.
+
+#### IP Address (`ip`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>Basic information</DefCol>
+  <TermCol>`geo`</TermCol><DefCol>Geolocation data</DefCol>
+  <TermCol>`malware`</TermCol><DefCol>Related malware</DefCol>
+  <TermCol>`passive_dns`</TermCol><DefCol>Passive DNS records</DefCol>
+  <TermCol>`reputation`</TermCol><DefCol>Reputation scores</DefCol>
+  <TermCol>`url_list`</TermCol><DefCol>Associated URLs</DefCol>
+</TermTable>
+
+#### Domain (`domain`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>Basic information</DefCol>
+  <TermCol>`geo`</TermCol><DefCol>Geolocation data</DefCol>
+  <TermCol>`malware`</TermCol><DefCol>Related malware</DefCol>
+  <TermCol>`passive_dns`</TermCol><DefCol>Passive DNS records</DefCol>
+  <TermCol>`url_list`</TermCol><DefCol>Associated URLs</DefCol>
+</TermTable>
+
+#### Hostname (`hostname`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>Basic information</DefCol>
+  <TermCol>`geo`</TermCol><DefCol>Geolocation data</DefCol>
+  <TermCol>`malware`</TermCol><DefCol>Related malware</DefCol>
+  <TermCol>`passive_dns`</TermCol><DefCol>Passive DNS records</DefCol>
+  <TermCol>`url_list`</TermCol><DefCol>Associated URLs</DefCol>
+</TermTable>
+
+#### URL (`url`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>Basic information</DefCol>
+  <TermCol>`url_list`</TermCol><DefCol>URL details and categories</DefCol>
+</TermTable>
+
+#### File (`file`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>File hash information</DefCol>
+</TermTable>
+
+#### CVE (`cve`)
+
+<TermTable>
+  <TermCol>`general`</TermCol><DefCol>CVE details and references</DefCol>
+</TermTable>
+
+:::warning
+Large result sets may impact performance.
+:::
+
+## Examples
+
+### IPs
+
+<ExampleGrid>
+  <CommentCol>
+    Querying IP reputation data...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source_ip": "8.8.8.8"
+    }
+    ```
+    ```yaml
+    - alienvault:
+        field: source_ip
+        query_type: ip
+        section: reputation
+        target_field: ip_intel
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds detailed IP intelligence:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source_ip": "8.8.8.8",
+      "ip_intel": {
+        "ip": {
+          "accuracy_radius": 1000,
+          "area_code": 0,
+          "asn": "AS15169 google llc",
+          "base_indicator": {
+            "access_reason": "",
+            "access_type": "public",
+            "content": "",
+            "description": "",
+            "id": 11911,
+            "indicator": "8.8.8.8",
+            "title": "",
+            "type": "IPv4"
+          },
+          "continent_code": "NA",
+          "country_code": "US",
+          "country_code2": "US",
+          "country_code3": "USA",
+          "country_name": "United States of America",
+          "dma_code": 0,
+          "false_positive": [
+            {
+              "assessment": "accepted",
+              "assessment_date": "2021-05-19T15:36:44.966000",
+              "report_date": "2021-03-16T14:46:19.003000"
+            }
+          ],
+          "flag_title": "United States of America",
+          "flag_url": "/assets/images/flags/us.png",
+          "indicator": "8.8.8.8",
+          "latitude": 37.751,
+          "longitude": -97.822,
+          "reputation": 0,
+          "sections": [
+            "general",
+            "geo",
+            "reputation",
+            "url_list",
+            "passive_dns",
+            "malware",
+            "nids_list",
+            "http_scans"
+          ],
+          "type": "IPv4",
+          "type_title": "IPv4",
+          "validation": [
+            {
+              "message": "Known False Positive",
+              "name": "Known False Positive",
+              "source": "false_positive"
+            },
+            {
+              "message": "contained in whitelisted prefix",
+              "name": "Whitelisted IP",
+              "source": "whitelist"
+            }
+          ],
+          "whois": "http://whois.domaintools.com/8.8.8.8"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Domains
+
+<ExampleGrid>
+  <CommentCol>
+    Querying domain malware data...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "google.com"
+    }
+    ```
+    ```yaml
+    - alienvault:
+        field: domain
+        query_type: domain
+        section: malware
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds detailed domain intelligence:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "google.com",
+      "domain": {
+        "alexa": "http://www.alexa.com/siteinfo/google.com",
+        "base_indicator": {
+          "access_reason": "",
+          "access_type": "public",
+          "content": "",
+          "description": "",
+          "id": 12915,
+          "indicator": "google.com",
+          "title": "",
+          "type": "domain"
+        },
+        "false_positive": [
+          {
+            "assessment": "accepted",
+            "assessment_date": "2021-05-19T15:37:54.331000",
+            "report_date": "2021-05-01T10:55:33.601000"
+          }
+        ],
+        "indicator": "google.com",
+        "sections": [
+          "general",
+          "geo",
+          "url_list",
+          "passive_dns",
+          "malware",
+          "whois",
+          "http_scans"
+        ],
+        "type": "domain",
+        "type_title": "Domain",
+        "validation": [
+          {
+            "message": "Whitelisted ad network domain www-google-analytics.l.google.com",
+            "name": "Whitelisted ad network domain",
+            "source": "ad_network"
+          },
+          {
+            "message": "Akamai rank: #3",
+            "name": "Akamai Popular Domain",
+            "source": "akamai"
+          },
+          {
+            "message": "Alexa rank: #1",
+            "name": "Listed on Alexa",
+            "source": "alexa"
+          },
+          {
+            "message": "Known False Positive",
+            "name": "Known False Positive", 
+            "source": "false_positive"
+          },
+          {
+            "message": "Whitelisted domain google.com",
+            "name": "Whitelisted domain",
+            "source": "majestic"
+          },
+          {
+            "message": "Whitelisted domain google.com",
+            "name": "Whitelisted domain",
+            "source": "whitelist"
+          }
+        ],
+        "whois": "http://whois.domaintools.com/google.com"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URLs
+
+<ExampleGrid>
+  <CommentCol>
+    Querying URL details...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "https://www.google.com"
+    }
+    ```
+    ```yaml
+    - alienvault:
+        field: url
+        query_type: url
+        section: general
+        target_field: url_intel
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds detailed URL intelligence:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "https://www.google.com",
+      "url_intel": {
+        "url": {
+          "alexa": "http://www.alexa.com/siteinfo/google.com",
+          "base_indicator": {
+            "access_reason": "",
+            "access_type": "public",
+            "content": "",
+            "description": "",
+            "id": 2129558363,
+            "indicator": "https://www.google.com",
+            "title": "",
+            "type": "URL"
+          },
+          "domain": "google.com",
+          "false_positive": [],
+          "hostname": "www.google.com",
+          "indicator": "https://www.google.com",
+          "sections": [
+            "general",
+            "url_list",
+            "http_scans",
+            "screenshot"
+          ],
+          "type": "url",
+          "type_title": "URL",
+          "validation": [
+            {
+              "message": "Alexa rank: #1",
+              "name": "Listed on Alexa",
+              "source": "alexa"
+            },
+            {
+              "message": "Akamai rank: #3",
+              "name": "Akamai Popular Domain",
+              "source": "akamai"
+            },
+            {
+              "message": "Whitelisted domain google.com",
+              "name": "Whitelisted domain",
+              "source": "whitelist"
+            },
+            {
+              "message": "Whitelisted domain google.com",
+              "name": "Whitelisted domain",
+              "source": "majestic"
+            }
+          ],
+          "whois": "http://whois.domaintools.com/google.com"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### File Hashes
+
+<ExampleGrid>
+  <CommentCol>
+    Looking up file hash information...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hash": "44d88612fea8a8f36de82e1278abb02f"
+    }
+    ```
+    ```yaml
+    - alienvault:
+        field: hash
+        query_type: file
+        section: general
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds file intelligence:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hash": "44d88612fea8a8f36de82e1278abb02f",
+      "hash": {
+        "base_indicator": {
+          "access_reason": "",
+          "access_type": "public",
+          "content": "",
+          "description": "",
+          "id": 22820,
+          "indicator": "44d88612fea8a8f36de82e1278abb02f",
+          "title": "",
+          "type": "FileHash-MD5"
+        },
+        "false_positive": [],
+        "indicator": "44d88612fea8a8f36de82e1278abb02f",
+        "sections": [
+          "general",
+          "analysis"
+        ],
+        "type": "md5",
+        "type_title": "FileHash-MD5",
+        "validation": [
+          {
+            "message": "Whitelisted hash: MISP",
+            "name": "Whitelisted hash",
+            "source": "whitelist"
+          }
+        ]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### CVEs
+
+<ExampleGrid>
+  <CommentCol>
+    Retrieving CVE details...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cve": "CVE-2021-44228"
+    }
+    ```
+    ```yaml
+    - alienvault:
+        field: cve
+        query_type: cve
+        section: general
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds detailed CVE intelligence:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cve": "CVE-2021-44228",
+      "cve": {
+        "base_indicator": {
+          "access_reason": "",
+          "access_type": "public",
+          "content": "",
+          "description": "",
+          "id": 3325076393,
+          "indicator": "CVE-2021-44228",
+          "title": "",
+          "type": "CVE"
+        },
+        "cve": "CVE-2021-44228",
+        "cvss": {
+          "Access-Complexity": "MEDIUM",
+          "Access-Vector": "NETWORK",
+          "Authentication": "NONE", 
+          "Availability-Impact": "COMPLETE",
+          "Confidentiality-Impact": "COMPLETE",
+          "Integrity-Impact": "COMPLETE",
+          "Score": "9.3",
+          "vectorString": "AV:N/AC:M/Au:N/C:C/I:C/A:C"
+        },
+        "cvssv2": {
+          "acInsufInfo": false,
+          "cvssV2": {
+            "accessComplexity": "MEDIUM",
+            "accessVector": "NETWORK",
+            "authentication": "NONE",
+            "availabilityImpact": "COMPLETE", 
+            "baseScore": 9.3,
+            "confidentialityImpact": "COMPLETE",
+            "integrityImpact": "COMPLETE",
+            "vectorString": "AV:N/AC:M/Au:N/C:C/I:C/A:C",
+            "version": "2.0"
+          },
+          "exploitabilityScore": 8.6,
+          "impactScore": 10,
+          "obtainAllPrivilege": false,
+          "obtainOtherPrivilege": false,
+          "obtainUserPrivilege": false,
+          "severity": "HIGH",
+          "userInteractionRequired": false
+        },
+        "cvssv3": {
+          "cvssV3": {
+            "attackComplexity": "LOW",
+            "attackVector": "NETWORK",
+            "availabilityImpact": "HIGH",
+            "baseScore": 10,
+            "baseSeverity": "CRITICAL",
+            "confidentialityImpact": "HIGH",
+            "integrityImpact": "HIGH",
+            "privilegesRequired": "NONE",
+            "scope": "CHANGED",
+            "userInteraction": "NONE",
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+            "version": "3.1"
+          },
+          "exploitabilityScore": 3.9,
+          "impactScore": 6
+        },
+        "cwe": "",
+        "date_created": "2021-12-10T10:15:00",
+        "date_modified": "2025-02-04T15:15:00",
+        "description": "Apache Log4j2 2.0-beta9 through 2.15.0 (excluding...",
+        "exploits": [
+          {
+            "author": "leonjza",
+            "cve": "CVE-2021-44228",
+            "date": "1970-01-01",
+            "name": "Apache Log4j2 2.14.1 - Information Disclosure",
+            "platform": "java",
+            "port": "",
+            "type": "remote",
+            "url": "https://github.com/offensive-security/exploitd..."
+          },
+          {
+            "author": "kozmer",
+            "cve": "CVE-2021-44228",
+            "date": "1970-01-01",
+            "name": "Apache Log4j 2 - Remote Code Execution (RCE)",
+            "platform": "java",
+            "port": "",
+            "type": "remote",
+            "url": "https://github.com/offensive-security/exploitd..."
+          }
+        ],
+        "mitre_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228",
+        "nvd_url": "https://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2021-44228",
+        "references": [],
+        "sections": [
+          "general",
+          "nids_list",
+          "malware"
+        ],
+        "seen_wild": true,
+        "type_title": "CVE"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

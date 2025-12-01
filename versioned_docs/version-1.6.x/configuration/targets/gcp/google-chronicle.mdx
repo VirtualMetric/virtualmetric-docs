@@ -1,0 +1,314 @@
+# Google Chronicle
+
+<span className="theme-doc-version-badge badge badge--secondary">Google Chronicle</span><span className="theme-doc-version-badge badge badge--secondary">Security Analytics</span>
+
+## Synopsis
+
+Creates a target that sends log data to Google Chronicle security analytics platform using the Chronicle Ingestion API. Supports OAuth2 service account authentication, custom labeling, batch processing, and multi-region deployment.
+
+## Schema
+
+```yaml {1,3,7,8,9,10,11}
+- name: <string>
+  description: <string>
+  type: gcpchronicle
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    project_id: <string>
+    instance_id: <string>
+    region: <string>
+    default_log_type: <string>
+    namespace: <string>
+    log_text_field: <string>
+    authentication_method: <string>
+    service_account_credentials: <string>
+    service_account_credentials_secret: <string>
+    labels:
+      - key: <string>
+        value: <string>
+    batch_size: <integer>
+    timeout: <integer>
+    request_timeout: <integer>
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `gcpchronicle`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Chronicle Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`project_id`|Y|-|Google Cloud project ID|
+|`instance_id`|Y|-|Chronicle instance ID (customer ID)|
+|`region`|Y|-|Chronicle region: `us`, `europe`, `asia`|
+|`default_log_type`|Y|-|Default log type for ingested logs|
+|`namespace`|Y|-|Log namespace for organization|
+|`log_text_field`|N|-|Event field to use as log text (if empty, uses JSON representation)|
+
+### Authentication
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`authentication_method`|N|`credentials`|Authentication method: `credentials` (inline JSON), `secret` (environment variable)|
+|`service_account_credentials`|Y*|-|Google Cloud service account JSON credentials (inline)|
+|`service_account_credentials_secret`|Y*|-|Environment variable name containing service account credentials|
+
+\* = Conditionally required. When `authentication_method` is `credentials` (default), use `service_account_credentials`. When `authentication_method` is `secret`, use `service_account_credentials_secret`.
+
+### Custom Labels
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`labels`|N|-|Array of custom labels to attach to log entries|
+|`labels[].key`|Y|-|Label key|
+|`labels[].value`|Y|-|Label value|
+
+### Batch Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`1000`|Number of log entries to batch before sending (minimum 1)|
+|`timeout`|N|`30`|Request timeout in seconds|
+|`request_timeout`|N|`30`|HTTP request timeout in seconds|
+
+### Processing
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="pipelines-normalization-field-mapping">Normalization</Topic> section|
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="scheduling-interval-based">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="scheduling-cron-based">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+The Google Chronicle target sends log data to Chronicle's security analytics platform using the Chronicle Ingestion API. Log events are batched and sent via HTTPS POST requests with OAuth2 authentication.
+
+The target automatically parses JSON log messages and extracts structured data. For non-JSON messages, the entire message is used as log text. Custom labels can be attached to all log entries for organizational purposes.
+
+### Chronicle Regions
+
+Chronicle supports three regional endpoints:
+- **`us`**: United States (default) - `malachiteingestion-pa.googleapis.com`
+- **`europe`**: Europe - `europe-malachiteingestion-pa.googleapis.com`
+- **`asia`**: Asia Southeast - `asia-southeast1-malachiteingestion-pa.googleapis.com`
+
+### Service Account Permissions
+
+The service account must have the following IAM role:
+- **Chronicle API Writer** (`roles/chronicle.writer`)
+
+Or the following specific permission:
+- `malachite.ingestion.import`
+
+### Prerequisites
+
+1. A Google Cloud project with Chronicle enabled
+2. Chronicle instance ID (customer ID)
+3. Service account with Chronicle API Writer role
+4. Service account JSON credentials
+5. Network connectivity to Chronicle ingestion endpoints
+
+:::note
+The `log_text_field` parameter specifies which event field to use as the log text. If not specified or the field doesn't exist, the entire JSON event is used as log text.
+:::
+
+:::warning
+Service account credentials contain sensitive information. Use the `secret` authentication method with environment variables for production deployments instead of inline `credentials`.
+:::
+
+## Examples
+
+### Basic
+
+Minimum configuration for Chronicle ingestion:
+
+```yaml
+targets:
+  - name: basic_chronicle
+    type: gcpchronicle
+    properties:
+      project_id: "my-gcp-project"
+      instance_id: "customer-12345678"
+      region: "us"
+      default_log_type: "GENERIC_EVENT"
+      namespace: "production"
+      service_account_credentials: |
+        {
+          "type": "service_account",
+          "project_id": "my-gcp-project",
+          "private_key_id": "key-id",
+          "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+          "client_email": "chronicle-writer@my-gcp-project.iam.gserviceaccount.com",
+          "client_id": "123456789",
+          "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+          "token_uri": "https://oauth2.googleapis.com/token"
+        }
+```
+
+### With Environment Variable
+
+Configuration using environment variable for credentials:
+
+```yaml
+targets:
+  - name: secure_chronicle
+    type: gcpchronicle
+    properties:
+      project_id: "my-gcp-project"
+      instance_id: "customer-12345678"
+      region: "us"
+      default_log_type: "GENERIC_EVENT"
+      namespace: "production"
+      authentication_method: "secret"
+      service_account_credentials_secret: "CHRONICLE_SA_CREDENTIALS"
+```
+
+### Europe Region
+
+Configuration for European Chronicle instance:
+
+```yaml
+targets:
+  - name: europe_chronicle
+    type: gcpchronicle
+    properties:
+      project_id: "my-gcp-project"
+      instance_id: "customer-87654321"
+      region: "europe"
+      default_log_type: "GENERIC_EVENT"
+      namespace: "production"
+      authentication_method: "secret"
+      service_account_credentials_secret: "CHRONICLE_SA_CREDENTIALS"
+```
+
+### With Custom Labels
+
+Configuration with custom labels for log categorization:
+
+```yaml
+targets:
+  - name: labeled_chronicle
+    type: gcpchronicle
+    properties:
+      project_id: "my-gcp-project"
+      instance_id: "customer-12345678"
+      region: "us"
+      default_log_type: "FIREWALL"
+      namespace: "production"
+      authentication_method: "secret"
+      service_account_credentials_secret: "CHRONICLE_SA_CREDENTIALS"
+      labels:
+        - key: "environment"
+          value: "production"
+        - key: "application"
+          value: "firewall"
+        - key: "datacenter"
+          value: "us-east-1"
+```
+
+### With Log Text Field
+
+Configuration using specific field as log text:
+
+```yaml
+targets:
+  - name: custom_field_chronicle
+    type: gcpchronicle
+    properties:
+      project_id: "my-gcp-project"
+      instance_id: "customer-12345678"
+      region: "us"
+      default_log_type: "SYSLOG"
+      namespace: "production"
+      log_text_field: "message"
+      authentication_method: "secret"
+      service_account_credentials_secret: "CHRONICLE_SA_CREDENTIALS"
+```
+
+### High Volume
+
+Configuration optimized for high-volume log ingestion:
+
+```yaml
+targets:
+  - name: highvolume_chronicle
+    type: gcpchronicle
+    properties:
+      project_id: "my-gcp-project"
+      instance_id: "customer-12345678"
+      region: "us"
+      default_log_type: "GENERIC_EVENT"
+      namespace: "production"
+      batch_size: 5000
+      timeout: 60
+      request_timeout: 60
+      authentication_method: "secret"
+      service_account_credentials_secret: "CHRONICLE_SA_CREDENTIALS"
+```
+
+### With Normalization
+
+Configuration using field normalization:
+
+```yaml
+targets:
+  - name: normalized_chronicle
+    type: gcpchronicle
+    properties:
+      project_id: "my-gcp-project"
+      instance_id: "customer-12345678"
+      region: "us"
+      default_log_type: "GENERIC_EVENT"
+      namespace: "production"
+      field_format: "ecs"
+      authentication_method: "secret"
+      service_account_credentials_secret: "CHRONICLE_SA_CREDENTIALS"
+```
+
+### With Pipeline
+
+Using a pipeline for additional log processing:
+
+```yaml
+targets:
+  - name: pipeline_chronicle
+    type: gcpchronicle
+    pipelines:
+      - enrich_logs
+    properties:
+      project_id: "my-gcp-project"
+      instance_id: "customer-12345678"
+      region: "us"
+      default_log_type: "GENERIC_EVENT"
+      namespace: "production"
+      authentication_method: "secret"
+      service_account_credentials_secret: "CHRONICLE_SA_CREDENTIALS"
+```

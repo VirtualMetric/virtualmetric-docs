@@ -1,0 +1,259 @@
+---
+description: Extracts and decodes Windows Security Identifier (SID) information
+sidebar_custom_props:
+  customCategory: Decode
+  customIcon: 🔐
+---
+
+# SID Decode
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Security</span>
+
+## Synopsis
+
+Extracts and decodes Windows Security Identifier (SID) information.
+
+## Schema
+
+```yaml {2}
+- sid_decode:
+    field: <ident>
+    target_field: <string>
+    format: <string>
+    resolve_well_known: <boolean>
+    add_components: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing SID to decode (string, byte array, or array of strings)|
+|`target_field`|N|`{field}_decoded`|Target field to store decoded SID information|
+|`format`|N|Auto-detect|Input format: `string`, `hex`, `base64` (auto-detects if not specified)|
+|`resolve_well_known`|N|`false`|Resolve well-known SIDs to account names|
+|`add_components`|N|`false`|Add parsed SID components (revision, authority, sub-authorities, domain info)|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if decoding fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Decodes Windows Security Identifiers (SIDs) from multiple input formats (string, hex, base64, byte arrays) into standardized SID strings with optional component parsing and well-known SID resolution.
+
+The processor supports three input formats with automatic detection: standard SID strings (S-1-5-21-...), hexadecimal binary SIDs, and base64-encoded binary SIDs. Byte arrays are processed directly as binary SID data.
+
+Default behavior returns the SID string only. Use `add_components` to extract revision, authority, authority name, sub-authorities, domain identification, and RID information. Use `resolve_well_known` to map SIDs to account names like "Local System", "Administrators", "Domain Admins".
+
+When `add_components` is enabled for domain SIDs (S-1-5-21-...), the processor identifies domain context, extracts domain_id, RID, and RID type (well-known, user, group/computer). Well-known RIDs (500=Administrator, 512=Domain Admins, etc.) are automatically resolved.
+
+The processor handles arrays of SIDs, processing each element independently with consistent error handling via `ignore_failure`.
+
+## Examples
+
+### Basic String SID
+
+<ExampleGrid>
+  <CommentCol>
+    Decoding SID string...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_sid": "S-1-5-21-1234567890-1234567890-1234567890-1001"
+    }
+    ```
+    ```yaml
+    - sid_decode:
+        field: user_sid
+    ```
+  </CodeCol>
+  <CommentCol>
+    returns SID string by default:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_sid": "S-1-5-21-1234567890-1234567890-1234567890-1001",
+      "user_sid_decoded": "S-1-5-21-1234567890-1234567890-1234567890-1001"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Well-Known SID Resolution
+
+<ExampleGrid>
+  <CommentCol>
+    Resolving well-known SID to account name...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sid": "S-1-5-18"
+    }
+    ```
+    ```yaml
+    - sid_decode:
+        field: sid
+        resolve_well_known: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    adds name and well-known flag:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sid": "S-1-5-18",
+      "sid_decoded": {
+        "sid": "S-1-5-18",
+        "name": "Local System",
+        "is_well_known": true
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Component Parsing
+
+<ExampleGrid>
+  <CommentCol>
+    Extracting SID component details...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sid": "S-1-5-21-1234567890-1234567890-1234567890-1001"
+    }
+    ```
+    ```yaml
+    - sid_decode:
+        field: sid
+        add_components: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    parses all SID components:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sid": "S-1-5-21-1234567890-1234567890-1234567890-1001",
+      "sid_decoded": {
+        "sid": "S-1-5-21-1234567890-1234567890-1234567890-1001",
+        "revision": 1,
+        "authority": 5,
+        "authority_name": "NT Authority",
+        "sub_authorities": [21, 1234567890, 1234567890, 1234567890, 1001],
+        "sub_authority_count": 5,
+        "is_domain_sid": true,
+        "domain_id": "1234567890-1234567890-1234567890",
+        "rid": 1001,
+        "rid_type": "user"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Hex Binary SID
+
+<ExampleGrid>
+  <CommentCol>
+    Decoding binary SID from hex...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hex_sid": "010100000000000512000000"
+    }
+    ```
+    ```yaml
+    - sid_decode:
+        field: hex_sid
+        format: hex
+        resolve_well_known: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to SID string with name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "hex_sid": "010100000000000512000000",
+      "hex_sid_decoded": {
+        "sid": "S-1-5-18",
+        "name": "Local System",
+        "is_well_known": true
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array of SIDs
+
+<ExampleGrid>
+  <CommentCol>
+    Processing multiple SIDs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sids": [
+        "S-1-5-18",
+        "S-1-5-32-544",
+        "S-1-1-0"
+      ]
+    }
+    ```
+    ```yaml
+    - sid_decode:
+        field: sids
+        resolve_well_known: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    resolves each SID:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "sids": [...],
+      "sids_decoded": [
+        {
+          "sid": "S-1-5-18",
+          "name": "Local System",
+          "is_well_known": true
+        },
+        {
+          "sid": "S-1-5-32-544",
+          "name": "Administrators",
+          "is_well_known": true
+        },
+        {
+          "sid": "S-1-1-0",
+          "name": "Everyone",
+          "is_well_known": true
+        }
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

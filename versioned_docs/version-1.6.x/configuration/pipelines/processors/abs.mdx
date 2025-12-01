@@ -1,0 +1,187 @@
+---
+description: Absolute value of a field
+sidebar_custom_props:
+  customCategory: Arithmetic
+  customIcon: 📊
+---
+
+# Abs
+
+<span className="theme-doc-version-badge badge badge--primary">Arithmetic</span><span className="theme-doc-version-badge badge badge--secondary">Data Analysis</span>
+
+## Synopsis
+
+Returns the absolute value of a numeric field.
+
+## Schema
+
+```yaml {2-3}
+- abs:
+    field: <ident>
+    value: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Target field to store the absolute value result|
+|`value`|Y|-|Source value or field reference to calculate absolute value from|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if calculation fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Calculates the absolute value of a numeric value and assigns the result to the specified field. This processor converts negative numbers to their positive equivalents while keeping positive numbers unchanged.
+
+:::note
+The processor will automatically convert string representations of numbers to their numeric values before calculating the absolute value. This makes it flexible when working with different data types.
+:::
+
+The processor can evaluate numeric values from a field reference or a numeric literal. It handles various numeric types and ensures that the result is always a positive number.
+
+:::warning
+If the specified value or referenced field cannot be converted to a number, the processor will fail unless `ignore_failure` is set to `true`. Always ensure that the input value is numeric or can be parsed as a number.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating absolute value from a negative number...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": -15.5
+    }
+    ```
+    ```yaml
+    - abs:
+        field: temperature_abs
+        value: "{{temperature}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a new field with absolute value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": -15.5,
+      "temperature_abs": 15.5
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### In-Place
+
+<ExampleGrid>
+  <CommentCol>
+    Replacing field value with its absolute value...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "distance": -42
+    }
+    ```
+    ```yaml
+    - abs:
+        field: distance
+        value: "{{distance}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    overwrites the original value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "distance": 42
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Using Literals
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating absolute value from a literal...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": {}
+    }
+    ```
+    ```yaml
+    - abs:
+        field: absolute_value
+        value: "-123.45"
+    ```
+  </CodeCol>
+  <CommentCol>
+    sets field to the absolute value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": {},
+      "absolute_value": 123.45
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditionals
+
+<ExampleGrid>
+  <CommentCol>
+    Calculating absolute value only when needed...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": -50,
+      "needs_abs": true
+    }
+    ```
+    ```yaml
+    - abs:
+        field: positive_value
+        value: "{{value}}"
+        if: "logEntry.needs_abs == true"
+    ```
+  </CodeCol>
+  <CommentCol>
+    processes conditionally:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value": -50,
+      "needs_abs": true,
+      "positive_value": 50
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

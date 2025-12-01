@@ -1,0 +1,290 @@
+---
+description: Sets the value of a field
+sidebar_custom_props: 
+  customIcon: ✏️
+  customCategory: Data Manipulation
+---
+
+# Set
+
+<span className="theme-doc-version-badge badge badge--primary">Mutate</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Sets a field and associates it with a specified value.
+
+## Schema
+
+```yaml {2}
+- set:
+    field: <ident>
+    copy_from: <ident>
+    description: <text>
+    if: <script>
+    ignore_empty_value: <boolean>
+    ignore_failure: <boolean>
+    media_type: <enum>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    override: <boolean>
+    tag: <string>
+    value: <any>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field to update|
+|`copy_from`|N|-|Field whose value will be copied to `field`. Cannot be used if `value` is specified|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_empty_value`|N|`false`|If `true`, quietly exit if specified field does not exist or its value is `null`/empty|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`media_type`|N|`application/json`|For encoding `value`. Valid options: `application/json`, `text/plain`, or `application/x-www-form-urlencoded`|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`override`|N|`true`|If `false`, do not update fields that already have a non-null value|
+|`tag`|N|-|Identifier|
+|`value`|N|-|Value to set. Cannot be used if `copy_from` is specified|
+
+## Details
+
+The processor can either set a literal value or copy a value from another field. If the field already exists, its value will be replaced unless `override` is set to `false`.
+
+:::note
+Either `value` or `copy_from` must be specified, but not both. When using `copy_from`, the source field must exist unless `ignore_empty_value` is set to `true`.
+:::
+
+:::warning
+When using templates, ensure that they reference valid fields as missing fields will cause the processor to fail unless `ignore_empty_value` is enabled.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Setting a simple numeric value...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": {}
+    }
+    ```
+    ```yaml
+    - set:
+        field: metrics.packets
+        value: 150
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a new field with that value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": {
+        "metrics": {
+          "packets": 150
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Templates
+
+<ExampleGrid>
+  <CommentCol>
+    Values can reference other fields through templates...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "checkpoint": {
+        "product": "ExampleProduct"
+      }
+    }
+    ```
+    ```yaml
+    - set:
+        field: observer.product
+        value: "{{checkpoint.product}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    which get resolved at run time:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "checkpoint": {
+        "product": "ExampleProduct"
+      },
+      "observer": {
+        "product": "ExampleProduct"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array Templates
+
+<ExampleGrid>
+  <CommentCol>
+    Set arrays with mixed values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "type": "login",
+        "service": "ssh"
+      }
+    }
+    ```
+    ```yaml
+    - set:
+        field: event.category
+        value: 
+          - "{{event.service}}"
+          - authentication
+          - "{{event.type}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    combining static and dynamic values:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": {
+        "type": "login",
+        "service": "ssh",
+        "category": ["ssh", "authentication", "login"]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Map Templates
+
+<ExampleGrid>
+  <CommentCol>
+    Set maps with template values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "service": "webserver",
+        "version": "2.4"
+      }
+    }
+    ```
+    ```yaml
+    - set:
+        field: service.details
+        value:
+          name: "{{source.service}}"
+          type: "web"
+          version: "{{source.version}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creating structured data:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service": {
+        "details": {
+          "name": "webserver",
+          "type": "web",
+          "version": "2.4"
+        }
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Copying
+
+<ExampleGrid>
+  <CommentCol>
+    Copying a value from one field to another...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "packets": 10
+      }
+    }
+    ```
+    ```yaml
+    - set:
+        field: metrics.packets
+        copy_from: source.packets
+    ```
+  </CodeCol>
+  <CommentCol>
+    duplicates the value:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "source": {
+        "packets": 10
+      },
+      "metrics": {
+        "packets": 10
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Existing Values
+
+<ExampleGrid>
+  <CommentCol>
+    When existing values are not overridden...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "checkpoint": {
+        "title": "NoTitle"
+      }
+    }
+    ```
+    ```yaml
+    - set:
+        field: checkpoint.title
+        value: "NewTitle"
+        override: false
+    ```
+  </CodeCol>
+  <CommentCol>
+    non-null values are preserved:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "checkpoint": {
+        "title": "NoTitle"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

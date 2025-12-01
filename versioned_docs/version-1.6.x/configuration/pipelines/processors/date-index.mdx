@@ -1,0 +1,174 @@
+---
+description: Generates time-based index names
+sidebar_custom_props: 
+  customIcon: 📅
+  customCategory: Flow Control
+---
+
+# Date Index
+
+<span className="theme-doc-version-badge badge badge--primary">Control Flow</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Creates dynamic index names based on date fields in documents by combining a configurable prefix with formatted dates.
+
+## Schema
+
+```yaml {2,3}
+- date_index:
+    field: <ident>
+    date_rounding: <enum>
+    date_formats: <string[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    index_name_format: <string>
+    index_name_prefix: <string>
+    locale: <string>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+    time_zone: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the date/timestamp to process|
+|`date_rounding`|Y|-|Time unit to round to: `y` (year), `M` (month), `w` (week), `d` (day), `h` (hour), `m` (minute), `s` (second)|
+|`date_formats`|N|`[RFC3339]`|Array of date format patterns to try when parsing the date field|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if parsing fails|
+|`ignore_missing`|N|`false`|Skip if the date field is missing|
+|`index_name_format`|N|`2006-01-02`|Go time format pattern for the output date|
+|`index_name_prefix`|N|-|String to prepend to the formatted date|
+|`locale`|N|-|Locale for date parsing|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+|`time_zone`|N|`UTC`|Timezone for date parsing|
+
+## Details
+
+The processor extracts a date from a specified field, applies configured rounding, and generates an index name by combining a prefix with the formatted date.
+
+The date can be rounded to various time units (year, month, week, day, hour, minute, second) and formatted according to specified patterns. This is particularly useful for time-series data where you want to organize documents into time-based indices.
+
+:::note
+With the weekly rounding (`w`), the date is rounded to the start of the ISO week (Monday).
+:::
+
+:::warning
+The date parsing will fail if none of the specified date formats match the input. Consider setting `ignore_failure` to `true` if errors should be tolerated.
+:::
+
+## Examples
+
+### Monthly
+
+<ExampleGrid>
+  <CommentCol>
+    Rounding dates to months...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw-date": "2016-04-25T12:02:01.789Z"
+    }
+    ```
+    ```yaml
+    - date_index:
+        field: raw-date
+        date_rounding: "M"
+        index_name_prefix: "monthly-"
+        index_name_format: "2006-01-02"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a monthly index name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw-date": "2016-04-25T12:02:01.789Z",
+      "_index": "monthly-2016-04-01"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Daily
+
+<ExampleGrid>
+  <CommentCol>
+    Dates from a nested field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "login": "2016-04-25T12:02:01.789Z"
+      }
+    }
+    ```
+    ```yaml
+    - date_index:
+        field: "user.login"
+        date_rounding: "d"
+        index_name_prefix: "logins-"
+        index_name_format: "2006-01-02"
+    ```
+  </CodeCol>
+  <CommentCol>
+    create a daily index name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user": {
+        "login": "2016-04-25T12:02:01.789Z"
+      },
+      "_index": "logins-2016-04-25"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Weekly
+
+<ExampleGrid>
+  <CommentCol>
+    Rounding to the start of the ISO week...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": "2016-04-25T12:02:01.789Z"
+    }
+    ```
+    ```yaml
+    - date_index:
+        field: timestamp
+        date_rounding: "w"
+        index_name_prefix: "weekly-"
+        index_name_format: "2006-01-02"
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates a weekly index name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": "2016-04-25T12:02:01.789Z",
+      "_index": "weekly-2016-04-25"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

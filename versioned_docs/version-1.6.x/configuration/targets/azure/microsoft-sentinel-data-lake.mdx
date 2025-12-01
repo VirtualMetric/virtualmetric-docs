@@ -1,0 +1,246 @@
+# Microsoft Sentinel data lake
+
+<span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">Security Lake</span>
+
+## Synopsis
+
+Creates a target that ingests log messages into Microsoft Sentinel data lake tables with lower ingestion costs and extended retention capabilities. Optimized for high-volume, high-fidelity log types like firewall logs, DNS logs, and network traffic requiring long-term storage.
+
+:::tip
+For more details on Microsoft Sentinel integration, refer to <Topic id="sentinel-overview">Microsoft Sentinel Overview</Topic> and <Topic id="sentinel-integration">Microsoft Sentinel Integration</Topic>. For Director Proxy deployment, see <Topic id="about-director">VirtualMetric Director Proxy</Topic>.
+:::
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: sentineldatalake
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    function_app: <string>
+    function_token: <string>
+    rule_id: <string>
+    endpoint: <string>
+    streams:
+      - name: <string>
+        rule_id: <string>
+    stream: <string[]>
+    buffer_size: <numeric>
+    batch_size: <numeric>
+    keep_phantom_fields: <boolean>
+    drop_unknown_stream_events: <boolean>
+    cache:
+      timeout: <numeric>
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+### Core Settings
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `sentineldatalake`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### Authentication
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tenant_id`|N*|-|Azure tenant ID (required for direct authentication)|
+|`client_id`|N*|-|Azure client ID (required for direct authentication)|
+|`client_secret`|N*|-|Client secret (required for direct authentication)|
+|`function_app`|N*|-|Director Proxy endpoint URL (required for proxy forwarding)|
+|`function_token`|N*|-|Director Proxy authentication token (required with function_app)|
+
+\* = Conditionally required. Use either direct authentication (tenant_id, client_id, client_secret) OR Director Proxy forwarding (function_app, function_token).
+
+### Stream Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`endpoint`|Y||Data Collection Endpoint URL or Resource ID|
+|`rule_id`|N|-|Default Data Collection Rule (DCR) ID|
+|`streams`|N|-|Array of stream configurations with name and optional rule_id|
+|`stream`|N|-|Legacy string array of stream names|
+|`buffer_size`|N|`1048576`|Buffer size in bytes (1MB)|
+|`batch_size`|N|`1000`|Maximum messages per batch|
+|`keep_phantom_fields`|N|`false`|Keep fields not defined in DCR schema|
+|`drop_unknown_stream_events`|N|`true`|Silently drop events for undefined streams|
+|`cache.timeout`|N|`300`|Stream cache timeout in seconds|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="pipelines-normalization-field-mapping">Normalization</Topic> section|
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="scheduling-interval-based">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="scheduling-cron-based">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+The Microsoft Sentinel data lake target provides cost-optimized ingestion for high-volume telemetry with extended retention requirements. Data lake ingestion offers significantly lower costs compared to standard DCR-based ingestion, making it ideal for firewall logs, DNS queries, network flows, and other high-fidelity telemetry requiring long-term storage.
+
+### Data Lake Benefits
+
+**Cost Efficiency** - Data lake ingestion costs are substantially lower than standard analytics ingestion, enabling cost-effective processing of massive telemetry volumes that would be prohibitively expensive with traditional methods.
+
+**High Fidelity** - Preserves complete log detail without sampling or field reduction, maintaining full forensic capability for security investigations and compliance auditing.
+
+**Extended Retention** - Optimized for long-term storage of high-volume logs, supporting retention periods spanning months or years for compliance requirements and historical analysis.
+
+### Director Proxy Integration
+
+The target supports two deployment models:
+
+**Direct Authentication** - Director connects directly to Azure using service principal credentials (`tenant_id`, `client_id`, `client_secret`). This model requires Director to have network connectivity to Azure endpoints and credentials for the target subscription.
+
+**Director Proxy Forwarding** - Director sends processed data to VirtualMetric Director Proxy (Azure Function) deployed in customer environment. Director Proxy uses Azure Managed Identity for credential-free access to Microsoft Sentinel data lake, eliminating the need to share Azure credentials with Director.
+
+The Director Proxy model is particularly valuable for MSSP deployments where customers maintain complete control over Azure credentials while enabling centralized data processing and routing by the MSSP's Director infrastructure.
+
+### Stream Discovery
+
+When `endpoint` is specified as a Resource ID (not HTTPS URL), the target automatically discovers available Data Collection Rules and their associated streams. This autodiscovery feature simplifies configuration by eliminating manual stream enumeration.
+
+Stream configurations can be filtered using the `streams` array to limit ingestion to specific tables. Each stream configuration supports independent DCR IDs via the `rule_id` field, enabling flexible routing to different data collection rules.
+
+### Field Management
+
+The target automatically detects table schemas and validates incoming data against defined columns. When `keep_phantom_fields` is `false` (default), fields not defined in the target schema are automatically removed before ingestion, preventing schema validation errors.
+
+:::warning
+Disabling `keep_phantom_fields` removes undefined fields. Ensure all required fields are included in your DCR schema.
+:::
+
+Data is buffered until batch size limits are reached or explicit flush occurs. The `drop_unknown_stream_events` setting (default: `true`) silently discards events for streams not configured in the target, preventing processing failures for unexpected data types.
+
+:::warning
+Enabling `drop_unknown_stream_events` silently discards unmatched events. Monitor data flow to ensure expected streams are properly configured.
+:::
+
+### Field Normalization
+
+The `field_format` property normalizes log data to standard formats before ingestion:
+
+- `csl` - Common Security Log format
+- `asim` - Advanced Security Information Model
+
+Normalization ensures consistent field naming and structure across diverse log sources, improving query efficiency and security analytics capabilities.
+
+## Examples
+
+### Basic Configuration
+
+Minimum configuration using direct Azure authentication:
+
+```yaml
+targets:
+  - name: sentinel_data_lake
+    type: sentineldatalake
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+```
+
+### Director Proxy
+
+Configuration using Director Proxy for credential-free forwarding:
+
+```yaml
+targets:
+  - name: proxy_data_lake
+    type: sentineldatalake
+    properties:
+      function_app: "https://my-director-proxy.azurewebsites.net/api/Sentinel"
+      function_token: "your-proxy-authentication-token"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+```
+
+### Filtered Streams
+
+Configuration with specific stream filtering and custom settings:
+
+```yaml
+targets:
+  - name: filtered_data_lake
+    type: sentineldatalake
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+      streams:
+        - name: "Custom-FirewallLogs"
+        - name: "Custom-DNSLogs"
+      keep_phantom_fields: false
+      drop_unknown_stream_events: true
+      cache:
+        timeout: 600
+```
+
+### High-Volume Processing
+
+Optimized configuration for high-volume log ingestion:
+
+```yaml
+targets:
+  - name: high_volume_data_lake
+    type: sentineldatalake
+    pipelines:
+      - normalization
+    properties:
+      function_app: "https://my-director-proxy.azurewebsites.net/api/Sentinel"
+      function_token: "your-proxy-authentication-token"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+      buffer_size: 5242880  # 5MB
+      batch_size: 5000
+      field_format: "asim"
+      streams:
+        - name: "Custom-FirewallLogs"
+          rule_id: "dcr-00000000000000000000000000000000"
+        - name: "Custom-DNSLogs"
+          rule_id: "dcr-11111111111111111111111111111111"
+```
+
+### Debug Configuration
+
+Testing configuration with debug enabled:
+
+```yaml
+targets:
+  - name: debug_data_lake
+    type: sentineldatalake
+    properties:
+      tenant_id: "00000000-0000-0000-0000-000000000000"
+      client_id: "00000000-0000-0000-0000-000000000000"
+      client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+      debug:
+        status: true
+        dont_send_logs: true  # Test mode - doesn't actually upload
+```

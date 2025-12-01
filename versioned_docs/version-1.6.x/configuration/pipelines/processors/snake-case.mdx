@@ -1,0 +1,222 @@
+---
+description: Converts strings to snake_case format
+sidebar_custom_props:
+  customCategory: Data Manipulation
+  customIcon: 🐍
+---
+
+# Snake Case
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">String Manipulation</span>
+
+## Synopsis
+
+Converts strings to snake_case format.
+
+## Schema
+
+```yaml {2-3}
+- snakecase:
+    field: <ident>
+    target_field: <string>
+    fields: <array>
+    exclude: <array>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|N|-|Single field to convert to snake_case|
+|`target_field`|N|Same as `field`|Target field to store snake_case result|
+|`fields`|N|-|Array of fields to convert to snake_case|
+|`exclude`|N|-|Array of fields to exclude from conversion|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Converts string values to snake_case format by replacing spaces, hyphens, dots, and other separators with underscores, then converting all characters to lowercase. This format is commonly used in programming languages like Python, Ruby, and database naming conventions.
+
+The processor handles various input formats including camelCase, PascalCase, kebab-case, and space-separated words, normalizing them to the consistent snake_case style.
+
+:::note
+snake_case format uses underscores as separators and converts all text to lowercase, resulting in format like "user_name", "api_response_data", or "system_config_value". It's widely used in Python and database schemas.
+:::
+
+The processor preserves the logical word boundaries from the input while standardizing the format for consistent usage in code and data storage.
+
+:::warning
+Consecutive separators in the input may result in multiple consecutive underscores in the output. The processor does not automatically clean up redundant separators.
+:::
+
+## Examples
+
+### Basic Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Converting camelCase to snake_case...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "fieldName": "userAccountSettings"
+    }
+    ```
+    ```yaml
+    - snakecase:
+        field: fieldName
+        target_field: snake_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to snake_case:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "fieldName": "userAccountSettings",
+      "snake_name": "user_account_settings"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Database Column Names
+
+<ExampleGrid>
+  <CommentCol>
+    Creating database-friendly column names...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "columnTitle": "Customer Email Address"
+    }
+    ```
+    ```yaml
+    - snakecase:
+        field: columnTitle
+        target_field: column_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates database column name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "columnTitle": "Customer Email Address",
+      "column_name": "customer_email_address"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Format Input
+
+<ExampleGrid>
+  <CommentCol>
+    Normalizing mixed separators to snake_case...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "variableName": "api-response.data with spaces"
+    }
+    ```
+    ```yaml
+    - snakecase:
+        field: variableName
+    ```
+  </CodeCol>
+  <CommentCol>
+    standardizes all separators:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "variableName": "api_response_data_with_spaces"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Converting multiple fields to snake_case...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "firstName": "John Doe",
+      "lastName": "Smith Williams",
+      "emailAddress": "john.doe@example.com"
+    }
+    ```
+    ```yaml
+    - snakecase:
+        fields: ["firstName", "lastName", "emailAddress"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    processes all specified fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "firstName": "john_doe",
+      "lastName": "smith_williams",
+      "emailAddress": "john_doe@example_com"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Configuration Keys
+
+<ExampleGrid>
+  <CommentCol>
+    Creating configuration key names...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "settingName": "Maximum Connection Timeout"
+    }
+    ```
+    ```yaml
+    - snakecase:
+        field: settingName
+        target_field: config_key
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates configuration key:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "settingName": "Maximum Connection Timeout",
+      "config_key": "maximum_connection_timeout"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

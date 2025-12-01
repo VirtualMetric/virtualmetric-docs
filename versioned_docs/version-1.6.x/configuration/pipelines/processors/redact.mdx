@@ -1,0 +1,196 @@
+---
+description: Masks sensitive data
+sidebar_custom_props: 
+  customIcon: ⬛
+  customCategory: Security
+---
+
+# Redact
+
+<span className="theme-doc-version-badge badge badge--primary">Security</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Uses Grok patterns to identify and redact sensitive information in text fields. Matches are replaced with configurable prefix/suffix markers.
+
+## Schema
+
+```yaml {2-3}
+- redact:
+    field: <ident>
+    patterns: <string[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    pattern_definitions: <map[string]string>
+    prefix: <string>
+    skip_if_unlicensed: <boolean>
+    suffix: <string>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing text to be redacted|
+|`patterns`|Y|-|List of Grok patterns to match and redact|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`ignore_missing`|N|`false`|If `true`, continue silently if field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`pattern_definitions`|N|-|Map of custom Grok pattern definitions|
+|`prefix`|N|`<`|Prefix for redacted text|
+|`suffix`|N|`>`|Suffix for redacted text|
+|`skip_if_unlicensed`|N|`false`|Skip processing if license doesn't support redaction|
+|`tag`|N|-|Identifier|
+
+## Details
+
+This processor is particularly useful for protecting Personally Identifiable Information (PII) by replacing sensitive data like email addresses, IP addresses, credit card numbers, and other patterns with redacted placeholders.
+
+:::note
+The redact processor uses Grok pattern matching, which is case-sensitive by default. For case-insensitive matching, modify your patterns accordingly.
+:::
+
+:::warning
+Applying many patterns to large volumes of text may impact performance. Consider limiting pattern complexity and the number of patterns in such cases.
+:::
+
+## Examples
+
+### Emails
+
+<ExampleGrid>
+  <CommentCol>
+    Starting with a document containing an email address...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Contact us at support@example.com for help"
+    }
+    ```
+    ```yaml
+    - redact:
+        field: message
+        patterns:
+          - "%{EMAILADDRESS:email}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    the email is replaced with a redacted marker:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "message": "Contact us at <email> for help"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Patterns
+
+<ExampleGrid>
+  <CommentCol>
+    Redact multiple types of sensitive data...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log": "User test@company.com from IP 192.168.1.1"
+    }
+    ```
+    ```yaml
+    - redact:
+        field: log
+        patterns:
+          - "%{IP:client}"
+          - "%{EMAILADDRESS:email}"
+        prefix: "["
+        suffix: "]"
+    ```
+  </CodeCol>
+  <CommentCol>
+    with custom markers:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log": "User [email] from IP [client]"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom
+
+<ExampleGrid>
+  <CommentCol>
+    Define custom patterns for specific formats...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "Customer ID: ABC-12345-XY"
+    }
+    ```
+    ```yaml
+    - redact:
+        field: data
+        patterns:
+          - "%{CUSTOMER_ID:id}"
+        pattern_definitions:
+          - CUSTOMER_ID: "[A-Z]{3}-\d{5}-[A-Z]{2}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    matching specialized formats:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "Customer ID: <id>"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    In case of a missing field...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - redact:
+        field: nonexistent_field
+        patterns:
+          - "%{IP:client}"
+        ignore_missing: true
+        on_failure:
+          - append:
+              field: tags
+              value: redaction_failed
+    ```
+  </CodeCol>
+  <CommentCol>
+    display message:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": ["redaction_failed"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

@@ -1,0 +1,297 @@
+---
+description: Removes characters or keywords from the end of strings
+sidebar_custom_props: 
+  customIcon: ✂️
+  customCategory: Text Processing
+---
+
+# Trim Last
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">String Manipulation</span><span className="theme-doc-version-badge badge badge--secondary">Data Cleaning</span>
+
+## Synopsis
+
+A text processing processor that removes a specified number of characters or predefined keywords from the end of strings, providing precise control over suffix removal for data cleaning and normalization tasks.
+
+## Schema
+
+```yaml {2}
+- trim_last:
+    field: <ident>
+    count: <integer>
+    keywords: <string[]>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the string(s) to process|
+|`count`|N|-|Number of characters to remove from end|
+|`keywords`|N|-|Keywords to remove from end|
+|`target_field`|N|`field`|Field to store the trimmed result|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if trimming fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor supports two trimming modes: character count-based trimming and keyword-based trimming. Both modes can be used together, with character trimming applied after keyword trimming to ensure precise suffix removal.
+
+:::note
+The processor supports both single strings and string arrays, applying the trimming operation to each string element.
+:::
+
+Character count trimming removes the specified number of characters from the end of each string. If the count exceeds the string length, the entire string is removed, resulting in an empty string.
+
+Keyword trimming removes matching suffixes from the end of strings. Multiple keywords can be specified, and each is checked sequentially for suffix matches.
+
+:::warning
+Ensure the count parameter contains valid numeric values to avoid processing errors.
+:::
+
+## Examples
+
+### Character Count Trimming
+
+<ExampleGrid>
+  <CommentCol>
+    Removing last characters from strings...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "filename": "document.pdf.tmp",
+      "log_entry": "Connection established successfully."
+    }
+    ```
+    ```yaml
+    - trim_last:
+        field: filename
+        count: "4"
+        target_field: clean_filename
+    - trim_last:
+        field: log_entry
+        count: "1"
+        target_field: no_period
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes the suffixes:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "filename": "document.pdf.tmp",
+      "log_entry": "Connection established successfully.",
+      "clean_filename": "document.pdf",
+      "no_period": "Connection established successfully"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Keyword Trimming
+
+<ExampleGrid>
+  <CommentCol>
+    Removing specific keywords from end...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temp_file": "backup_data.txt.bak",
+      "archive_file": "logs_2024.tar.gz"
+    }
+    ```
+    ```yaml
+    - trim_last:
+        field: temp_file
+        keywords: [".bak"]
+        target_field: original_file
+    - trim_last:
+        field: archive_file
+        keywords: [".tar.gz", ".zip"]
+        target_field: base_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes the file extensions:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temp_file": "backup_data.txt.bak",
+      "archive_file": "logs_2024.tar.gz",
+      "original_file": "backup_data.txt",
+      "base_name": "logs_2024"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Array Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Processing string arrays...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "urls": [
+        "https://api.example.com/users/",
+        "https://api.example.com/orders/",
+        "https://api.example.com/products/"
+      ]
+    }
+    ```
+    ```yaml
+    - trim_last:
+        field: urls
+        keywords: ["/"]
+        target_field: clean_urls
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes trailing slashes:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "urls": [
+        "https://api.example.com/users/",
+        "https://api.example.com/orders/",
+        "https://api.example.com/products/"
+      ],
+      "clean_urls": [
+        "https://api.example.com/users",
+        "https://api.example.com/orders",
+        "https://api.example.com/products"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### File Extension Removal
+
+<ExampleGrid>
+  <CommentCol>
+    Removing various file extensions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "documents": [
+        "report.pdf",
+        "data.xlsx",
+        "image.jpg",
+        "archive.tar.gz"
+      ]
+    }
+    ```
+    ```yaml
+    - trim_last:
+        field: documents
+        keywords: [".pdf", ".xlsx", ".jpg", ".tar.gz", ".zip"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    removes all file extensions:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "documents": [
+        "report",
+        "data",
+        "image",
+        "archive"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Combined Trimming
+
+<ExampleGrid>
+  <CommentCol>
+    Using both keywords and character count...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_message": "Database connection timeout error   "
+    }
+    ```
+    ```yaml
+    - trim_last:
+        field: log_message
+        count: "3"
+        keywords: ["error"]
+        target_field: clean_message
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies both trimming methods:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_message": "Database connection timeout error   ",
+      "clean_message": "Database connection timeout"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Trimming
+
+<ExampleGrid>
+  <CommentCol>
+    Trimming based on conditions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request_path": "/api/v1/users.json",
+      "format": "json"
+    }
+    ```
+    ```yaml
+    - trim_last:
+        field: request_path
+        keywords: [".json"]
+        if: "format == 'json'"
+        target_field: clean_path
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies trimming when condition matches:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "request_path": "/api/v1/users.json",
+      "format": "json",
+      "clean_path": "/api/v1/users"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

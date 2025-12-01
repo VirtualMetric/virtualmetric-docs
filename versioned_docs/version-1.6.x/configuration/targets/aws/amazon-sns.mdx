@@ -1,0 +1,396 @@
+# Amazon SNS
+
+<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Message Queue</span>
+
+## Synopsis
+
+Creates a target that writes log messages to Amazon Simple Notification Service (SNS) with support for batching and AWS authentication. The target handles message delivery efficiently with configurable batch limits. Amazon SNS is a fully managed pub/sub messaging service that enables message delivery to multiple subscribers including SQS queues, Lambda functions, HTTP endpoints, email, and mobile push notifications.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: amazonsns
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    key: <string>
+    secret: <string>
+    session: <string>
+    region: <string>
+    endpoint: <string>
+    topic: <string>
+    subject: <string>
+    max_events: <numeric>
+    timeout: <numeric>
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y||Target name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `amazonsns`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### AWS Credentials
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`key`|N*|-|AWS access key ID for authentication|
+|`secret`|N*|-|AWS secret access key for authentication|
+|`session`|N|-|Optional session token for temporary credentials|
+|`region`|Y|-|AWS region (e.g., `us-east-1`, `eu-west-1`)|
+|`endpoint`|N|-|Custom SNS endpoint URL (for testing or local development)|
+
+\* = Conditionally required. AWS credentials (`key` and `secret`) are required unless using IAM role-based authentication on AWS infrastructure.
+
+### Topic Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`topic`|Y|-|SNS topic ARN (e.g., `arn:aws:sns:us-east-1:123456789012:my-topic`)|
+|`subject`|N|`"DataStream Log"`|Default subject line for messages|
+|`max_events`|N|`10`|Maximum number of events per batch (1-10)|
+|`timeout`|N|`30`|Connection timeout in seconds|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="pipelines-normalization-field-mapping">Normalization</Topic> section|
+
+:::note
+Amazon SNS supports a maximum of 10 messages per PublishBatch request. The `max_events` parameter must be between 1 and 10.
+:::
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="scheduling-interval-based">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="scheduling-cron-based">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+Amazon SNS is a fully managed pub/sub messaging service that enables message fanout to multiple subscribers. This target allows you to publish log messages to SNS topics for distribution to various endpoints.
+
+### Authentication Methods
+
+Supports static credentials (access key and secret key) with optional session tokens for temporary credentials. When deployed on AWS infrastructure, can leverage IAM role-based authentication without explicit credentials.
+
+### Topic Types
+
+Amazon SNS supports two types of topics:
+
+**Standard Topics**
+- Best-effort message ordering
+- At-least-once delivery
+- Nearly unlimited throughput
+- Default and most common type
+
+**FIFO Topics**
+- Strict message ordering
+- Exactly-once message delivery
+- Limited to 300 messages per second (3000 with batching)
+- Topic name must end with `.fifo`
+- Only compatible with FIFO SQS queues
+
+### Subscription Types
+
+SNS topics can deliver messages to multiple subscription types:
+- Amazon SQS queues
+- AWS Lambda functions
+- HTTP/HTTPS endpoints
+- Email addresses
+- SMS text messages
+- Mobile push notifications (iOS, Android, etc.)
+
+### Message Properties
+
+SNS messages have the following characteristics:
+- Maximum message size: 256 KB
+- Message retention: Messages are not stored, delivered immediately
+- Message attributes: Up to 10 message attributes per message
+- Message filtering: Subscribers can filter messages based on attributes
+
+### Batch Processing
+
+The target accumulates messages in memory and sends them in batches using the PublishBatch API. Batches are sent when the event count limit (`max_events`) is reached or during finalization. The maximum batch size is 10 messages per request (AWS SNS limit).
+
+### Message Delivery
+
+SNS attempts to deliver messages to all subscribed endpoints. Delivery behavior depends on the subscription type:
+- SQS: Guaranteed delivery with retry
+- Lambda: Synchronous or asynchronous invocation
+- HTTP/HTTPS: Configurable retry policies
+- Email/SMS: Best-effort delivery
+
+### Encryption
+
+SNS supports server-side encryption using AWS KMS. Messages are encrypted in transit and at rest. All connections to SNS use HTTPS endpoints.
+
+### Message Filtering
+
+Subscribers can use filter policies to receive only a subset of messages published to a topic. This reduces unnecessary message processing and costs.
+
+### Integration with AWS Services
+
+SNS integrates with other AWS services:
+- Amazon SQS for reliable queuing
+- AWS Lambda for serverless processing
+- Amazon CloudWatch for monitoring and alarms
+- AWS Step Functions for workflow orchestration
+- Amazon EventBridge for event routing
+
+## Examples
+
+### Basic Configuration
+
+The minimum configuration for an SNS target:
+
+```yaml
+targets:
+  - name: basic_sns
+    type: amazonsns
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:application-logs"
+```
+
+### With Custom Subject
+
+Configuration with custom message subject:
+
+```yaml
+targets:
+  - name: custom_subject_sns
+    type: amazonsns
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:application-logs"
+      subject: "Application Error Alert"
+```
+
+### With IAM Role
+
+Configuration using IAM role authentication (no explicit credentials):
+
+```yaml
+targets:
+  - name: iam_sns
+    type: amazonsns
+    properties:
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:application-logs"
+```
+
+:::note
+When using IAM role authentication, ensure the EC2 instance, ECS task, or Lambda function has an IAM role with appropriate SNS permissions attached.
+:::
+
+### FIFO Topic
+
+Configuration for FIFO topic:
+
+```yaml
+targets:
+  - name: fifo_sns
+    type: amazonsns
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:application-logs.fifo"
+```
+
+### High Throughput
+
+Configuration optimized for high-volume data:
+
+```yaml
+targets:
+  - name: high_volume_sns
+    type: amazonsns
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:high-volume-logs"
+      max_events: 10
+      timeout: 60
+```
+
+### With Temporary Credentials
+
+Configuration using temporary session credentials:
+
+```yaml
+targets:
+  - name: temp_creds_sns
+    type: amazonsns
+    properties:
+      key: "ASIATEMP1234567890AB"
+      secret: "tempSecretKeyExample1234567890"
+      session: "FwoGZXIvYXdzEBYaDH...temporary-session-token"
+      region: "us-west-2"
+      topic: "arn:aws:sns:us-west-2:123456789012:temporary-logs"
+```
+
+### With Field Normalization
+
+Using field normalization for standard format:
+
+```yaml
+targets:
+  - name: normalized_sns
+    type: amazonsns
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:normalized-logs"
+      field_format: "cim"
+```
+
+### With Checkpoint Pipeline
+
+Configuration with checkpoint pipeline for reliability:
+
+```yaml
+targets:
+  - name: reliable_sns
+    type: amazonsns
+    pipelines:
+      - checkpoint
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:critical-logs"
+      max_events: 5
+```
+
+### Multiple Regions
+
+Configuration for SNS topic in different region:
+
+```yaml
+targets:
+  - name: eu_sns
+    type: amazonsns
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "eu-west-1"
+      topic: "arn:aws:sns:eu-west-1:123456789012:eu-application-logs"
+```
+
+### Scheduled Batching
+
+Configuration with scheduled batch delivery:
+
+```yaml
+targets:
+  - name: scheduled_sns
+    type: amazonsns
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:scheduled-logs"
+      max_events: 10
+      interval: "5m"
+```
+
+### Debug Configuration
+
+Configuration with debugging enabled:
+
+```yaml
+targets:
+  - name: debug_sns
+    type: amazonsns
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:test-logs"
+      debug:
+        status: true
+        dont_send_logs: true
+```
+
+### Local Development
+
+Configuration with custom endpoint for local testing (e.g., LocalStack):
+
+```yaml
+targets:
+  - name: local_sns
+    type: amazonsns
+    properties:
+      key: "test"
+      secret: "test"
+      region: "us-east-1"
+      endpoint: "http://localhost:4566"
+      topic: "arn:aws:sns:us-east-1:000000000000:local-test-topic"
+```
+
+### Fanout to Multiple Services
+
+Configuration for fanout pattern (SNS topic with multiple SQS queue subscriptions):
+
+```yaml
+targets:
+  - name: fanout_sns
+    type: amazonsns
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:fanout-logs"
+      subject: "Log Distribution"
+```
+
+:::note
+Configure SNS topic subscriptions (SQS, Lambda, HTTP, Email, etc.) separately in the AWS Console or via infrastructure as code.
+:::
+
+### Production Configuration
+
+Configuration for production with optimal settings:
+
+```yaml
+targets:
+  - name: production_sns
+    type: amazonsns
+    pipelines:
+      - checkpoint
+    properties:
+      key: "AKIAIOSFODNN7EXAMPLE"
+      secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      region: "us-east-1"
+      topic: "arn:aws:sns:us-east-1:123456789012:production-logs"
+      subject: "Production Log Event"
+      max_events: 10
+      timeout: 60
+      field_format: "cim"
+```

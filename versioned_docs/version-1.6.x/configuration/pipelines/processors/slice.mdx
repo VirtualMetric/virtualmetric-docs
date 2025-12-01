@@ -1,0 +1,296 @@
+---
+description: Extracts a portion of an array field
+sidebar_custom_props: 
+  customIcon: ✂️
+  customCategory: Flow Control
+---
+
+# Slice
+
+<span className="theme-doc-version-badge badge badge--primary">Array Operations</span><span className="theme-doc-version-badge badge badge--secondary">Data Extraction</span>
+
+## Synopsis
+
+A processor that extracts a portion of an array field by specifying start and end indices. The processor supports negative indexing and automatically handles various array types including strings, integers, and floats.
+
+## Schema
+
+```yaml {2-4}
+- slice:
+    field: <ident>
+    start: <number>
+    end: <number>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Array field to slice|
+|`start`|Y|-|Starting index (inclusive)|
+|`end`|Y|-|Ending index (inclusive)|
+|`target_field`|N|`field`|Field to store the sliced array|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run processor|
+|`ignore_failure`|N|`false`|Continue if processor fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor extracts a contiguous portion of an array using zero-based indexing. Both start and end indices are inclusive, meaning the element at the end index is included in the result.
+
+:::note
+The processor supports negative indexing, where -1 refers to the last element, -2 to the second-to-last, and so on.
+:::
+
+The processor automatically converts different array types (`[]string`, `[]int`, `[]float64`) to a unified `[]any` format for processing. If the source field is not an array, the processor will fail unless `ignore_failure` is set to true.
+
+Index bounds are automatically normalized to prevent out-of-bounds errors. If start index is greater than end index after normalization, an empty array is returned.
+
+:::warning
+When start index is greater than or equal to array length, an empty array is returned. Similarly, negative indices that extend beyond the array bounds are clamped to valid ranges.
+:::
+
+## Examples
+
+### Basic Array Slicing
+
+<ExampleGrid>
+  <CommentCol>
+    Extracting middle elements...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    }
+    ```
+    ```yaml
+    - slice:
+        field: numbers
+        start: 2
+        end: 5
+        target_field: subset
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts elements from index 2 to 5:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "subset": [3, 4, 5, 6]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Negative Indexing
+
+<ExampleGrid>
+  <CommentCol>
+    Using negative indices...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "items": ["apple", "banana", "cherry", "date", "elderberry"]
+    }
+    ```
+    ```yaml
+    - slice:
+        field: items
+        start: -3
+        end: -1
+        target_field: last_three
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts the last three elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "items": ["apple", "banana", "cherry", "date", "elderberry"],
+      "last_three": ["cherry", "date", "elderberry"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### First N Elements
+
+<ExampleGrid>
+  <CommentCol>
+    Getting first few elements...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "logs": ["error1", "warn1", "info1", "error2", "warn2", "info2"]
+    }
+    ```
+    ```yaml
+    - slice:
+        field: logs
+        start: 0
+        end: 2
+        target_field: first_three
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts first three elements:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "logs": ["error1", "warn1", "info1", "error2", "warn2", "info2"],
+      "first_three": ["error1", "warn1", "info1"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Single Element Extraction
+
+<ExampleGrid>
+  <CommentCol>
+    Extracting single element...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "scores": [85, 92, 78, 95, 88]
+    }
+    ```
+    ```yaml
+    - slice:
+        field: scores
+        start: 1
+        end: 1
+        target_field: second_score
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts single element as array:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "scores": [85, 92, 78, 95, 88],
+      "second_score": [92]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Type Arrays
+
+<ExampleGrid>
+  <CommentCol>
+    Processing different array types...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperatures": [20.5, 21.2, 19.8, 22.1, 20.9]
+    }
+    ```
+    ```yaml
+    - slice:
+        field: temperatures
+        start: -2
+        end: -1
+        target_field: recent_temps
+    ```
+  </CodeCol>
+  <CommentCol>
+    handles float arrays:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperatures": [20.5, 21.2, 19.8, 22.1, 20.9],
+      "recent_temps": [22.1, 20.9]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### In-Place Modification
+
+<ExampleGrid>
+  <CommentCol>
+    Modifying original field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    }
+    ```
+    ```yaml
+    - slice:
+        field: data
+        start: 3
+        end: 7
+    ```
+  </CodeCol>
+  <CommentCol>
+    replaces original field content:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": [4, 5, 6, 7, 8]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Out-of-Bounds Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling invalid indices...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "small_array": ["a", "b", "c"]
+    }
+    ```
+    ```yaml
+    - slice:
+        field: small_array
+        start: 5
+        end: 10
+        target_field: result
+    ```
+  </CodeCol>
+  <CommentCol>
+    returns empty array for out-of-bounds:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "small_array": ["a", "b", "c"],
+      "result": []
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

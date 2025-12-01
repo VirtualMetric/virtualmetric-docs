@@ -1,0 +1,200 @@
+---
+description: Extracts domain components
+sidebar_custom_props: 
+  customIcon: 🌍
+  customCategory: Enrich
+---
+
+# Registered Domain
+
+<span className="theme-doc-version-badge badge badge--primary">Enrich</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Extracts domain components from URLs or Fully Qualified Domain Names (FQDNs) using the Mozilla Public Suffix List to accurately identify the registered domain (eTLD), subdomain, and top-level domain parts.
+
+## Schema
+
+```yaml {2}
+- registered_domain:
+    field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+    target_field: <ident>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the URL or domain name|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`ignore_missing`|N|`false`|If `true`, continue silently if field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+|`target_field`|N|-|Field to store extracted components. If omitted, components are added to root|
+
+# Details
+
+The processor can handle both full URLs and plain domain names, automatically parsing and extracting the following components:
+
+- full domain name
+- registered domain (effective TLD + one level)
+- top-level domain
+- subdomain (if present)
+
+:::warning
+Large numbers of domains may impact performance. Consider batching or limiting concurrent processing in such cases.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Parsing a simple domain name...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "www.example.com"
+    }
+    ```
+    ```yaml
+    - registered_domain:
+        field: domain
+        target_field: url_parts
+    ```
+  </CodeCol>
+  <CommentCol>
+    extracts all components:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "domain": "www.example.com",
+      "url_parts": {
+        "domain": "www.example.com",
+        "registered_domain": "example.com",
+        "top_level_domain": "com",
+        "subdomain": "www"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URLs
+
+<ExampleGrid>
+  <CommentCol>
+    Extract domains from full URLs...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "https://blog.example.co.uk/path?param=value"
+    }
+    ```
+    ```yaml
+    - registered_domain:
+        field: url
+    ```
+  </CodeCol>
+  <CommentCol>
+    handling complex TLDs:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "https://blog.example.co.uk/path?param=value",
+      "domain": "blog.example.co.uk",
+      "registered_domain": "example.co.uk",
+      "top_level_domain": "co.uk",
+      "subdomain": "blog"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multi-Level
+
+<ExampleGrid>
+  <CommentCol>
+    Process domains with multiple subdomains...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "host": "dev.api.company.com"
+    }
+    ```
+    ```yaml
+    - registered_domain:
+        field: host
+        target_field: domain_info
+    ```
+  </CodeCol>
+  <CommentCol>
+    preserving full subdomain structure:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "host": "dev.api.company.com",
+      "domain_info": {
+        "domain": "dev.api.company.com",
+        "registered_domain": "company.com",
+        "top_level_domain": "com",
+        "subdomain": "dev.api"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handle invalid domains gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "http://invalid-url^%.com"
+    }
+    ```
+    ```yaml
+    - registered_domain:
+        field: url
+        ignore_failure: true
+        on_failure:
+          - append:
+              field: tags
+              value: invalid_domain
+    ```
+  </CodeCol>
+  <CommentCol>
+    with appropriate error handling:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "url": "http://invalid-url^%.com",
+      "tags": ["invalid_domain"]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

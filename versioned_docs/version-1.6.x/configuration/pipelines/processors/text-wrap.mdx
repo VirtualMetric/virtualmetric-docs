@@ -1,0 +1,234 @@
+---
+description: Wraps text to specified widths by inserting line breaks
+sidebar_custom_props:
+  customCategory: Text Processing
+  customIcon: 📋
+---
+
+# Text Wrap
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">Formatting</span>
+
+## Synopsis
+
+Wraps text to specified widths by inserting line breaks.
+
+## Schema
+
+```yaml {2-4}
+- text_wrap:
+    field: <ident>
+    width: <integer>
+    break_on_words: <boolean>
+    target_field: <string>
+    indent: <string>
+    break_character: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Source field containing text to wrap|
+|`width`|Y|-|Maximum line width in characters|
+|`break_on_words`|N|`true`|Break at word boundaries instead of character boundaries|
+|`target_field`|N|Same as `field`|Target field to store wrapped text|
+|`indent`|N|-|String to indent each line (e.g., "  " for spaces)|
+|`break_character`|N|`\n`|Character to use for line breaks|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if wrapping fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Formats text by inserting line breaks at specified intervals to ensure lines don't exceed the maximum width. The processor can break at word boundaries for readability or at exact character positions for fixed-width requirements.
+
+The processor supports various formatting options including custom indentation, line break characters, and word-boundary preservation.
+
+:::note
+When `break_on_words` is enabled (default), the processor avoids breaking words in the middle, which may result in lines shorter than the specified width. When disabled, lines will be exactly the specified width regardless of word boundaries.
+:::
+
+The processor handles Unicode characters correctly and counts display width rather than byte length, ensuring proper formatting for international text.
+
+:::warning
+Very long words that exceed the specified width will be broken at character boundaries even when `break_on_words` is enabled, to prevent infinite line lengths.
+:::
+
+## Examples
+
+### Basic Text Wrapping
+
+<ExampleGrid>
+  <CommentCol>
+    Wrapping long text to 40-character lines...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "description": "This is a very long description that needs to be formatted for better readability in documentation or display purposes."
+    }
+    ```
+    ```yaml
+    - text_wrap:
+        field: description
+        width: 40
+        target_field: formatted_text
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates formatted multi-line text:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "description": "This is a very long description...",
+      "formatted_text": "This is a very long description that\nneeds to be formatted for better\nreadability in documentation or display\npurposes."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Code Comment Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Formatting code comments with indentation...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "comment": "This function processes user authentication requests and validates credentials against the database before returning access tokens."
+    }
+    ```
+    ```yaml
+    - text_wrap:
+        field: comment
+        width: 50
+        indent: "// "
+        target_field: code_comment
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates indented code comments:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "comment": "This function processes user authentication...",
+      "code_comment": "// This function processes user authentication\n// requests and validates credentials against the\n// database before returning access tokens."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Fixed-width Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Creating fixed-width text without word breaks...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_message": "SystemStartupInitializationCompleted"
+    }
+    ```
+    ```yaml
+    - text_wrap:
+        field: log_message
+        width: 15
+        break_on_words: false
+        target_field: wrapped_log
+    ```
+  </CodeCol>
+  <CommentCol>
+    breaks at exact character positions:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "log_message": "SystemStartupInitializationCompleted",
+      "wrapped_log": "SystemStartupIn\nitializationCo\nmpleted"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom Line Breaks
+
+<ExampleGrid>
+  <CommentCol>
+    Using custom line break characters...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": "authentication authorization logging monitoring security audit compliance"
+    }
+    ```
+    ```yaml
+    - text_wrap:
+        field: tags
+        width: 20
+        break_character: " | "
+        target_field: tag_list
+    ```
+  </CodeCol>
+  <CommentCol>
+    uses custom separator:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "tags": "authentication authorization logging monitoring security audit compliance",
+      "tag_list": "authentication | authorization logging | monitoring security | audit compliance"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Email Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Formatting email content with line length limits...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "email_body": "Dear customer, we are writing to inform you about important changes to our service terms and conditions that will take effect next month."
+    }
+    ```
+    ```yaml
+    - text_wrap:
+        field: email_body
+        width: 72
+        target_field: formatted_email
+    ```
+  </CodeCol>
+  <CommentCol>
+    formats for email standards:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "email_body": "Dear customer, we are writing to inform you about important...",
+      "formatted_email": "Dear customer, we are writing to inform you about important changes\nto our service terms and conditions that will take effect next month."
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

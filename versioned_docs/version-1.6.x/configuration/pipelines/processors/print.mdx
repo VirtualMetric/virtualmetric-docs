@@ -1,0 +1,320 @@
+---
+description: Creates formatted strings using template values and field references
+sidebar_custom_props:
+  customCategory: Data Manipulation
+  customIcon: 🔄
+---
+
+# Print
+
+<span className="theme-doc-version-badge badge badge--primary">Mutate</span><span className="theme-doc-version-badge badge badge--secondary">String Formatting</span>
+
+## Synopsis
+
+Creates formatted strings using template values and field references.
+
+## Schema
+
+```yaml {2-4}
+- print:
+    format: <string>
+    values: <array>
+    field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`format`|Y|-|Printf-style format string with %s placeholders|
+|`values`|Y|-|Array of values or field references to substitute|
+|`field`|Y|-|Target field to store formatted result|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if formatting fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced fields don't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Creates formatted strings by substituting values into printf-style format strings. The processor supports both literal values and dynamic field references using template syntax.
+
+Values in the `values` array can be literal strings or field references using triple-brace template syntax (`{{{field_name}}}`). The processor resolves field references before substituting into the format string.
+
+:::note
+The processor uses Go's fmt.Sprintf formatting with %s placeholders. The number of %s placeholders in the format string should match the number of values provided. Extra values are truncated, missing values are padded with empty strings.
+:::
+
+When `ignore_missing` is enabled, missing field references resolve to empty strings rather than causing processor failure. This allows graceful handling of optional fields in templates.
+
+:::warning
+Template resolution occurs before format substitution. Ensure field references use correct triple-brace syntax (`{{{field}}}`) to avoid literal text substitution instead of field value resolution.
+:::
+
+## Examples
+
+### Basic String Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Creating formatted message with literal values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": 12345,
+      "action": "login"
+    }
+    ```
+    ```yaml
+    - print:
+        format: "User %s performed action: %s"
+        values: ["john.doe", "login"]
+        field: log_message
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates formatted string:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "user_id": 12345,
+      "action": "login",
+      "log_message": "User john.doe performed action: login"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Dynamic Field References
+
+<ExampleGrid>
+  <CommentCol>
+    Using field references in format values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "alice",
+      "ip_address": "192.168.1.100",
+      "timestamp": "2024-01-15T10:30:00Z"
+    }
+    ```
+    ```yaml
+    - print:
+        format: "[%s] User %s connected from %s"
+        values: ["{{{timestamp}}}", "{{{username}}}", "{{{ip_address}}}"]
+        field: connection_log
+    ```
+  </CodeCol>
+  <CommentCol>
+    resolves field values into format:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "username": "alice",
+      "ip_address": "192.168.1.100",
+      "timestamp": "2024-01-15T10:30:00Z",
+      "connection_log": "[2024-01-15T10:30:00Z] User alice connected from 192.168.1.100"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Alert Message Generation
+
+<ExampleGrid>
+  <CommentCol>
+    Creating alert messages from event data...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "severity": "HIGH",
+      "event_type": "failed_login",
+      "source_ip": "10.0.0.50",
+      "attempts": 5
+    }
+    ```
+    ```yaml
+    - print:
+        format: "ALERT: %s severity %s from %s (%s attempts)"
+        values: ["{{{event_type}}}", "{{{severity}}}", "{{{source_ip}}}", "{{{attempts}}}"]
+        field: alert_message
+    ```
+  </CodeCol>
+  <CommentCol>
+    formats comprehensive alert:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "severity": "HIGH",
+      "event_type": "failed_login",
+      "source_ip": "10.0.0.50",
+      "attempts": 5,
+      "alert_message": "ALERT: failed_login severity HIGH from 10.0.0.50 (5 attempts)"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Report Summary Creation
+
+<ExampleGrid>
+  <CommentCol>
+    Generating summary reports from metrics...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "total_events": 15847,
+      "errors": 23,
+      "warnings": 156,
+      "processing_time": "2.3s"
+    }
+    ```
+    ```yaml
+    - print:
+        format: "Processed %s events (%s errors, %s warnings) in %s"
+        values: ["{{{total_events}}}", "{{{errors}}}", "{{{warnings}}}", "{{{processing_time}}}"]
+        field: summary_report
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates processing summary:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "total_events": 15847,
+      "errors": 23,
+      "warnings": 156,
+      "processing_time": "2.3s",
+      "summary_report": "Processed 15847 events (23 errors, 156 warnings) in 2.3s"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Literal and Dynamic Values
+
+<ExampleGrid>
+  <CommentCol>
+    Combining literal text with field values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service": "authentication",
+      "status": "operational",
+      "uptime": 99.97
+    }
+    ```
+    ```yaml
+    - print:
+        format: "Service %s is %s (uptime: %s%%)"
+        values: ["{{{service}}}", "{{{status}}}", "{{{uptime}}}"]
+        field: status_message
+    ```
+  </CodeCol>
+  <CommentCol>
+    formats service status:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "service": "authentication",
+      "status": "operational",
+      "uptime": 99.97,
+      "status_message": "Service authentication is operational (uptime: 99.97%)"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Error Handling with Missing Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Handling missing fields gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": "user_action",
+      "user": "bob"
+    }
+    ```
+    ```yaml
+    - print:
+        format: "Event: %s, User: %s, Details: %s"
+        values: ["{{{event}}}", "{{{user}}}", "{{{details}}}"]
+        field: event_summary
+        ignore_missing: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    uses empty string for missing field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "event": "user_action",
+      "user": "bob",
+      "event_summary": "Event: user_action, User: bob, Details: "
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### URL Construction
+
+<ExampleGrid>
+  <CommentCol>
+    Building URLs from component parts...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "protocol": "https",
+      "hostname": "api.example.com",
+      "path": "/v1/users",
+      "user_id": "12345"
+    }
+    ```
+    ```yaml
+    - print:
+        format: "%s://%s%s/%s"
+        values: ["{{{protocol}}}", "{{{hostname}}}", "{{{path}}}", "{{{user_id}}}"]
+        field: full_url
+    ```
+  </CodeCol>
+  <CommentCol>
+    constructs complete URL:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "protocol": "https",
+      "hostname": "api.example.com",
+      "path": "/v1/users",
+      "user_id": "12345",
+      "full_url": "https://api.example.com/v1/users/12345"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

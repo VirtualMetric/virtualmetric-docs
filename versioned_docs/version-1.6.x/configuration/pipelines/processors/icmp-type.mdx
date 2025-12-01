@@ -1,0 +1,327 @@
+---
+description: Converts ICMP type codes to human-readable type names
+sidebar_custom_props: 
+  customIcon: 📡
+  customCategory: Networking
+---
+
+# ICMP Type
+
+<span className="theme-doc-version-badge badge badge--primary">Network Analysis</span><span className="theme-doc-version-badge badge badge--secondary">Protocol Analysis</span><span className="theme-doc-version-badge badge badge--secondary">Data Enrichment</span>
+
+## Synopsis
+
+A network analysis processor that converts ICMP type codes to their corresponding human-readable type names using the IANA ICMP type registry, enhancing network packet analysis and security monitoring for ICMP traffic.
+
+## Schema
+
+```yaml {2}
+- icmp_type:
+    field: <ident>
+    target_field: <ident>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the ICMP type code to convert|
+|`target_field`|N|`field`|Field to store the ICMP type name|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue if conversion fails|
+|`ignore_missing`|N|`false`|Continue if source field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor maintains a comprehensive mapping of IANA ICMP type codes to their standard names, supporting all registered ICMP message types including Echo Request, Echo Reply, Destination Unreachable, and many specialized ICMP messages used in network diagnostics.
+
+:::note
+The processor supports multiple input formats including integers, floats, and string representations of ICMP type codes.
+:::
+
+ICMP type code resolution follows the official IANA registry for Internet Control Message Protocol (ICMP) Parameters. Unknown or unassigned ICMP type codes are handled gracefully by returning "Unassigned" for debugging and analysis purposes.
+
+The processor automatically handles type conversion from various numeric types and string representations. Floating-point values are truncated to integers during conversion, following ASIM normalization standards.
+
+:::warning
+Ensure ICMP type code fields contain valid numeric values to avoid conversion errors.
+:::
+
+## Examples
+
+### Basic ICMP Type Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Converting common ICMP type codes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "icmp_type": 8,
+      "response_type": "0"
+    }
+    ```
+    ```yaml
+    - icmp_type:
+        field: icmp_type
+        target_field: icmp_type_name
+    - icmp_type:
+        field: response_type
+        target_field: response_type_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    produces readable ICMP type names:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "icmp_type": 8,
+      "response_type": "0",
+      "icmp_type_name": "Echo",
+      "response_type_name": "Echo Reply"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### In-Place Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Converting ICMP type code in place...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "icmp_type": 3
+      }
+    }
+    ```
+    ```yaml
+    - icmp_type:
+        field: network.icmp_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    replaces the original field:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "network": {
+        "icmp_type": "Destination Unreachable"
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple ICMP Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Processing multiple ICMP type fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "icmp_request": 8,
+      "icmp_response": 0,
+      "icmp_error": 11
+    }
+    ```
+    ```yaml
+    - icmp_type:
+        field: icmp_request
+        target_field: request_type
+    - icmp_type:
+        field: icmp_response
+        target_field: response_type
+    - icmp_type:
+        field: icmp_error
+        target_field: error_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    identifies all ICMP message types:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "icmp_request": 8,
+      "icmp_response": 0,
+      "icmp_error": 11,
+      "request_type": "Echo",
+      "response_type": "Echo Reply",
+      "error_type": "Time Exceeded"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Router Advertisement Messages
+
+<ExampleGrid>
+  <CommentCol>
+    Converting router-related ICMP types...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "icmp_router_adv": 9,
+      "icmp_router_sol": 10,
+      "icmp_redirect": 5
+    }
+    ```
+    ```yaml
+    - icmp_type:
+        field: icmp_router_adv
+        target_field: router_adv_type
+    - icmp_type:
+        field: icmp_router_sol
+        target_field: router_sol_type
+    - icmp_type:
+        field: icmp_redirect
+        target_field: redirect_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    identifies router message types:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "icmp_router_adv": 9,
+      "icmp_router_sol": 10,
+      "icmp_redirect": 5,
+      "router_adv_type": "Router Advertisement",
+      "router_sol_type": "Router Solicitation",
+      "redirect_type": "Redirect"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Timestamp Messages
+
+<ExampleGrid>
+  <CommentCol>
+    Converting timestamp-related ICMP types...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp_request": 13,
+      "timestamp_reply": 14
+    }
+    ```
+    ```yaml
+    - icmp_type:
+        field: timestamp_request
+        target_field: timestamp_req_type
+    - icmp_type:
+        field: timestamp_reply
+        target_field: timestamp_rep_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    identifies timestamp message types:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp_request": 13,
+      "timestamp_reply": 14,
+      "timestamp_req_type": "Timestamp",
+      "timestamp_rep_type": "Timestamp Reply"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Unknown Type Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling unknown ICMP type codes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "custom_icmp": 200,
+      "reserved_icmp": 44
+    }
+    ```
+    ```yaml
+    - icmp_type:
+        field: custom_icmp
+        target_field: custom_name
+    - icmp_type:
+        field: reserved_icmp
+        target_field: reserved_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    provides fallback identification:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "custom_icmp": 200,
+      "reserved_icmp": 44,
+      "custom_name": "Unassigned",
+      "reserved_name": "Unassigned"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional ICMP Analysis
+
+<ExampleGrid>
+  <CommentCol>
+    Converting ICMP types based on conditions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "icmp_type_code": 42,
+      "protocol": "icmp"
+    }
+    ```
+    ```yaml
+    - icmp_type:
+        field: icmp_type_code
+        target_field: message_type
+        if: "protocol == 'icmp'"
+    ```
+  </CodeCol>
+  <CommentCol>
+    applies conversion when conditions match:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "icmp_type_code": 42,
+      "protocol": "icmp",
+      "message_type": "Extended Echo Request"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

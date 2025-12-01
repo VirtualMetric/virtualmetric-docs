@@ -1,0 +1,56 @@
+# Discard
+
+<span className="theme-doc-version-badge badge badge--secondary">Forward</span>
+
+## Synopsis
+
+Creates a target that discards all incoming log messages.
+
+## Schema
+
+```yaml {1,3}
+- name: <string>
+  description: <string>
+  type: discard
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target.
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y|-|Target name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `discard`|
+|`tags`|N|-|Optional tags|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+## Details
+
+This target accepts any log data, but does not store or forward it. It is useful for development, benchmarking and load testing data ingestion without storage overhead, and debugging pipeline configurations.
+
+:::warning
+Data sent to this target is permanently lost and cannot be recovered.
+:::
+
+## Examples
+
+The configuration for discarding logs:
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a discard target...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: debug_discard
+        type: discard
+    ```
+  </CodeCol>
+</ExampleGrid>

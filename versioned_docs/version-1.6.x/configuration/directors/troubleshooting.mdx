@@ -1,0 +1,468 @@
+# Troubleshooting
+
+This guide provides solutions to common Director deployment and operational issues. Issues are organized by category with step-by-step resolution procedures.
+
+## Connection Issues
+
+### Director Cannot Connect to Cloud Platform
+
+**Symptoms:**
+- Director status shows as "Not Connected" (red indicator)
+- Connection verification fails during setup
+- Timeout errors in Director logs
+
+**Resolution Steps:**
+
+1. **Validate Network Connectivity**
+   - Ensure port 443 is open for outbound HTTPS connections
+   - Verify DNS resolution is working properly
+   - Test connectivity: `curl -I https://portal.virtualmetric.com`
+
+2. **Check Firewall Configuration**
+   - Allow outbound connections to `*.virtualmetric.com` domains
+   - Ensure no SSL/TLS inspection is blocking certificate validation
+   - Verify proxy configurations if applicable
+
+3. **Validate API Key**
+   - Confirm the API key was copied correctly during installation
+   - Check for extra spaces or line breaks in the key
+   - Regenerate API key if corruption is suspected
+
+4. **Review System Time**
+   - Ensure system clock is synchronized (certificate validation requirement)
+   - Use NTP to maintain accurate time synchronization
+   - Check timezone configuration matches your location
+
+**Additional Diagnostics:**
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    # Test DNS resolution
+    Resolve-DnsName portal.virtualmetric.com
+
+    # Check outbound connectivity
+    Test-NetConnection -ComputerName portal.virtualmetric.com -Port 443
+
+    # Verify certificate chain
+    $uri = "https://portal.virtualmetric.com"
+    $request = [System.Net.HttpWebRequest]::Create($uri)
+    $request.GetResponse() | Out-Null
+    $request.ServicePoint.Certificate
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    # Test DNS resolution
+    nslookup portal.virtualmetric.com
+
+    # Check outbound connectivity
+    telnet portal.virtualmetric.com 443
+
+    # Verify certificate chain
+    openssl s_client -connect portal.virtualmetric.com:443
+    ```
+  </TabItem>
+</Tabs>
+
+### Connection Drops Intermittently
+
+**Symptoms:**
+- Director alternates between Connected and Not Connected states
+- Periodic timeout errors in logs
+- Data processing interruptions
+
+**Resolution Steps:**
+
+1. **Network Stability Check**
+   - Monitor network latency and packet loss
+   - Verify network equipment stability
+   - Check for bandwidth limitations or throttling
+
+2. **Resource Monitoring**
+   - Ensure adequate CPU and memory resources
+   - Monitor disk I/O performance
+   - Check for resource contention with other services
+
+3. **Proxy Configuration**
+   - Verify proxy server stability and configuration
+   - Check proxy authentication credentials
+   - Consider bypassing proxy for testing
+
+## Installation Issues
+
+### Director Fails to Start
+
+**Symptoms:**
+- Installation script completes but service doesn't start
+- Error messages during service startup
+- Director not appearing in management console
+
+**Resolution Steps:**
+
+1. **Check System Requirements**
+   - Verify supported operating system version
+   - Ensure minimum hardware requirements are met
+   - Confirm administrator/root privileges for installation
+
+2. **Permission Validation**
+   - Ensure installation user has sufficient privileges
+   - Check file and directory permissions in installation path
+   - Verify service account permissions if using dedicated account
+
+3. **Port Availability**
+   - Confirm required ports are not in use by other services
+   - Check local firewall settings
+   - Use `netstat -an` to identify port conflicts
+
+4. **Review Installation Logs**
+   - Check installation script output for error messages
+   - Review system event logs for service startup failures
+   - Examine Director service logs for specific error details
+
+**Common Solutions:**
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    # Check service status
+    Get-Service VirtualMetricDirector
+
+    # Check port usage
+    Get-NetTCPConnection -LocalPort 443 -ErrorAction SilentlyContinue
+    # Or using netstat
+    netstat -an | Select-String ":443"
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    # Check service status
+    systemctl status virtualmetric-director
+
+    # Check port usage
+    netstat -tulpn | grep :443
+    ```
+  </TabItem>
+</Tabs>
+
+### Installation Script Fails
+
+**Symptoms:**
+- Script execution terminates with error
+- Permission denied messages
+- Download failures during script execution
+
+**Resolution Steps:**
+
+1. **Execution Context**
+   - Run PowerShell as Administrator (Windows)
+   - Use sudo privileges for bash script (Linux)
+   - Ensure execution policy allows script running (Windows)
+
+2. **Network Access**
+   - Verify internet connectivity for downloading components
+   - Check corporate firewall for download restrictions
+   - Consider manual download if automated download fails
+
+3. **System Dependencies**
+   - Install required runtime dependencies (.NET Core, Docker)
+   - Update package managers (apt, yum, chocolatey)
+   - Resolve any missing system libraries
+
+**Windows PowerShell Execution Policy:**
+```powershell
+# Check current execution policy
+Get-ExecutionPolicy
+
+# Allow script execution (if required)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+## Data Processing Issues
+
+### Director Not Receiving Data
+
+**Symptoms:**
+- No data appearing in target destinations
+- Zero throughput metrics in monitoring
+- Source systems showing successful transmission
+
+**Resolution Steps:**
+
+1. **Source Configuration Verification**
+   - Confirm correct Director IP address in source system configuration
+   - Verify port numbers match between source and Director
+   - Check protocol settings (TCP/UDP for syslog, HTTP/HTTPS for APIs)
+
+2. **Network Connectivity Testing**
+   - Test connection from source system to Director
+   - Verify routing and firewall rules allow traffic
+   - Use packet capture tools to confirm data transmission
+
+3. **Director Input Configuration**
+   - Review input configuration in Director settings
+   - Verify enabled protocols and listening ports
+   - Check for configuration syntax errors
+
+4. **Log Analysis**
+   - Examine Director logs for input processing errors
+   - Check for data parsing or validation failures
+   - Review error messages for specific issues
+
+**Diagnostic Commands:**
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    # Test syslog connectivity (send UDP message)
+    $udpClient = New-Object System.Net.Sockets.UdpClient
+    $bytes = [Text.Encoding]::ASCII.GetBytes("<14>Test message from PowerShell")
+    $udpClient.Send($bytes, $bytes.Length, "<director_ip>", <port>)
+    $udpClient.Close()
+
+    # Check listening ports
+    Get-NetTCPConnection -LocalPort <port> -ErrorAction SilentlyContinue
+    Get-NetUDPEndpoint -LocalPort <port> -ErrorAction SilentlyContinue
+
+    # Monitor network traffic (requires Wireshark/tshark or Message Analyzer)
+    # Or use built-in packet capture:
+    netsh trace start capture=yes tracefile=C:\temp\trace.etl
+    # ... perform test ...
+    netsh trace stop
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    # Test syslog connectivity
+    logger -n <director_ip> -P <port> "Test message"
+
+    # Check listening ports
+    netstat -tulpn | grep <director_ip>
+
+    # Monitor network traffic
+    tcpdump -i any port <port_number>
+    ```
+  </TabItem>
+</Tabs>
+
+### Data Processing Errors
+
+**Symptoms:**
+- Partial data processing with error messages
+- Data transformation failures
+- Inconsistent output formatting
+
+**Resolution Steps:**
+
+1. **Pipeline Configuration Review**
+   - Validate YAML syntax in processing pipelines
+   - Check field mappings and transformation rules
+   - Verify regular expressions and parsing patterns
+
+2. **Data Format Validation**
+   - Examine sample input data for format consistency
+   - Check for unexpected characters or encoding issues
+   - Verify timestamp formats match expected patterns
+
+3. **Resource Monitoring**
+   - Monitor CPU and memory usage during processing
+   - Check for disk space availability
+   - Ensure adequate processing capacity for data volume
+
+4. **Error Log Analysis**
+   - Review detailed error messages in Director logs
+   - Identify specific records causing processing failures
+   - Check for schema validation errors
+
+## Performance Issues
+
+### Slow Data Processing
+
+**Symptoms:**
+- High latency between data ingestion and output
+- Growing backlog of unprocessed data
+- Timeout errors in processing pipeline
+
+**Resolution Steps:**
+
+1. **Resource Optimization**
+   - Increase CPU and memory allocation to Director
+   - Monitor resource utilization patterns
+   - Consider vertical scaling for improved performance
+
+2. **Pipeline Efficiency**
+   - Review processing pipeline for optimization opportunities
+   - Simplify complex transformation rules where possible
+   - Optimize regular expressions and parsing logic
+
+3. **Output Destination Performance**
+   - Check target system capacity and response times
+   - Verify network connectivity to destination systems
+   - Consider batch processing for improved throughput
+
+4. **Clustering Consideration**
+   - Evaluate clustered deployment for horizontal scaling
+   - Distribute processing load across multiple Director instances
+   - Implement load balancing for improved performance
+
+### High Resource Usage
+
+**Symptoms:**
+- Excessive CPU or memory consumption
+- System performance degradation
+- Out of memory errors
+
+**Resolution Steps:**
+
+1. **Configuration Tuning**
+   - Adjust buffer sizes and queue lengths
+   - Optimize processing batch sizes
+   - Configure appropriate timeout values
+
+2. **Pipeline Optimization**
+   - Identify resource-intensive transformation operations
+   - Optimize data parsing and enrichment logic
+   - Consider caching frequently accessed data
+
+3. **System Monitoring**
+   - Implement comprehensive resource monitoring
+   - Set up alerts for resource threshold breaches
+   - Plan capacity upgrades based on usage patterns
+
+## Migration and Maintenance
+
+### How to Migrate Director to New Server
+
+**Scenario:** Moving Director installation to new hardware or different server.
+
+**Migration Steps:**
+
+1. **Prepare New Environment**
+   - Install required dependencies on new server
+   - Ensure network connectivity and firewall configuration
+   - Verify system requirements and permissions
+
+2. **Export Configuration**
+   - Document current Director configuration and settings
+   - Export processing pipelines and custom rules
+   - Note integration points with source and destination systems
+
+3. **Install Director on New Server**
+   - Run installation script on new server
+   - Use existing organization credentials and API key
+   - Follow standard installation verification procedures
+
+4. **Update System Integrations**
+   - Update source systems to point to new Director IP address
+   - Verify destination system connectivity from new location
+   - Test data flow end-to-end
+
+5. **Decommission Old Director**
+   - Stop data processing on old Director
+   - Remove Director from management console
+   - Properly dispose of old server and credentials
+
+### Director Reinstallation Process
+
+**When to Reinstall:**
+- API key compromise or security incident
+- Significant configuration corruption
+- Major system updates or changes
+
+**Reinstallation Steps:**
+
+1. **Initiate Reinstallation from Console**
+   - Navigate to Director details in management interface
+   - Click "Re-install director" button
+   - Acknowledge API key revocation warning
+
+2. **Execute New Installation Script**
+   - Download new installation script with updated API key
+   - Run installation script with administrative privileges
+   - Verify successful installation and connection
+
+3. **Restore Configuration**
+   - Reconfigure data sources and destinations
+   - Restore custom processing pipelines
+   - Verify all integrations are working properly
+
+**Important Notes:**
+- Previous API key will be immediately revoked
+- All existing connections will be terminated
+- Configuration may need to be restored manually
+
+## Advanced Troubleshooting
+
+### Log Analysis and Diagnostics
+
+**Director Log Locations:**
+- Windows: `C:\ProgramData\VirtualMetric\Director\Logs\`
+- Linux: `/var/log/virtualmetric/director/`
+
+**Key Log Files:**
+- `application.log` - General Director operation and errors
+- `connection.log` - Cloud platform connectivity events
+- `processing.log` - Data transformation and pipeline execution
+- `performance.log` - Resource usage and performance metrics
+
+**Log Analysis Commands:**
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    # Monitor real-time logs
+    Get-Content "C:\ProgramData\VirtualMetric\Director\Logs\application.log" -Wait -Tail 50
+
+    # Search for specific errors
+    Select-String -Path "C:\ProgramData\VirtualMetric\Director\Logs\*.log" -Pattern "error|exception" -AllMatches
+
+    # Check recent connection events
+    Select-String -Path "C:\ProgramData\VirtualMetric\Director\Logs\connection.log" -Pattern "connection" | Select-Object -Last 50
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    # Monitor real-time logs
+    tail -f /var/log/virtualmetric/director/application.log
+
+    # Search for specific errors
+    grep -i "error\|exception" /var/log/virtualmetric/director/*.log
+
+    # Check recent connection events
+    grep "connection" /var/log/virtualmetric/director/connection.log | tail -50
+    ```
+  </TabItem>
+</Tabs>
+
+### Performance Monitoring
+
+**System Metrics to Monitor:**
+- CPU utilization and load average
+- Memory usage and available space
+- Disk I/O performance and space utilization
+- Network throughput and connection statistics
+
+**Director-Specific Metrics:**
+- Data ingestion rate (events per second)
+- Processing latency and queue depth
+- Error rates and failure patterns
+- Connection stability and uptime
+
+### Support and Escalation
+
+When standard troubleshooting procedures don't resolve issues:
+
+1. **Gather Diagnostic Information**
+   - Collect relevant log files and error messages
+   - Document system configuration and environment details
+   - Note specific symptoms and reproduction steps
+
+2. **Contact Support**
+   - Submit support ticket with comprehensive diagnostic data
+   - Include Director version and deployment information
+   - Provide timeline of when issues first occurred
+
+3. **Emergency Escalation**
+   - For critical production issues, use emergency contact procedures
+   - Follow your organization's incident management processes
+   - Consider temporary workarounds while permanent solutions are developed

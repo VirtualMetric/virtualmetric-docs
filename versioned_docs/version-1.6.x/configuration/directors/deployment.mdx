@@ -1,0 +1,366 @@
+# Deployment
+
+VirtualMetric DataStream Directors support flexible deployment options to match your infrastructure requirements and operational preferences. Whether you're running on physical hardware, virtual machines, or containerized environments, Directors can be deployed to optimize performance while maintaining data sovereignty.
+
+## Overview
+
+Directors are lightweight, containerized services that process security telemetry data locally while connecting to the DataStream cloud platform for configuration management. This architecture ensures your sensitive data remains within your controlled environment while providing centralized management capabilities.
+
+### Supported Models
+
+**Standalone Director**
+- Single Director instance handling all data processing
+- Recommended for most production deployments
+- Simple configuration and management
+- Suitable for small to medium-scale environments
+
+**Clustered Director** *(Coming Soon)*
+- Multiple Director instances with load balancing and high availability
+- Automatic failover and redundancy
+- Horizontal scaling capabilities
+- Ideal for mission-critical, high-volume environments
+
+## Options
+
+### As Physical Server
+
+Deploy Directors directly on dedicated physical hardware for maximum performance and complete infrastructure control.
+
+**Advantages:**
+- Maximum performance and resource allocation
+- Complete control over hardware specifications
+- No virtualization overhead
+- Ideal for high-throughput environments
+
+**Considerations:**
+- Higher infrastructure costs and maintenance overhead
+- Limited flexibility for resource scaling
+- Longer deployment and provisioning times
+
+### As Virtual Machine
+
+Deploy Directors on virtual machines across various hypervisors and cloud platforms for balanced performance and flexibility.
+
+**Advantages:**
+- Flexible resource allocation and scaling
+- Cost-effective resource utilization
+- Simplified backup and disaster recovery
+- Platform agnostic (VMware, Hyper-V, KVM, AWS, Azure, GCP)
+
+**Considerations:**
+- Slight performance overhead from virtualization
+- Dependency on hypervisor platform stability
+
+**Recommended VM Specifications:**
+
+| Workload Size | CPU Cores | Memory | Storage | Notes |
+|---------------|-----------|---------|---------|-------|
+| Small | 2-4 cores | 8GB RAM | 50GB | Development/testing, < 10K EPS |
+| Medium | 4-8 cores | 16GB RAM | 100GB | Standard production, 10K-50K EPS |
+| Large | 8+ cores | 32GB RAM | 200GB+ | High-volume production, > 50K EPS |
+
+### As Container
+
+Deploy Directors in containerized environments for modern infrastructure management and orchestration capabilities.
+
+**Docker Deployment:**
+- Single-host container deployment
+- Simplified dependency management
+- Easy scaling and updates
+- Ideal for development and small production environments
+
+**Kubernetes Deployment:**
+- Multi-node orchestration with automatic scaling
+- Built-in service discovery and load balancing
+- Rolling updates with zero downtime
+- Enterprise-grade high availability and resilience
+
+**Container Advantages:**
+- Consistent deployment across environments
+- Rapid scaling and resource optimization
+- Integrated monitoring and logging capabilities
+- DevOps-friendly CI/CD integration
+
+## Platform-Specific Considerations
+
+### On Linux
+
+**Performance Benefits:**
+- Network-based collectors (syslog, TCP, SNMP) operate more efficiently
+- Lower resource overhead for network processing
+- Superior performance for high-volume data ingestion
+- Native support for Unix/Linux system integration
+
+**Agent Connectivity:**
+- **Windows Agent**: Full support for Windows systems via VirtualMetric Agent with optional pre-processing
+- **Linux Agentless**: Complete support via SSH-based connections
+- **Windows Agentless**: Not supported (Microsoft deprecated WinRM support)
+
+**Recommended For:**
+- High-volume network data collection environments
+- Mixed Windows/Linux infrastructure with agent-based monitoring
+- Cost-sensitive deployments requiring maximum efficiency
+
+### On Windows
+
+**Agentless Connectivity:**
+- **Windows Agentless**: Full support via WinRM protocols
+- **Linux Agentless**: Complete support via SSH connections
+- **Universal Agent**: Support for both Windows and Linux systems with optional pre-processing
+
+**Integration Benefits:**
+- Native Windows service integration
+- Active Directory authentication support
+- PowerShell-based management capabilities
+- Seamless Windows ecosystem integration
+
+**Recommended For:**
+- Windows-centric environments
+- Organizations requiring agentless Windows monitoring
+- Environments with existing Windows management infrastructure
+
+## Agent Pre-Processing Architecture
+
+VirtualMetric Agents support optional pipeline-based pre-processing before sending data to Directors. This distributed processing model reduces Director workload and enables edge-based data transformation.
+
+### Processing Models
+
+**Traditional Model:**
+- Agent collects logs locally at endpoint
+- Agent sends raw data to Director
+- Director processes data through pipelines
+- Director forwards processed data to targets
+
+**Pre-Processing Model:**
+- Agent collects logs locally at endpoint
+- Agent processes data through configured pipelines
+- Agent sends pre-processed data to Director
+- Director forwards data to targets (optional additional processing)
+
+### Pre-Processing Benefits
+
+**Performance Advantages:**
+- Reduced Director processing load through distributed computation
+- Lower network bandwidth consumption via edge-based filtering and transformation
+- Improved scalability for large-scale deployments with multiple Agents
+- Faster data delivery through parallel processing at collection points
+
+**Architectural Advantages:**
+- Edge-based filtering reduces unnecessary data transmission
+- Local transformation enables compliance requirements at data source
+- Distributed processing model supports horizontal scaling
+- Reduced central processing bottlenecks in high-volume environments
+
+### Pre-Processing Configuration
+
+Agent pre-processing is configured through the Director's device configuration for that Agent:
+
+- Pipelines assigned to Agent devices execute locally on the Agent
+- Same pipeline syntax and processors available as Director pipelines
+- Configuration managed centrally through Director for consistency
+- Hot configuration reload without Agent restart
+
+### Use Cases for Agent Pre-Processing
+
+**High-Volume Environments:**
+- Filter non-essential logs at collection point before transmission
+- Reduce network bandwidth for high-volume log sources
+- Distribute processing load across multiple Agent endpoints
+
+**Compliance and Privacy:**
+- Mask sensitive data (PII, credentials) at source before transmission
+- Apply regulatory transformations at data collection point
+- Ensure data compliance before leaving endpoint network
+
+**Edge Computing:**
+- Process data locally in remote or branch offices
+- Minimize data transmission to central Director
+- Support disconnected or intermittent connectivity scenarios
+
+**Cost Optimization:**
+- Reduce Director infrastructure requirements through distributed processing
+- Lower network bandwidth costs via edge-based filtering
+- Optimize central processing capacity allocation
+
+### Configuration Considerations
+
+When implementing Agent pre-processing:
+
+- Balance processing load between Agents and Directors based on infrastructure capacity
+- Consider network latency and bandwidth when deciding what to process at edge
+- Use Agent pre-processing for filtering and basic transformations
+- Reserve complex processing (enrichment, external lookups) for Director when possible
+- Monitor Agent resource utilization to prevent endpoint performance impact
+
+## Installation Process
+
+### Standalone Director Installation
+
+The standard installation process follows a guided setup through the DataStream web interface:
+
+1. **Access Director Creation**
+   - Navigate to Home > Fleet Management > Directors
+   - Click "Create director" to begin setup process
+
+2. **Configure Director Properties**
+   - Assign unique Director name for identification
+   - Select "Standalone" installation type
+   - Choose appropriate platform
+
+      A self-managed director is indicated under the **Mode** column as _Self-managed_, with a warning icon to its right. Hovering over the icon displays a tooltip, informing the user that the xonfiguration has changed and that the current one has to be deployed.
+
+      :::info
+      The actions menu of a self-managed director contains a _Download config_ option. Clicking it downloads the `vmetric.vmf` file to the **Downloads** directory of **Windows**. This file should be placed under the `<vm_root>\Director\config` directory.
+      :::
+   
+      This option removes the access verification step. The user can monitor errors through the CLI or the files under the `<vm_root>\Director\storage\logs` directory.
+
+3. **Generate Installation Scripts**
+   - System generates platform-specific installation scripts
+   - Unique API key created for secure cloud connectivity
+   - Scripts provided for both PowerShell (Windows) and Bash (Linux)
+
+4. **Execute Installation**
+   - Run provided script with administrative privileges on target system
+   - Installation downloads and configures Director service
+   - Automatic service registration and startup configuration
+
+5. **Verify Connectivity**
+   - Use built-in connection verification tool
+   - Confirm Director successfully connects to DataStream platform
+   - Complete setup process once connectivity is established
+
+### Network Requirements
+
+**Outbound Connectivity:**
+- Port 443 (HTTPS) for DataStream cloud platform communication
+- DNS resolution for *.virtualmetric.com domains
+- Certificate validation requires accurate system time
+
+**Inbound Connectivity:**
+- Configure based on data source requirements
+- Common ports: 514 (Syslog), 1514 (Secure Syslog), 162 (SNMP)
+- Custom ports as defined in device configurations
+
+### Firewall Configuration
+
+**Outbound Rules (Required):**
+- Allow HTTPS (443) to *.virtualmetric.com
+- Allow DNS queries for name resolution
+- Allow NTP for time synchronization
+
+**Inbound Rules (As Needed):**
+- Open ports for configured data collection protocols
+- Allow management access (SSH for Linux, RDP for Windows)
+- Configure source restrictions based on security policies
+
+## Deployment Best Practices
+
+### Security Considerations
+
+**Network Security:**
+- Deploy Directors in appropriate network segments
+- Implement network access controls and monitoring
+- Use dedicated service accounts with minimal privileges
+- Enable logging and audit trails for security monitoring
+
+**Data Protection:**
+- All sensitive data processing occurs locally on Director
+- Only configuration metadata transmitted to cloud platform
+- Implement encryption for data at rest and in transit
+- Regular security updates and patch management
+
+### Performance Optimization
+
+**Resource Allocation:**
+- Monitor CPU and memory utilization patterns
+- Allocate sufficient disk space for logging and buffering
+- Configure appropriate network interface capacity
+- Plan for peak load scenarios and growth
+
+**Data Processing Efficiency:**
+- Optimize YAML pipeline configurations for performance
+- Implement efficient parsing and transformation rules
+- Use appropriate batch sizes for different data sources
+- Monitor processing latency and throughput metrics
+- Consider Agent pre-processing for high-volume deployments to distribute processing load
+
+### High Availability Planning
+
+**Backup and Recovery:**
+- Regular configuration backups and version control
+- Document recovery procedures and test regularly
+- Implement monitoring and alerting for service health
+- Plan for disaster recovery scenarios
+
+**Redundancy Options:**
+- Deploy multiple Directors for critical environments
+- Implement load balancing for high-availability scenarios
+- Consider geographic distribution for disaster recovery
+- Plan for seamless failover procedures
+
+## Troubleshooting Deployment Issues
+
+### Common Installation Problems
+
+**Script Execution Failures:**
+- Verify administrative privileges for installation
+- Check network connectivity to download servers
+- Ensure required dependencies are installed
+- Review firewall and proxy configurations
+
+**Service Startup Issues:**
+- Confirm system meets minimum requirements
+- Verify proper file permissions and ownership
+- Check for port conflicts with existing services
+- Review system logs for detailed error messages
+
+**Connectivity Problems:**
+- Validate outbound HTTPS connectivity
+- Confirm DNS resolution for required domains
+- Check system time synchronization
+- Verify API key accuracy and format
+
+For detailed troubleshooting procedures, refer to the <Topic id="directors-troubleshooting">Directors Troubleshooting</Topic> documentation.
+
+## Advanced Deployment Scenarios
+
+### Multi-Site Deployments
+
+For organizations with multiple locations or data centers:
+
+- Deploy Directors at each site for local data processing
+- Implement centralized configuration management
+- Coordinate routing and aggregation strategies
+- Plan for inter-site connectivity and failover
+
+### Compliance and Regulatory Requirements
+
+For regulated industries requiring specific compliance:
+
+- Implement appropriate data retention and disposal policies
+- Configure audit logging and compliance reporting
+- Ensure data sovereignty and jurisdictional requirements
+- Plan for regulatory audit and inspection procedures
+
+### Scalability Planning
+
+As your environment grows:
+
+- Monitor resource utilization and performance trends
+- Plan for vertical and horizontal scaling options
+- Consider migration to clustered deployments
+- Implement capacity planning and forecasting procedures
+
+## Next Steps
+
+Once you've selected your deployment approach:
+
+1. **Prepare Infrastructure** - Set up target systems with required specifications
+2. **Configure Networking** - Implement firewall rules and connectivity requirements  
+3. **Install Director** - Follow the guided installation process in the DataStream interface
+4. **Configure Data Sources** - Set up devices and data collection points
+5. **Test and Validate** - Verify data flow and processing functionality
+6. **Monitor Operations** - Implement ongoing monitoring and maintenance procedures
+
+For specific installation guidance, access the Director Configuration interface through Home > Fleet Management > Directors and follow the step-by-step setup wizard.

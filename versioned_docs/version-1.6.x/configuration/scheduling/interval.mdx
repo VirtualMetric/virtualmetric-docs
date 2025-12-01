@@ -1,0 +1,511 @@
+# Interval
+
+## Synopsis
+
+Interval controls how frequently a target, route, or Agent device executes, measured in time units or seconds. This provides simple, periodic execution without the complexity of cron expressions.
+
+## Schema
+
+### Targets
+
+```yaml
+targets:
+  - name: <string>
+    type: <string>
+    properties:
+      interval: <string|numeric>
+      # target-specific properties
+```
+
+### Routes
+
+```yaml
+routes:
+  - name: <string>
+    source: <string>
+    destination: <string>
+    properties:
+      interval: <string|numeric>
+```
+
+### Agent Devices
+
+```yaml
+devices:
+  - name: <string>
+    type: windows
+    properties:
+      interval: <string|numeric>
+      pipeline: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency using time units (5m, 1h) or seconds (300)|
+
+## Details
+
+The interval field determines how often a target, route, or Agent device processes queued data. When configured, the component will execute at regular intervals rather than continuously. This helps:
+
+- Control resource consumption
+- Batch data for more efficient processing
+- Reduce API call frequency to external services
+- Manage costs for volume-based services
+- Create time-based routing logic
+- Reduce Agent resource usage and network bandwidth consumption
+
+Between interval executions, data accumulates in the queue and is processed during the next execution window.
+
+For Agent devices with pre-processing pipelines, interval scheduling controls how frequently the Agent executes its pipeline transformations and transmits processed data to the Director.
+
+### Format Options
+
+Interval accepts two formats:
+
+**Time Units (Recommended)**
+- Append a unit suffix to the number
+- More readable and self-documenting
+- Units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days)
+
+**Seconds (Numeric)**
+- Plain integer representing seconds
+- Useful for programmatic configuration
+- Example: `300` equals 5 minutes
+
+### Special Values
+
+- Omit the field or set to `0` or `1` for realtime (continuous) execution
+- Values less than 1 second are treated as realtime
+
+### Execution Behavior
+
+The first execution occurs immediately after component initialization. Subsequent executions occur at the specified interval after the previous execution completes. This means the actual time between executions includes both the interval delay and the processing time.
+
+## Target Examples
+
+### Every 5 Minutes
+
+<ExampleGrid>
+  <CommentCol>
+    Execute target every 5 minutes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: frequent_splunk
+        type: splunk
+        properties:
+          interval: "5m"
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              token: "YOUR-TOKEN"
+          index: "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Every Hour
+
+<ExampleGrid>
+  <CommentCol>
+    Execute target every hour using time unit format...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: hourly_elastic
+        type: elastic
+        properties:
+          interval: "1h"
+          index: "hourly-logs"
+          endpoints:
+            - endpoint: "http://elasticsearch:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Every 30 Seconds
+
+<ExampleGrid>
+  <CommentCol>
+    Execute target every 30 seconds for near-realtime processing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: rapid_kafka
+        type: kafka
+        properties:
+          interval: "30s"
+          brokers:
+            - "kafka1:9092"
+            - "kafka2:9092"
+          topic: "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Every 15 Minutes (Numeric)
+
+<ExampleGrid>
+  <CommentCol>
+    Execute every 15 minutes using numeric seconds format...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: quarter_hourly
+        type: splunk
+        properties:
+          interval: 900
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              token: "YOUR-TOKEN"
+          index: "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Every 6 Hours
+
+<ExampleGrid>
+  <CommentCol>
+    Execute target every 6 hours for batch processing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: batch_s3
+        type: awss3
+        properties:
+          interval: "6h"
+          bucket: "log-archives"
+          region: "us-east-1"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Every 2 Hours
+
+<ExampleGrid>
+  <CommentCol>
+    Execute every 2 hours with large batches...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: batch_clickhouse
+        type: clickhouse
+        properties:
+          interval: "2h"
+          connection_string: "clickhouse://localhost:9000"
+          table: "logs"
+          batch_size: 50000
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Every Day
+
+<ExampleGrid>
+  <CommentCol>
+    Execute once per day for daily aggregations...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: daily_bigquery
+        type: bigquery
+        properties:
+          interval: "24h"
+          project: "my-project"
+          dataset: "daily_data"
+          tables:
+            - "logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Every 10 Minutes
+
+<ExampleGrid>
+  <CommentCol>
+    Execute every 10 minutes for moderate batching...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: moderate_elastic
+        type: elastic
+        properties:
+          interval: "10m"
+          index: "batched-logs"
+          batch_size: 20000
+          endpoints:
+            - endpoint: "http://elasticsearch:9200"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Every 3 Hours
+
+<ExampleGrid>
+  <CommentCol>
+    Execute every 3 hours for cost optimization...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: cost_optimized
+        type: sentinel
+        properties:
+          interval: "3h"
+          workspace_id: "YOUR-WORKSPACE-ID"
+          shared_key: "YOUR-SHARED-KEY"
+          log_type: "CustomLogs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Realtime Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Omit interval for continuous, realtime processing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: realtime_splunk
+        type: splunk
+        properties:
+          # No interval specified - processes continuously
+          endpoints:
+            - endpoint: "https://splunk.example.com:8088/services/collector"
+              token: "YOUR-TOKEN"
+          index: "realtime-logs"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Route Examples
+
+### Periodic Archive Route
+
+<ExampleGrid>
+  <CommentCol>
+    Route data to archive storage every hour...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: hourly_archive
+        source: "processed_logs"
+        destination: "s3_archive"
+        properties:
+          interval: "1h"
+      
+      - name: realtime_route
+        source: "processed_logs"
+        destination: "elasticsearch"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Batch Processing Route
+
+<ExampleGrid>
+  <CommentCol>
+    Route data to batch target every 15 minutes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: batch_route
+        source: "application_logs"
+        destination: "batch_processor"
+        properties:
+          interval: "15m"
+      
+      - name: stream_route
+        source: "application_logs"
+        destination: "realtime_processor"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Cost Optimized Route
+
+<ExampleGrid>
+  <CommentCol>
+    Route data to expensive target every 6 hours to reduce costs...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: cost_optimized_route
+        source: "high_volume_logs"
+        destination: "expensive_analytics"
+        properties:
+          interval: "6h"
+      
+      - name: cheap_storage_route
+        source: "high_volume_logs"
+        destination: "s3_storage"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Aggregation Route
+
+<ExampleGrid>
+  <CommentCol>
+    Route aggregated metrics every 5 minutes while streaming raw data...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: aggregated_route
+        source: "metrics"
+        destination: "aggregated_storage"
+        properties:
+          interval: "5m"
+      
+      - name: raw_route
+        source: "metrics"
+        destination: "raw_storage"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Periodic Backup Route
+
+<ExampleGrid>
+  <CommentCol>
+    Route data to backup every 30 minutes...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    routes:
+      - name: backup_route
+        source: "critical_logs"
+        destination: "backup_storage"
+        properties:
+          interval: "30m"
+      
+      - name: primary_route
+        source: "critical_logs"
+        destination: "primary_storage"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+## Common Intervals
+
+| Interval | Time Unit | Seconds | Use Case |
+|----------|-----------|---------|----------|
+| 30 seconds | `30s` | `30` | Near-realtime, low latency |
+| 1 minute | `1m` | `60` | Frequent updates |
+| 5 minutes | `5m` | `300` | Balanced batching |
+| 10 minutes | `10m` | `600` | Moderate batching |
+| 15 minutes | `15m` | `900` | Quarter-hourly processing |
+| 30 minutes | `30m` | `1800` | Half-hourly processing |
+| 1 hour | `1h` | `3600` | Hourly aggregation |
+| 2 hours | `2h` | `7200` | Light batch processing |
+| 6 hours | `6h` | `21600` | Heavy batch processing |
+| 12 hours | `12h` | `43200` | Twice daily |
+| 24 hours | `24h` | `86400` | Daily processing |
+
+## Comparison with Schedule
+
+| Feature | Interval | Schedule |
+|---------|----------|----------|
+| Format | Time units or seconds | Cron expression |
+| Complexity | Simple | Complex |
+| First execution | Immediate | Next matching time |
+| Execution pattern | Fixed intervals | Specific times |
+| Best for | Regular frequency | Time-specific events |
+
+Use `interval` when:
+- You want simple, regular frequency
+- Exact execution time doesn't matter
+- You need immediate first execution
+- Configuration should be simple and readable
+
+Use `schedule` when:
+- You need specific execution times
+- Business schedules matter (business hours, weekends)
+- You want to avoid certain time windows
+- Complex patterns are required
+
+## Performance Considerations
+
+### Short Intervals (< 1 minute)
+
+- Near-realtime processing
+- Higher resource consumption
+- More frequent API calls
+- Better for latency-sensitive scenarios
+
+### Medium Intervals (1-30 minutes)
+
+- Balanced approach
+- Reasonable batching
+- Moderate resource usage
+- Good for most use cases
+
+### Long Intervals (> 1 hour)
+
+- Large batch processing
+- Lower resource consumption
+- Reduced API call frequency
+- Better for cost optimization
+
+### Batch Size Interaction
+
+Combine interval with batch size for optimal performance:
+
+```yaml
+properties:
+  interval: "5m"
+  batch_size: 10000
+```
+
+This ensures batches don't exceed 10,000 events even if more accumulate during the 5-minute interval.
+
+## Usage Notes
+
+- Interval measures time between executions, not including processing time
+- If processing takes longer than the interval, the next execution waits for completion
+- Schedule takes precedence if both interval and schedule are configured
+- Use interval for simple periodic execution, schedule for complex time-based patterns
+- Omitting interval defaults to realtime (continuous) processing
+- Values less than 1 second are treated as realtime
+- Multiple routes can have different intervals, creating time-based routing logic
+
+## Troubleshooting
+
+### Component Executing Too Frequently
+
+If the component runs more often than expected:
+- Verify interval value and unit
+- Check for multiple component configurations
+- Ensure processing completes quickly to maintain interval
+
+### Component Not Executing at Expected Frequency
+
+If executions are delayed:
+- Processing time may exceed interval duration
+- Check system resources and component performance
+- Consider increasing batch size to reduce execution frequency
+- Review logs for errors or performance issues
+
+### Resource Consumption Issues
+
+If resources are constrained:
+- Increase interval to reduce execution frequency
+- Optimize batch size and component configuration
+- Monitor queue depth between executions
+- Consider moving to schedule for off-peak processing

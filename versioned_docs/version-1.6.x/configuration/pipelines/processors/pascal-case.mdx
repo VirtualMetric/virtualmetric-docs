@@ -1,0 +1,222 @@
+---
+description: Converts strings to PascalCase format
+sidebar_custom_props:
+  customCategory: Data Manipulation
+  customIcon: 🏠
+---
+
+# Pascal Case
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">String Manipulation</span>
+
+## Synopsis
+
+Converts strings to PascalCase format.
+
+## Schema
+
+```yaml {2-3}
+- pascalcase:
+    field: <ident>
+    target_field: <string>
+    fields: <array>
+    exclude: <array>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|N|-|Single field to convert to PascalCase|
+|`target_field`|N|Same as `field`|Target field to store PascalCase result|
+|`fields`|N|-|Array of fields to convert to PascalCase|
+|`exclude`|N|-|Array of fields to exclude from conversion|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Converts string values to PascalCase format by removing spaces, hyphens, underscores, and other separators, then capitalizing the first letter of each word including the first word. This format is commonly used in programming for class names, type names, and other identifiers.
+
+PascalCase is similar to camelCase but capitalizes the very first letter as well, making it suitable for naming conventions in many programming languages.
+
+:::note
+PascalCase format capitalizes the first letter of every word including the first, resulting in format like "FirstName", "UserAccountName", or "DataProcessingComplete". This differs from camelCase where the first letter remains lowercase.
+:::
+
+The processor handles various input formats and converts them to the standard PascalCase naming convention used in object-oriented programming.
+
+:::warning
+If the field contains non-string values, the processor will attempt to convert them to strings before applying PascalCase conversion. Complex objects or arrays may produce unexpected results.
+:::
+
+## Examples
+
+### Basic Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Converting snake_case to PascalCase...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "class_name": "user_account_manager"
+    }
+    ```
+    ```yaml
+    - pascalcase:
+        field: class_name
+        target_field: pascal_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to PascalCase:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "class_name": "user_account_manager",
+      "pascal_name": "UserAccountManager"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Type Name Generation
+
+<ExampleGrid>
+  <CommentCol>
+    Creating type names from descriptions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "component_type": "data processing pipeline"
+    }
+    ```
+    ```yaml
+    - pascalcase:
+        field: component_type
+        target_field: type_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates programming identifier:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "component_type": "data processing pipeline",
+      "type_name": "DataProcessingPipeline"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Format Input
+
+<ExampleGrid>
+  <CommentCol>
+    Normalizing mixed separators to PascalCase...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "interface_name": "api-response_handler with events"
+    }
+    ```
+    ```yaml
+    - pascalcase:
+        field: interface_name
+    ```
+  </CodeCol>
+  <CommentCol>
+    standardizes to PascalCase:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "interface_name": "ApiResponseHandlerWithEvents"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Converting multiple fields to PascalCase...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "model_name": "user_profile",
+      "service_name": "authentication_service",
+      "controller_name": "api_controller"
+    }
+    ```
+    ```yaml
+    - pascalcase:
+        fields: ["model_name", "service_name", "controller_name"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    processes all specified fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "model_name": "UserProfile",
+      "service_name": "AuthenticationService",
+      "controller_name": "ApiController"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Namespace Generation
+
+<ExampleGrid>
+  <CommentCol>
+    Creating namespace identifiers...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "module_path": "data.stream.processors"
+    }
+    ```
+    ```yaml
+    - pascalcase:
+        field: module_path
+        target_field: namespace
+    ```
+  </CodeCol>
+  <CommentCol>
+    generates namespace identifier:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "module_path": "data.stream.processors",
+      "namespace": "DataStreamProcessors"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

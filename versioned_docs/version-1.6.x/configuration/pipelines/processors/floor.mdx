@@ -1,0 +1,364 @@
+---
+description: Rounds numbers down
+sidebar_custom_props:
+  customCategory: Arithmetic
+  customIcon: 🔽
+---
+
+# Floor
+
+<span className="theme-doc-version-badge badge badge--primary">Math</span><span className="theme-doc-version-badge badge badge--secondary">Data Analysis</span>
+
+## Synopsis
+
+Calculates the floor function of numeric values, returning the largest integer that is less than or equal to the input value.
+
+## Schema
+
+```yaml {3,4}
+- floor:
+    description: <text>
+    field: <ident>
+    value: <string>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y||Field to store the floor result|
+|`value`|Y||Numeric value or field reference to calculate floor for|
+|`description`|N|-|Explanatory notes|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`ignore_missing`|N|`false`|Continue processing if referenced fields are missing|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor applies the mathematical floor function to numeric values. The floor function returns the largest integer that is less than or equal to the input value. For example:
+
+- `floor(3.7)` = 3
+- `floor(-2.3)` = -3
+- `floor(5.0)` = 5
+- `floor(-1.0)` = -1
+
+The `value` parameter can be either a literal numeric value or a field reference. When using field references, the processor will resolve the field value and apply the floor operation to it.
+
+:::info
+The floor function is commonly used in data processing for grouping continuous values into discrete buckets, time-based calculations, and normalization operations.
+:::
+
+:::note
+For negative numbers, the floor function rounds towards negative infinity, not towards zero. This means `floor(-2.3)` equals -3, not -2.
+:::
+
+:::tip
+Use the floor processor in combination with mathematical operations to create time-based groupings, such as rounding timestamps to the nearest hour or creating histogram buckets.
+:::
+
+## Examples
+
+### Basic Floor Operation
+
+<ExampleGrid>
+  <CommentCol>
+    Calculate the floor of a decimal value...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "price": 19.99
+    }
+    ```
+    ```yaml
+    - floor:
+        field: price_floor
+        value: "{{price}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    to get the integer part:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "price": 19.99,
+      "price_floor": 19
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Negative Number Floor
+
+<ExampleGrid>
+  <CommentCol>
+    Floor of negative numbers...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": -2.7
+    }
+    ```
+    ```yaml
+    - floor:
+        field: temp_floor
+        value: "{{temperature}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    rounds towards negative infinity:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "temperature": -2.7,
+      "temp_floor": -3
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Time Bucket Creation
+
+<ExampleGrid>
+  <CommentCol>
+    Create hourly time buckets...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": 1705318847.234,
+      "hour_seconds": 3600
+    }
+    ```
+    ```yaml
+    - floor:
+        field: hour_bucket
+        value: "{{timestamp}} / {{hour_seconds}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    for time-based grouping:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "timestamp": 1705318847.234,
+      "hour_seconds": 3600,
+      "hour_bucket": 473699
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Literal Values
+
+<ExampleGrid>
+  <CommentCol>
+    Use literal numeric values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "processing"
+    }
+    ```
+    ```yaml
+    - floor:
+        field: constant_floor
+        value: "7.89"
+    ```
+  </CodeCol>
+  <CommentCol>
+    for constant calculations:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "data": "processing",
+      "constant_floor": 7
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Score Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Normalize scores to integer ranges...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_score": 87.6,
+      "max_score": 100,
+      "scale_factor": 10
+    }
+    ```
+    ```yaml
+    - floor:
+        field: normalized_score
+        value: "{{raw_score}} / {{max_score}} * {{scale_factor}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    for categorical grouping:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "raw_score": 87.6,
+      "max_score": 100,
+      "scale_factor": 10,
+      "normalized_score": 8
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Percentage Buckets
+
+<ExampleGrid>
+  <CommentCol>
+    Create percentage buckets...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "completion_rate": 0.847
+    }
+    ```
+    ```yaml
+    - floor:
+        field: completion_bucket
+        value: "{{completion_rate}} * 10"
+    ```
+  </CodeCol>
+  <CommentCol>
+    for progress tracking:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "completion_rate": 0.847,
+      "completion_bucket": 8
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### In-Place Modification
+
+<ExampleGrid>
+  <CommentCol>
+    Modify the original field...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "average_rating": 4.73
+    }
+    ```
+    ```yaml
+    - floor:
+        field: average_rating
+        value: "{{average_rating}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    by using the same field name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "average_rating": 4
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Complex Expressions
+
+<ExampleGrid>
+  <CommentCol>
+    Use complex mathematical expressions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value_a": 15.7,
+      "value_b": 8.2,
+      "multiplier": 2.5
+    }
+    ```
+    ```yaml
+    - floor:
+        field: complex_result
+        value: "({{value_a}} + {{value_b}}) * {{multiplier}} / 10"
+    ```
+  </CodeCol>
+  <CommentCol>
+    for advanced calculations:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "value_a": 15.7,
+      "value_b": 8.2,
+      "multiplier": 2.5,
+      "complex_result": 5
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Zero and Integer Values
+
+<ExampleGrid>
+  <CommentCol>
+    Floor of integers and zero...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "integer_val": 42,
+      "zero_val": 0
+    }
+    ```
+    ```yaml
+    - floor:
+        field: int_floor
+        value: "{{integer_val}}"
+    - floor:
+        field: zero_floor
+        value: "{{zero_val}}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    remain unchanged:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "integer_val": 42,
+      "zero_val": 0,
+      "int_floor": 42,
+      "zero_floor": 0
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

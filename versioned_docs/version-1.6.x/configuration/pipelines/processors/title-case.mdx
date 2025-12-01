@@ -1,0 +1,237 @@
+---
+description: Converts strings to Title Case format
+sidebar_custom_props:
+  customCategory: Data Manipulation
+  customIcon: 🎩
+---
+
+# Title Case
+
+<span className="theme-doc-version-badge badge badge--primary">Text Processing</span><span className="theme-doc-version-badge badge badge--secondary">String Manipulation</span>
+
+## Synopsis
+
+Converts strings to Title Case format.
+
+## Schema
+
+```yaml {2-3}
+- titlecase:
+    field: <ident>
+    target_field: <string>
+    fields: <array>
+    exclude: <array>
+    preserve_articles: <boolean>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|N|-|Single field to convert to Title Case|
+|`target_field`|N|Same as `field`|Target field to store Title Case result|
+|`fields`|N|-|Array of fields to convert to Title Case|
+|`exclude`|N|-|Array of fields to exclude from conversion|
+|`preserve_articles`|N|`false`|Keep articles (a, an, the) lowercase except at start|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+Converts string values to Title Case format by capitalizing the first letter of each word while keeping the rest lowercase. This format is commonly used for titles, headings, proper nouns, and display names.
+
+The processor handles various input formats and applies proper Title Case rules, optionally preserving grammar rules for articles and prepositions.
+
+:::note
+Title Case format capitalizes the first letter of each significant word, resulting in format like "User Account Settings", "Data Processing Pipeline", or "System Configuration Value". This format is widely used for titles and headings.
+:::
+
+When `preserve_articles` is enabled, common articles (a, an, the) and short prepositions (in, on, at, by, for, of, to, up) remain lowercase unless they appear at the beginning of the string.
+
+:::warning
+The processor treats any whitespace or punctuation as word boundaries. Hyphenated words will have each part capitalized (e.g., "real-time" becomes "Real-Time").
+:::
+
+## Examples
+
+### Basic Title Case
+
+<ExampleGrid>
+  <CommentCol>
+    Converting text to Title Case format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "page_title": "getting started with datastream processing"
+    }
+    ```
+    ```yaml
+    - titlecase:
+        field: page_title
+        target_field: display_title
+    ```
+  </CodeCol>
+  <CommentCol>
+    converts to Title Case:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "page_title": "getting started with datastream processing",
+      "display_title": "Getting Started With Datastream Processing"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Article Preservation
+
+<ExampleGrid>
+  <CommentCol>
+    Preserving articles in proper grammar format...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "article_title": "the art of data processing in the modern age"
+    }
+    ```
+    ```yaml
+    - titlecase:
+        field: article_title
+        preserve_articles: true
+        target_field: formatted_title
+    ```
+  </CodeCol>
+  <CommentCol>
+    keeps articles lowercase:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "article_title": "the art of data processing in the modern age",
+      "formatted_title": "The Art of Data Processing in the Modern Age"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Mixed Format Input
+
+<ExampleGrid>
+  <CommentCol>
+    Converting mixed case input to proper Title Case...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "section_name": "USER-account_MANAGEMENT and Security"
+    }
+    ```
+    ```yaml
+    - titlecase:
+        field: section_name
+        target_field: section_title
+    ```
+  </CodeCol>
+  <CommentCol>
+    normalizes to Title Case:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "section_name": "USER-account_MANAGEMENT and Security",
+      "section_title": "User-Account Management And Security"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Multiple Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Converting multiple fields to Title Case...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "first_name": "john smith",
+      "last_name": "doe williams",
+      "job_title": "senior software engineer"
+    }
+    ```
+    ```yaml
+    - titlecase:
+        fields: ["first_name", "last_name", "job_title"]
+    ```
+  </CodeCol>
+  <CommentCol>
+    processes all specified fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "first_name": "John Smith",
+      "last_name": "Doe Williams",
+      "job_title": "Senior Software Engineer"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Menu Item Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Formatting navigation menu items...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "menu_items": [
+        "home page",
+        "user settings",
+        "data analytics",
+        "system administration"
+      ]
+    }
+    ```
+    ```yaml
+    - titlecase:
+        field: menu_items
+        target_field: formatted_menu
+    ```
+  </CodeCol>
+  <CommentCol>
+    formats each menu item:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "menu_items": [...],
+      "formatted_menu": [
+        "Home Page",
+        "User Settings",
+        "Data Analytics",
+        "System Administration"
+      ]
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

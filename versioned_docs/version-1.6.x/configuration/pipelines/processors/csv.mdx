@@ -1,0 +1,169 @@
+---
+description: Parses CSV data
+sidebar_custom_props: 
+  customIcon: 📄
+  customCategory: Parse
+---
+
+# CSV
+
+<span className="theme-doc-version-badge badge badge--primary">Parse</span><span className="theme-doc-version-badge badge badge--secondary">Elastic Compatible</span>
+
+## Synopsis
+
+Parses CSV (Comma-Separated Values) data from a field and assigns the extracted values to specified target fields.
+
+## Schema
+
+```yaml {2,3}
+- csv:
+    field: <ident>
+    target_fields: <ident[]>
+    description: <text>
+    empty_value: <string>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    quote: <char>
+    separator: <char>
+    tag: <string>
+    trim: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y|-|Field containing the CSV string to parse|
+|`target_fields`|Y|-|Array of field names to assign the parsed values to|
+|`description`|N|-|Explanatory note|
+|`empty_value`|N|-|Value to use for empty fields. If not specified, empty fields remain empty|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if parsing fails|
+|`ignore_missing`|N|`false`|Skip processing if source field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`quote`|N|`"`|Character used for quoting fields|
+|`separator`|N|`,`|Character used to separate fields|
+|`tag`|N|-|Identifier|
+|`trim`|N|`false`|Trim whitespace from unquoted fields|
+
+## Details
+
+The processor reads a single line of CSV data and maps each field to the corresponding target field. It can handle quoted values, custom separators, quote characters, and provides options for trimming whitespace and handling empty fields.
+
+:::note
+The processor expects the CSV data to be a single line. For multi-line CSV processing, consider using other processors, or pre-processing the data first.
+:::
+
+:::warning
+If the number of fields in the CSV data is less than the number of target fields, the processor will fail unless `ignore_missing` is set to `true`.
+:::
+
+## Examples
+
+### Basic
+
+<ExampleGrid>
+  <CommentCol>
+    Parsing simple quoted CSV data...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "csv_data": "\"x\", \"y\", \"z\""
+    }
+    ```
+    ```yaml
+    - csv:
+        field: csv_data
+        target_fields: ["A", "B", "C"]
+        trim: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    creates the specified fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "csv_data": "\"x\", \"y\", \"z\"",
+      "A": "x",
+      "B": "y",
+      "C": "z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Empty Values
+
+<ExampleGrid>
+  <CommentCol>
+    Filling empty fields with default values...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "csv_data": "x,,z"
+    }
+    ```
+    ```yaml
+    - csv:
+        field: csv_data
+        target_fields: ["A", "B", "C"]
+        empty_value: "N/A"
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "csv_data": "x,,z",
+      "A": "x",
+      "B": "N/A",
+      "C": "z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Custom Separator
+
+<ExampleGrid>
+  <CommentCol>
+    Using semicolon as the separator...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "csv_data": "x;y;z"
+    }
+    ```
+    ```yaml
+    - csv:
+        field: csv_data
+        target_fields: ["A", "B", "C"]
+        separator: ";"
+    ```
+  </CodeCol>
+  <CommentCol>
+    result:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "csv_data": "x;y;z",
+      "A": "x",
+      "B": "y",
+      "C": "z"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

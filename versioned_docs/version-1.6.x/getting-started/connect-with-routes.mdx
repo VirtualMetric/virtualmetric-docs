@@ -1,0 +1,209 @@
+# Connect Everything with Routes
+
+## What are Routes?
+
+Routes define the data flow path in **DataStream**. They connect your components in this sequence:
+
+**Device** (data source) → **Pipeline** (processing logic) → **Target** (destination)
+
+Think of routes as the "wiring" that makes your data pipeline functional. Without a route, your device might receive data and your target might be ready to store it, but there's no path connecting them through your processing pipeline.
+
+Routes also provide additional capabilities:
+- **Filtering**: Process only specific types of data
+- **Conditional routing**: Send different data to different targets
+- **Load balancing**: Distribute processing across multiple directors
+- **Error handling**: Route failed processing to alternate targets
+
+## Create Your First Quick Route
+
+Quick Routes provide a visual canvas for connecting your components:
+
+1. **Navigate to Quick Routes**
+   - From Home: **Routes** → **Quick Routes**  
+   - Or hamburger menu → **Quick Routes**
+
+2. **Understanding the Interface**
+   - **Left sidebar**: Device and target selection buttons (if this is your first route)
+   - **Main canvas**: Visual workspace where you'll connect components
+   - **Connected components**: Will appear on canvas after selection
+
+## Select Your Components
+
+### Add Your Device
+
+1. **Click Select Device** (left sidebar)
+2. **Choose Selection Method**:
+   
+   **Select Device Tab:**
+   - Shows existing devices you can connect
+   - Check the box next to "My First Syslog Device" 
+   - Click **Select Device(s)**
+   
+   **OR Choose Device Type Tab:**
+   - Lets you create a new device directly
+   - Click **Choose device type** if you need a new device
+   - Follow the creation process, then return to route setup
+
+3. **Verify Device on Canvas**
+   - Your syslog device appears as a card on the left side of the canvas
+   - Click on the device card to select it
+   - The vertical ellipsis (⋮) provides options to view details or remove the device
+
+### Add Your Target
+
+1. **Click Select Target** (left sidebar)
+2. **Choose Selection Method**:
+
+   **Select Target Tab:**
+   - Shows existing targets you can connect
+   - Check the box next to "My First File Target"
+   - Click **Select Target(s)**
+
+   **OR Choose Target Type Tab:**
+   - Lets you create a new target directly  
+   - Click **Choose target type** if you need a new target
+   - Follow the creation process, then return to route setup
+
+3. **Verify Target on Canvas**
+   - Your file target appears as a card on the right side of the canvas
+   - Click on the target card to select it
+   - The vertical ellipsis (⋮) provides options to view details or remove the target
+
+## Connect Device to Target
+
+1. **Start the Connection**
+   - Your cursor changes to a crosshair when components are ready
+   - Click the **connector handle** on the right side of your device card
+   - Drag to the **connector handle** on the left side of your target card
+
+2. **Route Configuration Modal**
+   - A modal appears asking about pipeline configuration
+   - You have two options:
+
+   **Discard Route:**
+   - Click this if you made a mistake or want to cancel
+
+   **Insert Pipeline:**
+   - Click **Insert pipeline within the route** 
+   - This opens the pipeline selection modal
+
+3. **Select Your Pipeline**
+   - **Search pipelines**: Type to filter available pipelines
+   - **Find your installed template**: Look for the pipeline you installed from Content Hub
+   - **Select pipeline**: Check the box next to your pipeline name
+   - **Confirm selection**: Click **Select pipeline**
+
+4. **Review the Connection**
+   - The modal closes and shows a dotted line connecting device → target
+   - A blue square with **+** appears in the middle of the connection line
+   - A **Selected pipeline** window appears at the bottom showing your chosen pipeline
+
+5. **Save Your Route**
+   - Review the complete flow: Device → Pipeline → Target
+   - Click **Save route** (blue button at bottom)
+   - The route is now active and processing will begin
+
+## Verify Your Route
+
+After saving, you should see:
+- **Solid connection line**: Between device and target (no longer dotted)
+- **Pipeline rectangle**: Blue box on the connection line showing your pipeline name
+- **Route status**: Active and ready to process data
+
+## Test Your Data Flow
+
+Let's verify everything is working:
+
+### Send Test Data
+
+**Linux/macOS:**
+```bash
+logger -n <your-server-ip> -P 514 "Test: DataStream route verification $(date)"
+```
+
+**Windows (if you have a syslog client):**
+```powershell
+# Send test syslog message using your preferred tool
+```
+
+### Check for Processed Data
+
+1. **Navigate to your target directory** (the location you specified in your File target)
+2. **Look for JSON files** with today's date (format: `logs-2024_01_15.json`)
+3. **Open the file** to verify it contains processed data
+
+**Expected output:**
+```json
+{
+  "@timestamp": "2024-01-15T10:30:00.000Z",
+  "message": "Test: DataStream route verification Mon Jan 15 10:30:00 2024",
+  "host": {"name": "your-server"},
+  "log": {"level": "info"},
+  "event": {"category": ["network"]}
+}
+```
+
+### Monitor Processing
+
+1. **Check Director Status**:
+   - Go to **Fleet Management** → **Directors**
+   - Verify "Connected" status
+   - Review **Activity Logs** for processing messages
+
+2. **Review Route Performance**:
+   - Return to **Quick Routes**
+   - Click on your route's blue rectangle
+   - Look for processing statistics or error indicators
+
+## Advanced Route Features
+
+Once your basic route is working, you can explore additional features:
+
+### Add More Pipelines
+
+- Click the **+** button in the middle of your connection line
+- Search for and select additional pipelines
+- Create processing chains for complex transformations
+
+### Edit Route Configuration
+
+- Click on the route's blue rectangle
+- Modify pipeline selections using **Change** or **Remove** options
+- Save changes to update the active route
+
+### Route Filtering
+
+For more advanced routing with conditional logic:
+- Go to **Routes** → **Advanced Routes**
+- Create routes with filtering expressions
+- Direct specific data types to different targets
+
+## Troubleshooting Connection Issues
+
+**Route not processing data?**
+
+1. **Verify all components are enabled**:
+   - Device status: Enabled
+   - Target status: Enabled  
+   - Director status: Connected
+
+2. **Check network connectivity**:
+   - Port 514 open for syslog input
+   - Firewall allows traffic to your device
+   - Target directory exists and is writable
+
+3. **Review processing logs**:
+   - Director Activity Logs for error messages
+   - Device connection status
+   - Pipeline processing errors
+
+**Data format issues?**
+- Verify you selected the correct pipeline template
+- Check that your syslog format matches the pipeline expectations
+- Consider customizing the pipeline for your specific log structure
+
+## What's Next?
+
+Congratulations! Your complete **DataStream** pipeline is now operational. Data flows from your syslog device through your processing pipeline to your file target. 
+
+**Next:** [Monitor and Verify](monitor-and-verify) your data flow to ensure everything is working correctly and learn how to troubleshoot issues.

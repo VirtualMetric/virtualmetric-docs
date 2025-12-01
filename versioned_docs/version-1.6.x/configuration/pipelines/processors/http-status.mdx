@@ -1,0 +1,373 @@
+---
+description: Converts HTTP status codes to human-readable status names
+sidebar_custom_props: 
+  customIcon: 🌐
+  customCategory: Networking
+---
+
+# HTTP Status
+
+<span className="theme-doc-version-badge badge badge--primary">Enrich</span><span className="theme-doc-version-badge badge badge--secondary">Web Standards</span>
+
+## Synopsis
+
+Converts HTTP status codes to their corresponding human-readable status names and descriptions based on RFC specifications and extended server implementations.
+
+## Schema
+
+```yaml {1,3}
+- http_status:
+    description: <text>
+    field: <ident>
+    target_field: <ident>
+    if: <script>
+    ignore_failure: <boolean>
+    ignore_missing: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+The following fields are used to define the processor:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field`|Y||Field containing the HTTP status code|
+|`target_field`|N|Same as `field`|Field to store the status name|
+|`description`|N|-|Explanatory notes|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`ignore_missing`|N|`false`|Continue processing if the field is missing|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The processor accepts HTTP status codes in various formats (string, integer, float) and converts them to standardized status names. It supports a comprehensive range of status codes including:
+
+- **Standard RFC codes**: All official HTTP status codes from RFC 7231, 7232, 7233, 7234, 7235
+- **Informational (1xx)**: Continue, Switching Protocols, Processing, Early Hints
+- **Success (2xx)**: OK, Created, Accepted, No Content, Partial Content
+- **Redirection (3xx)**: Moved Permanently, Found, Not Modified, Temporary Redirect
+- **Client Error (4xx)**: Bad Request, Unauthorized, Forbidden, Not Found, Method Not Allowed
+- **Server Error (5xx)**: Internal Server Error, Bad Gateway, Service Unavailable, Gateway Timeout
+- **Extended codes**: IIS-specific subcodes (400.1, 404.1, etc.), CDN-specific codes, and load balancer codes
+
+:::info
+This processor includes extended status codes from popular web servers (IIS, Apache, Nginx), CDNs (Cloudflare, AWS), and load balancers for comprehensive web traffic analysis.
+:::
+
+:::note
+The processor supports both integer status codes (200, 404) and decimal subcodes (400.1, 500.19) commonly used by Microsoft IIS and other enterprise web servers.
+:::
+
+:::tip
+Use this processor in web access log analysis to make status codes more readable in dashboards and reports. It's particularly useful for identifying specific error conditions through detailed subcode descriptions.
+:::
+
+## Examples
+
+### Basic Status Code Conversion
+
+<ExampleGrid>
+  <CommentCol>
+    Convert a successful HTTP response...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status_code": 200
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: status_code
+    ```
+  </CodeCol>
+  <CommentCol>
+    to its readable name:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "status_code": "OK"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Client Error Identification
+
+<ExampleGrid>
+  <CommentCol>
+    Identify client errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "response_status": "404"
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: response_status
+        target_field: error_description
+    ```
+  </CodeCol>
+  <CommentCol>
+    with descriptive names:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "response_status": "404",
+      "error_description": "Not Found"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Server Error Analysis
+
+<ExampleGrid>
+  <CommentCol>
+    Analyze server errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "http_status": 500
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: http_status
+        target_field: server_error_type
+    ```
+  </CodeCol>
+  <CommentCol>
+    for troubleshooting:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "http_status": 500,
+      "server_error_type": "Internal Server Error"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### IIS Extended Status Codes
+
+<ExampleGrid>
+  <CommentCol>
+    Handle IIS-specific subcodes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "iis_status": "400.1"
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: iis_status
+    ```
+  </CodeCol>
+  <CommentCol>
+    with detailed error descriptions:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "iis_status": "Invalid Destination Header"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Authentication Failures
+
+<ExampleGrid>
+  <CommentCol>
+    Detailed authentication error analysis...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "auth_status": "401.1"
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: auth_status
+        target_field: auth_failure_reason
+    ```
+  </CodeCol>
+  <CommentCol>
+    showing specific failure reasons:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "auth_status": "401.1",
+      "auth_failure_reason": "Logon failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Rate Limiting Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Identify rate limiting responses...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "api_response": 429
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: api_response
+        target_field: throttle_status
+    ```
+  </CodeCol>
+  <CommentCol>
+    for API monitoring:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "api_response": 429,
+      "throttle_status": "Too Many Requests"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### CDN and Load Balancer Codes
+
+<ExampleGrid>
+  <CommentCol>
+    Handle CDN-specific status codes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cloudflare_status": 520
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: cloudflare_status
+    ```
+  </CodeCol>
+  <CommentCol>
+    for infrastructure monitoring:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "cloudflare_status": "Web Server Returned an Unknown Error"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### SSL/TLS Error Identification
+
+<ExampleGrid>
+  <CommentCol>
+    Identify SSL/TLS related errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ssl_error": 525
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: ssl_error
+        target_field: ssl_issue
+    ```
+  </CodeCol>
+  <CommentCol>
+    for security analysis:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ssl_error": 525,
+      "ssl_issue": "SSL Handshake Failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### WebSocket Connection Issues
+
+<ExampleGrid>
+  <CommentCol>
+    Handle WebSocket-specific errors...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ws_status": "400.11"
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: ws_status
+        target_field: websocket_error
+    ```
+  </CodeCol>
+  <CommentCol>
+    for real-time application monitoring:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ws_status": "400.11",
+      "websocket_error": "Invalid WebSocket request"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Unknown Status Codes
+
+<ExampleGrid>
+  <CommentCol>
+    Unrecognized status codes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "custom_status": 999
+    }
+    ```
+    ```yaml
+    - http_status:
+        field: custom_status
+    ```
+  </CodeCol>
+  <CommentCol>
+    default to "Unassigned":
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "custom_status": "Unassigned"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
