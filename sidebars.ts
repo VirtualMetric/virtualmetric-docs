@@ -232,6 +232,8 @@ const sidebars: SidebarsConfig = {
             "configuration/pipelines/conditional-running",
             "configuration/pipelines/handling-failures",
             "configuration/pipelines/handling-success",
+            "configuration/pipelines/schema-drift-detection",
+            "configuration/pipelines/multi-tier-pipelines",
             {
               type: "category",
               label: "Processors",
