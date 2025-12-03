@@ -18,6 +18,9 @@ Converts string values to lowercase.
 ```yaml {2}
 - lowercase:
     field: <ident>
+    target_field: <ident>
+    fields: <string[]>
+    exclude: <string[]>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -25,7 +28,6 @@ Converts string values to lowercase.
     on_failure: <processor[]>
     on_success: <processor[]>
     tag: <string>
-    target_field: <ident>
 ```
 
 ## Configuration
@@ -35,14 +37,16 @@ The following fields are used to define the processor:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`field`|Y|-|Source field containing strings to convert|
-|`description`|N|-|Documentation note|
-|`if`|N|-|Conditional expression|
-|`ignore_failure`|N|`false`|Skip processing errors|
-|`ignore_missing`|N|`false`|Skip if input field missing|
-|`on_failure`|N|-|Error handling processors|
-|`on_success`|N|-|Success handling processors|
-|`tag`|N|-|Identifier for logging|
-|`target_field`|N|`field`|Output field for converted strings|
+|`target_field`|N|Same as `field`|Target field to store lowercase result|
+|`fields`|N|-|Array of fields to convert to lowercase|
+|`exclude`|N|-|Array of fields to exclude from conversion|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|Continue processing if conversion fails|
+|`ignore_missing`|N|`false`|Skip processing if referenced field doesn't exist|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
 
 ## Details
 
