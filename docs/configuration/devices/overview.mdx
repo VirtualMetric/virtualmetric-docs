@@ -39,11 +39,11 @@ All devices share the following base configuration fields:
 |---|---|---|
 |`id`|Y|Unique numeric identifier|
 |`name`|Y|Device name|
-|`description`|-|Optional description of the device's purpose|
+|`description`|N|Optional description of the device's purpose|
 |`type`|Y|Device type identifier (e.g., `http`, `syslog`, `tcp`)|
-|`tags`|-|Array of labels for categorization|
-|`pipelines`|-|Array of preprocessing pipeline references|
-|`status`|-|Boolean flag to enable/disable the device (default: `true`)|
+|`tags`|N|Array of labels for categorization|
+|`pipelines`|N|Array of preprocessing pipeline references (processed sequentially)|
+|`status`|N|Boolean flag to enable/disable the device (default: `true`)|
 
 :::tip
 Each device type provides specific options detailed in its respective section.
@@ -91,23 +91,40 @@ Devices offer various deployment options for different purposes:
 
 The system supports the following device types:
 
-* **Network-Based** - These devices listen for incoming network connections:
-
+* **Network Protocol** - These devices listen for incoming network connections:
   * **HTTP**: Accepts JSON data via HTTP/HTTPS POST requests with authentication options
   * **TCP**: Receives messages over TCP connections with framing and TLS support
   * **UDP**: Collects datagram-based messages with high throughput capabilities
-  * **Syslog**: Specialized for syslog format messages with forwarding capabilities
+  * **Syslog**: Specialized for syslog format messages with RFC compliance
+  * **SMTP**: Receives email messages for log processing
+
+* **Flow Monitoring** - These devices collect network flow data:
+  * **NetFlow**: Cisco NetFlow v5/v9 network traffic analysis
+  * **sFlow**: sFlow sampling-based network monitoring
+  * **IPFix**: IP Flow Information Export (IETF standard)
 
 * **Cloud Integration** - These devices connect to cloud services:
+  * **Azure Blob Storage**: Pulls data from Azure Blob containers
   * **Azure Monitor**: Collects logs from Azure Log Analytics workspaces
+  * **Event Hubs**: Consumes events from Azure Event Hubs
+  * **Microsoft Sentinel**: Pulls security data from Microsoft Sentinel
 
-* **Security-Specific** - These devices integrate with security products:
+* **Message Queue** - These devices consume from messaging platforms:
+  * **Kafka**: Consumes from Apache Kafka topics
+  * **NATS**: Subscribes to NATS messaging subjects
+  * **RabbitMQ**: Consumes from RabbitMQ queues
+  * **Redis**: Subscribes to Redis pub/sub channels
 
-  * **eStreamer**: Connects to eStreamer servers for security event collection
+* **Security Integration** - These devices integrate with security products:
+  * **eStreamer**: Connects to Cisco eStreamer servers
+  * **SNMP Trap**: Receives SNMP trap notifications
 
 * **System Integration** - These devices interact with operating systems:
+  * **Windows**: Collects Windows events via Agent
+  * **Linux**: Collects Linux logs and metrics via Agent
 
-  * **Windows**: Collects Windows events, performance data, and metrics
+* **File Transfer** - These devices receive files:
+  * **TFTP**: Receives files via Trivial File Transfer Protocol
 
 ## Use Cases
 
