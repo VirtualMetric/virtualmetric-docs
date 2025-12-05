@@ -14,7 +14,7 @@ A naive approach routes the event three times, creating three copies flowing thr
 
 ## Staged Routes
 
-DataStream solves this with staged routing. Instead of immediately sending events to destinations, the <Topic id="processors-reroute">reroute</Topic> processor can stage them for later commit. Each subsequent stage to the same destination overwrites the previous version, ensuring only the final, most-normalized form is delivered.
+**DataStream** solves this with staged routing. Instead of immediately sending events to destinations, the <Topic id="processors-reroute">reroute</Topic> processor can stage them for later commit. Each subsequent stage to the same destination overwrites the previous version, ensuring only the final, most-normalized form is delivered.
 
 ```yaml
 processors:
@@ -33,7 +33,6 @@ processors:
   # Stage 3: Normalize to ASIM, overwrite SIEM stage
   - normalize:
       target_format: asim
-      schema: "NetworkSession"
   - reroute:
       destination: "sentinel"
       staging: true
@@ -83,7 +82,6 @@ processors:
   # Normalize to ASIM
   - normalize:
       target_format: asim
-      schema: "NetworkSession"
   - reroute:
       destination: "sentinel"
       table: "ASimNetworkSession"
@@ -102,7 +100,6 @@ processors:
   # Attempt ASIM normalization
   - normalize:
       target_format: asim
-      schema: "NetworkSession"
   - check_schema:
       schema: "ASimNetworkSessionLogs"
       target_field: "asim_check"
@@ -224,6 +221,7 @@ processors:
   - check_schema:
       schema: "CommonSecurityLog"
       target_field: "csl_check"
+      check_mode: "missing"
       on_missing:
         - slack:
             title: "CSL Schema Drift"
@@ -239,6 +237,7 @@ processors:
   - check_schema:
       schema: "ASimNetworkSessionLogs"
       target_field: "asim_check"
+      check_mode: "missing"
       on_missing:
         - pagerduty:
             summary: "ASIM schema drift detected"
