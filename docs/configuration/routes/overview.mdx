@@ -31,7 +31,7 @@ All routes share the following base configuration fields:
 |`description`|N||Optional explanation of the route's purpose|
 |`devices`|N||List of source IDs to collect events from|
 |`if`|N||Expression determining if the route applies to an event|
-|`pipelines`|N||Ordered list of pipelines to process matching events|
+|`pipelines`|N||List of pipelines to process matching events (processed in parallel)|
 |`targets`|N||List of targets to deliver processed events to|
 |`status`|N|`true`|Enable/disable the route|
 
@@ -75,7 +75,7 @@ Forwarding data involves several design patterns (use of pipelines is optional i
 * Multiple sources to multiple targets
   > Syslog + Winlog + Apache → Route [_Normalize_ ∘ _Enrich_] → Cloud Upload + Central Analytics
 
-Routes can include zero or more pipelines. Multiple pipelines will process data sequentially. A pipeline's processors can override routing using the `reroute` processor, and the `final` processor terminates execution.
+Routes can include zero or more pipelines. Multiple pipelines process data in parallel. A pipeline's processors can override routing using the `reroute` processor, and the `final` processor terminates execution.
 
 ## Route Types
 
@@ -93,8 +93,8 @@ Routes can be categorized based on their function in the data flow:
 * **Distribution Routes** - These routes focus on delivering data to targets:
   * Fan-out delivery, redundant storage, or multi-system integration
   
-* **Fallback Routes** - These routes catch any unmatched events:
-  * Default processing for events that don't match specific criteria
+* **Unconditional Routes** - These routes process all events regardless of content:
+  * No `if` condition means every event is processed by this route
 
 ## Use Cases
 
@@ -163,7 +163,7 @@ Some scenarios demonstrating the uses of routes:
 
 ## Implementation Strategies
 
-The following aspects of your telemetry stream must be considered im the implementation of routes:
+The following aspects of your telemetry stream must be considered in the implementation of routes:
 
 * **Conditional Routing**:
 
@@ -176,10 +176,11 @@ The following aspects of your telemetry stream must be considered im the impleme
 
   Key points about route evaluation:
 
+  * All routes are evaluated for every event in parallel
+  * Each route independently filters events using its `if` condition
+  * Events matching multiple route conditions are processed by all matching routes
   * Route conditions are evaluated before pipelines begin their work
-  * The first route that matches processes the event
-  * Pipelines can modify the flow or direction of the data
-  * Multiple targets receive identical copies of the same data
+  * Multiple targets within a route receive identical copies of the same data
 
   Examples of conditional routing:
 
@@ -201,9 +202,9 @@ The following aspects of your telemetry stream must be considered im the impleme
         - name: logs_elasticsearch
   ```
 
-* **Priority-Based Processing**:
+* **Parallel Route Processing**:
 
-  Routes with higher priority&mdash;which is indicated by their relative position in the tree&mdash;are processed first:
+  All routes are processed concurrently. Use distinct `if` conditions to control which events each route handles:
 
   ```yaml
   routes:
@@ -211,16 +212,18 @@ The following aspects of your telemetry stream must be considered im the impleme
       if: "event.severity == 'critical'"
       targets:
         - name: alerting_system
-    
+
     - name: security_events
       if: "event.category == 'security'"
       targets:
         - name: security_platform
-    
+
     - name: general_logs
       targets:
         - name: log_storage
   ```
+
+  In this example, a critical security event would be processed by all three routes simultaneously.
 
 * **Device Selection**:
 
@@ -239,9 +242,9 @@ The following aspects of your telemetry stream must be considered im the impleme
         - name: network_monitoring
   ```
 
-* **Pipeline Chaining**:
+* **Multiple Pipelines**:
 
-  Routes can apply multiple pipelines in sequence:
+  Routes can apply multiple pipelines, which are processed in parallel:
 
   ```yaml
   routes:
@@ -250,12 +253,14 @@ The following aspects of your telemetry stream must be considered im the impleme
         - web_server_logs
       if: "event.category == 'web' && event.type == 'attack'"
       pipelines:
-        - common_enrichment  # Applied first
-        - attack_detection   # Applied second
-        - threat_scoring     # Applied third
+        - common_enrichment
+        - attack_detection
+        - threat_scoring
       targets:
         - security_elasticsearch
   ```
+
+  Each pipeline processes the event data independently and concurrently.
 
 * **Multi-Target Delivery**:
 
@@ -273,9 +278,9 @@ The following aspects of your telemetry stream must be considered im the impleme
         - name: auditor_webhook           # For real-time notification
   ```
 
-* **Fallback Routes**:
+* **Unconditional Routes**:
 
-  Routes without conditions act as catch-all handlers for unmatched events:
+  Routes without an `if` condition process all events:
 
   ```yaml
   routes:
@@ -283,12 +288,14 @@ The following aspects of your telemetry stream must be considered im the impleme
       if: "event.category == 'security'"
       targets:
         - name: security_elasticsearch
-    
-    - name: fallback_route
-      # No if means this captures everything not matched above
+
+    - name: all_events
+      # No if condition - processes every event
       targets:
         - name: general_elasticsearch
   ```
+
+  Since routes run in parallel, events matching `primary_security` will also be processed by `all_events`.
 
 * **Route Templates**:
 
@@ -305,25 +312,3 @@ The following aspects of your telemetry stream must be considered im the impleme
         - ${TARGET_SYSTEM}
   ```
 
-* **Conditional Targets**:
-
-  Apply different targets based on event properties.
-
-  ```yaml
-  routes:
-    - name: adaptive_routing
-      pipelines:
-        - name: event_classifier
-          processors:
-            - set:
-                field: _route_target
-                value: "{{ event.priority > 7 ? 'high_priority' : 'standard' }}"
-      targets:      
-        - script:
-          source:|
-            if (ctx._route_target == 'high_priority') {
-              return ['urgent_elasticsearch', 'notification_system'];
-            } else {
-              return ['standard_elasticsearch'];
-            }
-  ```

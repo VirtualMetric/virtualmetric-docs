@@ -15,14 +15,16 @@ Wraps text to specified widths by inserting line breaks.
 
 ## Schema
 
-```yaml {2-4}
+```yaml {2,3}
 - text_wrap:
     field: <ident>
     width: <integer>
-    break_on_words: <boolean>
-    target_field: <string>
+    target_field: <ident>
     indent: <string>
-    break_character: <string>
+    line_separator: <string>
+    break_long_words: <boolean>
+    preserve_lines: <boolean>
+    trim_whitespace: <boolean>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -40,10 +42,12 @@ The following fields are used to define the processor:
 |---|---|---|---|
 |`field`|Y|-|Source field containing text to wrap|
 |`width`|Y|-|Maximum line width in characters|
-|`break_on_words`|N|`true`|Break at word boundaries instead of character boundaries|
 |`target_field`|N|Same as `field`|Target field to store wrapped text|
 |`indent`|N|-|String to indent each line (e.g., "  " for spaces)|
-|`break_character`|N|`\n`|Character to use for line breaks|
+|`line_separator`|N|`\n`|Line separator character|
+|`break_long_words`|N|`false`|Break words longer than width|
+|`preserve_lines`|N|`false`|Preserve existing line breaks|
+|`trim_whitespace`|N|`false`|Trim whitespace from lines|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if wrapping fails|
@@ -59,13 +63,13 @@ Formats text by inserting line breaks at specified intervals to ensure lines don
 The processor supports various formatting options including custom indentation, line break characters, and word-boundary preservation.
 
 :::note
-When `break_on_words` is enabled (default), the processor avoids breaking words in the middle, which may result in lines shorter than the specified width. When disabled, lines will be exactly the specified width regardless of word boundaries.
+When `break_long_words` is disabled (default), words longer than the specified width will not be broken. When enabled, long words will be split to fit within the width limit.
 :::
 
 The processor handles Unicode characters correctly and counts display width rather than byte length, ensuring proper formatting for international text.
 
 :::warning
-Very long words that exceed the specified width will be broken at character boundaries even when `break_on_words` is enabled, to prevent infinite line lengths.
+Very long words that exceed the specified width will remain unbroken unless `break_long_words` is enabled.
 :::
 
 ## Examples
@@ -151,7 +155,7 @@ Very long words that exceed the specified width will be broken at character boun
     - text_wrap:
         field: log_message
         width: 15
-        break_on_words: false
+        break_long_words: true
         target_field: wrapped_log
     ```
   </CodeCol>
@@ -184,7 +188,7 @@ Very long words that exceed the specified width will be broken at character boun
     - text_wrap:
         field: tags
         width: 20
-        break_character: " | "
+        line_separator: " | "
         target_field: tag_list
     ```
   </CodeCol>
