@@ -1,0 +1,257 @@
+---
+description: Sends alert notifications to Microsoft Teams via webhook
+sidebar_custom_props:
+  customIcon: 🔔
+  customCategory: Notification
+---
+
+# MS Teams
+
+<span className="theme-doc-version-badge badge badge--primary">Notification</span>
+
+## Synopsis
+
+Sends alert notifications to Microsoft Teams channels using incoming webhooks, supporting Adaptive Card formatting with titles, text, facts, actions, and theme colors.
+
+## Schema
+
+```yaml {3-4}
+- msteams:
+    webhook_url: <string>
+    title: <string>
+    text: <string>
+    subtitle: <string>
+    image: <string>
+    theme_color: <string>
+    width: <string>
+    facts: <fact[]>
+    actions: <action[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`webhook_url`|N|`${MSTEAMS_WEBHOOK_URL}`|Microsoft Teams incoming webhook URL|
+|`title`|Y|-|Card title displayed prominently|
+|`text`|Y|-|Main message body text|
+|`subtitle`|N|-|Subtitle displayed below the title|
+|`image`|N|VirtualMetric icon|URL to image displayed in the card|
+|`theme_color`|N|`#47BEFF`|Card accent color: `good`, `warning`, `danger`, `info`, or hex code|
+|`width`|N|`Full`|Card width: `Full` for full-width cards|
+|`facts`|N|-|Array of fact objects with `title` and `value` fields|
+|`actions`|N|-|Array of action objects with `title` and `url` fields|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The msteams processor sends notifications to Microsoft Teams channels using incoming webhooks with Adaptive Card formatting.
+
+**Webhook Setup**: Create an incoming webhook in Teams:
+1. Open the target channel
+2. Click "..." → "Connectors" or "Workflows"
+3. Add "Incoming Webhook" connector
+4. Copy the webhook URL
+
+**Theme Colors**: Visual severity indicators for the card's accent stripe:
+- `good` / green hex: Success, resolved incidents
+- `warning` / orange hex: Warnings, degraded states
+- `danger` / red hex: Errors, critical alerts
+- `info` / blue hex: Informational messages
+- Custom hex codes (e.g., `#FF5733`) for brand colors
+
+**Facts**: Key-value pairs displayed in a structured format:
+```yaml
+facts:
+  - title: "Server"
+    value: "{{ .hostname }}"
+  - title: "CPU"
+    value: "{{ .cpu_usage }}%"
+```
+
+**Actions**: Clickable buttons linking to external resources:
+```yaml
+actions:
+  - title: "View Dashboard"
+    url: "https://dashboard.example.com/{{ .server }}"
+```
+
+**Template Support**: All string fields support Go template syntax with event field interpolation using `{{ .field_name }}`.
+
+For integration patterns with schema validation, see <Topic id="pipelines-schema-drift-detection">Schema Drift Detection</Topic>.
+
+## Examples
+
+### Basic Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Sending a simple alert notification...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "High CPU Usage",
+      "server": "prod-server-01",
+      "cpu_usage": "95%"
+    }
+    ```
+    ```yaml
+    - msteams:
+        webhook_url: "${MSTEAMS_WEBHOOK_URL}"
+        title: "Alert: {{ .alert_name }}"
+        text: "CPU usage is at {{ .cpu_usage }} on server {{ .server }}"
+        theme_color: "danger"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Red-themed alert card sent to Teams channel...
+  </CommentCol>
+</ExampleGrid>
+
+### Card with Facts
+
+<ExampleGrid>
+  <CommentCol>
+    Including structured data as facts...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "Schema Drift Detected",
+      "schema": "ASimNetworkSessionLogs",
+      "missing": "3 required fields"
+    }
+    ```
+    ```yaml
+    - msteams:
+        webhook_url: "${MSTEAMS_WEBHOOK_URL}"
+        title: "{{ .alert_name }}"
+        text: "Schema validation failed"
+        theme_color: "warning"
+        facts:
+          - title: "Schema"
+            value: "{{ .schema }}"
+          - title: "Missing Fields"
+            value: "{{ .missing }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Facts displayed in structured format below text...
+  </CommentCol>
+</ExampleGrid>
+
+### Card with Actions
+
+<ExampleGrid>
+  <CommentCol>
+    Adding clickable action buttons...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "Database Connection Failed",
+      "server": "db-server-01"
+    }
+    ```
+    ```yaml
+    - msteams:
+        webhook_url: "${MSTEAMS_WEBHOOK_URL}"
+        title: "{{ .alert_name }}"
+        text: "Connection to {{ .server }} failed"
+        theme_color: "danger"
+        actions:
+          - title: "View Dashboard"
+            url: "https://dashboard.example.com/servers/{{ .server }}"
+          - title: "View Logs"
+            url: "https://logs.example.com/{{ .server }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Action buttons link to dashboards and logs...
+  </CommentCol>
+</ExampleGrid>
+
+### Complete Card
+
+<ExampleGrid>
+  <CommentCol>
+    Full-featured card with all elements...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_type": "Critical",
+      "server": "prod-server-01",
+      "cpu_usage": "95%",
+      "memory_used": "87%",
+      "disk_space": "92%"
+    }
+    ```
+    ```yaml
+    - msteams:
+        webhook_url: "${MSTEAMS_WEBHOOK_URL}"
+        title: "{{ .alert_type }} Alert"
+        subtitle: "Server: {{ .server }}"
+        text: "Server resources are critically high"
+        image: "https://example.com/alert-icon.png"
+        theme_color: "danger"
+        width: "Full"
+        facts:
+          - title: "CPU Usage"
+            value: "{{ .cpu_usage }}"
+          - title: "Memory Used"
+            value: "{{ .memory_used }}"
+          - title: "Disk Space"
+            value: "{{ .disk_space }}"
+        actions:
+          - title: "View Dashboard"
+            url: "https://dashboard.example.com/{{ .server }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Full-width card with image, facts, and actions...
+  </CommentCol>
+</ExampleGrid>
+
+### Schema Drift Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Alerting on schema validation failures...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - check_schema:
+          schema: "ASimNetworkSessionLogs"
+          target_field: "schema_check"
+          on_missing:
+            - msteams:
+                webhook_url: "${MSTEAMS_WEBHOOK_URL}"
+                title: "Schema Validation Failed"
+                subtitle: "Data Quality Alert"
+                text: "Missing required fields detected"
+                theme_color: "danger"
+                facts:
+                  - title: "Schema"
+                    value: "ASimNetworkSessionLogs"
+                  - title: "Valid"
+                    value: "{{ .schema_check.is_valid }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Alert triggered automatically when schema drift detected...
+  </CommentCol>
+</ExampleGrid>

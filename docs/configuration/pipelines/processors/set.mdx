@@ -18,17 +18,20 @@ Sets a field and associates it with a specified value.
 ```yaml {2}
 - set:
     field: <ident>
+    value: <any>
     copy_from: <ident>
+    override: <boolean>
+    media_type: <enum>
+    deep_copy: <boolean>
+    fields: <SetField[]>
     description: <text>
     if: <script>
     ignore_empty_value: <boolean>
+    ignore_missing: <boolean>
     ignore_failure: <boolean>
-    media_type: <enum>
     on_failure: <processor[]>
     on_success: <processor[]>
-    override: <boolean>
     tag: <string>
-    value: <any>
 ```
 
 ## Configuration
@@ -38,17 +41,20 @@ The following fields are used to define the processor:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`field`|Y|-|Field to update|
+|`value`|N|-|Value to set. Cannot be used if `copy_from` is specified|
 |`copy_from`|N|-|Field whose value will be copied to `field`. Cannot be used if `value` is specified|
+|`override`|N|`true`|If `false`, do not update fields that already have a non-null value|
+|`media_type`|N|`application/json`|For encoding `value`. Valid options: `application/json`, `text/plain`, or `application/x-www-form-urlencoded`|
+|`deep_copy`|N|`false`|If `true`, perform deep copy of nested objects|
+|`fields`|N|-|Array of field/value pairs for setting multiple fields at once|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_empty_value`|N|`false`|If `true`, quietly exit if specified field does not exist or its value is `null`/empty|
+|`ignore_missing`|N|`false`|If `true`, continue silently if source field doesn't exist|
 |`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
-|`media_type`|N|`application/json`|For encoding `value`. Valid options: `application/json`, `text/plain`, or `application/x-www-form-urlencoded`|
 |`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
 |`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
-|`override`|N|`true`|If `false`, do not update fields that already have a non-null value|
 |`tag`|N|-|Identifier|
-|`value`|N|-|Value to set. Cannot be used if `copy_from` is specified|
 
 ## Details
 
