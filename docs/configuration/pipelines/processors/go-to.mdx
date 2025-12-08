@@ -15,9 +15,9 @@ Jumps to specific points in the processing pipeline.
 
 ## Schema
 
-```yaml {2}
+```yaml
 - go_to:
-    target: <string>
+    target_tag: <string>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -33,7 +33,7 @@ The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`target`|Y|-|Tag of the target processor to jump to|
+|`target_tag`|N|-|Tag of the target processor to jump to|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if operation fails|
@@ -72,7 +72,7 @@ Be careful to avoid infinite loops when using go_to processors. Ensure that your
         field: step
         value: "start"
     - go_to:
-        target: "validation_step"
+        target_tag: "validation_step"
     - set:
         field: skipped
         value: true
@@ -103,7 +103,7 @@ Be careful to avoid infinite loops when using go_to processors. Ensure that your
   <CodeCol>
     ```yaml
     - go_to:
-        target: "error_handler"
+        target_tag: "error_handler"
         if: "logEntry.error_code != null"
     - set:
         field: normal_processing
@@ -143,7 +143,7 @@ Be careful to avoid infinite loops when using go_to processors. Ensure that your
               field: validation_error
               value: true
           - go_to:
-              target: "cleanup"
+              target_tag: "cleanup"
     - set:
         field: processed
         value: true
@@ -176,17 +176,17 @@ Be careful to avoid infinite loops when using go_to processors. Ensure that your
   <CodeCol>
     ```yaml
     - go_to:
-        target: "admin_flow"
+        target_tag: "admin_flow"
         if: "logEntry.user_role == 'admin'"
     - go_to:
-        target: "user_flow"
+        target_tag: "user_flow"
         if: "logEntry.user_role == 'user'"
     - set:
         field: user_type
         value: "standard"
         tag: "user_flow"
     - go_to:
-        target: "final_step"
+        target_tag: "final_step"
     - set:
         field: user_type
         value: "administrator"
@@ -228,7 +228,7 @@ Be careful to avoid infinite loops when using go_to processors. Ensure that your
         operation: "add"
         value: 1
     - go_to:
-        target: "loop_start"
+        target_tag: "loop_start"
         if: "logEntry.counter < 3"
     - set:
         field: loop_complete

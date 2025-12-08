@@ -15,13 +15,13 @@ Enriches events by querying the **VirusTotal** API for threat intelligence about
 
 ## Schema
 
-```yaml {2,3}
+```yaml {2-4}
 - virustotal:
     field: <ident>
     api_key: <string>
     query_type: <enum>
-    interval: <numeric>
     timeout: <numeric>
+    target_field: <ident>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -29,7 +29,6 @@ Enriches events by querying the **VirusTotal** API for threat intelligence about
     on_failure: <processor[]>
     on_success: <processor[]>
     tag: <string>
-    target_field: <ident>
 ```
 
 ## Configuration
@@ -40,9 +39,8 @@ The following fields are used to define the processor:
 |---|---|---|---|
 |`field`|Y|-|Field containing hash, URL, domain, or IP to query|
 |`api_key`|Y|`${VIRUSTOTAL_API_KEY}`|VirusTotal API key for authentication|
-|`query_type`|N|`hash`|Type of query: `hash`, `url`, `domain`, or `ip`|
-|`interval`|N|1|Polling interval in seconds for URL analysis|
-|`timeout`|N|10|Maximum number of polling attempts|
+|`query_type`|Y|-|Type of query: `hash`, `url`, `domain`, or `ip`|
+|`timeout`|N|`10`|Request timeout in seconds|
 |`target_field`|N|`field`|Field to store the API response|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
@@ -218,7 +216,6 @@ Error handling and success/failure options are supported as well.
     - virustotal:
         field: url
         query_type: url
-        interval: 2
         timeout: 15
         target_field: url_analysis
         api_key: "${VIRUSTOTAL_API_KEY}"

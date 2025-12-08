@@ -15,11 +15,13 @@ Enriches events by sending field content to **Anthropic**'s Claude API to analyz
 
 ## Schema
 
-```yaml {2-3}
+```yaml
 - anthropic:
     field: <ident>
     api_key: <string>
+    base_url: <string>
     target_field: <ident>
+    prompt: <string>
     developer_msg: <string>
     description: <text>
     if: <script>
@@ -39,9 +41,11 @@ The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|`message`|Field containing content to analyze|
-|`api_key`|Y|-|Anthropic API key for authentication|
+|`field`|N|`message`|Field containing content to analyze|
+|`api_key`|N|`${ANTHROPIC_SECRET_KEY}`|Anthropic API key for authentication|
+|`base_url`|N|`https://api.anthropic.com/v1/messages`|API endpoint URL|
 |`target_field`|N|`field`|Field to store the API response|
+|`prompt`|N|`Return the context of the message.`|Analysis prompt sent with the field content|
 |`developer_msg`|N|System message for context|Default system message for one-word responses unless explanation requested|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|

@@ -1,0 +1,299 @@
+---
+description: Sends alert notifications to Telegram via Bot API
+sidebar_custom_props:
+  customIcon: 🔔
+  customCategory: Notification
+---
+
+# Telegram
+
+<span className="theme-doc-version-badge badge badge--primary">Notification</span>
+
+## Synopsis
+
+Sends alert notifications to Telegram chats using the Bot API, supporting HTML and Markdown formatting, severity-based emojis, silent notifications, and configurable message options.
+
+## Schema
+
+```yaml {4}
+- telegram:
+    bot_token: <string>
+    chat_id: <string>
+    message: <string>
+    parse_mode: <string>
+    disable_notification: <boolean>
+    disable_web_page_preview: <boolean>
+    severity: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`bot_token`|N|`${TELEGRAM_BOT_TOKEN}`|Telegram bot token|
+|`chat_id`|N|`${TELEGRAM_CHAT_ID}`|Target chat ID (user, group, or channel)|
+|`message`|Y|-|Message text to send|
+|`parse_mode`|N|`HTML`|Text formatting mode: `HTML`, `Markdown`, or `MarkdownV2`|
+|`disable_notification`|N|`false`|Send message silently without notification sound|
+|`disable_web_page_preview`|N|`false`|Disable link preview generation|
+|`severity`|N|-|Severity level for emoji prefix: `info`, `warning`, `critical`, or `resolved`|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The telegram processor sends notifications to Telegram chats using the Bot API.
+
+**Bot Setup**: Create a Telegram bot:
+1. Message [@BotFather](https://t.me/botfather) on Telegram
+2. Send `/newbot` and follow the prompts
+3. Copy the bot token provided
+4. Add the bot to your target chat/group/channel
+
+**Chat ID**: The target for messages. Types include:
+- Positive numbers: Private chats with users
+- Negative numbers: Group chats (e.g., `-1001234567890`)
+- Channel usernames: `@channelname`
+
+**Parse Modes**: Control text formatting:
+- `HTML`: Use HTML tags (`<b>`, `<i>`, `<code>`, `<a href="">`, etc.)
+- `Markdown`: Use Markdown syntax (`*bold*`, `_italic_`, backticks for code)
+- `MarkdownV2`: Enhanced Markdown with more features
+
+**Severity Emojis**: When `severity` is set, an emoji prefix is added:
+- `resolved` / `success` / `good`: ✔️
+- `critical` / `danger` / `error`: ‼️
+- `warning` / `high`: ⚠️
+- `info` / `low`: ℹ️
+
+**Silent Notifications**: Set `disable_notification: true` for non-urgent messages that shouldn't trigger notification sounds.
+
+**Template Support**: All string fields support Go template syntax with event field interpolation using `{{ .field_name }}`.
+
+For integration patterns with schema validation, see <Topic id="pipelines-schema-drift-detection">Schema Drift Detection</Topic>.
+
+## Examples
+
+### Basic Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Sending a simple alert notification...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_name": "High CPU Usage",
+      "server": "prod-server-01",
+      "cpu_usage": "95%"
+    }
+    ```
+    ```yaml
+    - telegram:
+        bot_token: "${TELEGRAM_BOT_TOKEN}"
+        chat_id: "${TELEGRAM_CHAT_ID}"
+        message: "Alert: {{ .alert_name }}\nCPU usage is at {{ .cpu_usage }} on server {{ .server }}"
+        severity: "critical"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Message sent with ‼️ critical emoji prefix...
+  </CommentCol>
+</ExampleGrid>
+
+### HTML Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Using HTML formatting for rich messages...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_type": "Schema Drift",
+      "schema": "ASimNetworkSessionLogs",
+      "missing": "3 required fields"
+    }
+    ```
+    ```yaml
+    - telegram:
+        bot_token: "${TELEGRAM_BOT_TOKEN}"
+        chat_id: "${TELEGRAM_CHAT_ID}"
+        message: "<b>{{ .alert_type }} Detected</b>\n<i>Schema:</i> {{ .schema }}\n<u>Missing:</u> {{ .missing }}"
+        parse_mode: "HTML"
+        severity: "warning"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Bold title with italic and underlined labels...
+  </CommentCol>
+</ExampleGrid>
+
+### Markdown Formatting
+
+<ExampleGrid>
+  <CommentCol>
+    Using Markdown for simpler formatting...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "server": "db-server-01",
+      "status": "Connection Failed",
+      "details": "Unable to establish connection"
+    }
+    ```
+    ```yaml
+    - telegram:
+        bot_token: "${TELEGRAM_BOT_TOKEN}"
+        chat_id: "${TELEGRAM_CHAT_ID}"
+        message: "*Server:* {{ .server }}\n*Status:* {{ .status }}\n_Details:_ {{ .details }}"
+        parse_mode: "Markdown"
+        severity: "critical"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Markdown formatting with bold and italic text...
+  </CommentCol>
+</ExampleGrid>
+
+### Silent Notification
+
+<ExampleGrid>
+  <CommentCol>
+    Sending non-urgent information silently...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "info": "System maintenance scheduled"
+    }
+    ```
+    ```yaml
+    - telegram:
+        bot_token: "${TELEGRAM_BOT_TOKEN}"
+        chat_id: "${TELEGRAM_CHAT_ID}"
+        message: "{{ .info }}"
+        disable_notification: true
+        severity: "info"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Message delivered without notification sound...
+  </CommentCol>
+</ExampleGrid>
+
+### Complete Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Full-featured alert with all formatting options...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "alert_type": "Critical System Alert",
+      "server": "prod-web-01",
+      "cpu_usage": "95%",
+      "memory_used": "87%",
+      "disk_space": "92%",
+      "uptime": "45 days",
+      "dashboard": "https://monitoring.example.com/prod-web-01"
+    }
+    ```
+    ```yaml
+    - telegram:
+        bot_token: "${TELEGRAM_BOT_TOKEN}"
+        chat_id: "${TELEGRAM_CHAT_ID}"
+        message: |
+          <b>{{ .alert_type }}</b>
+
+          <b>Server:</b> <code>{{ .server }}</code>
+          <b>Uptime:</b> {{ .uptime }}
+
+          <b>Resource Usage:</b>
+          • CPU: {{ .cpu_usage }}
+          • Memory: {{ .memory_used }}
+          • Disk: {{ .disk_space }}
+
+          <a href="{{ .dashboard }}">View Dashboard</a>
+
+          <i>Action required: Resources critically high</i>
+        parse_mode: "HTML"
+        severity: "critical"
+        disable_web_page_preview: false
+    ```
+  </CodeCol>
+  <CommentCol>
+    Rich formatted message with dashboard link preview...
+  </CommentCol>
+</ExampleGrid>
+
+### Schema Drift Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Alerting on schema validation failures...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - check_schema:
+          schema: "ASimNetworkSessionLogs"
+          target_field: "schema_check"
+          on_missing:
+            - telegram:
+                bot_token: "${TELEGRAM_BOT_TOKEN}"
+                chat_id: "${TELEGRAM_CHAT_ID}"
+                message: |
+                  <b>Schema Validation Failed</b>
+
+                  <b>Schema:</b> ASimNetworkSessionLogs
+                  <b>Status:</b> Invalid
+
+                  <i>Please update your schema to include all required fields.</i>
+                parse_mode: "HTML"
+                severity: "warning"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Alert triggered automatically when schema drift detected...
+  </CommentCol>
+</ExampleGrid>
+
+### Dynamic Chat ID
+
+<ExampleGrid>
+  <CommentCol>
+    Routing messages to different chats based on event data...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "chat_id": "-1001234567890",
+      "message": "Alert for specific team"
+    }
+    ```
+    ```yaml
+    - telegram:
+        bot_token: "${TELEGRAM_BOT_TOKEN}"
+        chat_id: "{{ .chat_id }}"
+        message: "{{ .message }}"
+        severity: "info"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Message routed to team-specific chat...
+  </CommentCol>
+</ExampleGrid>
+

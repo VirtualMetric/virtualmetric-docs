@@ -18,6 +18,19 @@ Enables dynamic routing of logs to different target systems based on pipeline pr
 ```yaml {2}
 - reroute:
     destination: <string>
+    target: <string>
+    source: <string>
+    table: <string>
+    index: <string>
+    schema: <string>
+    bucket: <string>
+    container: <string>
+    stream: <string>
+    topic: <string>
+    log_type: <string>
+    namespace: <string>
+    clone: <boolean>
+    staging: <boolean | string>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -32,7 +45,20 @@ The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`destination`|Y|-|Name of the target system configuration to route to|
+|`destination`|Y*|-|Name of the target system configuration to route to|
+|`target`|N|-|Alias for `destination`|
+|`source`|N|-|Source identifier override for the routed event|
+|`table`|N|-|Database table or collection name (Sentinel, Data Explorer)|
+|`index`|N|-|Search index name (Elasticsearch, Splunk)|
+|`schema`|N|-|Schema identifier (ASIM tables, OCSF categories)|
+|`bucket`|N|-|Storage bucket name (S3, Blob Storage, GCS)|
+|`container`|N|-|Storage container name (Azure Blob Storage)|
+|`stream`|N|-|Data stream identifier (Kinesis, Event Hubs)|
+|`topic`|N|-|Message topic name (Kafka, Pub/Sub)|
+|`log_type`|N|-|Log type classifier (Chronicle, various SIEMs)|
+|`namespace`|N|-|Namespace identifier (Kubernetes, multi-tenant systems)|
+|`clone`|N|`false`|Send a copy while preserving original destination metadata|
+|`staging`|N|`false`|Stage the route for later commit instead of immediate delivery|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
@@ -40,23 +66,50 @@ The following fields are used to define the processor:
 |`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
 |`tag`|N|-|Identifier|
 
+\* Required unless one or more metadata fields (`table`, `index`, `schema`, etc.) are specified.
+
 ## Details
 
-The Reroute processor is a powerful feature that allows you to make routing decisions after processing your logs through pipelines.
+The Reroute processor enables dynamic routing decisions after pipeline processing. While basic routing is configured at the source level, Reroute implements complex routing logic based on conditions or transformations.
 
-While basic routing can be configured at the source level, Reroute gives you the ability to implement complex routing logic that depends on multiple conditions or transformations, and to route logs to different destinations based on the content extracted or transformed.
+### Destination Metadata
+
+The metadata fields (`table`, `index`, `schema`, etc.) set destination-specific routing information that targets use for organization. These fields support template syntax for dynamic values:
+
+```yaml
+- reroute:
+    destination: "sentinel"
+    table: "{{ .target_table }}"
+    schema: "{{ .schema_name }}"
+```
+
+### Staged Routing
+
+When `staging: true`, the event is held in a staging area instead of being delivered immediately. Subsequent staged routes to the same destination overwrite the previous staged version. Use the `commit` processor to finalize all staged routes.
+
+The `staging` field accepts:
+- `true` / `false` - Direct boolean value
+- Template string - Evaluated at runtime (e.g., `"{{ .needs_staging }}"`)
+
+This enables multi-tier pipelines where data is progressively normalized, with only the final version delivered to each destination. See <Topic id="pipelines-multi-tier">Multi-Tier Pipelines</Topic> for detailed patterns.
+
+### Clone Mode
+
+When `clone: true`, the processor sends a copy of the event to the destination while preserving the original destination metadata for subsequent processors. This is useful when you need both the current state and a later processed state delivered separately.
 
 :::warning
-Make sure the `destination` field matches exactly with a target system name in your configuration. Only one reroute processor will be executed even if there are multiple matches.
+Make sure the `destination` field matches exactly with a target system name in your configuration.
 :::
 
-The Reroute processor is particularly useful to achieve the following:
+Common use cases:
 
 * **Security** - Parse and normalize logs, enrich with threat intelligence, and route high-risk events to security platforms
 
 * **Compliance** - Filter sensitive data, apply transformations, and route them to compliance-mandated destinations
 
 * **Cost reduction** - Process high-volume logs, filter out unnecessary data, and route relevant logs to premium storage/analysis platforms
+
+* **Multi-tier normalization** - Progressive normalization with staged routing to deliver appropriate formats to each destination
 
 ## Examples
 
@@ -165,4 +218,102 @@ The Reroute processor is particularly useful to achieve the following:
               destination: standard_logs
     ```
   </CodeCol>
+</ExampleGrid>
+
+### Staged Routes
+
+<ExampleGrid>
+  <CommentCol>
+    Stage routes for multi-tier normalization...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: multi_tier_normalization
+        processors:
+          # Stage raw format
+          - reroute:
+              destination: "archive"
+              table: "Syslog"
+              staging: true
+
+          # Normalize to CSL and stage
+          - normalize:
+              target_format: csl
+          - reroute:
+              destination: "sentinel"
+              table: "CommonSecurityLog"
+              staging: true
+
+          # Normalize to ASIM and stage (overwrites previous)
+          - normalize:
+              target_format: asim
+          - reroute:
+              destination: "sentinel"
+              table: "ASimNetworkSession"
+              staging: true
+
+          # Commit all staged routes
+          - commit:
+    ```
+  </CodeCol>
+  <CommentCol>
+    Each staged route to the same destination overwrites the previous version, delivering only the final normalized form.
+  </CommentCol>
+</ExampleGrid>
+
+### With Metadata
+
+<ExampleGrid>
+  <CommentCol>
+    Route with destination-specific metadata...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - reroute:
+        destination: "sentinel"
+        table: "ASimNetworkSession"
+        schema: "NetworkSession"
+        source: "firewall-cluster-01"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Use templates for dynamic metadata values...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - reroute:
+        destination: "data_lake"
+        bucket: "logs-{{ .environment }}"
+        namespace: "{{ .kubernetes.namespace }}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Clone Mode
+
+<ExampleGrid>
+  <CommentCol>
+    Send raw to archive while continuing processing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    pipelines:
+      - name: archive_and_process
+        processors:
+          # Send raw copy to archive
+          - reroute:
+              destination: "archive"
+              clone: true
+
+          # Continue processing for SIEM
+          - normalize:
+              target_format: asim
+          - reroute:
+              destination: "sentinel"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Clone preserves original destination metadata for subsequent processors.
+  </CommentCol>
 </ExampleGrid>
