@@ -7,60 +7,63 @@ This guide provides solutions to common Director deployment and operational issu
 ### Director Cannot Connect to Cloud Platform
 
 **Symptoms:**
-- Director status shows as "Not Connected" (red indicator)
+- Director status shows "Not Connected" in the web dashboard
 - Connection verification fails during setup
 - Timeout errors in Director logs
 
 **Resolution Steps:**
 
-1. **Validate Network Connectivity**
+1. **Verify Regional Endpoint**
+   - Confirm you are using the correct regional URL for your account:
+     - Europe: `https://app.eu-west.cloud.virtualmetric.com`
+     - US: `https://app.us-east.cloud.virtualmetric.com`
+     - Australia: `https://app.aus-east.cloud.virtualmetric.com`
+   - Select your region at [virtualmetric.com/select-your-region-login](https://www.virtualmetric.com/select-your-region-login/)
+
+2. **Validate Network Connectivity**
    - Ensure port 443 is open for outbound HTTPS connections
    - Verify DNS resolution is working properly
-   - Test connectivity: `curl -I https://portal.virtualmetric.com`
+   - Test connectivity to your regional endpoint
 
-2. **Check Firewall Configuration**
-   - Allow outbound connections to `*.virtualmetric.com` domains
+3. **Check Firewall Configuration**
+   - Allow outbound connections to `*.cloud.virtualmetric.com` domains
    - Ensure no SSL/TLS inspection is blocking certificate validation
    - Verify proxy configurations if applicable
 
-3. **Validate API Key**
+4. **Validate API Key**
    - Confirm the API key was copied correctly during installation
    - Check for extra spaces or line breaks in the key
-   - Regenerate API key if corruption is suspected
+   - Regenerate API key from the dashboard if corruption is suspected
 
-4. **Review System Time**
-   - Ensure system clock is synchronized (certificate validation requirement)
+5. **Review System Time**
+   - Ensure system clock is synchronized (required for certificate validation)
    - Use NTP to maintain accurate time synchronization
-   - Check timezone configuration matches your location
 
-**Additional Diagnostics:**
+**Diagnostic Commands:**
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    # Test DNS resolution
-    Resolve-DnsName portal.virtualmetric.com
+    # Test DNS resolution (replace with your region)
+    Resolve-DnsName app.eu-west.cloud.virtualmetric.com
 
     # Check outbound connectivity
-    Test-NetConnection -ComputerName portal.virtualmetric.com -Port 443
+    Test-NetConnection -ComputerName app.eu-west.cloud.virtualmetric.com -Port 443
 
-    # Verify certificate chain
-    $uri = "https://portal.virtualmetric.com"
-    $request = [System.Net.HttpWebRequest]::Create($uri)
-    $request.GetResponse() | Out-Null
-    $request.ServicePoint.Certificate
+    # Verify TLS connectivity
+    Invoke-WebRequest -Uri "https://app.eu-west.cloud.virtualmetric.com" -Method Head -UseBasicParsing
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    # Test DNS resolution
-    nslookup portal.virtualmetric.com
+    # Test DNS resolution (replace with your region)
+    nslookup app.eu-west.cloud.virtualmetric.com
 
     # Check outbound connectivity
-    telnet portal.virtualmetric.com 443
+    nc -zv app.eu-west.cloud.virtualmetric.com 443
 
-    # Verify certificate chain
-    openssl s_client -connect portal.virtualmetric.com:443
+    # Verify TLS connectivity
+    curl -I https://app.eu-west.cloud.virtualmetric.com
     ```
   </TabItem>
 </Tabs>
@@ -75,7 +78,7 @@ This guide provides solutions to common Director deployment and operational issu
 **Resolution Steps:**
 
 1. **Network Stability Check**
-   - Monitor network latency and packet loss
+   - Monitor network latency and packet loss to your regional endpoint
    - Verify network equipment stability
    - Check for bandwidth limitations or throttling
 
@@ -87,14 +90,14 @@ This guide provides solutions to common Director deployment and operational issu
 3. **Proxy Configuration**
    - Verify proxy server stability and configuration
    - Check proxy authentication credentials
-   - Consider bypassing proxy for testing
+   - Consider bypassing proxy for VirtualMetric endpoints
 
 ## Installation Issues
 
-### Director Fails to Start
+### Director Service Fails to Start
 
 **Symptoms:**
-- Installation script completes but service doesn't start
+- Service does not start after installation
 - Error messages during service startup
 - Director not appearing in management console
 
@@ -113,70 +116,68 @@ This guide provides solutions to common Director deployment and operational issu
 3. **Port Availability**
    - Confirm required ports are not in use by other services
    - Check local firewall settings
-   - Use `netstat -an` to identify port conflicts
+   - Identify port conflicts using network tools
 
-4. **Review Installation Logs**
+4. **Review Service Logs**
    - Check installation script output for error messages
    - Review system event logs for service startup failures
-   - Examine Director service logs for specific error details
+   - Examine Director logs for specific error details
 
-**Common Solutions:**
+**Diagnostic Commands:**
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
     # Check service status
-    Get-Service VirtualMetricDirector
+    Get-Service vmetric-director
 
     # Check port usage
     Get-NetTCPConnection -LocalPort 443 -ErrorAction SilentlyContinue
-    # Or using netstat
     netstat -an | Select-String ":443"
+
+    # View service events
+    Get-EventLog -LogName System -Source "Service Control Manager" -Newest 20 |
+      Where-Object { $_.Message -like "*vmetric*" }
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
     # Check service status
-    systemctl status virtualmetric-director
+    systemctl status vmetric-director
 
     # Check port usage
     netstat -tulpn | grep :443
+    ss -tulpn | grep :443
+
+    # View service logs
+    journalctl -u vmetric-director -n 50
     ```
   </TabItem>
 </Tabs>
 
-### Installation Script Fails
+### VMMQ Connection Not Initialized
 
 **Symptoms:**
-- Script execution terminates with error
-- Permission denied messages
-- Download failures during script execution
+- Log message: "vmmq connection is not initialized"
+- Director starts but cannot process data
+- Internal communication failures
 
 **Resolution Steps:**
 
-1. **Execution Context**
-   - Run PowerShell as Administrator (Windows)
-   - Use sudo privileges for bash script (Linux)
-   - Ensure execution policy allows script running (Windows)
+1. **Verify NATS JetStream Configuration**
+   - Check that NATS server is running and accessible
+   - Verify JetStream is enabled in the configuration
+   - Confirm storage paths exist and have correct permissions
 
-2. **Network Access**
-   - Verify internet connectivity for downloading components
-   - Check corporate firewall for download restrictions
-   - Consider manual download if automated download fails
+2. **Check Storage Directory**
+   - Verify `<vm_root>/Director/storage/nats/` directory exists
+   - Ensure adequate disk space for JetStream storage
+   - Check directory permissions
 
-3. **System Dependencies**
-   - Install required runtime dependencies (.NET Core, Docker)
-   - Update package managers (apt, yum, chocolatey)
-   - Resolve any missing system libraries
-
-**Windows PowerShell Execution Policy:**
-```powershell
-# Check current execution policy
-Get-ExecutionPolicy
-
-# Allow script execution (if required)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
+3. **Review Configuration File**
+   - Validate YAML syntax in `vmetric.yml`
+   - Confirm VMMQ settings are correctly specified
+   - Check for configuration file corruption
 
 ## Data Processing Issues
 
@@ -200,7 +201,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    - Use packet capture tools to confirm data transmission
 
 3. **Director Input Configuration**
-   - Review input configuration in Director settings
+   - Review device configuration in Director settings
    - Verify enabled protocols and listening ports
    - Check for configuration syntax errors
 
@@ -214,36 +215,54 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    # Test syslog connectivity (send UDP message)
+    # Test syslog connectivity (UDP)
     $udpClient = New-Object System.Net.Sockets.UdpClient
     $bytes = [Text.Encoding]::ASCII.GetBytes("<14>Test message from PowerShell")
-    $udpClient.Send($bytes, $bytes.Length, "<director_ip>", <port>)
+    $udpClient.Send($bytes, $bytes.Length, "<director_ip>", 514)
     $udpClient.Close()
 
     # Check listening ports
-    Get-NetTCPConnection -LocalPort <port> -ErrorAction SilentlyContinue
-    Get-NetUDPEndpoint -LocalPort <port> -ErrorAction SilentlyContinue
-
-    # Monitor network traffic (requires Wireshark/tshark or Message Analyzer)
-    # Or use built-in packet capture:
-    netsh trace start capture=yes tracefile=C:\temp\trace.etl
-    # ... perform test ...
-    netsh trace stop
+    Get-NetTCPConnection -LocalPort 514 -ErrorAction SilentlyContinue
+    Get-NetUDPEndpoint -LocalPort 514 -ErrorAction SilentlyContinue
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
     # Test syslog connectivity
-    logger -n <director_ip> -P <port> "Test message"
+    logger -n <director_ip> -P 514 "Test message"
 
     # Check listening ports
     netstat -tulpn | grep <director_ip>
 
     # Monitor network traffic
-    tcpdump -i any port <port_number>
+    tcpdump -i any port 514
     ```
   </TabItem>
 </Tabs>
+
+### Router Queue Errors
+
+**Symptoms:**
+- Log message: "There is no available log file for [logtype] in the router queue"
+- Data processing appears stalled
+- Empty storage/logs directory
+
+**Resolution Steps:**
+
+1. **Verify Storage Configuration**
+   - Check that `<vm_root>/Director/storage/` directory exists
+   - Ensure subdirectories (data, logs, queue, sender) are present
+   - Verify write permissions on storage directories
+
+2. **Check Disk Space**
+   - Ensure adequate free disk space for queue operations
+   - Monitor disk usage during high-volume periods
+   - Configure log rotation if disk space is limited
+
+3. **Review Route Configuration**
+   - Verify routes are properly configured and enabled
+   - Check that devices and targets are correctly linked
+   - Validate pipeline configuration syntax
 
 ### Data Processing Errors
 
@@ -269,12 +288,31 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    - Check for disk space availability
    - Ensure adequate processing capacity for data volume
 
-4. **Error Log Analysis**
-   - Review detailed error messages in Director logs
-   - Identify specific records causing processing failures
-   - Check for schema validation errors
-
 ## Performance Issues
+
+### High Resource Usage
+
+**Symptoms:**
+- Excessive CPU or memory consumption
+- System performance degradation
+- Out of memory errors
+
+**Resolution Steps:**
+
+1. **Configuration Tuning**
+   - Adjust buffer sizes and queue lengths
+   - Optimize processing batch sizes
+   - Configure appropriate timeout values
+
+2. **Pipeline Optimization**
+   - Identify resource-intensive transformation operations
+   - Optimize data parsing and enrichment logic
+   - Consider sampling for high-volume data streams
+
+3. **System Monitoring**
+   - Implement comprehensive resource monitoring
+   - Set up alerts for resource threshold breaches
+   - Plan capacity upgrades based on usage patterns
 
 ### Slow Data Processing
 
@@ -300,155 +338,54 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    - Verify network connectivity to destination systems
    - Consider batch processing for improved throughput
 
-4. **Clustering Consideration**
-   - Evaluate clustered deployment for horizontal scaling
-   - Distribute processing load across multiple Director instances
-   - Implement load balancing for improved performance
+## Log Analysis
 
-### High Resource Usage
+### Director Log Locations
 
-**Symptoms:**
-- Excessive CPU or memory consumption
-- System performance degradation
-- Out of memory errors
+**Windows:**
+```
+<vm_root>\Director\storage\logs\
+```
 
-**Resolution Steps:**
+**Linux:**
+```
+<vm_root>/Director/storage/logs/
+```
 
-1. **Configuration Tuning**
-   - Adjust buffer sizes and queue lengths
-   - Optimize processing batch sizes
-   - Configure appropriate timeout values
+### Common Log Messages
 
-2. **Pipeline Optimization**
-   - Identify resource-intensive transformation operations
-   - Optimize data parsing and enrichment logic
-   - Consider caching frequently accessed data
+| Message | Meaning | Action |
+|---------|---------|--------|
+| `vmmq connection is not initialized` | NATS JetStream not available | Check NATS configuration and storage |
+| `Can not update device state` | Device status update failed | Verify VMMQ connectivity |
+| `Health check failed` | Device collector unhealthy | Service will auto-restart collector |
+| `Can not fetch messages` | Message queue read error | Check NATS server health |
+| `Failed to start VMMQ server` | Internal messaging startup failed | Review configuration and permissions |
 
-3. **System Monitoring**
-   - Implement comprehensive resource monitoring
-   - Set up alerts for resource threshold breaches
-   - Plan capacity upgrades based on usage patterns
-
-## Migration and Maintenance
-
-### How to Migrate Director to New Server
-
-**Scenario:** Moving Director installation to new hardware or different server.
-
-**Migration Steps:**
-
-1. **Prepare New Environment**
-   - Install required dependencies on new server
-   - Ensure network connectivity and firewall configuration
-   - Verify system requirements and permissions
-
-2. **Export Configuration**
-   - Document current Director configuration and settings
-   - Export processing pipelines and custom rules
-   - Note integration points with source and destination systems
-
-3. **Install Director on New Server**
-   - Run installation script on new server
-   - Use existing organization credentials and API key
-   - Follow standard installation verification procedures
-
-4. **Update System Integrations**
-   - Update source systems to point to new Director IP address
-   - Verify destination system connectivity from new location
-   - Test data flow end-to-end
-
-5. **Decommission Old Director**
-   - Stop data processing on old Director
-   - Remove Director from management console
-   - Properly dispose of old server and credentials
-
-### Director Reinstallation Process
-
-**When to Reinstall:**
-- API key compromise or security incident
-- Significant configuration corruption
-- Major system updates or changes
-
-**Reinstallation Steps:**
-
-1. **Initiate Reinstallation from Console**
-   - Navigate to Director details in management interface
-   - Click "Re-install director" button
-   - Acknowledge API key revocation warning
-
-2. **Execute New Installation Script**
-   - Download new installation script with updated API key
-   - Run installation script with administrative privileges
-   - Verify successful installation and connection
-
-3. **Restore Configuration**
-   - Reconfigure data sources and destinations
-   - Restore custom processing pipelines
-   - Verify all integrations are working properly
-
-**Important Notes:**
-- Previous API key will be immediately revoked
-- All existing connections will be terminated
-- Configuration may need to be restored manually
-
-## Advanced Troubleshooting
-
-### Log Analysis and Diagnostics
-
-**Director Log Locations:**
-- Windows: `C:\ProgramData\VirtualMetric\Director\Logs\`
-- Linux: `/var/log/virtualmetric/director/`
-
-**Key Log Files:**
-- `application.log` - General Director operation and errors
-- `connection.log` - Cloud platform connectivity events
-- `processing.log` - Data transformation and pipeline execution
-- `performance.log` - Resource usage and performance metrics
-
-**Log Analysis Commands:**
+### Log Analysis Commands
 
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
     # Monitor real-time logs
-    Get-Content "C:\ProgramData\VirtualMetric\Director\Logs\application.log" -Wait -Tail 50
+    Get-Content "<vm_root>\Director\storage\logs\director.log" -Wait -Tail 50
 
-    # Search for specific errors
-    Select-String -Path "C:\ProgramData\VirtualMetric\Director\Logs\*.log" -Pattern "error|exception" -AllMatches
-
-    # Check recent connection events
-    Select-String -Path "C:\ProgramData\VirtualMetric\Director\Logs\connection.log" -Pattern "connection" | Select-Object -Last 50
+    # Search for errors
+    Select-String -Path "<vm_root>\Director\storage\logs\*.log" -Pattern "error|failed" -AllMatches
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
     # Monitor real-time logs
-    tail -f /var/log/virtualmetric/director/application.log
+    tail -f <vm_root>/Director/storage/logs/director.log
 
-    # Search for specific errors
-    grep -i "error\|exception" /var/log/virtualmetric/director/*.log
-
-    # Check recent connection events
-    grep "connection" /var/log/virtualmetric/director/connection.log | tail -50
+    # Search for errors
+    grep -i "error\|failed" <vm_root>/Director/storage/logs/*.log
     ```
   </TabItem>
 </Tabs>
 
-### Performance Monitoring
-
-**System Metrics to Monitor:**
-- CPU utilization and load average
-- Memory usage and available space
-- Disk I/O performance and space utilization
-- Network throughput and connection statistics
-
-**Director-Specific Metrics:**
-- Data ingestion rate (events per second)
-- Processing latency and queue depth
-- Error rates and failure patterns
-- Connection stability and uptime
-
-### Support and Escalation
+## Support and Escalation
 
 When standard troubleshooting procedures don't resolve issues:
 
@@ -458,11 +395,10 @@ When standard troubleshooting procedures don't resolve issues:
    - Note specific symptoms and reproduction steps
 
 2. **Contact Support**
-   - Submit support ticket with comprehensive diagnostic data
-   - Include Director version and deployment information
+   - Submit support ticket at [support.virtualmetric.com](https://support.virtualmetric.com)
+   - Include Director version (`vmetric-director -version`)
    - Provide timeline of when issues first occurred
 
 3. **Emergency Escalation**
    - For critical production issues, use emergency contact procedures
    - Follow your organization's incident management processes
-   - Consider temporary workarounds while permanent solutions are developed
