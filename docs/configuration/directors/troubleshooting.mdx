@@ -13,17 +13,22 @@ This guide provides solutions to common Director deployment and operational issu
 
 **Resolution Steps:**
 
-1. **Verify Regional Endpoint**
-   - Confirm you are using the correct regional URL for your account:
-     - Europe: `https://app.eu-west.cloud.virtualmetric.com`
-     - US: `https://app.us-east.cloud.virtualmetric.com`
-     - Australia: `https://app.aus-east.cloud.virtualmetric.com`
-   - Select your region at [virtualmetric.com/select-your-region-login](https://www.virtualmetric.com/select-your-region-login/)
+1. **Identify Your Regional Endpoint**
+
+   Your Director connects to the same regional cloud platform where you created it. To identify your region, check the URL in your browser when logged into the VirtualMetric dashboard:
+
+   | Browser URL | Region | Endpoint |
+   |-------------|--------|----------|
+   | `app.eu-west.cloud.virtualmetric.com` | Europe | `https://app.eu-west.cloud.virtualmetric.com` |
+   | `app.us-east.cloud.virtualmetric.com` | US | `https://app.us-east.cloud.virtualmetric.com` |
+   | `app.aus-east.cloud.virtualmetric.com` | Australia | `https://app.aus-east.cloud.virtualmetric.com` |
+
+   If you need to switch regions, log out and select a different region at [virtualmetric.com/select-your-region-login](https://www.virtualmetric.com/select-your-region-login/).
 
 2. **Validate Network Connectivity**
-   - Ensure port 443 is open for outbound HTTPS connections
+   - Ensure port 443 is open for outbound HTTPS connections from the Director host
    - Verify DNS resolution is working properly
-   - Test connectivity to your regional endpoint
+   - Test connectivity to your regional endpoint using the diagnostic commands below
 
 3. **Check Firewall Configuration**
    - Allow outbound connections to `*.cloud.virtualmetric.com` domains
@@ -31,39 +36,47 @@ This guide provides solutions to common Director deployment and operational issu
    - Verify proxy configurations if applicable
 
 4. **Validate API Key**
-   - Confirm the API key was copied correctly during installation
-   - Check for extra spaces or line breaks in the key
-   - Regenerate API key from the dashboard if corruption is suspected
+   - Confirm the installation script was copied and executed correctly
+   - Check for extra spaces or line breaks if you manually edited the script
+   - Regenerate the API key from the Director's Connection tab in the dashboard if corruption is suspected
 
 5. **Review System Time**
-   - Ensure system clock is synchronized (required for certificate validation)
+   - Ensure system clock is synchronized (required for TLS certificate validation)
    - Use NTP to maintain accurate time synchronization
 
 **Diagnostic Commands:**
 
+Use your regional endpoint (identified in step 1) in the following commands:
+
 <Tabs>
   <TabItem value="powershell" label="PowerShell" default>
     ```powershell
-    # Test DNS resolution (replace with your region)
-    Resolve-DnsName app.eu-west.cloud.virtualmetric.com
+    # Set your regional endpoint
+    $region = "eu-west"  # Change to: us-east or aus-east
+
+    # Test DNS resolution
+    Resolve-DnsName "app.$region.cloud.virtualmetric.com"
 
     # Check outbound connectivity
-    Test-NetConnection -ComputerName app.eu-west.cloud.virtualmetric.com -Port 443
+    Test-NetConnection -ComputerName "app.$region.cloud.virtualmetric.com" -Port 443
 
     # Verify TLS connectivity
-    Invoke-WebRequest -Uri "https://app.eu-west.cloud.virtualmetric.com" -Method Head -UseBasicParsing
+    Invoke-WebRequest -Uri "https://app.$region.cloud.virtualmetric.com" -Method Head -UseBasicParsing
     ```
   </TabItem>
   <TabItem value="bash" label="Bash">
     ```bash
-    # Test DNS resolution (replace with your region)
-    nslookup app.eu-west.cloud.virtualmetric.com
+    # Set your regional endpoint
+    REGION="eu-west"  # Change to: us-east or aus-east
+
+    # Test DNS resolution
+    nslookup "app.$REGION.cloud.virtualmetric.com"
 
     # Check outbound connectivity
-    nc -zv app.eu-west.cloud.virtualmetric.com 443
+    nc -zv "app.$REGION.cloud.virtualmetric.com" 443
 
     # Verify TLS connectivity
-    curl -I https://app.eu-west.cloud.virtualmetric.com
+    curl -I "https://app.$REGION.cloud.virtualmetric.com"
     ```
   </TabItem>
 </Tabs>
