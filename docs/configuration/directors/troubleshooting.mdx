@@ -1,4 +1,8 @@
-# Troubleshooting
+---
+sidebar_label: Troubleshooting
+---
+
+# Directors: Troubleshooting
 
 This guide provides solutions to common Director deployment and operational issues. Issues are organized by category with step-by-step resolution procedures.
 
@@ -110,10 +114,12 @@ This guide provides solutions to common Director deployment and operational issu
    |US|`https://app.us-east.cloud.virtualmetric.com`|
    |Australia| `https://app.aus-east.cloud.virtualmetric.com`|
 
+   :::info
    If you need to switch regions, log out and [select a different region](https://www.virtualmetric.com/select-your-region-login/).
+   :::
 
 2. **Validate Network Connectivity**
-   - Ensure port 443 is open for outbound HTTPS connections from the Director host
+   - Ensure port `443` is open for outbound HTTPS connections from the Director host
    - Verify DNS resolution is working properly
    - Test connectivity to your regional endpoint using the diagnostic commands below
 
@@ -128,8 +134,12 @@ This guide provides solutions to common Director deployment and operational issu
    - Regenerate the API key from the Director's Connection tab in the dashboard if corruption is suspected
 
 5. **Review System Time**
-   - Ensure system clock is synchronized (required for TLS certificate validation)
+   - Ensure system clock is synchronized
    - Use NTP to maintain accurate time synchronization
+
+   :::warning
+   TLS certificate validation requires accurate system time. A clock skew of more than a few minutes can cause silent connection failures.
+   :::
 
 **Diagnostic Commands:**
 
@@ -272,6 +282,10 @@ Use your regional endpoint (identified in step 1) in the following commands:
    - Monitor disk usage during high-volume periods
    - Configure log rotation if disk space is limited
 
+   :::warning
+   If disk space is exhausted, queued data may be lost. Monitor storage usage proactively in high-volume environments.
+   :::
+
 3. **Review Route Configuration**
    - Verify routes are properly configured and enabled
    - Check that devices and targets are correctly linked
@@ -368,12 +382,16 @@ Use your regional endpoint (identified in step 1) in the following commands:
 ### Common Log Messages
 
 | Message | Meaning | Action |
-|---------|---------|--------|
-| `vmmq connection is not initialized` | VMMQ JetStream not available | Check VMMQ configuration and storage |
+|:--------|:--------|:-------|
+| `vmmq connection is not initialized` | NATS JetStream not available | Check NATS configuration and storage |
 | `Can not update device state` | Device status update failed | Verify VMMQ connectivity |
 | `Health check failed` | Device collector unhealthy | Service will auto-restart collector |
 | `Can not fetch messages` | Message queue read error | Check NATS server health |
 | `Failed to start VMMQ server` | Internal messaging startup failed | Review configuration and permissions |
+
+:::note
+The Director service includes automatic recovery for transient failures. Messages like "Health check failed" are often followed by automatic collector restart without manual intervention.
+:::
 
 ### Log Analysis Commands
 
@@ -408,9 +426,12 @@ When standard troubleshooting procedures don't resolve issues:
    - Note specific symptoms and reproduction steps
 
 2. **Contact Support**
-   - Submit support ticket at [support.virtualmetric.com](https://support.virtualmetric.com)
    - Include Director version (`vmetric-director -version`)
    - Provide timeline of when issues first occurred
+
+   :::tip
+   Submit support tickets at [support.virtualmetric.com](https://support.virtualmetric.com). Include log excerpts and configuration snippets to expedite resolution.
+   :::
 
 3. **Emergency Escalation**
    - For critical production issues, use emergency contact procedures

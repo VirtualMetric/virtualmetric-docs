@@ -1,8 +1,12 @@
-# Deployment
+---
+sidebar_label: Deployment
+---
+
+# Directors: Deployment
 
 VirtualMetric DataStream Directors support flexible deployment options to match your infrastructure requirements and operational preferences. Whether you're running on physical hardware, virtual machines, or containerized environments, Directors can be deployed to optimize performance while maintaining data sovereignty.
 
-## Overview
+## Considerations
 
 Directors are lightweight, containerized services that process security telemetry data locally while connecting to the DataStream cloud platform for configuration management. This architecture ensures your sensitive data remains within your controlled environment while providing centralized management capabilities.
 
@@ -14,7 +18,12 @@ Directors are lightweight, containerized services that process security telemetr
 - Simple configuration and management
 - Suitable for small to medium-scale environments
 
-**Clustered Director** *(Coming Soon)*
+**Clustered Director**
+
+:::info
+Clustered Director deployment is coming soon. This feature will provide multiple Director instances with load balancing and high availability.
+:::
+
 - Multiple Director instances with load balancing and high availability
 - Automatic failover and redundancy
 - Horizontal scaling capabilities
@@ -94,7 +103,11 @@ Deploy Directors in containerized environments for modern infrastructure managem
 **Agent Connectivity:**
 - **Windows Agent**: Full support for Windows systems via VirtualMetric Agent with optional pre-processing
 - **Linux Agentless**: Complete support via SSH-based connections
-- **Windows Agentless**: Not supported (Microsoft deprecated WinRM support)
+- **Windows Agentless**: Not supported
+
+:::warning
+Windows Agentless monitoring from Linux Directors is not supported due to Microsoft's deprecation of WinRM. Use VirtualMetric Agent for Windows endpoint monitoring instead.
+:::
 
 **Recommended For:**
 - High-volume network data collection environments
@@ -158,7 +171,10 @@ Agent pre-processing is configured through the Director's device configuration f
 - Pipelines assigned to Agent devices execute locally on the Agent
 - Same pipeline syntax and processors available as Director pipelines
 - Configuration managed centrally through Director for consistency
-- Hot configuration reload without Agent restart
+
+:::tip
+Agent pipelines support hot configuration reload. Changes made in the Director interface are synchronized to Agents automatically without requiring an Agent restart.
+:::
 
 ### Use Cases for Agent Pre-Processing
 
@@ -235,7 +251,10 @@ The standard installation process follows a guided setup through the DataStream 
 **Outbound Connectivity:**
 - Port 443 (HTTPS) for DataStream cloud platform communication
 - DNS resolution for *.virtualmetric.com domains
-- Certificate validation requires accurate system time
+
+:::warning
+TLS certificate validation requires accurate system time. Ensure NTP is configured and the system clock is synchronized before installation.
+:::
 
 **Inbound Connectivity:**
 - Configure based on data source requirements

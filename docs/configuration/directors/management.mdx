@@ -40,6 +40,10 @@ For **Self-Managed** Directors, a warning icon appears next to the Mode when con
 - **Tooltip** - "Configuration has changed and the current one has to be deployed"
 - **Action Required** - Download updated configuration file and deploy to Director
 
+:::warning
+When the configuration change indicator appears, the Director is running with an outdated configuration. Download and deploy the updated `vmetric.vmf` file promptly to ensure consistent behavior.
+:::
+
 ### Table Controls
 
 **Search and Filter:**
@@ -94,12 +98,16 @@ The Director creation process guides you through a 3-step wizard with validation
    - Suitable for most deployments
    - Quick setup process
 
-   **Cluster:** *(Coming Soon)*
+   **Cluster:**
+
+   :::info
+   Cluster installation type is coming soon and will provide high availability with load balancing capabilities.
+   :::
+
    - Multiple Director instances
    - High availability
    - Load balancing capabilities
    - Enterprise-grade reliability
-   - Currently displays "Coming Soon" badge
 
 3. **Mode Selection**
 
@@ -288,6 +296,10 @@ When configuration changes occur:
 - Replace existing config on Director server
 - Restart Director service to apply changes
 
+:::warning
+Self-Managed Directors require a service restart after deploying configuration updates. Plan maintenance windows accordingly for production environments.
+:::
+
 ### Delete Director
 
 **Delete Director Process:**
@@ -308,6 +320,10 @@ Remove a Director from the platform with dependency checking:
 **Deletion with Dependencies:**
 
 If Director has active dependencies, error modal displays:
+
+:::note
+Directors with connected devices or agents cannot be deleted. The error modal lists all dependencies that must be reassigned or removed first.
+:::
 
 **Error Modal Contents:**
 - "Cannot delete Director" message
@@ -384,6 +400,10 @@ Agent pre-processing is configured through device settings in the Director inter
 - Reserve complex processing (enrichment, external lookups) for Director
 - Balance processing load between Agents and Directors
 - Monitor Agent resource utilization
+
+:::tip
+Agents are ideal for data reduction tasks (filtering, sampling, field removal) while Directors handle enrichment operations that require external resources like GeoIP databases or threat intelligence feeds.
+:::
 
 **Performance Optimization:**
 - Assign lightweight pipelines to resource-constrained Agents
