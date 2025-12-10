@@ -2,6 +2,93 @@
 
 This guide provides solutions to common Director deployment and operational issues. Issues are organized by category with step-by-step resolution procedures.
 
+## Installation Issues
+
+### Director Service Fails to Start
+
+**Symptoms:**
+- Service does not start after installation
+- Error messages during service startup
+- Director not appearing in management console
+
+**Resolution Steps:**
+
+1. **Check System Requirements**
+   - Verify supported operating system version
+   - Ensure minimum hardware requirements are met
+   - Confirm administrator/root privileges for installation
+
+2. **Permission Validation**
+   - Ensure installation user has sufficient privileges
+   - Check file and directory permissions in installation path
+   - Verify service account permissions if using dedicated account
+
+3. **Port Availability**
+   - Confirm required ports are not in use by other services
+   - Check local firewall settings
+   - Identify port conflicts using network tools
+
+4. **Review Service Logs**
+   - Check installation script output for error messages
+   - Review system event logs for service startup failures
+   - Examine Director logs for specific error details
+
+**Diagnostic Commands:**
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    # Check service status
+    Get-Service vmetric-director
+
+    # Check port usage
+    Get-NetTCPConnection -LocalPort 443 -ErrorAction SilentlyContinue
+    netstat -an | Select-String ":443"
+
+    # View service events
+    Get-EventLog -LogName System -Source "Service Control Manager" -Newest 20 |
+      Where-Object { $_.Message -like "*vmetric*" }
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    # Check service status
+    systemctl status vmetric-director
+
+    # Check port usage
+    netstat -tulpn | grep :443
+    ss -tulpn | grep :443
+
+    # View service logs
+    journalctl -u vmetric-director -n 50
+    ```
+  </TabItem>
+</Tabs>
+
+### VMMQ Connection Not Initialized
+
+**Symptoms:**
+- Log message: "vmmq connection is not initialized"
+- Director starts but cannot process data
+- Internal communication failures
+
+**Resolution Steps:**
+
+1. **Verify NATS JetStream Configuration**
+   - Check that NATS server is running and accessible
+   - Verify JetStream is enabled in the configuration
+   - Confirm storage paths exist and have correct permissions
+
+2. **Check Storage Directory**
+   - Verify `<vm_root>/Director/storage/nats/` directory exists
+   - Ensure adequate disk space for JetStream storage
+   - Check directory permissions
+
+3. **Review Configuration File**
+   - Validate YAML syntax in `vmetric.yml`
+   - Confirm VMMQ settings are correctly specified
+   - Check for configuration file corruption
+
 ## Connection Issues
 
 ### Director Cannot Connect to Cloud Platform
@@ -104,93 +191,6 @@ Use your regional endpoint (identified in step 1) in the following commands:
    - Verify proxy server stability and configuration
    - Check proxy authentication credentials
    - Consider bypassing proxy for VirtualMetric endpoints
-
-## Installation Issues
-
-### Director Service Fails to Start
-
-**Symptoms:**
-- Service does not start after installation
-- Error messages during service startup
-- Director not appearing in management console
-
-**Resolution Steps:**
-
-1. **Check System Requirements**
-   - Verify supported operating system version
-   - Ensure minimum hardware requirements are met
-   - Confirm administrator/root privileges for installation
-
-2. **Permission Validation**
-   - Ensure installation user has sufficient privileges
-   - Check file and directory permissions in installation path
-   - Verify service account permissions if using dedicated account
-
-3. **Port Availability**
-   - Confirm required ports are not in use by other services
-   - Check local firewall settings
-   - Identify port conflicts using network tools
-
-4. **Review Service Logs**
-   - Check installation script output for error messages
-   - Review system event logs for service startup failures
-   - Examine Director logs for specific error details
-
-**Diagnostic Commands:**
-
-<Tabs>
-  <TabItem value="powershell" label="PowerShell" default>
-    ```powershell
-    # Check service status
-    Get-Service vmetric-director
-
-    # Check port usage
-    Get-NetTCPConnection -LocalPort 443 -ErrorAction SilentlyContinue
-    netstat -an | Select-String ":443"
-
-    # View service events
-    Get-EventLog -LogName System -Source "Service Control Manager" -Newest 20 |
-      Where-Object { $_.Message -like "*vmetric*" }
-    ```
-  </TabItem>
-  <TabItem value="bash" label="Bash">
-    ```bash
-    # Check service status
-    systemctl status vmetric-director
-
-    # Check port usage
-    netstat -tulpn | grep :443
-    ss -tulpn | grep :443
-
-    # View service logs
-    journalctl -u vmetric-director -n 50
-    ```
-  </TabItem>
-</Tabs>
-
-### VMMQ Connection Not Initialized
-
-**Symptoms:**
-- Log message: "vmmq connection is not initialized"
-- Director starts but cannot process data
-- Internal communication failures
-
-**Resolution Steps:**
-
-1. **Verify NATS JetStream Configuration**
-   - Check that NATS server is running and accessible
-   - Verify JetStream is enabled in the configuration
-   - Confirm storage paths exist and have correct permissions
-
-2. **Check Storage Directory**
-   - Verify `<vm_root>/Director/storage/nats/` directory exists
-   - Ensure adequate disk space for JetStream storage
-   - Check directory permissions
-
-3. **Review Configuration File**
-   - Validate YAML syntax in `vmetric.yml`
-   - Confirm VMMQ settings are correctly specified
-   - Check for configuration file corruption
 
 ## Data Processing Issues
 
