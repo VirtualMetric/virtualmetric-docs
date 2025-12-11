@@ -1,16 +1,16 @@
-name: Deploy Production
+name: Deploy Staging
 on:
   push:
     branches:
-      - main
+      - dev
 
 concurrency:
-  group: deploy-production
+  group: deploy-staging
   cancel-in-progress: true
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy to Production
+    name: Build and Deploy to Staging
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,4 +31,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build --project-name virtualmetric-docs --branch=main
+          command: pages deploy build --project-name virtualmetric-docs --branch=dev
