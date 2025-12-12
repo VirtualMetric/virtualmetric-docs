@@ -1,3 +1,5 @@
+import ManagedIdentity from '../_managed-identity.mdx';
+
 # Azure Service Bus
 
 <span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">Message Queue</span>
@@ -78,6 +80,10 @@ Azure Service Bus target supports two authentication methods:
 \* = Conditionally required (see authentication methods above)
 
 \** = Either `queue` or `topic` must be specified, but not both
+
+**Method 3: Managed Identity**
+
+<ManagedIdentity />
 
 ### Message Properties
 
@@ -221,6 +227,25 @@ The following are commonly used configuration types.
         client_secret: "${AZURE_CLIENT_SECRET}"
         namespace: "production-namespace"
         topic: "security-events"
+        content_type: "application/json"
+        max_events: 500
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Managed Identity
+
+<ExampleGrid>
+  <CommentCol>
+    Using Managed Identity for credential-free authentication on Azure infrastructure...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - name: managed_identity_servicebus
+      type: azservicebus
+      properties:
+        namespace: "production-namespace"
+        queue: "processed-logs"
         content_type: "application/json"
         max_events: 500
     ```
