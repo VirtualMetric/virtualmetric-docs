@@ -1,3 +1,5 @@
+import ManagedIdentity from '../_managed-identity.mdx';
+
 # Microsoft Sentinel data lake
 
 <span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">Security Lake</span>
@@ -68,7 +70,9 @@ The following fields are used to define the target:
 |`function_app`|N*|-|Director Proxy endpoint URL (required for proxy forwarding)|
 |`function_token`|N*|-|Director Proxy authentication token (required with function_app)|
 
-\* = Conditionally required. Use either direct authentication (tenant_id, client_id, client_secret) OR Director Proxy forwarding (function_app, function_token).
+\* = Conditionally required. Use either direct authentication (tenant_id, client_id, client_secret) OR Director Proxy forwarding (function_app, function_token), OR omit all credentials to use Managed Identity.
+
+<ManagedIdentity />
 
 ### Stream Configuration
 
@@ -164,6 +168,18 @@ targets:
       tenant_id: "00000000-0000-0000-0000-000000000000"
       client_id: "00000000-0000-0000-0000-000000000000"
       client_secret: "your-client-secret"
+      endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
+```
+
+### Managed Identity
+
+Using Managed Identity for credential-free authentication on Azure infrastructure:
+
+```yaml
+targets:
+  - name: managed_identity_data_lake
+    type: sentineldatalake
+    properties:
       endpoint: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Insights/dataCollectionEndpoints/myDCE"
 ```
 

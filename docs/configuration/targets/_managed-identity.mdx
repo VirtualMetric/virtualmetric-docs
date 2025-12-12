@@ -1,0 +1,24 @@
+### Managed Identity Authentication
+
+Azure targets support **Managed Identity** authentication for credential-free access when Director is deployed on Azure infrastructure.
+
+**How it works**: When `tenant_id`, `client_id`, and `client_secret` are omitted from the configuration, the target automatically uses Azure's `DefaultAzureCredential`, which attempts authentication in the following order:
+
+1. Environment variables (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`)
+2. Workload Identity (for Kubernetes deployments)
+3. **Managed Identity** (system-assigned or user-assigned)
+4. Azure CLI credentials
+5. Azure PowerShell credentials
+
+**Deployment requirement**: Director must run on Azure infrastructure that supports Managed Identity:
+- Azure Virtual Machines
+- Azure App Service
+- Azure Container Instances
+- Azure Kubernetes Service (AKS)
+- Azure Functions
+
+**Required permissions**: The Managed Identity must be granted appropriate roles on the target Azure resource (e.g., `Storage Blob Data Contributor` for Blob Storage, `Azure Event Hubs Data Sender` for Event Hubs).
+
+:::note
+Managed Identity eliminates credential management overhead and is the recommended authentication method for Azure-hosted Director deployments.
+:::

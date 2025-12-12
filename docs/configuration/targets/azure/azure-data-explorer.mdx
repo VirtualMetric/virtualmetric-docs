@@ -1,3 +1,5 @@
+import ManagedIdentity from '../_managed-identity.mdx';
+
 # Azure Data Explorer
 
 <span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">Observability</span>
@@ -67,8 +69,11 @@ The following fields are used to define the target:
 |`type`|N|`parquet`|Data format. See [Formats](#formats) below|
 |`compression`|N|-|Compression algorithm. See [Compression](#compression) below|
 
-(1) = Conditionally required (see authentication methods above)
+(1) = Conditionally required. Use service principal authentication (`tenant_id`, `client_id`, `client_secret`) for explicit credentials, or omit all three fields to use Managed Identity.
+
 (2) = Required if you want a catch-all table for unmatched events, or if not using the tables array
+
+<ManagedIdentity />
 
 ### Ingestion Options
 
@@ -172,6 +177,20 @@ targets:
       tenant_id: "00000000-0000-0000-0000-000000000000"
       client_id: "11111111-1111-1111-1111-111111111111"
       client_secret: "your-client-secret"
+      endpoint: "https://cluster.region.kusto.windows.net"
+      database: "logs"
+      table: "system_events"
+```
+
+### Managed Identity
+
+Using Managed Identity for credential-free authentication on Azure infrastructure:
+
+```yaml
+targets:
+  - name: managed_identity_adx
+    type: azdx
+    properties:
       endpoint: "https://cluster.region.kusto.windows.net"
       database: "logs"
       table: "system_events"
