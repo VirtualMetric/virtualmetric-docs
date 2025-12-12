@@ -1,3 +1,5 @@
+import ManagedIdentity from '../_managed-identity.mdx';
+
 # Azure Event Hubs
 
 <span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">Real-time Messaging</span>
@@ -73,6 +75,10 @@ EventHubs target supports two authentication methods:
 |`event_hub`|Y||Event hub name to send messages to|
 
 \* = Conditionally required (see authentication methods above)
+
+**Method 3: Managed Identity**
+
+<ManagedIdentity />
 
 ### Partition Configuration
 
@@ -193,6 +199,24 @@ The following are commonly used configuration types.
         tenant_id: "12345678-1234-1234-1234-123456789012"
         client_id: "87654321-4321-4321-4321-210987654321"
         client_secret: "${AZURE_CLIENT_SECRET}"
+        namespace: "production-namespace"
+        event_hub: "security-events"
+        max_events: 250
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Managed Identity
+
+<ExampleGrid>
+  <CommentCol>
+    Using Managed Identity for credential-free authentication on Azure infrastructure...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - name: managed_identity_eventhubs
+      type: eventhubs
+      properties:
         namespace: "production-namespace"
         event_hub: "security-events"
         max_events: 250
