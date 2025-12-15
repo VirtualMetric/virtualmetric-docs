@@ -1,49 +1,46 @@
-import {themes, type PrismTheme} from 'prism-react-renderer';
+import { themes, type PrismTheme } from "prism-react-renderer";
 
 const baseTheme = themes.vsDark;
+
 const CustomTheme: PrismTheme = {
   ...baseTheme,
   styles: [
     ...baseTheme.styles,
+
+    // Identifiers / functions / variables: muted teal
     {
-      types: [
-        'parameter', 'property', 'attr-key',
-        'function', 'selector', 'variable', 'atrule',
-      ],
-      style: {
-        color: '#66FFCC'
-      },
+      types: ["parameter", "property", "attr-key", "function", "selector", "variable"],
+      style: { color: "#4EC9B0" },
     },
+
+    // Keywords / control words / rules: muted blue-purple
     {
-      types: [
-        'boolean', 'number', 'constant',
-      ],
-      style: {
-        color: '#FFDD55',
-      },
+      types: ["keyword", "atrule", "rule", "tag", "script", "unit"],
+      style: { color: "#569CD6" },
     },
+
+    // Operators: closer to normal foreground (less “shouting”)
     {
-      types: [
-        'tag', 'script', 'operator', 'unit', 'rule', 'keyword',
-      ],
-      style: {
-        color: '#99FFFF',
-      },
+      types: ["operator"],
+      style: { color: "#D4D4D4" },
     },
+
+    // Numbers / booleans / constants: muted amber
     {
-      types: [
-        'front-matter', 'string', 'attr-value',
-      ],
-      style: {
-        color: '#CCFFBB',
-      },
+      types: ["boolean", "number", "constant"],
+      style: { color: "#D7BA7D" },
     },
+
+    // Strings / attribute values: muted warm (very readable, not neon)
     {
-      types: ['comment'],
-      style: {
-        color: '#CECECE',
-        fontStyle: 'normal'
-      },
+      types: ["front-matter", "string", "attr-value"],
+      style: { color: "#CE9178" },
+    },
+
+    // Comments: quieter gray + optional italics
+    {
+      types: ["comment"],
+      style: { color: "#8A8A8A", fontStyle: "italic" },
     },
   ],
 };
