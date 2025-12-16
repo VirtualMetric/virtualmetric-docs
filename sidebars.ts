@@ -279,6 +279,7 @@ const sidebars: SidebarsConfig = {
                 "configuration/pipelines/processors/date",
                 "configuration/pipelines/processors/debug",
                 "configuration/pipelines/processors/decrypt",
+                "configuration/pipelines/processors/defender",
                 "configuration/pipelines/processors/dissect",
                 "configuration/pipelines/processors/divide",
                 "configuration/pipelines/processors/dns-lookup",

@@ -1,0 +1,393 @@
+---
+description: Creates alerts in Microsoft Defender for Endpoint
+sidebar_custom_props:
+  customIcon: 🛡️
+  customCategory: Security
+---
+
+# Microsoft Defender for Endpoint
+
+<span className="theme-doc-version-badge badge badge--primary">Security</span>
+
+## Synopsis
+
+Creates custom alerts in Microsoft Defender for Endpoint using the CreateAlert API, enabling external threat detection systems to integrate with Microsoft's endpoint security platform for centralized incident management and automated response capabilities.
+
+## Schema
+
+```yaml {2,5,6}
+- defender:
+    tenant_id: <string>
+    client_id: <string>
+    client_secret: <string>
+    machine_id: <string>
+    severity: <string>
+    title: <string>
+    alert_description: <string>
+    recommended_action: <string>
+    category: <string>
+    event_time: <string>
+    report_id: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tenant_id`|N|`${DEFENDER_TENANT_ID}`|Azure AD tenant ID|
+|`client_id`|N|`${DEFENDER_CLIENT_ID}`|Application (client) ID from Azure AD app registration|
+|`client_secret`|N|`${DEFENDER_CLIENT_SECRET}`|Client secret for authentication|
+|`machine_id`|Y|-|Target device/machine identifier in Defender for Endpoint|
+|`severity`|Y|-|Alert severity: `Informational`, `Low`, `Medium`, or `High`|
+|`title`|Y|-|Brief alert title describing the security event|
+|`alert_description`|Y|-|Detailed alert description with context and findings|
+|`recommended_action`|N|-|Suggested remediation steps for security teams|
+|`category`|Y|-|Alert category (e.g., `Malware`, `SuspiciousActivity`, `CredentialAccess`, `Ransomware`)|
+|`event_time`|N|Current time|Event timestamp in ISO 8601 format (e.g., `2024-01-15T10:30:00Z`)|
+|`report_id`|N|-|Unique identifier for tracking and correlating related alerts|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The defender processor creates custom alerts in Microsoft Defender for Endpoint using the CreateAlert API, enabling external security detection systems to integrate with Microsoft's unified endpoint security platform.
+
+**Authentication**: Uses OAuth 2.0 client credentials flow with Azure AD. The processor automatically obtains and manages access tokens. Ensure your Azure AD application has the necessary API permissions (`Alert.ReadWrite.All` or similar) for Defender for Endpoint.
+
+**Machine ID**: The target device identifier must exist in your Defender for Endpoint environment. You can obtain machine IDs through the Defender portal or via the Machines API.
+
+**Severity Levels**: Determines alert priority and visual indicators in Defender portal:
+- `Informational`: Low-priority informational events
+- `Low`: Minor issues requiring attention when convenient
+- `Medium`: Moderate threats requiring timely investigation
+- `High`: Critical threats requiring immediate response
+
+**Alert Categories**: Common categories include:
+- `Malware`: Malicious software detection
+- `SuspiciousActivity`: Unusual behavior patterns
+- `CredentialAccess`: Credential theft attempts (MITRE ATT&CK T1003, T1110, etc.)
+- `Ransomware`: Ransomware-related activities
+- `NetworkAttack`: Network-based attacks
+- `Phishing`: Phishing attempts and credential harvesting
+- `DataExfiltration`: Unauthorized data transfers
+
+**Report ID**: Use this field to correlate related alerts across different events. Multiple alerts with the same report_id help security analysts understand the full attack chain.
+
+**Automated Investigation**: Alerts created through this processor trigger Defender's Automated Investigation and Response (AIR) capabilities, enabling automatic containment and remediation based on configured policies.
+
+**Template Support**: All string fields support Go template syntax with event field interpolation using `{{ .field_name }}`.
+
+**MISA Partnership**: This integration meets Microsoft Intelligent Security Association (MISA) requirements by surfacing external alerts in the Defender portal and enabling correlation with native Defender detections.
+
+For integration patterns with schema validation, see <Topic id="pipelines-schema-drift-detection">Schema Drift Detection</Topic>.
+
+## Examples
+
+### Basic Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a high-severity security alert...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "device_id": "1234567890abcdef",
+      "alert_name": "Suspicious Process Detected",
+      "alert_description": "A suspicious process was detected on the endpoint"
+    }
+    ```
+    ```yaml
+    - defender:
+        tenant_id: "${DEFENDER_TENANT_ID}"
+        client_id: "${DEFENDER_CLIENT_ID}"
+        client_secret: "${DEFENDER_CLIENT_SECRET}"
+        machine_id: "{{ .device_id }}"
+        severity: "High"
+        title: "{{ .alert_name }}"
+        alert_description: "{{ .alert_description }}"
+        recommended_action: "Investigate and terminate if malicious"
+        category: "SuspiciousActivity"
+        report_id: "suspicious-process-001"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Alert created in Defender portal with AIR triggered...
+  </CommentCol>
+</ExampleGrid>
+
+### Malware Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Reporting malware detection from external scanner...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "device_id": "abcdef1234567890",
+      "malware_name": "Trojan.Generic.12345",
+      "file_path": "C:\\Users\\Admin\\Downloads\\malicious.exe"
+    }
+    ```
+    ```yaml
+    - defender:
+        tenant_id: "${DEFENDER_TENANT_ID}"
+        client_id: "${DEFENDER_CLIENT_ID}"
+        client_secret: "${DEFENDER_CLIENT_SECRET}"
+        machine_id: "{{ .device_id }}"
+        severity: "High"
+        title: "Malware Detected: {{ .malware_name }}"
+        alert_description: "Malware detected at {{ .file_path }}"
+        recommended_action: "Quarantine file and run full system scan"
+        category: "Malware"
+        report_id: "malware-{{ .device_id }}-001"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Malware alert with automatic quarantine investigation...
+  </CommentCol>
+</ExampleGrid>
+
+### Credential Access Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Alerting on credential dumping attempts...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "device_id": "device-prod-001",
+      "attack_type": "Credential Dumping",
+      "technique_id": "T1003",
+      "user_account": "admin@contoso.com"
+    }
+    ```
+    ```yaml
+    - defender:
+        tenant_id: "${DEFENDER_TENANT_ID}"
+        client_id: "${DEFENDER_CLIENT_ID}"
+        client_secret: "${DEFENDER_CLIENT_SECRET}"
+        machine_id: "{{ .device_id }}"
+        severity: "High"
+        title: "Credential Access Detected: {{ .attack_type }}"
+        alert_description: "MITRE ATT&CK Technique {{ .technique_id }} detected on user {{ .user_account }}"
+        recommended_action: "Reset credentials and investigate attack"
+        category: "CredentialAccess"
+        report_id: "credential-{{ .device_id }}-{{ .technique_id }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    MITRE ATT&CK mapped alert for credential theft...
+  </CommentCol>
+</ExampleGrid>
+
+### Ransomware Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Critical ransomware detection requiring immediate action...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "device_id": "endpoint-finance-05",
+      "ransomware_family": "WannaCry",
+      "encrypted_files": "150"
+    }
+    ```
+    ```yaml
+    - defender:
+        tenant_id: "${DEFENDER_TENANT_ID}"
+        client_id: "${DEFENDER_CLIENT_ID}"
+        client_secret: "${DEFENDER_CLIENT_SECRET}"
+        machine_id: "{{ .device_id }}"
+        severity: "High"
+        title: "Ransomware Detected: {{ .ransomware_family }}"
+        alert_description: "Ransomware detected. {{ .encrypted_files }} files encrypted"
+        recommended_action: "Isolate device immediately and restore from backup"
+        category: "Ransomware"
+        report_id: "ransomware-{{ .device_id }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    High-priority alert triggering automatic device isolation...
+  </CommentCol>
+</ExampleGrid>
+
+### Network Attack Detection
+
+<ExampleGrid>
+  <CommentCol>
+    Reporting network-based attacks...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "device_id": "firewall-edge-01",
+      "attack_type": "DDoS",
+      "source_ip": "192.168.1.100",
+      "target_port": "443"
+    }
+    ```
+    ```yaml
+    - defender:
+        tenant_id: "${DEFENDER_TENANT_ID}"
+        client_id: "${DEFENDER_CLIENT_ID}"
+        client_secret: "${DEFENDER_CLIENT_SECRET}"
+        machine_id: "{{ .device_id }}"
+        severity: "High"
+        title: "Network Attack: {{ .attack_type }}"
+        alert_description: "{{ .attack_type }} attack from {{ .source_ip }} to port {{ .target_port }}"
+        recommended_action: "Block source IP and investigate attack pattern"
+        category: "NetworkAttack"
+        report_id: "network-{{ .device_id }}-{{ .source_ip }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Network threat alert with source IP blocking recommendation...
+  </CommentCol>
+</ExampleGrid>
+
+### Data Exfiltration
+
+<ExampleGrid>
+  <CommentCol>
+    Detecting unauthorized data transfers...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "device_id": "workstation-hr-05",
+      "data_transferred": "5GB",
+      "destination": "suspicious-cloud-storage.com",
+      "file_type": "Confidential Documents"
+    }
+    ```
+    ```yaml
+    - defender:
+        tenant_id: "${DEFENDER_TENANT_ID}"
+        client_id: "${DEFENDER_CLIENT_ID}"
+        client_secret: "${DEFENDER_CLIENT_SECRET}"
+        machine_id: "{{ .device_id }}"
+        severity: "High"
+        title: "Data Exfiltration Detected"
+        alert_description: "{{ .data_transferred }} of {{ .file_type }} transferred to {{ .destination }}"
+        recommended_action: "Block destination, investigate user activity, recover data"
+        category: "DataExfiltration"
+        report_id: "exfiltration-{{ .device_id }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Data loss prevention alert with recovery guidance...
+  </CommentCol>
+</ExampleGrid>
+
+### With Custom Event Time
+
+<ExampleGrid>
+  <CommentCol>
+    Reporting historical events with specific timestamps...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "device_id": "test-device-001",
+      "event_time": "2024-01-15T10:30:00Z",
+      "alert_name": "Backdoor Detected"
+    }
+    ```
+    ```yaml
+    - defender:
+        tenant_id: "${DEFENDER_TENANT_ID}"
+        client_id: "${DEFENDER_CLIENT_ID}"
+        client_secret: "${DEFENDER_CLIENT_SECRET}"
+        machine_id: "{{ .device_id }}"
+        severity: "High"
+        title: "{{ .alert_name }}"
+        alert_description: "Persistent backdoor mechanism identified"
+        recommended_action: "Remove backdoor and audit system access"
+        category: "SuspiciousActivity"
+        event_time: "{{ .event_time }}"
+        report_id: "backdoor-{{ .device_id }}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Alert with historical timestamp for forensic analysis...
+  </CommentCol>
+</ExampleGrid>
+
+### Schema Drift Alert
+
+<ExampleGrid>
+  <CommentCol>
+    Creating security alerts when data quality issues occur...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - check_schema:
+          schema: "SecurityEventLogs"
+          target_field: "schema_check"
+          on_missing:
+            - defender:
+                tenant_id: "${DEFENDER_TENANT_ID}"
+                client_id: "${DEFENDER_CLIENT_ID}"
+                client_secret: "${DEFENDER_CLIENT_SECRET}"
+                machine_id: "log-collector-01"
+                severity: "Medium"
+                title: "Security Log Schema Validation Failed"
+                alert_description: "Critical security log fields missing from ingestion pipeline"
+                recommended_action: "Investigate log collection pipeline and restore missing fields"
+                category: "SuspiciousActivity"
+                report_id: "schema-SecurityEventLogs"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Alert created when security log schema drift is detected...
+  </CommentCol>
+</ExampleGrid>
+
+## Azure AD App Registration
+
+To use the defender processor, you must register an application in Azure AD with appropriate permissions:
+
+1. **Register Application**:
+   - Navigate to Azure Portal > Microsoft Entra ID > App registrations > New registration
+   - Choose a name and select supported account types
+   - Register the application
+
+2. **Create Client Secret**:
+   - Go to Certificates & secrets > New client secret
+   - Add description and expiration
+   - Copy the secret value (shown only once)
+
+3. **Assign API Permissions**:
+   - Go to API Permissions > Add permission
+   - Select "APIs my organization uses" > Search for "WindowsDefenderATP"
+   - Choose Application permissions > Alert.ReadWrite.All
+   - Grant admin consent
+
+4. **Configure Environment Variables**:
+   ```bash
+   export DEFENDER_TENANT_ID="your-tenant-id"
+   export DEFENDER_CLIENT_ID="your-client-id"
+   export DEFENDER_CLIENT_SECRET="your-client-secret"
+   ```
+
+5. **Obtain Machine IDs**:
+   - Machine IDs can be found in the Defender portal under Devices
+   - Or retrieved via the Machines API endpoint
+
+For detailed setup instructions, see [Microsoft Defender for Endpoint API Documentation](https://learn.microsoft.com/en-us/defender-endpoint/api/apis-intro).
