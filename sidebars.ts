@@ -336,6 +336,7 @@ const sidebars: SidebarsConfig = {
                 "configuration/pipelines/processors/minify",
                 "configuration/pipelines/processors/modulo",
                 "configuration/pipelines/processors/move",
+                "configuration/pipelines/processors/defender",
                 "configuration/pipelines/processors/msteams",
                 "configuration/pipelines/processors/multiply",
                 "configuration/pipelines/processors/network-direction",
