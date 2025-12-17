@@ -74,13 +74,15 @@ const config: Config = {
           routeBasePath: 'release-notes',
           blogTitle: 'Release Notes',
           blogDescription: 'All release notes in one place',
+          blogSidebarTitle: 'All Releases',
+          blogSidebarCount: 'ALL',
           feedOptions: {
             type: ["rss", "atom"],
             xslt: true,
           },
           onInlineTags: "warn",
           onInlineAuthors: "warn",
-          onUntruncatedBlogPosts: "warn",
+          onUntruncatedBlogPosts: "ignore",
           exclude: [
             '**/CLAUDE.md',
             '**/BACKLOG.md',

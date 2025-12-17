@@ -1,12 +1,10 @@
 ---
-authors: [release-team]
-tags: [release]
+slug: v1.6.2
+sidebar_label: v1.6.2
 title: Version 1.6.2 Released
 ---
 
-This release expands data forwarding capabilities with four new storage target integrations and strengthens platform security with CAPTCHA protection. Enhanced tenant limit management provides improved control over resource allocation, while comprehensive user interface improvements across multiple targets enhance configuration clarity. Important bug fixes improve Director management workflows and cross-browser compatibility.
-
-{/* truncate */}
+This release introduces schema drift detection and multi-tier pipeline capabilities with eight new processors for validation, staged routing, and alerting. Four new storage target integrations expand data forwarding options, while CAPTCHA protection strengthens platform security. Enhanced tenant limit management provides improved control over resource allocation, and comprehensive user interface improvements across multiple targets enhance configuration clarity.
 
 ## :rocket: New Features
 
@@ -14,7 +12,29 @@ This release expands data forwarding capabilities with four new storage target i
 
 - **Tenant Limit Management Enhancement** - Parent tenant limit configuration enhanced with self-management capabilities, providing greater control over resource allocation across organizational hierarchies. Parent tenants can now configure their own limits directly, with changes automatically affecting sub-tenant limit allocation. License limits calculated as combined total of parent tenant and all sub-tenants, ensuring accurate resource tracking across entire tenant structure.
 
+- **Schema Drift Detection** - New schema validation capability detects when vendor log formats change unexpectedly. The check_schema processor validates events against ASIM and OCSF schemas, identifying missing fields, extra fields, and type mismatches. Supports conditional processor chains for automated alerting and fallback processing when drift is detected.
+
+- **Multi-Tier Pipelines** - Staged routing enables sending the same data to multiple destinations at different normalization levels without event duplication. Progressive normalization transforms data through tiers (raw, CSL, ASIM) with the commit processor finalizing staged routes. Eliminates ingestion cost multiplication for multi-destination workflows.
+
 ## :wrench: Improvements
+
+### New Processors
+
+- **check_schema** - Validates event data against ASIM or OCSF schema definitions, detecting missing fields, extra fields, and type mismatches for schema drift detection.
+
+- **commit** - Finalizes staged routes created by the reroute processor, enabling multi-tier pipeline architectures where only the final normalized version reaches each destination.
+
+- **defender** - Creates custom alerts in Microsoft Defender using the CreateAlert API, enabling external threat detection systems to integrate with Microsoft's endpoint security platform.
+
+- **msteams** - Sends notifications to Microsoft Teams channels via incoming webhooks, supporting customizable message formatting for alerting workflows.
+
+- **pagerduty** - Creates incidents in PagerDuty for on-call alerting, enabling automated escalation when critical events or processing failures are detected.
+
+- **servicenow** - Creates incidents in ServiceNow for IT service management integration, supporting automated ticket creation from pipeline processing events.
+
+- **slack** - Sends notifications to Slack channels via incoming webhooks, supporting customizable message formatting and severity-based color coding.
+
+- **telegram** - Sends notifications to Telegram chats via bot API, enabling mobile alerting for critical events and processing status updates.
 
 ### New Targets
 
@@ -59,7 +79,5 @@ This release expands data forwarding capabilities with four new storage target i
 ### User Interface
 
 - **Quick Routes Error Messages** - Refined error messages in Quick Routes interface for improved clarity and user guidance. Error feedback now provides clearer information for troubleshooting configuration issues.
-
-- **Firefox Advanced Route Display** - Fixed visual rendering issue in Advanced Route configuration display when using Firefox browser. Advanced Route configurations now display correctly across all supported browsers, ensuring consistent user experience.
 
 ---
