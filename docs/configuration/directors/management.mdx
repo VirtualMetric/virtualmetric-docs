@@ -40,6 +40,10 @@ For **Self-Managed** Directors, a warning icon appears next to the Mode when con
 - **Tooltip** - "Configuration has changed and the current one has to be deployed"
 - **Action Required** - Download updated configuration file and deploy to Director
 
+:::warning
+When the configuration change indicator appears, the Director is running with an outdated configuration. Download and deploy the updated `vmetric.vmf` file promptly to ensure consistent behavior.
+:::
+
 ### Table Controls
 
 **Search and Filter:**
@@ -94,12 +98,16 @@ The Director creation process guides you through a 3-step wizard with validation
    - Suitable for most deployments
    - Quick setup process
 
-   **Cluster:** *(Coming Soon)*
+   **Cluster:**
+
+   :::info
+   Cluster installation type is coming soon and will provide high availability with load balancing capabilities.
+   :::
+
    - Multiple Director instances
    - High availability
    - Load balancing capabilities
    - Enterprise-grade reliability
-   - Currently displays "Coming Soon" badge
 
 3. **Mode Selection**
 
@@ -222,24 +230,30 @@ Access installation and reinstallation resources:
 Track Director operations and lifecycle events through comprehensive activity logging:
 
 **Activity Table Columns:**
-- **Timestamp** - Date and time of activity
-- **Action** - Operation performed
-- **Status** - Result of action (Success, Failed, Pending)
-- **Details** - Additional context for activity
 
-**Activity Types:**
-- Director created
-- Director enabled/disabled
-- Configuration changes
-- Connection events
-- Update operations
-- Status changes
+| Column | Description |
+|:-------|:------------|
+| User | Email address of the user who performed the action (clickable link to user profile) |
+| User IP | IP address from which the action was performed |
+| Object Type | Entity type (always "Director" for this view) |
+| Object | Name of the affected Director |
+| Action | Operation performed (see Action Types below) |
+| Action Description | Detailed description of the operation |
+| Created At | Timestamp of when the action occurred |
+
+**Action Types:**
+
+| Action | Description |
+|:-------|:------------|
+| CreatedDirector | A new Director was created |
+| UpdatedDirector | Director configuration was modified |
+| DeletedDirector | A Director was removed |
 
 **Table Features:**
-- Search activities by action or details
-- Sort by timestamp, action, or status
-- Pagination for large activity logs
-- Export activity history
+- **Search** - Filter activities by any field content
+- **Action Type Filter** - Multi-select filter to show specific action types
+- **Timeframe Filter** - Filter by time period (Last 24 hours, Last 7 days, Last 30 days, Last 90 days, All time)
+- **Pagination** - Navigate through large activity logs with configurable page sizes (10, 20, 30 items)
 
 ## Director Operations
 
@@ -288,6 +302,10 @@ When configuration changes occur:
 - Replace existing config on Director server
 - Restart Director service to apply changes
 
+:::warning
+Self-Managed Directors require a service restart after deploying configuration updates. Plan maintenance windows accordingly for production environments.
+:::
+
 ### Delete Director
 
 **Delete Director Process:**
@@ -308,6 +326,10 @@ Remove a Director from the platform with dependency checking:
 **Deletion with Dependencies:**
 
 If Director has active dependencies, error modal displays:
+
+:::note
+Directors with connected devices or agents cannot be deleted. The error modal lists all dependencies that must be reassigned or removed first.
+:::
 
 **Error Modal Contents:**
 - "Cannot delete Director" message
@@ -384,6 +406,10 @@ Agent pre-processing is configured through device settings in the Director inter
 - Reserve complex processing (enrichment, external lookups) for Director
 - Balance processing load between Agents and Directors
 - Monitor Agent resource utilization
+
+:::tip
+Agents are ideal for data reduction tasks (filtering, sampling, field removal) while Directors handle enrichment operations that require external resources like GeoIP databases or threat intelligence feeds.
+:::
 
 **Performance Optimization:**
 - Assign lightweight pipelines to resource-constrained Agents

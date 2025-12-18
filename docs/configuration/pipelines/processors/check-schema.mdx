@@ -1,0 +1,321 @@
+---
+description: Validates event data against ASIM or OCSF schema definitions
+sidebar_custom_props:
+  customIcon: 🔀
+  customCategory: Flow Control
+---
+
+# Check Schema
+
+<span className="theme-doc-version-badge badge badge--primary">Flow Control</span>
+
+## Synopsis
+
+Validates event data against ASIM (Advanced Security Information Model) or OCSF (Open Cybersecurity Schema Framework) schema definitions, detecting schema drift by identifying missing fields, extra fields, and type mismatches.
+
+## Schema
+
+```yaml {2-3}
+- check_schema:
+    schema: <string>
+    target_field: <string>
+    check_mode: <string>
+    validate_recommended: <boolean>
+    validate_optional: <boolean>
+    on_missing: <processor[]>
+    on_extra: <processor[]>
+    on_type_mismatch: <processor[]>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`schema`|Y|-|Schema name to validate against (e.g., `ASimNetworkSessionLogs`, `ASimAuthenticationEventLogs`)|
+|`target_field`|Y|-|Field name to store validation results|
+|`check_mode`|N|`both`|Validation mode: `missing`, `extra`, or `both`|
+|`validate_recommended`|N|`false`|Include recommended fields in validity check|
+|`validate_optional`|N|`false`|Include optional fields in validity check|
+|`on_missing`|N|-|Processors to execute when missing fields are detected|
+|`on_extra`|N|-|Processors to execute when extra fields are detected|
+|`on_type_mismatch`|N|-|Processors to execute when type mismatches are detected|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The check_schema processor validates events against official schema definitions, detecting schema drift that occurs when vendor log formats change unexpectedly. It supports Microsoft Sentinel's ASIM schemas and OCSF schemas.
+
+**Validation Result Structure**: Results are written to the `target_field` as a structured object:
+
+```json
+{
+  "is_valid": false,
+  "missing_required_fields": ["EventSchema", "EventVendor"],
+  "missing_recommended_fields": ["DvcAction", "EventSeverity"],
+  "missing_optional_fields": ["SrcNatIpAddr"],
+  "extra_fields": ["CustomField1"],
+  "type_mismatches": [
+    {
+      "field": "EventCount",
+      "expected_type": "INT32",
+      "actual_type": "STRING"
+    }
+  ]
+}
+```
+
+**Validation Levels**:
+- **Required fields**: Always checked when `check_mode` includes `missing`. Missing required fields make `is_valid` false.
+- **Recommended fields**: Reported but don't affect validity unless `validate_recommended: true`.
+- **Optional fields**: Reported but don't affect validity unless `validate_optional: true`.
+- **Extra fields**: Detected when `check_mode` includes `extra`. Never affect validity (informational only).
+- **Type mismatches**: Checked for present fields. Impact follows the field's requirement level.
+
+**Check Modes**:
+- `missing`: Only detect missing fields
+- `extra`: Only detect extra fields not in schema
+- `both`: Detect both missing and extra fields
+
+**Metadata Fields**: Fields prefixed with `@` (like `@timestamp`, `@metadata`) are automatically ignored during validation.
+
+For integration patterns, see <Topic id="pipelines-schema-drift-detection">Schema Drift Detection</Topic> and <Topic id="pipelines-multi-tier">Multi-Tier Pipelines</Topic>.
+
+## Examples
+
+### Basic ASIM Validation
+
+<ExampleGrid>
+  <CommentCol>
+    Validating network session event against ASIM schema...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "TimeGenerated": "2024-01-01T12:00:00Z",
+      "EventCount": 1,
+      "EventSchema": "NetworkSession",
+      "EventSchemaVersion": "0.2.6",
+      "EventStartTime": "2024-01-01T12:00:00Z",
+      "EventEndTime": "2024-01-01T12:00:01Z",
+      "Dvc": "firewall01",
+      "EventType": "NetworkSession",
+      "EventResult": "Success",
+      "EventProduct": "Firewall",
+      "EventVendor": "Microsoft"
+    }
+    ```
+    ```yaml
+    - check_schema:
+        schema: "ASimNetworkSessionLogs"
+        target_field: "schema_check"
+        check_mode: "both"
+    ```
+  </CodeCol>
+  <CommentCol>
+    All required fields present, validation passes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "schema_check": {
+        "is_valid": true,
+        "missing_required_fields": [],
+        "missing_recommended_fields": ["DvcAction", "EventSeverity"],
+        "missing_optional_fields": [],
+        "extra_fields": [],
+        "type_mismatches": []
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Detecting Missing Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Event missing required fields triggers validation failure...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "TimeGenerated": "2024-01-01T12:00:00Z",
+      "EventCount": 1,
+      "EventType": "NetworkSession"
+    }
+    ```
+    ```yaml
+    - check_schema:
+        schema: "ASimNetworkSessionLogs"
+        target_field: "schema_check"
+        check_mode: "missing"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Missing required fields listed in result...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "schema_check": {
+        "is_valid": false,
+        "missing_required_fields": [
+          "EventSchema",
+          "EventSchemaVersion",
+          "EventEndTime",
+          "Dvc",
+          "EventResult",
+          "EventProduct",
+          "EventVendor"
+        ],
+        "type_mismatches": []
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Detecting Extra Fields
+
+<ExampleGrid>
+  <CommentCol>
+    Detecting fields not defined in schema...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "TimeGenerated": "2024-01-01T12:00:00Z",
+      "EventCount": 1,
+      "ExtraField1": "unexpected",
+      "CustomData": {"key": "value"},
+      "UnknownMetric": 999.99
+    }
+    ```
+    ```yaml
+    - check_schema:
+        schema: "ASimNetworkSessionLogs"
+        target_field: "schema_check"
+        check_mode: "extra"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Extra fields detected but don't affect validity...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "schema_check": {
+        "is_valid": true,
+        "extra_fields": [
+          "ExtraField1",
+          "CustomData",
+          "UnknownMetric"
+        ]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Conditional Processing Chains
+
+<ExampleGrid>
+  <CommentCol>
+    Triggering alerts when schema drift is detected...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - check_schema:
+        schema: "ASimNetworkSessionLogs"
+        target_field: "schema_check"
+        check_mode: "both"
+        on_missing:
+          - set:
+              field: "drift_type"
+              value: "missing_fields"
+          - set:
+              field: "alert_required"
+              value: true
+        on_extra:
+          - set:
+              field: "drift_type"
+              value: "extra_fields"
+        on_type_mismatch:
+          - set:
+              field: "drift_type"
+              value: "type_mismatch"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Conditional chains execute based on drift type...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "drift_type": "missing_fields",
+      "alert_required": true,
+      "schema_check": {
+        "is_valid": false,
+        "missing_required_fields": ["EventSchema"]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Strict Validation
+
+<ExampleGrid>
+  <CommentCol>
+    Including recommended fields in validity check...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "TimeGenerated": "2024-01-01T12:00:00Z",
+      "EventCount": 1,
+      "EventSchema": "NetworkSession",
+      "EventSchemaVersion": "0.2.6",
+      "EventStartTime": "2024-01-01T12:00:00Z",
+      "EventEndTime": "2024-01-01T12:00:01Z",
+      "Dvc": "firewall01",
+      "EventType": "NetworkSession",
+      "EventResult": "Success",
+      "EventProduct": "Firewall",
+      "EventVendor": "Microsoft"
+    }
+    ```
+    ```yaml
+    - check_schema:
+        schema: "ASimNetworkSessionLogs"
+        target_field: "schema_check"
+        check_mode: "both"
+        validate_recommended: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    Missing recommended fields now affect validity...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "schema_check": {
+        "is_valid": false,
+        "missing_required_fields": [],
+        "missing_recommended_fields": ["DvcAction", "EventSeverity"]
+      }
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

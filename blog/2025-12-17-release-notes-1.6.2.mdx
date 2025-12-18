@@ -1,0 +1,83 @@
+---
+slug: v1.6.2
+sidebar_label: v1.6.2
+title: Version 1.6.2 Released
+---
+
+This release introduces schema drift detection and multi-tier pipeline capabilities with eight new processors for validation, staged routing, and alerting. Four new storage target integrations expand data forwarding options, while CAPTCHA protection strengthens platform security. Enhanced tenant limit management provides improved control over resource allocation, and comprehensive user interface improvements across multiple targets enhance configuration clarity.
+
+## :rocket: New Features
+
+- **CAPTCHA Security Enhancement** - CAPTCHA verification implemented across authentication workflows to protect against automated attacks. CAPTCHA challenges added to login, signup, and password reset processes, preventing unauthorized access attempts and bot-based attacks while maintaining smooth user experience for legitimate access.
+
+- **Tenant Limit Management Enhancement** - Parent tenant limit configuration enhanced with self-management capabilities, providing greater control over resource allocation across organizational hierarchies. Parent tenants can now configure their own limits directly, with changes automatically affecting sub-tenant limit allocation. License limits calculated as combined total of parent tenant and all sub-tenants, ensuring accurate resource tracking across entire tenant structure.
+
+- **Schema Drift Detection** - New schema validation capability detects when vendor log formats change unexpectedly. The check_schema processor validates events against ASIM and OCSF schemas, identifying missing fields, extra fields, and type mismatches. Supports conditional processor chains for automated alerting and fallback processing when drift is detected.
+
+- **Multi-Tier Pipelines** - Staged routing enables sending the same data to multiple destinations at different normalization levels without event duplication. Progressive normalization transforms data through tiers (raw, CSL, ASIM) with the commit processor finalizing staged routes. Eliminates ingestion cost multiplication for multi-destination workflows.
+
+## :wrench: Improvements
+
+### New Processors
+
+- **check_schema** - Validates event data against ASIM or OCSF schema definitions, detecting missing fields, extra fields, and type mismatches for schema drift detection.
+
+- **commit** - Finalizes staged routes created by the reroute processor, enabling multi-tier pipeline architectures where only the final normalized version reaches each destination.
+
+- **defender** - Creates custom alerts in Microsoft Defender using the CreateAlert API, enabling external threat detection systems to integrate with Microsoft's endpoint security platform.
+
+- **msteams** - Sends notifications to Microsoft Teams channels via incoming webhooks, supporting customizable message formatting for alerting workflows.
+
+- **pagerduty** - Creates incidents in PagerDuty for on-call alerting, enabling automated escalation when critical events or processing failures are detected.
+
+- **servicenow** - Creates incidents in ServiceNow for IT service management integration, supporting automated ticket creation from pipeline processing events.
+
+- **slack** - Sends notifications to Slack channels via incoming webhooks, supporting customizable message formatting and severity-based color coding.
+
+- **telegram** - Sends notifications to Telegram chats via bot API, enabling mobile alerting for critical events and processing status updates.
+
+### New Targets
+
+- **AWS S3** - AWS S3 target integration enables direct data transmission to Amazon S3 storage infrastructure. Seamless integration with AWS ecosystem expands data routing options for archival, analytics, and backup workflows.
+
+- **Cloudflare R2** - Cloudflare R2 target integration provides object storage capabilities with S3-compatible API. Integration supports cost-effective data storage and retrieval, expanding cloud storage options for log forwarding and data archival.
+
+- **IBM Cloud Object Storage** - IBM Cloud Object Storage target enables data forwarding to IBM's enterprise cloud storage platform. Integration supports secure, scalable storage for analytics and compliance requirements.
+
+- **MinIO** - MinIO target integration provides high-performance object storage capabilities with S3-compatible API. Self-hosted storage option supports on-premises and private cloud deployments, offering flexible data storage alternatives.
+
+### Target Configuration Enhancements
+
+- **Azure Blob Storage Field Improvements** - Field formats and descriptive text enhanced for improved clarity. Streamlined interface makes configuration more intuitive and reduces setup complexity.
+
+- **Azure Event Hubs Field Improvements** - Field formats and descriptive text refined, enhancing user understanding. Improved labeling and formatting support easier configuration and reduce potential errors.
+
+- **Azure Data Explorer (ADX) Field Improvements** - Field formats and descriptive text optimized for better comprehension. Enhanced interface clarity simplifies setup process and improves configuration accuracy.
+
+- **Elastic Field Improvements** - Field formats and descriptive text enhanced, improving overall usability. Clearer field descriptions and formatting support more efficient target setup.
+
+- **Splunk Field Improvements** - Field formats and descriptive text refined for enhanced clarity. Improved interface elements make configuration more straightforward and user-friendly.
+
+### Director and Device Enhancements
+
+- **Case-Insensitive Director Search** - Director search functionality enhanced with case-insensitive search capability, reducing search errors and improving discoverability. Search operations now match Directors regardless of character case, supporting more flexible search queries.
+
+- **IPv6 Support for Agent Installation** - Agent installation commands for Linux and Windows devices enhanced with IPv6 address support. Installation process now handles both IPv4 and IPv6 addressing, ensuring compatibility with modern network infrastructures and dual-stack environments.
+
+- **Windows DNS Logs Filtering Improvements** - Windows DNS Logs filtering interface enhanced with improved usability and clarity. Refinements to filtering options support more efficient DNS log configuration and management.
+
+## :bug: Bug Fixes
+
+### User Management
+
+- **Transfer Ownership Error** - Fixed error encountered by users with Owner role when performing transfer ownership operations. Ownership transfer now completes successfully, ensuring smooth administrative transitions.
+
+### Director Management
+
+- **Reinstall Director Command Display** - Fixed issue where reinstall director option displayed incorrect commands and error messages. Command generation now produces accurate installation commands, and error messaging provides proper feedback during reinstall operations.
+
+### User Interface
+
+- **Quick Routes Error Messages** - Refined error messages in Quick Routes interface for improved clarity and user guidance. Error feedback now provides clearer information for troubleshooting configuration issues.
+
+---

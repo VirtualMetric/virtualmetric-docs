@@ -15,14 +15,14 @@ Converts numbers to human-readable format with metric prefixes.
 
 ## Schema
 
-```yaml {2-3}
+```yaml {2}
 - humanize:
     field: <ident>
-    target_field: <string>
+    target_field: <ident>
     format: <string>
     precision: <integer>
     binary: <boolean>
-    suffix: <string>
+    suffix: <boolean>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -43,7 +43,7 @@ The following fields are used to define the processor:
 |`format`|N|`size`|Format type: `size`, `number`, `time`, `frequency`|
 |`precision`|N|`1`|Decimal places to show in result|
 |`binary`|N|`false`|Use binary (1024) instead of decimal (1000) base|
-|`suffix`|N|-|Custom suffix to append to result|
+|`suffix`|N|`false`|Add suffix like "ago" or "remaining" for time values|
 |`description`|N|-|Explanatory note|
 |`if`|N|-|Condition to run|
 |`ignore_failure`|N|`false`|Continue processing if conversion fails|
@@ -199,34 +199,34 @@ Non-numeric input values will cause the processor to fail unless `ignore_failure
   </CodeCol>
 </ExampleGrid>
 
-### With Custom Suffix
+### With Time Suffix
 
 <ExampleGrid>
   <CommentCol>
-    Adding custom suffix to humanized value...
+    Adding suffix to time duration values...
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "frequency_hz": 2500000
+      "remaining_seconds": 3600
     }
     ```
     ```yaml
     - humanize:
-        field: frequency_hz
-        format: frequency
-        suffix: "Hz"
-        target_field: readable_frequency
+        field: remaining_seconds
+        format: time
+        suffix: true
+        target_field: time_remaining
     ```
   </CodeCol>
   <CommentCol>
-    includes custom suffix:
+    includes "remaining" suffix:
   </CommentCol>
   <CodeCol>
     ```json
     {
-      "frequency_hz": 2500000,
-      "readable_frequency": "2.5MHz"
+      "remaining_seconds": 3600,
+      "time_remaining": "1 hour remaining"
     }
     ```
   </CodeCol>

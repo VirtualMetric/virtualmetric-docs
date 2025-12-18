@@ -1,3 +1,5 @@
+import ManagedIdentity from '../_managed-identity.mdx';
+
 # Azure Blob Storage
 
 <span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">Long Term Storage</span>
@@ -142,9 +144,9 @@ The target supports multiple authentication methods:
 
 **Service Principal Authentication**: Use `tenant_id`, `client_id`, and `client_secret` for explicit credential-based authentication.
 
-**Managed Identity**: When deployed on Azure infrastructure (VMs, App Services, Container Instances), can leverage managed identity without explicit credentials.
+**Function App Authentication**: When `function_app` is specified, authentication is handled through the Function App token, and direct storage credentials are not required.
 
-**Function App**: When `function_app` is specified, authentication is handled through the Function App token, and direct storage credentials are not required.
+<ManagedIdentity />
 
 ### Container Routing
 
@@ -242,6 +244,20 @@ targets:
       client_id: "00000000-0000-0000-0000-000000000000"
       client_secret: "your-client-secret"
       container: "logs"
+```
+
+### Managed Identity
+
+Using Managed Identity for credential-free authentication on Azure infrastructure:
+
+```yaml
+targets:
+  - name: managed_identity_blob
+    type: azblob
+    properties:
+      account: "mystorageaccount"
+      container: "logs"
+      format: "json"
 ```
 
 ### Pipeline-Based Routing
