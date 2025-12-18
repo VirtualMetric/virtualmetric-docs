@@ -1,100 +1,49 @@
-name: Pull Request Pipeline
+name: PR Preview
 on:
   pull_request:
     types: [opened, reopened, synchronize]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  prepare:
-    name: "Prepare: Bootstrap the repository"
+  build-and-preview:
+    name: Build and Deploy Preview
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      # Cache node modules
-      - name: Cache Node Modules
-        uses: actions/cache@v4
-        with:
-          path: ./**/node_modules
-          key: ${{ github.sha }}-node-modules
-          restore-keys: |
-            ${{ github.sha }}-node-modules
-
-  build-docs:
-    name: Build VirtualMetric Docs
-    needs: [prepare]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      # Restore node modules
-      - name: Restore Node Modules
-        uses: actions/cache@v4
-        with:
-          path: ./**/node_modules
-          key: ${{ github.sha }}-node-modules
-          restore-keys: |
-            ${{ github.sha }}-node-modules
-      - name: Building the documentation application
+      - name: Build documentation
         run: npm run build
 
-      # Cache the build outputs
-      - name: Cache Main Build
-        uses: actions/cache@v4
-        with:
-          path: ./build
-          key: ${{ github.sha }}-docs-build-output
-          restore-keys: |
-            ${{ github.sha }}-docs-build-output
-
-  deploy-docs:
-    name: Deploy VirtualMetric Docs
-    outputs:
-      docs-url: ${{ steps.application-deployment.outputs.deployment-url }}
-    needs: [build-docs]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      # Restore build outputs for main app
-      - name: Restore Main Build
-        uses: actions/cache@v4
-        with:
-          path: ./build
-          key: ${{ github.sha }}-docs-build-output
-          restore-keys: |
-            ${{ github.sha }}-docs-build-output
-
-      - name: Docs CloudFlare Deployment
-        id: application-deployment
+      - name: Deploy Preview to Cloudflare Pages
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy build --project-name virtualmetric-docs
 
-  notify:
-    name: Notify
-    needs: [deploy-docs]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Remove old deployment links
+      - name: Remove old deployment comments
         uses: izhangzhihao/delete-comment@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           delete_user_name: github-actions[bot]
-          issue_number: ${{ github.event.number }}
-      - name: Comment on PR
+          issue_number: ${{ github.event.pull_request.number }}
+
+      - name: Comment Preview URL on PR
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Docs Feature Deployment ${{ needs.deploy-docs.outputs.docs-url}}
+            📄 **Docs Preview:** ${{ steps.deploy.outputs.deployment-url }}

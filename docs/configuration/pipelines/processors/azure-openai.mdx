@@ -15,7 +15,7 @@ Enriches events by sending field content to Azure OpenAI API for analysis and st
 
 ## Schema
 
-```yaml {2-5}
+```yaml {3-5}
 - azureai:
     field: <ident>
     api_key: <string>
@@ -41,7 +41,7 @@ The following fields are used to define the processor:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`field`|Y|`message`|Field containing content to analyze|
+|`field`|N|`message`|Field containing content to analyze|
 |`api_key`|Y|-|Azure OpenAI API key|
 |`resource_name`|Y|-|Azure OpenAI resource name|
 |`deployment_name`|Y|-|Azure model deployment name|
@@ -206,14 +206,18 @@ API keys must be securely stored and accessed.
     {
       "message": "Error code 0x8000ffff"
     }
-    processors:
-      - azureai:
-          field: message
-          target_field: analysis
-          api_key: "${AZURE_OPENAI_API_KEY}"
-          resource_name: "myopenai-resource"
-          deployment_name: "gpt4-deployment"
-          api_version: "2024-02-15-preview"  <CommentCol>
+    ```
+    ```yaml
+    - azureai:
+        field: message
+        target_field: analysis
+        api_key: "${AZURE_OPENAI_API_KEY}"
+        resource_name: "myopenai-resource"
+        deployment_name: "gpt4-deployment"
+        api_version: "2024-02-15-preview"
+    ```
+  </CodeCol>
+  <CommentCol>
     produces results specific to that version:
   </CommentCol>
   <CodeCol>

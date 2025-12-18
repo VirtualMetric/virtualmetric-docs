@@ -1,0 +1,41 @@
+# $schema: "1.0"
+
+reviews:
+  auto_review:
+    enabled: true
+    base_branches:
+      - "dev"
+      - "test"
+    ignore_title_keywords:
+      - "WIP"
+    labels:
+      - "documentation"
+  path_filters:
+    - "!*.html"
+    - "!build/**"
+    - "!.docusaurus/**"
+    - "!node_modules/**"
+    - "!src/generated/**"
+    - "!package-lock.json"
+    - "!**/CLAUDE.md"
+    - "!lunr-index*.json"
+    - "!search-doc*.json" 
+  path_instructions:
+    - path: "**/*.mdx"
+      instructions: |
+        Ensure consistency in terminology and formatting across all documentation files.
+        Cross-check references and links against other markdown files in the repository.
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+chat:
+  auto_reply: true
+  integrations: {}
+ 
+tone_instructions: "Provide concise and constructive feedback on documentation clarity and consistency."
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true

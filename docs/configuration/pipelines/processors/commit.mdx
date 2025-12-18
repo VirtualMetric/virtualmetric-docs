@@ -1,0 +1,233 @@
+---
+description: Finalizes staged routes from reroute processor
+sidebar_custom_props:
+  customIcon: ⚡
+  customCategory: Flow Control
+---
+
+# Commit
+
+<span className="theme-doc-version-badge badge badge--primary">Flow Control</span>
+
+## Synopsis
+
+Finalizes staged routes created by the reroute processor with `staging: true`, moving events from the staging area to their designated destinations.
+
+## Schema
+
+```yaml
+- commit:
+    destination: <string>
+    description: <text>
+    if: <script>
+    ignore_failure: <boolean>
+    on_failure: <processor[]>
+    on_success: <processor[]>
+    tag: <string>
+```
+
+## Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`destination`|N|-|Specific destination to commit. If omitted, commits all staged routes.|
+|`description`|N|-|Explanatory note|
+|`if`|N|-|Condition to run|
+|`ignore_failure`|N|`false`|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_failure`|N|-|See <Topic id="pipelines-handling-failures">Handling Failures</Topic>|
+|`on_success`|N|-|See <Topic id="pipelines-handling-success">Handling Success</Topic>|
+|`tag`|N|-|Identifier|
+
+## Details
+
+The commit processor works with the reroute processor to enable multi-tier pipeline architectures. When reroute uses `staging: true`, events are held in a staging area instead of being delivered immediately. The commit processor finalizes those staged routes.
+
+**Staged Route Behavior**:
+- Staged routes are stored in a map keyed by destination name
+- Multiple staged routes to the same destination overwrite previous versions
+- Only the final staged version for each destination is committed
+- Without commit, staged routes are discarded at pipeline end
+
+**Commit Modes**:
+- **Commit all**: When `destination` is omitted, all staged routes are committed
+- **Commit specific**: When `destination` is specified, only that destination is committed
+
+**Error Handling**:
+- Returns error if specified `destination` is not found in staged routes
+- Use `ignore_failure: true` to continue processing when destination not found
+- Empty staging area with no destination specified succeeds silently
+
+This pattern enables progressive normalization where data passes through multiple transformation stages, with only the final, most-normalized version delivered to each destination. See <Topic id="pipelines-multi-tier">Multi-Tier Pipelines</Topic> for detailed patterns.
+
+## Examples
+
+### Commit All Staged Routes
+
+<ExampleGrid>
+  <CommentCol>
+    Committing all staged routes after multi-tier processing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      # Stage to archive
+      - reroute:
+          destination: "archive"
+          table: "Syslog"
+          staging: true
+
+      # Normalize and stage to SIEM
+      - normalize:
+          target_format: csl
+      - reroute:
+          destination: "sentinel"
+          table: "CommonSecurityLog"
+          staging: true
+
+      # Commit all destinations
+      - commit:
+    ```
+  </CodeCol>
+  <CommentCol>
+    Both archive and sentinel receive their respective formats...
+  </CommentCol>
+</ExampleGrid>
+
+### Commit Specific Destination
+
+<ExampleGrid>
+  <CommentCol>
+    Committing only a specific destination...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - reroute:
+          destination: "sentinel"
+          table: "Syslog"
+          staging: true
+
+      - reroute:
+          destination: "lake"
+          staging: true
+
+      # Commit only sentinel
+      - commit:
+          destination: "sentinel"
+
+      # Continue processing for lake
+      - enrich:
+          field: "additional_data"
+
+      # Commit remaining
+      - commit:
+    ```
+  </CodeCol>
+  <CommentCol>
+    Sentinel receives data immediately, lake receives enriched data later...
+  </CommentCol>
+</ExampleGrid>
+
+### Staged Route Override
+
+<ExampleGrid>
+  <CommentCol>
+    Progressive normalization with automatic override...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      # Stage Syslog format
+      - reroute:
+          destination: "sentinel"
+          table: "Syslog"
+          staging: true
+
+      # Normalize to CSL and stage (overwrites)
+      - normalize:
+          target_format: csl
+      - reroute:
+          destination: "sentinel"
+          table: "CommonSecurityLog"
+          staging: true
+
+      # Normalize to ASIM and stage (overwrites again)
+      - normalize:
+          target_format: asim
+      - reroute:
+          destination: "sentinel"
+          table: "ASimNetworkSession"
+          staging: true
+
+      # Only ASIM version is committed
+      - commit:
+    ```
+  </CodeCol>
+  <CommentCol>
+    Only the final ASIM version reaches sentinel...
+  </CommentCol>
+</ExampleGrid>
+
+### Conditional Commit
+
+<ExampleGrid>
+  <CommentCol>
+    Committing based on validation results...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - normalize:
+          target_format: asim
+      - check_schema:
+          schema: "ASimNetworkSessionLogs"
+          target_field: "schema_check"
+      - reroute:
+          destination: "sentinel"
+          staging: true
+
+      # Only commit if schema is valid
+      - commit:
+          destination: "sentinel"
+          if: "schema_check.is_valid == true"
+
+      # Route invalid events elsewhere
+      - reroute:
+          if: "schema_check.is_valid == false"
+          destination: "quarantine"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Valid events go to sentinel, invalid to quarantine...
+  </CommentCol>
+</ExampleGrid>
+
+### Error Handling
+
+<ExampleGrid>
+  <CommentCol>
+    Handling missing destination gracefully...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    processors:
+      - commit:
+          destination: "nonexistent"
+          ignore_failure: true
+          on_failure:
+            - set:
+                field: "commit_error"
+                value: "destination not found"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Processing continues with error captured...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "commit_error": "destination not found"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

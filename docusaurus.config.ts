@@ -55,6 +55,7 @@ const config: Config = {
           routeBasePath: "/",
           lastVersion: "current",
           includeCurrentVersion: true,
+          onlyIncludeVersions: ['current'], // Versioning disabled - only load current docs
           exclude: [
             '**/CLAUDE.md',
             '**/BACKLOG.md',
@@ -73,13 +74,15 @@ const config: Config = {
           routeBasePath: 'release-notes',
           blogTitle: 'Release Notes',
           blogDescription: 'All release notes in one place',
+          blogSidebarTitle: 'All Releases',
+          blogSidebarCount: 'ALL',
           feedOptions: {
             type: ["rss", "atom"],
             xslt: true,
           },
           onInlineTags: "warn",
           onInlineAuthors: "warn",
-          onUntruncatedBlogPosts: "warn",
+          onUntruncatedBlogPosts: "ignore",
           exclude: [
             '**/CLAUDE.md',
             '**/BACKLOG.md',
@@ -95,7 +98,7 @@ const config: Config = {
     [
       require.resolve("docusaurus-lunr-search"),
       {
-        excludeRoutes: ["/1.*/**/*"],
+        // excludeRoutes: ["/1.*/**/*"], // No longer needed - versioning disabled
         disableVersioning: true,
       }
     ],
@@ -111,7 +114,7 @@ const config: Config = {
       respectPrefersColorScheme: false,
     },
     docs: {
-      versionPersistence: "localStorage",
+      // versionPersistence: "localStorage", // No longer needed - versioning disabled
       sidebar: {
         hideable: false,
         autoCollapseCategories: false,
@@ -164,10 +167,11 @@ const config: Config = {
           type: "search",
           position: "right",
         },
-        {
-          type: "docsVersionDropdown",
-          position: "right"
-        }
+        // Versioning disabled - SaaS model with frequent updates
+        // {
+        //   type: "docsVersionDropdown",
+        //   position: "right"
+        // }
       ],
     },
     footer: {
