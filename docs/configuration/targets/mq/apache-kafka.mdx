@@ -29,6 +29,8 @@ Creates a target that writes log messages to Apache Kafka topics with support fo
     disable_idempotent_write: <boolean>
     max_bytes: <numeric>
     max_events: <numeric>
+    batch_mode: <string>
+    batch_separator: <string>
     field_format: <string>
     tls:
       status: <boolean>
@@ -40,6 +42,9 @@ Creates a target that writes log messages to Apache Kafka topics with support fo
       passphrase: <string>
     interval: <string|numeric>
     cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
 ```
 
 ## Configuration
@@ -89,6 +94,8 @@ The following fields are used to define the target:
 |---|---|---|---|
 |`max_bytes`|N|`0`|Maximum batch size in bytes (0 = unlimited)|
 |`max_events`|N|`1000`|Maximum number of events per batch|
+|`batch_mode`|N|`json`|Output format: `json` (single JSON per message), `json_batch` (array of JSON objects)|
+|`batch_separator`|N|`\n`|Separator between messages when using json_batch mode|
 |`field_format`|N|-|Data normalization format. See applicable <Topic id="pipelines-normalization-field-mapping">Normalization</Topic> section|
 
 :::note
@@ -113,6 +120,13 @@ Batches are sent when either `max_bytes` or `max_events` limit is reached, which
 |---|---|---|---|
 |`interval`|N|realtime|Execution frequency. See <Topic id="scheduling-interval-based">Interval</Topic> for details|
 |`cron`|N|-|Cron expression for scheduled execution. See <Topic id="scheduling-cron-based">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
 
 ## Details
 
