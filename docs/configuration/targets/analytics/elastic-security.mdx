@@ -15,6 +15,7 @@ targets:
   - name: <string>
     type: elastic
     properties:
+      version: <integer>
       index: <string>
       endpoints:
         - endpoint: <string>
@@ -29,6 +30,8 @@ targets:
       pipeline: <string>
       filter_path: <string>
       insecure_skip_verify: <boolean>
+      interval: <string|numeric>
+      cron: <string>
       debug:
         status: <boolean>
         dont_send_logs: <boolean>
@@ -50,6 +53,7 @@ targets:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
+| `version` | integer | N | Elasticsearch major version (7 or 8) for API compatibility. Default: `8` |
 | `index` | string | Y | Default security index name (e.g., `logs-security.events-default`) |
 | `endpoints` | array | Y | Array of Elasticsearch endpoint configurations |
 | `endpoints[].endpoint` | string | Y | Elasticsearch URL (e.g., `https://elastic.example.com:9200`) |
@@ -79,6 +83,13 @@ targets:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `insecure_skip_verify` | boolean | N | Skip TLS certificate verification. Default: `false` |
+
+### Scheduler
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `interval` | string/numeric | N | Execution frequency (realtime by default) |
+| `cron` | string | N | Cron expression for scheduled execution |
 
 ### Debug Options
 

@@ -1,0 +1,413 @@
+# HTTP
+
+<span className="theme-doc-version-badge badge badge--secondary">Network</span><span className="theme-doc-version-badge badge badge--secondary">Webhook</span>
+
+## Synopsis
+
+Creates a target that sends log data to HTTP/HTTPS endpoints using configurable methods, formats, and authentication. Supports batching, compression, retry logic, and connection pooling for reliable delivery to web services, APIs, and webhooks.
+
+## Schema
+
+```yaml {1,3,6}
+- name: <string>
+  description: <string>
+  type: http
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    url: <string>
+    method: <string>
+    format: <string>
+    content_type: <string>
+    headers:
+      <key>: <value>
+    batch_size: <numeric>
+    timeout: <numeric>
+    connect_timeout: <numeric>
+    socket_timeout: <numeric>
+    max_retries: <numeric>
+    retry_delay: <numeric>
+    compression: <boolean>
+    keep_alive: <boolean>
+    follow_redirects: <boolean>
+    pool_max: <numeric>
+    pool_max_per_route: <numeric>
+    authentication:
+      type: <string>
+      username: <string>
+      password: <string>
+      token: <string>
+      header:
+        key: <string>
+        value: <string>
+    tls:
+      status: <boolean>
+      verify: <boolean>
+      cert_name: <string>
+      key_name: <string>
+      min_tls_version: <string>
+      max_tls_version: <string>
+    field_format: <string>
+    interval: <string|numeric>
+    cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the target:
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`name`|Y|-|Target name|
+|`description`|N|-|Optional description|
+|`type`|Y|-|Must be `http` or `https`|
+|`pipelines`|N|-|Optional post-processor pipelines|
+|`status`|N|`true`|Enable/disable the target|
+
+### HTTP Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`url`|Y|-|Destination URL (must use http:// or https:// scheme)|
+|`method`|N|`POST`|HTTP method: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`|
+|`format`|N|`json`|Output format: `json`, `json_batch`, `form`, `message`|
+|`content_type`|N|auto|Content-Type header (auto-detected from format)|
+|`headers`|N|-|Custom HTTP headers as key-value pairs|
+
+### Request Settings
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`batch_size`|N|`1000`|Maximum number of events per batch|
+|`timeout`|N|`60`|Request timeout in seconds|
+|`connect_timeout`|N|`10`|Connection establishment timeout in seconds|
+|`socket_timeout`|N|`10`|Socket read/write timeout in seconds|
+|`compression`|N|`false`|Enable gzip compression|
+|`keep_alive`|N|`true`|Enable HTTP keep-alive connections|
+|`follow_redirects`|N|`true`|Follow HTTP redirects|
+
+### Retry Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`max_retries`|N|`1`|Maximum retry attempts on failure|
+|`retry_delay`|N|`1`|Delay between retries in seconds|
+
+### Connection Pool
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`pool_max`|N|`50`|Maximum idle connections in pool|
+|`pool_max_per_route`|N|`25`|Maximum connections per route|
+
+### Authentication
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`authentication.type`|N|`none`|Authentication type: `none`, `basic`, `bearer`, `header`|
+|`authentication.username`|N*|-|Username for basic authentication|
+|`authentication.password`|N*|-|Password for basic authentication|
+|`authentication.token`|N*|-|Token for bearer authentication|
+|`authentication.header.key`|N*|-|Header name for header authentication|
+|`authentication.header.value`|N*|-|Header value for header authentication|
+
+\* = Required when using the corresponding authentication type.
+
+### TLS Configuration
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`tls.status`|N|`false`|Enable TLS client certificate authentication|
+|`tls.verify`|N|`true`|Verify server certificate|
+|`tls.cert_name`|N|-|Client certificate file name (PEM format)|
+|`tls.key_name`|N|-|Client private key file name (PEM format)|
+|`tls.min_tls_version`|N|`tls1.2`|Minimum TLS version: `tls1.0`, `tls1.1`, `tls1.2`, `tls1.3`|
+|`tls.max_tls_version`|N|`tls1.3`|Maximum TLS version: `tls1.0`, `tls1.1`, `tls1.2`, `tls1.3`|
+
+### Normalization
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`field_format`|N|-|Data normalization format. See applicable <Topic id="pipelines-normalization-field-mapping">Normalization</Topic> section|
+
+### Scheduler
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`interval`|N|realtime|Execution frequency. See <Topic id="scheduling-interval-based">Interval</Topic> for details|
+|`cron`|N|-|Cron expression for scheduled execution. See <Topic id="scheduling-cron-based">Cron</Topic> for details|
+
+### Debug Options
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`debug.status`|N|`false`|Enable debug logging|
+|`debug.dont_send_logs`|N|`false`|Process logs but don't send to target (testing)|
+
+## Details
+
+### Output Formats
+
+The `format` field determines how events are sent to the HTTP endpoint:
+
+|Format|Content-Type|Description|
+|---|---|---|
+|`json`|`application/json`|Each event sent as separate JSON object request|
+|`json_batch`|`application/json`|All events sent as JSON array in single request|
+|`form`|`application/x-www-form-urlencoded`|Events encoded as form data|
+|`message`|`text/plain`|Raw message content, newline-separated|
+
+### Authentication Types
+
+**Basic Authentication**: Uses HTTP Basic Auth with username and password encoded in the Authorization header.
+
+**Bearer Authentication**: Sends a token in the Authorization header as `Bearer <token>`.
+
+**Header Authentication**: Adds a custom header with configurable key and value, useful for API keys.
+
+### Compression
+
+When `compression: true` is enabled, the request body is gzip-compressed and the `Content-Encoding: gzip` header is set. This reduces bandwidth usage for high-volume data transmission.
+
+### Connection Pooling
+
+The HTTP client maintains a connection pool for efficient connection reuse. Tune `pool_max` and `pool_max_per_route` based on expected concurrency and target endpoint capacity.
+
+:::warning
+Setting `tls.verify: false` disables certificate verification and is not recommended for production environments.
+:::
+
+## Examples
+
+### Basic Webhook
+
+<ExampleGrid>
+  <CommentCol>
+    Sending events to a webhook endpoint using default JSON format...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: webhook
+        type: http
+        properties:
+          url: "https://webhook.example.com/events"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With API Key Authentication
+
+<ExampleGrid>
+  <CommentCol>
+    Using header-based authentication for API key...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: api_endpoint
+        type: http
+        properties:
+          url: "https://api.example.com/logs"
+          authentication:
+            type: header
+            header:
+              key: "X-API-Key"
+              value: "${API_KEY}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Bearer Token
+
+<ExampleGrid>
+  <CommentCol>
+    Using OAuth bearer token authentication...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: oauth_api
+        type: http
+        properties:
+          url: "https://api.example.com/ingest"
+          authentication:
+            type: bearer
+            token: "${BEARER_TOKEN}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Basic Authentication
+
+<ExampleGrid>
+  <CommentCol>
+    Using HTTP Basic authentication with username and password...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: basic_auth_endpoint
+        type: http
+        properties:
+          url: "https://api.example.com/logs"
+          authentication:
+            type: basic
+            username: "${HTTP_USERNAME}"
+            password: "${HTTP_PASSWORD}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Batch JSON
+
+<ExampleGrid>
+  <CommentCol>
+    Sending events as JSON array for efficient batch processing...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: batch_api
+        type: http
+        properties:
+          url: "https://api.example.com/batch"
+          format: json_batch
+          batch_size: 500
+          compression: true
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High Volume with Retries
+
+<ExampleGrid>
+  <CommentCol>
+    Optimized for high-volume delivery with retry logic and connection pooling...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: high_volume_http
+        type: http
+        properties:
+          url: "https://collector.example.com/events"
+          format: json_batch
+          batch_size: 1000
+          compression: true
+          max_retries: 3
+          retry_delay: 2
+          timeout: 30
+          pool_max: 100
+          pool_max_per_route: 50
+          authentication:
+            type: bearer
+            token: "${COLLECTOR_TOKEN}"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Custom Headers
+
+<ExampleGrid>
+  <CommentCol>
+    Adding custom headers for routing or metadata...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: custom_headers
+        type: http
+        properties:
+          url: "https://api.example.com/logs"
+          headers:
+            X-Source: "datastream"
+            X-Environment: "production"
+            X-Tenant-ID: "tenant-123"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Client Certificate (mTLS)
+
+<ExampleGrid>
+  <CommentCol>
+    Using mutual TLS with client certificate authentication...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: mtls_endpoint
+        type: http
+        properties:
+          url: "https://secure-api.example.com/events"
+          tls:
+            status: true
+            verify: true
+            cert_name: "client-cert.pem"
+            key_name: "client-key.pem"
+            min_tls_version: "tls1.2"
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### PUT Method
+
+<ExampleGrid>
+  <CommentCol>
+    Using PUT method for REST API updates...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: rest_update
+        type: http
+        properties:
+          url: "https://api.example.com/resources/logs"
+          method: PUT
+          format: json
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Form Data
+
+<ExampleGrid>
+  <CommentCol>
+    Sending data as URL-encoded form...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: form_endpoint
+        type: http
+        properties:
+          url: "https://legacy.example.com/submit"
+          format: form
+          method: POST
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### With Field Normalization
+
+<ExampleGrid>
+  <CommentCol>
+    Applying ECS normalization before sending to HTTP endpoint...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    targets:
+      - name: normalized_http
+        type: http
+        properties:
+          url: "https://siem.example.com/events"
+          format: json_batch
+          field_format: ecs
+          compression: true
+    ```
+  </CodeCol>
+</ExampleGrid>
