@@ -218,6 +218,7 @@ const sidebars: SidebarsConfig = {
                 "configuration/targets/other/console",
                 "configuration/targets/other/discard",
                 "configuration/targets/other/file",
+                "configuration/targets/other/http",
                 "configuration/targets/other/syslog",
               ],
             },
