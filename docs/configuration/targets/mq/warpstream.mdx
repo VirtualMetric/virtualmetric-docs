@@ -29,6 +29,8 @@ targets:
       disable_idempotent_write: <boolean>
       max_bytes: <integer>
       max_events: <integer>
+      batch_mode: <string>
+      batch_separator: <string>
       tls:
         status: <boolean>
         insecure_skip_verify: <boolean>
@@ -40,6 +42,9 @@ targets:
       field_format: <string>
       interval: <string|numeric>
       cron: <string>
+      debug:
+        status: <boolean>
+        dont_send_logs: <boolean>
 ```
 
 ## Configuration
@@ -87,6 +92,8 @@ targets:
 |-------|------|----------|-------------|
 | `max_bytes` | integer | N | Maximum batch size in bytes (0 = unlimited). Default: `0` |
 | `max_events` | integer | N | Maximum number of events per batch. Default: `1000` |
+| `batch_mode` | string | N | Output format: `json` (single JSON per message), `json_batch` (array). Default: `json` |
+| `batch_separator` | string | N | Separator between messages when using json_batch mode. Default: `\n` |
 
 ### TLS Configuration
 
@@ -112,6 +119,13 @@ targets:
 |-------|------|----------|-------------|
 | `interval` | string/numeric | N | Execution frequency (realtime by default) |
 | `cron` | string | N | Cron expression for scheduled execution |
+
+### Debug Options
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `debug.status` | boolean | N | Enable debug logging. Default: `false` |
+| `debug.dont_send_logs` | boolean | N | Process logs but don't send to target (testing). Default: `false` |
 
 ## Details
 
