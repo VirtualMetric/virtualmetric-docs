@@ -9,7 +9,7 @@ const config: Config = {
   title: "VirtualMetric",
   tagline: "Transform data overload into actionable security insights",
   favicon: "img/favicon/favicon.ico",
-  url: "https://virtualmetric-docs.pages.dev",
+  url: "https://vdocs.virtualmetric.com",
   baseUrl: "/",
   organizationName: "VirtualMetric",
   projectName: "virtualmetric-docs",
@@ -101,6 +101,13 @@ const config: Config = {
         // excludeRoutes: ["/1.*/**/*"], // No longer needed - versioning disabled
         disableVersioning: true,
       }
+    ],
+    [
+        'docusaurus-biel',{
+            project: 'gmlwqvabl0',
+            headerTitle: 'VirtualMetric Copilot',
+            version: 'latest'
+        }
     ],
     require.resolve('./plugins/validate-topics'),
     require.resolve('./plugins/validate-images'),
