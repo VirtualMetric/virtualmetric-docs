@@ -5,9 +5,11 @@ sidebar_label: Overview
 
 # Devices: Overview
 
-Devices are configurable components that serve as data collection points in your environment. They represent various input mechanisms for receiving, processing, and forwarding log data and security events. Each device is defined using a standardized YAML configuration format that specifies its behavior, connection parameters, and processing options.
+Devices are the **first stage** in the **DataStream** processing flow. They receive telemetry from external sources and convert that data to a standardized format for pipeline processing.
 
-**DataStream** uses devices as an abstraction layer to manage telemetry. As such, they decouple data sources from **DataStream**'s pipelines.
+> Provider → **Device** → Preprocessing → Pipeline → Postprocessing → Target → Consumer
+
+As such, they are defined using a standardized YAML configuration format that specifies its behavior, connection parameters, and processing options. **DataStream** uses devices as an abstraction layer that decouples data sources from pipelines.
 
 :::note
 Each device type provides specific configuration options detailed in their respective sections.
@@ -31,6 +33,22 @@ Devices enable:
 They also provide _access control_, and _audit logging_.
 :::
 
+## Device Collection Types
+
+Devices operate in two fundamental modes that affect how data flows into DataStream:
+
+**Push-based devices** listen for incoming connections and receive data sent by external sources:
+- Syslog (UDP/TCP), HTTP/HTTPS, TCP, UDP, SMTP
+- SNMP Traps, eStreamer
+- Event Hubs, RabbitMQ, Redis
+
+**Pull-based devices** actively fetch data from external sources on a schedule or trigger:
+- Kafka (consumer), Azure Monitor, Microsoft Sentinel
+- Azure Blob Storage
+- Windows/Linux Agents (collect local logs and forward to Director)
+
+This distinction affects configuration requirements: push devices require network listener settings (address, port), while pull devices require connection credentials and polling parameters.
+
 ## Configuration
 
 All devices share the following base configuration fields:
@@ -42,7 +60,7 @@ All devices share the following base configuration fields:
 |`description`|N|Optional description of the device's purpose|
 |`type`|Y|Device type identifier (e.g., `http`, `syslog`, `tcp`)|
 |`tags`|N|Array of labels for categorization|
-|`pipelines`|N|Array of preprocessing pipeline references (processed sequentially)|
+|`pipelines`|N|Array of preprocessing pipeline references (processed sequentially). On Agents, enables local processing before data reaches Director.|
 |`status`|N|Boolean flag to enable/disable the device (default: `true`)|
 
 :::tip
@@ -65,27 +83,16 @@ devices:
 
 This is an HTTP device listening on port `8080`, and it expects the incoming data to be in JSON format.
 
-## Deployment
+## Device-to-Pipeline Handoff
 
-Devices enable handling and processing of data through the following means:
+When a device receives data, it performs initial format conversion before passing to pipelines:
 
-**Pipelines**: These provide the capability to parse and enrich messages with custom rules. Data is transformed—through _field mapping_ and _type conversion_—and events are correlated and aggregated, custom fields are extracted, tagged, filtered, and routed based on message content. For certain conditions, alerts are generated. Additionally, there is _templating_ support for output formatting, and built-in and custom functions.
+1. **Raw Input**: Device receives data in its native protocol format (syslog message, HTTP POST body, Kafka record, etc.)
+2. **Parsing**: Device parses protocol-specific headers and metadata
+3. **Normalization**: Device creates a standardized event structure with common fields (`message`, `host`, `timestamp`)
+4. **Pipeline Input**: Normalized event is passed to any attached preprocessing pipelines (via the `pipelines` field)
 
-**Queues**: These provide persistent message storage, configurable batch processing capability, automatic checkpoint recovery, and rotation and cleanup ability.
-
-Devices offer various deployment options for different purposes:
-
-* **Standalone** - Sources are connected directly to **Director**, bypassing any intermediate mechanism.
-
-  > Sources → **Director**
-
-* **High Availability** - Sources are first connected to a load balancer—which distributes the work to multiple processes—after which they are streamed to either a **Director** cluster:
-
-  > Sources → Load Balancer → **Director**
-
-  -or- sources are connected to a cluster with _Variable Information Period_ (VIP):
-
-  > Sources → **Director** Cluster
+Preprocessing pipelines attached to devices execute **sequentially** in the order specified. This enables filtering, enrichment, and transformation before data enters the routing stage.
 
 ## Device Types
 
@@ -136,19 +143,11 @@ Devices can be used in the following scenarios:
 
 * **Application telemetry**: Provides application logs and performance metrics, and enables error tracking and user activity monitoring.
 
-* **Network monitoring**: Provides network device logs and SNMP data, and enables traffic analysis and connection tracking
-
-* **Performance**: Improves telemetry performance through the multi-worker architecture, dynamic scaling ability, socket reuse optimization, buffer management, and resource monitoring capability.
+* **Network monitoring**: Provides network device logs and SNMP data, and enables traffic analysis and connection tracking.
 
 ## Implementation Strategies
 
-### Listening
-
-Data is received from listeners using various network protocols with two types of collection:
-
-**Push-based**: Devices like _Syslog_ (via _UDP_/_TCP_), _SNMP Traps_, _HTTP/HTTPS_, _TCP_/_UDP_, and _eStreamer_ send event data.
-
-**Pull-based**: Data is fetched from _Kafka_ topics, _Microsoft Sentinel_, _REST_ APIs, database queries, and other custom integration types.
+The following strategies optimize device deployment and data collection.
 
 ### Monitoring
 
@@ -168,12 +167,3 @@ Configure multiple devices to handle different aspects of data collection:
 * External-facing HTTP endpoints for application logs
 * Internal TCP/UDP listeners for network device logs
 * Specialized connectors for cloud and security products
-
-### Pipeline Integration
-
-Enhance device functionality by attaching preprocessing pipelines:
-
-* Filtering unwanted events
-* Normalizing data formats
-* Enriching events with additional context
-* Transforming raw data into structured formats
