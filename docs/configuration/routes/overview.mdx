@@ -5,7 +5,11 @@ sidebar_label: Overview
 
 # Routes: Overview
 
-Routes define how incoming data is filtered, processed, and directed to specific destinations. They act as traffic controllers, determining what data goes through which pipelines and ultimately reaches which targets.
+Routes are the **orchestration layer** in the DataStream processing flow. They bind devices, pipelines, and targets into complete processing workflows, determining what data goes through which pipelines and reaches which destinations.
+
+> Provider → Device → Preprocessing → Pipeline → Postprocessing → Target → Consumer
+>
+> **Route** _(orchestrates the entire flow)_
 
 ## Definitions
 
@@ -20,6 +24,16 @@ Their behavior is characterized by three key elements:
 - **Targets** - One or more destinations to forward the processed data
 
 In addition to these, there is one more consideration that involves the binary relations between devices and pipelines, pipelines and targets, or directly devices and targets: the optional _filter expressions_ that match specific events.
+
+## Route Creation Methods
+
+DataStream provides two approaches for creating routes:
+
+**Quick Routes** use a visual drag-and-drop interface for simple device-to-target connections with optional pipeline processing. Best for straightforward data flows.
+
+**Advanced Routes** use a multi-step wizard supporting complex filtering, conditional logic, Director selection for targeted execution, and scheduling for batch processing. Best for enterprise routing scenarios.
+
+Both methods produce the same underlying YAML configuration. The GUI approach is covered in the Routes Management documentation.
 
 ## Configuration
 
@@ -76,25 +90,6 @@ Forwarding data involves several design patterns (use of pipelines is optional i
   > Syslog + Winlog + Apache → Route [_Normalize_ ∘ _Enrich_] → Cloud Upload + Central Analytics
 
 Routes can include zero or more pipelines. Multiple pipelines process data in parallel. A pipeline's processors can override routing using the `reroute` processor, and the `final` processor terminates execution.
-
-## Route Types
-
-Routes can be categorized based on their function in the data flow:
-
-* **Primary Routes** - These routes handle critical data paths with high priority:
-  * Specific filtering, targeted processing, and specialized destinations
-  
-* **Filtering Routes** - These routes select specific subsets of data:
-  * Data segregation based on categories, security levels, or compliance requirements
-  
-* **Processing Routes** - These routes apply transformations to data:
-  * Apply enrichment, normalization, or specialized processing
-  
-* **Distribution Routes** - These routes focus on delivering data to targets:
-  * Fan-out delivery, redundant storage, or multi-system integration
-  
-* **Unconditional Routes** - These routes process all events regardless of content:
-  * No `if` condition means every event is processed by this route
 
 ## Use Cases
 

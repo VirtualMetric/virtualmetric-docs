@@ -5,7 +5,11 @@ sidebar_label: Overview
 
 # Targets: Overview
 
-**Director** uses _targets_ as the output destinations to forward, store, and analyze collected telemetry data. Targets provide flexible options for data persistence and integration with various analysis platforms.
+Targets are the **final stage** in the DataStream processing flow. They forward processed data to external consumers and convert from standardized pipeline output to destination-specific formats.
+
+> Provider → Device → Preprocessing → Pipeline → Postprocessing → **Target** → Consumer
+
+Targets provide flexible options for data persistence and integration with various analysis platforms.
 
 ## Definitions
 
@@ -24,6 +28,28 @@ Targets enable:
 
 They also support _data transformation_, and _delivery confirmation_.
 :::
+
+## Target Architecture
+
+DataStream uses a small number of **target implementations** that each support multiple **integrations** (services). This efficiency pattern means similar services share implementation code:
+
+| Implementation | Integrations Supported |
+|---------------|------------------------|
+| **awss3Target** | AWS S3, Security Lake, Cloudflare R2, MinIO, DigitalOcean Spaces, and 6 others |
+| **kafkaTarget** | Apache Kafka, Confluent Cloud, Aiven Kafka, Redpanda, WarpStream, Amazon MSK, IBM Event Streams |
+| **elasticTarget** | Elasticsearch, Amazon OpenSearch, Elastic Security |
+| **splunkTarget** | Splunk, Splunk Security |
+
+Each integration gets its own documentation chapter with platform-specific details, even when the underlying implementation is shared.
+
+## Postprocessing Pipelines
+
+Targets can have pipelines attached for output format transformation via the `pipelines` field. These **postprocessing pipelines** convert standardized pipeline output to target-specific formats before delivery.
+
+Common postprocessing tasks include:
+- Field mapping to destination schemas (ECS, CIM, ASIM)
+- Format conversion for target requirements
+- Data filtering before delivery
 
 ## Configuration
 
@@ -206,40 +232,6 @@ targets:
         dont_send_logs: true
 ```
 
-### Best Practices
-
-**Disable in Production**: Always disable debug options in production environments to avoid performance overhead and excessive logging.
-
-**Use for Development**: Enable `dont_send_logs` during development to prevent test data from reaching production systems.
-
-**Temporary Troubleshooting**: Enable debug logging temporarily when investigating issues, then disable it once resolved.
-
-**Separate Configurations**: Maintain separate configuration files for development and production environments with appropriate debug settings.
-
-**Monitor Debug Output**: Ensure your logging system can handle the increased volume when debug logging is enabled.
-
-### Performance Considerations
-
-Debug logging adds overhead to target processing:
-
-- Each event is serialized and written to the debug log
-- Additional function calls and memory allocation occur
-- Log I/O operations may impact throughput
-
-For high-volume scenarios:
-- Disable debug logging in production
-- Use debug mode only for representative samples
-- Monitor system resources when debugging is enabled
-
-### Security Notes
-
-Debug logs may contain sensitive information:
-
-- Message content is logged verbatim
-- Authentication tokens are not logged, but message content might contain PII
-- Ensure debug logs are secured with appropriate access controls
-- Review debug output before sharing for troubleshooting
-
 ## Deployment
 
 The following deployment types can be used:
@@ -323,6 +315,8 @@ To serve these ends, the following _processing options_ are available:
 
 ## Implementation Strategies
 
+The following strategies configure target output and storage options.
+
 ### Storage Types
 
 #### Local
@@ -346,19 +340,3 @@ The integration options for the cloud are below:
 * **Azure Blob** - Direct blob writing and multiple containers are supported. Available authentication methods are service principal and managed Identity. Other features include automatic retries, exponential backoff, size-based chunking, connection pooling, and buffer management.
 
 * **Microsoft Sentinel** - Direct DCR integration and ASIM normalization are supported. In addition to standard tables, _WindowsEvent_, _SecurityEvent_, _CommonSecurityLog_, and _Syslog_ can be used. Various ASIM tables are also available. (See the <Topic id="appendix-asim">ASIM section</Topic> for a complete list.)
-
-### Redundant Delivery
-
-For critical data flows, implement redundant delivery patterns:
-
-* Primary and backup targets for important data
-* Multi-region storage for disaster recovery
-* Disk buffer with forward-on-recovery capability
-
-### Routing Optimization
-
-Configure intelligent routing based on data characteristics:
-
-* Route high-volume data to scalable storage targets
-* Send critical alerts to real-time notification endpoints
-* Direct compliance data to specialized archival systems
