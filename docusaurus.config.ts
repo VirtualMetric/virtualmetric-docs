@@ -9,7 +9,7 @@ const config: Config = {
   title: "VirtualMetric",
   tagline: "Transform data overload into actionable security insights",
   favicon: "img/favicon/favicon.ico",
-  url: "https://virtualmetric-docs.pages.dev",
+  url: "https://vdocs.virtualmetric.com",
   baseUrl: "/",
   organizationName: "VirtualMetric",
   projectName: "virtualmetric-docs",
@@ -74,13 +74,15 @@ const config: Config = {
           routeBasePath: 'release-notes',
           blogTitle: 'Release Notes',
           blogDescription: 'All release notes in one place',
+          blogSidebarTitle: 'All Releases',
+          blogSidebarCount: 'ALL',
           feedOptions: {
             type: ["rss", "atom"],
             xslt: true,
           },
           onInlineTags: "warn",
           onInlineAuthors: "warn",
-          onUntruncatedBlogPosts: "warn",
+          onUntruncatedBlogPosts: "ignore",
           exclude: [
             '**/CLAUDE.md',
             '**/BACKLOG.md',
@@ -99,6 +101,13 @@ const config: Config = {
         // excludeRoutes: ["/1.*/**/*"], // No longer needed - versioning disabled
         disableVersioning: true,
       }
+    ],
+    [
+        'docusaurus-biel',{
+            project: 'gmlwqvabl0',
+            headerTitle: 'VirtualMetric Copilot',
+            version: 'latest'
+        }
     ],
     require.resolve('./plugins/validate-topics'),
     require.resolve('./plugins/validate-images'),

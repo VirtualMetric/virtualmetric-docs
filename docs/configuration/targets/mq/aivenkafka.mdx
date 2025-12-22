@@ -11,7 +11,7 @@ Creates a target for Aiven for Apache Kafka. This target uses the standard Kafka
 ```yaml {1,3,7,8,9}
 - name: <string>
   description: <string>
-  type: kafka
+  type: aivenkafka
   pipelines: <pipeline[]>
   status: <boolean>
   properties:
@@ -29,6 +29,8 @@ Creates a target for Aiven for Apache Kafka. This target uses the standard Kafka
     disable_idempotent_write: <boolean>
     max_bytes: <numeric>
     max_events: <numeric>
+    batch_mode: <string>
+    batch_separator: <string>
     field_format: <string>
     tls:
       status: <boolean>
@@ -40,6 +42,9 @@ Creates a target for Aiven for Apache Kafka. This target uses the standard Kafka
       passphrase: <string>
     interval: <string|numeric>
     cron: <string>
+    debug:
+      status: <boolean>
+      dont_send_logs: <boolean>
 ```
 
 ## Configuration
@@ -50,7 +55,7 @@ The following fields are used to define the target:
 |---|---|---|---|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `kafka`|
+|`type`|Y||Must be `aivenkafka`|
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
@@ -89,6 +94,8 @@ Aiven for Apache Kafka requires SASL authentication:
 |---|---|---|---|
 |`max_bytes`|N|`0`|Maximum batch size in bytes (0 = unlimited)|
 |`max_events`|N|`1000`|Maximum number of events per batch|
+|`batch_mode`|N|`json`|Output format: `json` (single JSON per message), `json_batch` (array of JSON objects)|
+|`batch_separator`|N|`\n`|Separator between messages when using json_batch mode|
 |`field_format`|N|-|Data normalization format. See applicable <Topic id="pipelines-normalization-field-mapping">Normalization</Topic> section|
 
 ### Aiven TLS Configuration
@@ -153,7 +160,7 @@ Minimum configuration for Aiven for Apache Kafka:
 ```yaml
 targets:
   - name: aiven_kafka
-    type: kafka
+    type: aivenkafka
     properties:
       address: "kafka-project-name.aivencloud.com"
       port: 12835
@@ -172,7 +179,7 @@ Configuration using compression for bandwidth efficiency:
 ```yaml
 targets:
   - name: aiven_kafka_compressed
-    type: kafka
+    type: aivenkafka
     properties:
       address: "kafka-project-name.aivencloud.com"
       port: 12835
@@ -193,7 +200,7 @@ Configuration optimized for high-volume log delivery:
 ```yaml
 targets:
   - name: aiven_kafka_highvolume
-    type: kafka
+    type: aivenkafka
     properties:
       address: "kafka-project-name.aivencloud.com"
       port: 25835
@@ -216,7 +223,7 @@ Configuration allowing automatic topic creation:
 ```yaml
 targets:
   - name: aiven_kafka_auto
-    type: kafka
+    type: aivenkafka
     properties:
       address: "kafka-project-name.aivencloud.com"
       port: 12835
@@ -236,7 +243,7 @@ Configuration using field normalization:
 ```yaml
 targets:
   - name: aiven_kafka_ecs
-    type: kafka
+    type: aivenkafka
     properties:
       address: "kafka-project-name.aivencloud.com"
       port: 12835
@@ -256,7 +263,7 @@ Using a pipeline for additional log processing:
 ```yaml
 targets:
   - name: aiven_kafka_pipeline
-    type: kafka
+    type: aivenkafka
     pipelines:
       - enrich_logs
     properties:
@@ -277,7 +284,7 @@ Configuration with all reliability features enabled:
 ```yaml
 targets:
   - name: aiven_kafka_production
-    type: kafka
+    type: aivenkafka
     properties:
       address: "kafka-project-name.aivencloud.com"
       port: 12835
