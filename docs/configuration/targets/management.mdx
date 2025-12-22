@@ -6,18 +6,11 @@ sidebar_label: Management
 
 The **Targets** web interface provides comprehensive management for output destinations where processed telemetry data is forwarded.
 
-## Accessing Targets Dashboard
+## Access
 
-Navigate to the Targets management interface:
+Navigate to **Home** > **Fleet Management** > **Targets**, or use the hamburger menu and select **Fleet Management** > **Targets**.
 
-- Go to **Home** > **Fleet Management** > **Targets**
-
--or-
-
-- Click the hamburger menu on the top left
-- Select **Fleet Management** > **Targets**
-
-## Targets Overview
+## Overview
 
 The Targets dashboard is where you manage all output destinations for **DataStream**. Targets are data senders that forward processed telemetry to external systems and convert from standardized pipeline output to destination-specific formats.
 
@@ -40,36 +33,21 @@ Each target type displays as a card showing:
 
 Clicking a target card navigates to that target type's management page.
 
-## Target List View
+## List View
 
 Clicking a target card opens the target list view showing all instances of that target type.
 
-### Target List Table
+### Table
 
-The table displays all configured targets of the selected type with the following columns:
-- **Name** - Target instance name
-- **Description** - Descriptive note
-- **Postprocessing Pipeline** - Pipeline selected for postprocessing
-- **Status** - Operational state (Enabled or Disabled)
-
-Each line has its own **Actions** menu (⋮).
+The table displays **Name**, **Description**, **Postprocessing Pipeline**, **Status** (Enabled/Disabled), and an **Actions menu** (⋮) for each target.
 
 ### Table Controls
 
-**Search and Filter:**
-- **Search targets** - Filter by target name
-- **Status Dropdown** - Filter by operational status
-  - All - Show all targets
-  - Enabled - Show only active targets
-  - Disabled - Show only inactive targets
-- **Refresh Button** - Reload table data with current filters
+Filter targets using **Search targets** (by name) and **Status** dropdown (All, Enabled, Disabled). The **Refresh** button reloads table data. Click **Create target** to launch the creation wizard.
 
-**Primary Actions:**
-- **Create target** - Launch target creation wizard
+### Actions
 
-### Target Actions Menu
-
-Each target row provides an Actions menu (⋮) with target-specific operations:
+Each target row provides an **Actions menu** (⋮) with the following operations:
 
 **View Details:**
 - **See details** - Navigate to target detail view
@@ -84,7 +62,7 @@ Each target row provides an Actions menu (⋮) with target-specific operations:
 **Deletion:**
 - **Delete Target** - Remove target from platform
 
-## Create Target Wizard
+## Create Wizard
 
 The target creation process uses a multi-step wizard with target-specific configuration.
 
@@ -299,7 +277,7 @@ Configure debugging options for target troubleshooting.
 - Useful for testing configurations without affecting production systems
 - Allows validation of data format and transformation logic
 
-### Wizard Navigation
+### Navigation
 
 **Progress Indicator:**
 - Visual step progress at top of wizard
@@ -313,11 +291,11 @@ Configure debugging options for target troubleshooting.
 - **Next** - Advance to next step with validation
 - **Create target** - Finalize target creation (final step)
 
-## Target Detail View
+## Detail View
 
 Clicking a target from the list opens the detailed management interface with tabbed panels.
 
-### Target Detail Tabs
+### Tabs
 
 Tab structure varies by target type:
 
@@ -358,9 +336,9 @@ Displays and allows editing of scheduling and debugging configuration:
 - Don't send logs status (Enabled/Disabled when debugging active)
 - Edit mode allows modification of debug settings
 
-### Target Actions Menu
+### Actions
 
-Each target detail view provides an Actions menu with context-specific operations:
+Each target detail view provides an **Actions menu** with the following operations:
 
 **View and Configuration:**
 - **See details** - Current view (disabled in dropdown)
@@ -373,33 +351,20 @@ Each target detail view provides an Actions menu with context-specific operation
 - **Clone Target** - Duplicate configuration for new target
 - **Delete Target** - Remove target from platform
 
-## Target Operations
+## Operations
 
-### Enable/Disable Target
+### Enable / Disable
 
-**Enable Target:**
+To change target status:
 
-Activate a disabled target to resume data forwarding:
-
-1. Navigate to target detail view or use Actions menu from list
+1. Navigate to target detail view or use the Actions menu from list
 2. Click **Actions** menu
-3. Select **Enable Target**
-4. Success notification displays confirmation
-5. Target status updates to "Enabled"
-6. Target begins forwarding data based on configuration
+3. Select **Enable Target** or **Disable Target**
+4. Confirmation notification confirms the status change
 
-**Disable Target:**
+Enabled targets actively forward data. Disabled targets preserve configuration but stop all forwarding.
 
-Deactivate an enabled target to pause data forwarding:
-
-1. Navigate to target detail view or use Actions menu from list
-2. Click **Actions** menu
-3. Select **Disable Target**
-4. Success notification displays confirmation
-5. Target status updates to "Disabled"
-6. Stops data forwarding but preserves configuration
-
-### Clone Target
+### Clone
 
 Duplicate an existing target configuration for quick setup:
 
@@ -411,9 +376,7 @@ Duplicate an existing target configuration for quick setup:
 6. Modify name and other settings as needed
 7. Complete wizard to create new target
 
-### Delete Target
-
-**Delete Target Process:**
+### Delete
 
 Remove a target from the platform with dependency checking:
 
@@ -487,99 +450,8 @@ The Targets interface provides automatic notifications for all operations:
 
 ### Success Notifications
 
-Auto-dismissing success messages (10-second timeout):
-
-- **Target Created** - New target successfully created
-- **Target Enabled** - Target successfully activated
-- **Target Disabled** - Target successfully deactivated
-- **Target Deleted** - Target successfully removed from platform
-- **Target Updated** - Target configuration successfully saved
+Success messages auto-dismiss after 10 seconds. These include confirmations for target creation, enabling, disabling, deletion, and configuration updates. Hover to pause the auto-close timer, or click X to dismiss manually.
 
 ### Error Notifications
 
-Persistent error notifications requiring user action:
-
-- **Enable Failed** - Target could not be enabled
-- **Disable Failed** - Target could not be disabled
-- **Delete Failed** - Target deletion unsuccessful
-- **Update Failed** - Target configuration update failed
-
-### Notification Actions
-
-**Auto-Close:**
-- Success notifications auto-dismiss after 10 seconds
-- Hover to pause auto-close timer
-- Click X to manually dismiss
-
-**Manual Dismiss:**
-- Error notifications require manual dismissal
-- Review error details before dismissing
-- Take corrective action based on error message
-
-## Best Practices
-
-### Target Organization
-
-**Naming Conventions:**
-- Use descriptive, meaningful target names
-- Include destination or purpose in name (e.g., "azure-sentinel-security")
-- Maintain consistent naming pattern across targets
-- Avoid generic names like "target1" or "test"
-
-**Tag Usage:**
-- Apply tags for categorization (environment, purpose, destination)
-- Use tags for bulk filtering and management
-- Maintain consistent tag vocabulary across organization
-- Document tag meanings for team reference
-
-### Status Management
-
-**Enabled Status:**
-- Keep targets "Enabled" for active data forwarding
-- Monitor destination connectivity regularly
-- Review target logs for transmission issues
-
-**Disabled Status:**
-- Use "Disabled" status for maintenance windows
-- Disable targets during configuration changes
-- Document reason for disabling in external systems
-- Re-enable after maintenance completion
-
-### Execution Settings Configuration
-
-**Scheduling Usage:**
-- Use scheduling for batch-oriented destinations
-- Continuous processing appropriate for real-time systems
-- Consider data volume and destination capabilities
-- Test scheduled execution with small datasets first
-
-**Cron vs Interval:**
-- **Cron** - Best for specific time-of-day requirements
-- **Interval** - Best for regular periodic processing
-- Consider timezone implications for cron schedules
-- Document scheduling decisions for team reference
-
-**Debugging Configuration:**
-- Enable debugging during initial setup and testing
-- Use "Don't Send Debug Logs" to test configurations safely
-- Disable debugging in production to reduce overhead
-- Re-enable debugging when troubleshooting issues
-
-### Lifecycle Management
-
-**Creation:**
-- Configure all required fields before creation
-- Test target immediately after creation
-- Verify data delivery through associated routes
-
-**Maintenance:**
-- Review target detail tabs periodically
-- Keep target configurations synchronized
-- Monitor execution logs for patterns
-- Test configuration changes in non-production first
-
-**Deletion:**
-- Verify no active dependencies before deletion
-- Document reason for target removal
-- Archive target configurations for compliance
-- Update related documentation and diagrams
+Error notifications persist until manually dismissed. These include failures for enable, disable, delete, and update operations. Review error details and take corrective action before dismissing.
