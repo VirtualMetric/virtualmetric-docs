@@ -10,27 +10,28 @@ The Elastic Security target sends security telemetry to Elastic Security (former
 
 ## Schema
 
-```yaml {1,3,5-6}
-- name: <string>
-  type: elasticsecurity
-  properties:
-    index: <string>
-    endpoints:
-      - endpoint: <string>
-        username: <string>
-        password: <string>
-    max_payload_size_kb: <integer>
-    batch_size: <integer>
-    timeout: <integer>
-    use_compression: <boolean>
-    write_action: <string>
-    field_format: <string>
-    pipeline: <string>
-    filter_path: <string>
-    insecure_skip_verify: <boolean>
-    debug:
-      status: <boolean>
-      dont_send_logs: <boolean>
+```yaml {2,4,6-7}
+targets:
+  - name: <string>
+    type: elastic
+    properties:
+      index: <string>
+      endpoints:
+        - endpoint: <string>
+          username: <string>
+          password: <string>
+      max_payload_size_kb: <integer>
+      batch_size: <integer>
+      timeout: <integer>
+      use_compression: <boolean>
+      write_action: <string>
+      field_format: <string>
+      pipeline: <string>
+      filter_path: <string>
+      insecure_skip_verify: <boolean>
+      debug:
+        status: <boolean>
+        dont_send_logs: <boolean>
 ```
 
 ## Configuration
@@ -49,6 +50,7 @@ The Elastic Security target sends security telemetry to Elastic Security (former
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
+| `version` | integer | N | Elasticsearch major version (7 or 8) for API compatibility. Default: `8` |
 | `index` | string | Y | Default security index name (e.g., `logs-security.events-default`) |
 | `endpoints` | array | Y | Array of Elasticsearch endpoint configurations |
 | `endpoints[].endpoint` | string | Y | Elasticsearch URL (e.g., `https://elastic.example.com:9200`) |
@@ -78,6 +80,13 @@ The Elastic Security target sends security telemetry to Elastic Security (former
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `insecure_skip_verify` | boolean | N | Skip TLS certificate verification. Default: `false` |
+
+### Scheduler
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `interval` | string/numeric | N | Execution frequency (realtime by default) |
+| `cron` | string | N | Cron expression for scheduled execution |
 
 ### Debug Options
 
