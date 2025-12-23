@@ -50,6 +50,7 @@ The IBM Event Streams target writes log messages to IBM's managed Kafka service 
 | `name` | string | Y | Unique identifier for this target |
 | `description` | string | N | Human-readable description |
 | `type` | string | Y | Must be `ibmeventstreams` |
+| `type` | string | Y | Must be `ibmeventstreams` |
 | `pipelines` | array | N | Pipeline names to apply before sending |
 | `status` | boolean | N | Enable (true) or disable (false) this target |
 
@@ -86,6 +87,8 @@ The IBM Event Streams target writes log messages to IBM's managed Kafka service 
 |-------|------|----------|-------------|
 | `max_bytes` | integer | N | Maximum batch size in bytes (0 = unlimited). Default: `0` |
 | `max_events` | integer | N | Maximum number of events per batch. Default: `1000` |
+| `batch_mode` | string | N | Output format: `json` (single JSON per message), `json_batch` (array). Default: `json` |
+| `batch_separator` | string | N | Separator between messages when using json_batch mode. Default: `\n` |
 
 ### TLS Configuration
 
@@ -111,6 +114,13 @@ The IBM Event Streams target writes log messages to IBM's managed Kafka service 
 |-------|------|----------|-------------|
 | `interval` | string/numeric | N | Execution frequency (realtime by default) |
 | `cron` | string | N | Cron expression for scheduled execution |
+
+### Debug Options
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `debug.status` | boolean | N | Enable debug logging. Default: `false` |
+| `debug.dont_send_logs` | boolean | N | Process logs but don't send to target (testing). Default: `false` |
 
 ## Details
 
@@ -220,7 +230,7 @@ DataStream uses the standard Kafka Producer API with support for:
     ```yaml
     targets:
       - name: ibm-event-streams
-        type: kafka
+        type: ibmeventstreams
         properties:
           address: broker-0.kafka.svc01.us-south.eventstreams.cloud.ibm.com
           port: 9093
@@ -244,7 +254,7 @@ DataStream uses the standard Kafka Producer API with support for:
     ```yaml
     targets:
       - name: ibm-event-streams-compressed
-        type: kafka
+        type: ibmeventstreams
         properties:
           address: broker-0.kafka.svc01.us-south.eventstreams.cloud.ibm.com
           port: 9093
@@ -269,7 +279,7 @@ DataStream uses the standard Kafka Producer API with support for:
     ```yaml
     targets:
       - name: ibm-event-streams-high-volume
-        type: kafka
+        type: ibmeventstreams
         properties:
           address: broker-0.kafka.svc01.us-south.eventstreams.cloud.ibm.com
           port: 9093
@@ -298,7 +308,7 @@ DataStream uses the standard Kafka Producer API with support for:
     ```yaml
     targets:
       - name: ibm-event-streams-identified
-        type: kafka
+        type: ibmeventstreams
         properties:
           address: broker-0.kafka.svc01.us-south.eventstreams.cloud.ibm.com
           port: 9093
@@ -323,7 +333,7 @@ DataStream uses the standard Kafka Producer API with support for:
     ```yaml
     targets:
       - name: ibm-es-security
-        type: kafka
+        type: ibmeventstreams
         properties:
           address: broker-0.kafka.svc01.us-south.eventstreams.cloud.ibm.com
           port: 9093
@@ -335,7 +345,7 @@ DataStream uses the standard Kafka Producer API with support for:
             status: true
 
       - name: ibm-es-application
-        type: kafka
+        type: ibmeventstreams
         properties:
           address: broker-0.kafka.svc01.us-south.eventstreams.cloud.ibm.com
           port: 9093
@@ -359,7 +369,7 @@ DataStream uses the standard Kafka Producer API with support for:
     ```yaml
     targets:
       - name: ibm-event-streams-normalized
-        type: kafka
+        type: ibmeventstreams
         properties:
           address: broker-0.kafka.svc01.us-south.eventstreams.cloud.ibm.com
           port: 9093
@@ -385,7 +395,7 @@ DataStream uses the standard Kafka Producer API with support for:
     ```yaml
     targets:
       - name: ibm-event-streams-production
-        type: kafka
+        type: ibmeventstreams
         properties:
           address: broker-0.kafka.svc01.us-south.eventstreams.cloud.ibm.com
           port: 9093
