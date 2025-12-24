@@ -6,88 +6,54 @@ sidebar_label: Management
 
 The **Devices** web interface provides comprehensive management for data collection sources through an intuitive card-based dashboard.
 
-## Accessing Devices Dashboard
+## Access
 
-Navigate to the Devices management interface:
+Navigate to **Home** > **Fleet Management** > **Devices**, or use the hamburger menu and select **Fleet Management** > **Devices**.
 
-- Go to **Home** > **Fleet Management** > **Devices**
-
--or-
-
-- Click the hamburger menu on the top left
-- Select **Fleet Management** > **Devices**
-
-## Devices Overview
+## Overview
 
 The Devices dashboard is where you manage all data collection sources for **DataStream**. Devices are data listeners that receive telemetry from external sources and convert it to standardized pipeline input format.
 
-### Device Categories
+### Categories
 
 **DataStream** organizes devices into two fundamental categories:
 
-**Push Devices:**
-- Receive data pushed from external sources
-- Network-based listeners on Director
-- Examples: Syslog servers, HTTP endpoints, TCP/UDP listeners
-- Director opens ports and waits for incoming data
-
-**Pull Devices:**
-- Actively collect data from remote sources
-- Agent-based or cloud-based collection
-- Examples: Windows/Linux Agents, Azure Event Hubs, Azure Blob Storage
-- Director or Agent connects to remote sources to retrieve data
+| Aspect | Push Devices | Pull Devices |
+|--------|--------------|--------------|
+| Data flow | Receive data pushed from external sources | Actively collect data from remote sources |
+| Architecture | Network-based listeners on Director | Agent-based or cloud-based collection |
+| Examples | Syslog servers, HTTP endpoints, TCP/UDP listeners | Windows/Linux Agents, Azure Event Hubs, Azure Blob Storage |
+| Connection | Director opens ports and waits for incoming data | Director or Agent connects to remote sources to retrieve data |
 
 ### Dashboard Interface
 
 The overview page displays all available device types as cards organized by category.
 
-**Search and Filter:**
-- **Search devices** - Filter device types by name in the search field
-- **Category Filter** - ButtonGroup with device counts:
-  - **All** - Show all device types
-  - **Push** - Show only Push device types
-  - **Pull** - Show only Pull device types
-- Card count display shows "Viewing X devices" or "No devices found"
+The interface provides a **Search devices** field to filter by name, and a **Category Filter** button group (All, Push, Pull) showing device counts. A card count displays "Viewing X devices" or "No devices found".
 
-**Device Cards:**
+Each device type displays as a card showing **Icon**, **Title**, **Description**, **Enabled Count**, **Disabled Count**, and optionally a **Coming Soon Tag** for unavailable types. Clicking a card navigates to that device type's management page.
 
-Each device type displays as a card showing:
-- **Icon** - Visual identifier for the device type
-- **Title** - Device type name
-- **Description** - Brief explanation of device purpose
-- **Enabled Count** - Number of active instances
-- **Disabled Count** - Number of inactive instances
-- **Coming Soon Tag** - For unavailable device types
+### Available Types
 
-Clicking a device card navigates to that device type's management page.
+| Category | Device | Description |
+|----------|--------|-------------|
+| Push | Syslog | RFC-compliant syslog message receiver |
+| Push | HTTP | REST endpoint for HTTP/HTTPS ingestion |
+| Push | UDP | UDP datagram listener |
+| Push | TCP | TCP stream listener |
+| Push | eStreamer | Cisco Firepower event stream receiver |
+| Pull | Windows | Windows Agent for log collection |
+| Pull | Linux | Linux Agent for log collection |
+| Pull | Azure Blob Storage | Azure Blob container file reader |
+| Pull | Azure Event Hubs | Azure Event Hubs consumer |
 
-### Available Device Types
-
-**Push Devices (5 types):**
-- **Syslog** - RFC-compliant syslog message receiver
-- **HTTP** - REST endpoint for HTTP/HTTPS ingestion
-- **UDP** - UDP datagram listener
-- **TCP** - TCP stream listener
-- **eStreamer** - Cisco Firepower event stream receiver
-
-**Pull Devices (4 types):**
-- **Windows** - Windows Agent for log collection
-- **Linux** - Linux Agent for log collection
-- **Azure Blob Storage** - Azure Blob container file reader
-- **Azure Event Hubs** - Azure Event Hubs consumer
-
-## Device List View
+## List View
 
 Clicking a device card opens the device list view showing all instances of that device type.
 
-### Device List Table
+### Table
 
-The table displays all configured devices of the selected type with the following columns:
-- **Name** - Device instance name
-- **Director** - Assigned Director name
-- **Status** - Operational state (Enabled or Disabled)
-- **Connection Status** - Real-time connectivity (Connected or Not Connected)
-- **Actions Menu (⋮)** - Per-device operations
+The table displays **Name**, **Director**, **Status** (Enabled/Disabled), **Connection Status** (Connected/Not Connected), and an **Actions menu** (⋮) for each device.
 
 :::info
 The ability to add a _pre-processing pipeline_ is available for all devices.
@@ -95,53 +61,35 @@ The ability to add a _pre-processing pipeline_ is available for all devices.
 
 ### Table Controls
 
-**Search and Filter:**
-- **Search devices** - Filter by device name
-- **Directors Dropdown** - Filter by assigned Director
-  - All - Show devices from all Directors
-  - Specific Director - Show devices from selected Director only
-- **Status Dropdown** - Filter by operational status
-  - All - Show all devices
-  - Enabled - Show only active devices
-  - Disabled - Show only inactive devices
-- **Connection Status Dropdown** - Filter by connection state (Only Windows and Linux devices)
-  - All - Show all devices
-  - Connected - Show only connected devices
-  - Not Connected - Show only disconnected devices
+Filter devices using **Search devices** (by name), **Directors** dropdown (All or specific Director), **Status** dropdown (All, Enabled, Disabled), and **Connection Status** dropdown (All, Connected, Not Connected - Windows/Linux devices only).
 
-**Primary Actions:**
-- **Create device** - Launch device creation wizard
-  - Disabled if no Director exists
-  - Alert banner appears when no Directors configured
+The <gui>Create device</gui> button launches the creation wizard. This button is disabled if no Director exists, and an alert banner prompts you to create one first.
 
-### Director Requirement Alert
+:::note[Director Requirement]
+For Push devices, if no Directors exist, an info alert displays "Directors not found" with explanation and a <gui>Create director</gui> button that navigates to the Director creation wizard.
+:::
 
-For Push devices, if no Directors exist, an info alert displays:
-- **Title** - "Directors not found"
-- **Subtitle** - Explanation that Director is required for Push device creation
-- **Action Button** - "Create director" navigates to Director creation wizard
+### Actions
 
-### Device Actions Menu
-
-Each device row provides an Actions menu (⋮) with device-specific operations:
+Each device row provides an **Actions menu** (⋮) with the following operations:
 
 **View Details:**
-- **See details** - Navigate to device detail view
+- <gui>See details</gui> - Navigate to device detail view
 
 **Status Management:**
-- **Enable Device** - Activate disabled device
-- **Disable Device** - Deactivate enabled device
+- <gui>Enable Device</gui> - Activate disabled device
+- <gui>Disable Device</gui> - Deactivate enabled device
 
 **Configuration:**
-- **Clone Device** - Duplicate device configuration for quick setup
+- <gui>Clone Device</gui> - Duplicate device configuration for quick setup
   :::warning
   Windows and Unix devices cannot be cloned
   :::
 
 **Deletion:**
-- **Delete Device** - Remove device from platform
+- <gui>Delete Device</gui> - Remove device from platform
 
-## Create Device Wizard
+## Creation Wizard
 
 The device creation process varies by device type and category (Push vs Pull).
 
@@ -149,7 +97,7 @@ Device wizards have 3 steps, though the specific steps vary by device category. 
 
 ### General Settings
 
-**Applies to:** Syslog, HTTP, UDP, TCP, Estreamer, AzureBlobStorage, AzureEventHubs
+> **Applies to:** Syslog, HTTP, UDP, TCP, Estreamer, AzureBlobStorage, AzureEventHubs
 
 Basic device configuration including name and Director assignment:
 
@@ -160,7 +108,7 @@ Basic device configuration including name and Director assignment:
 
 ### Protocol Settings
 
-**Applies to:** Syslog, HTTP, UDP, TCP, Estreamer
+> **Applies to:** Syslog, HTTP, UDP, TCP, Estreamer
 
 Network protocol configuration for Push devices:
 
@@ -173,7 +121,7 @@ Network protocol configuration for Push devices:
 
 ### Advanced Configuration
 
-**Applies to:** Syslog, HTTP, UDP, TCP, Estreamer, AzureEventHubs
+> **Applies to:** Syslog, HTTP, UDP, TCP, Estreamer, AzureEventHubs
 
 Performance tuning and advanced settings:
 
@@ -187,9 +135,9 @@ Performance tuning and advanced settings:
 - **Queue Interval** - Queue processing interval
 - **Forwarding** - Optional forwarding to another destination
 
-### Setup Device
+### Setup
 
-**Applies to:** Windows, Linux
+> **Applies to:** Windows, Linux
 
 Initial device configuration and deployment type selection:
 
@@ -201,7 +149,7 @@ Initial device configuration and deployment type selection:
 
 ### Install and Connect
 
-**Applies to:** Windows, Linux
+> **Applies to:** Windows, Linux
 
 Agent installation or agentless connection configuration (varies by deployment type):
 
@@ -221,7 +169,7 @@ Agent installation or agentless connection configuration (varies by deployment t
 
 ### Review and Configure
 
-**Applies to:** Windows, Linux
+> **Applies to:** Windows, Linux
 
 Log type selection and configuration review:
 
@@ -240,7 +188,7 @@ Log type selection and configuration review:
 
 ### Azure Properties
 
-**Applies to:** AzureBlobStorage, AzureEventHubs
+> **Applies to:** AzureBlobStorage, AzureEventHubs
 
 Azure-specific authentication and resource configuration:
 
@@ -252,7 +200,7 @@ Azure-specific authentication and resource configuration:
 
 ### File Properties
 
-**Applies to:** AzureBlobStorage
+> **Applies to:** AzureBlobStorage
 
 File reading and processing configuration:
 
@@ -272,16 +220,16 @@ File reading and processing configuration:
 - Completed steps marked with checkmark
 
 **Navigation Buttons:**
-- **Cancel** - Exit wizard without creating device
-- **Back** - Return to previous step
-- **Next** - Advance to next step with validation
-- **Create device** - Finalize device creation (final step)
+- <gui>Cancel</gui> - Exit wizard without creating device
+- <gui>Back</gui> - Return to previous step
+- <gui>Next</gui> - Advance to next step with validation
+- <gui>Create device</gui> - Finalize device creation (final step)
 
-## Device Detail View
+## Detail View
 
 Clicking a device from the list opens the detailed management interface with tabbed panels.
 
-### Push Device Detail View
+### Push Devices
 
 Push devices (Syslog, HTTP, UDP, TCP, eStreamer) display three tabs:
 
@@ -306,7 +254,7 @@ Push devices (Syslog, HTTP, UDP, TCP, eStreamer) display three tabs:
 - Performance tuning parameters
 - Read-only display with configuration details
 
-### Pull Device Detail View
+### Pull Devices
 
 Pull devices (Windows, Linux, Azure) have different tab structures based on deployment type:
 
@@ -417,10 +365,10 @@ For each filter (include or exclude), you configure:
    - Info alert explains: "Multiple conditions are treated with AND logic"
 
 6. **Filter Management**:
-   - Save Filter button validates and adds filter to list
-   - Edit button on each filter row reopens configuration
-   - Delete button removes filter
-   - Cancel button discards changes
+   - <gui>Save Filter</gui> button validates and adds filter to list
+   - <gui>Edit</gui> button on each filter row reopens configuration
+   - <gui>Delete</gui> button removes filter
+   - <gui>Cancel</gui> button discards changes
 
 **Filter Logic Summary:**
 - **Within a filter**: Multiple conditions use AND logic
@@ -433,11 +381,11 @@ For each filter (include or exclude), you configure:
 - Transforms or enriches DNS data before main processing
 
 **Data Configuration Edit Mode:**
-- Click "Manage device details" button to enter edit mode
+- Click <gui>Manage device details</gui> button to enter edit mode
 - Accordion toggles become enabled for log type selection
 - Filter configuration inputs become editable
-- Save Changes button commits all modifications
-- Cancel button reverts to previous configuration
+- <gui>Save Changes</gui> button commits all modifications
+- <gui>Cancel</gui> button reverts to previous configuration
 
 **Agent History Tab:**
 - **Connection Events** - Agent connection/disconnection log
@@ -445,7 +393,7 @@ For each filter (include or exclude), you configure:
 - **Status Changes** - Enable/disable operations
 - **Timestamp** - Date and time of each event
 
-### Linux Device Detail View
+### Linux Devices
 
 Linux devices follow the same structure as Windows devices with platform-specific log types and configuration.
 
@@ -491,12 +439,12 @@ Linux devices provide three log type categories for collection. The interface is
 - **Optional Pre-processing Pipeline** - ComboBox to select pipeline for this log type
 
 **Linux Data Configuration Edit Mode:**
-- Click "Manage device details" button to enter edit mode
+- Click <gui>Manage device details</gui> button to enter edit mode
 - Accordion toggles become enabled for log type selection
 - Path input fields become editable when accordion is toggled on
 - Pipeline ComboBoxes become enabled for selection
-- Save Changes button commits all modifications
-- Cancel button reverts to previous configuration
+- <gui>Save Changes</gui> button commits all modifications
+- <gui>Cancel</gui> button reverts to previous configuration
 
 **Path Configuration Notes:**
 - Empty path field uses distribution-specific defaults
@@ -521,60 +469,47 @@ Linux devices provide three log type categories for collection. The interface is
 - Error handling
 - Read-only display
 
-### Device Actions Menu
+### Detail Actions
 
-Each device detail view provides an Actions menu with context-specific operations:
+The detail view provides an Actions menu with context-specific operations:
 
 **View and Configuration:**
-- **See details** - Current view (disabled in dropdown)
+- <gui>See details</gui> - Current view (disabled in dropdown)
 
 **Status Management:**
-- **Enable Device** - Activate disabled device
-- **Disable Device** - Deactivate enabled device
+- <gui>Enable Device</gui> - Activate disabled device
+- <gui>Disable Device</gui> - Deactivate enabled device
 
 **Advanced Operations:**
-- **Clone Device** - Duplicate configuration for new device
-- **Delete Device** - Remove device from platform
+- <gui>Clone Device</gui> - Duplicate configuration for new device
+- <gui>Delete Device</gui> - Remove device from platform
 
-## Device Operations
+## Operations
 
-### Enable/Disable Device
+### Enable / Disable
 
-**Enable Device:**
+To change device status:
 
-Activate a disabled device to resume data collection:
-
-1. Navigate to device detail view or use Actions menu from list
+1. Navigate to device detail view or use the Actions menu from list
 2. Click **Actions** menu
-3. Select **Enable Device**
-4. Success notification displays confirmation
-5. Device status updates to "Enabled"
-6. Device begins receiving/collecting data
+3. Select <gui>Enable Device</gui> or <gui>Disable Device</gui>
+4. Success notification confirms the status change
 
-**Disable Device:**
+Enabled devices actively receive or collect data. Disabled devices preserve their configuration but stop all data collection.
 
-Deactivate an enabled device to pause data collection:
-
-1. Navigate to device detail view or use Actions menu from list
-2. Click **Actions** menu
-3. Select **Disable Device**
-4. Success notification displays confirmation
-5. Device status updates to "Disabled"
-6. Stops data collection but preserves configuration
-
-### Clone Device
+### Clone
 
 Duplicate an existing device configuration for quick setup:
 
 1. Navigate to device detail view or use Actions menu from list
 2. Click **Actions** menu
-3. Select **Clone Device**
+3. Select <gui>Clone Device</gui>
 4. System navigates to device creation wizard
 5. Pre-fills form with cloned device configuration
 6. Modify name and other settings as needed
 7. Complete wizard to create new device
 
-### Delete Device
+### Delete
 
 **Delete Device Process:**
 
@@ -582,12 +517,12 @@ Remove a device from the platform with dependency checking:
 
 1. Navigate to device detail view or use Actions menu from list
 2. Click **Actions** menu
-3. Select **Delete Device**
+3. Select <gui>Delete Device</gui>
 4. Deletion modal appears with confirmation
 
 **Standard Deletion:**
 - Confirm device name matches
-- Click **Delete** to proceed
+- Click <gui>Delete</gui> to proceed
 - Success notification confirms deletion
 - Redirect to device list view
 
@@ -611,9 +546,9 @@ Device detail tabs support inline editing with unsaved changes protection:
 
 **Enter Edit Mode:**
 1. Navigate to editable tab (General Settings, Device Configuration, etc.)
-2. Click **Edit** button in top-right of tab
+2. Click <gui>Edit</gui> button in top-right of tab
 3. Form fields become editable
-4. **Save** and **Cancel** buttons appear
+4. <gui>Save</gui> and <gui>Cancel</gui> buttons appear
 
 **Make Changes:**
 - Modify editable fields
@@ -621,14 +556,14 @@ Device detail tabs support inline editing with unsaved changes protection:
 - Form validation occurs on save
 
 **Save Changes:**
-1. Click **Save** button
+1. Click <gui>Save</gui> button
 2. System validates changes
 3. Success notification displays confirmation
 4. Edit mode exits
 5. Tab displays updated values
 
 **Cancel Changes:**
-1. Click **Cancel** button
+1. Click <gui>Cancel</gui> button
 2. Form reverts to original values
 3. Edit mode exits
 4. No changes are saved
@@ -640,9 +575,9 @@ If you attempt to navigate to another tab while in edit mode:
 - **Modal Contents:**
   - "Unsaved changes" heading
   - "You have unsaved changes. Are you sure you want to leave?" message
-  - **Discard Changes** - Exit edit mode and switch tabs
-  - **Continue Editing** - Return to current tab
-  - **Cancel** - Close modal
+  - <gui>Discard Changes</gui> - Exit edit mode and switch tabs
+  - <gui>Continue Editing</gui> - Return to current tab
+  - <gui>Cancel</gui> - Close modal
 
 ## Notifications
 
@@ -650,102 +585,8 @@ The Devices interface provides automatic notifications for all operations:
 
 ### Success Notifications
 
-Auto-dismissing success messages (10-second timeout):
-
-- **Device Created** - New device successfully created
-- **Device Enabled** - Device successfully activated
-- **Device Disabled** - Device successfully deactivated
-- **Device Deleted** - Device successfully removed from platform
-- **Device Updated** - Device configuration successfully saved
+Success messages auto-dismiss after 10 seconds. These include confirmations for device creation, enabling, disabling, deletion, and configuration updates. Hover to pause the auto-close timer, or click X to dismiss manually.
 
 ### Error Notifications
 
-Persistent error notifications requiring user action:
-
-- **Enable Failed** - Device could not be enabled
-- **Disable Failed** - Device could not be disabled
-- **Delete Failed** - Device deletion unsuccessful
-- **Update Failed** - Device configuration update failed
-- **Director Required** - Push device creation requires Director
-
-### Notification Actions
-
-**Auto-Close:**
-- Success notifications auto-dismiss after 10 seconds
-- Hover to pause auto-close timer
-- Click X to manually dismiss
-
-**Manual Dismiss:**
-- Error notifications require manual dismissal
-- Review error details before dismissing
-- Take corrective action based on error message
-
-## Best Practices
-
-### Device Organization
-
-**Naming Conventions:**
-- Use descriptive, meaningful device names
-- Include location or purpose in name (e.g., "datacenter-syslog-01")
-- Maintain consistent naming pattern across devices
-- Avoid generic names like "device1" or "test"
-
-**Tag Usage:**
-- Apply tags for categorization (environment, datacenter, application)
-- Use tags for bulk filtering and management
-- Maintain consistent tag vocabulary across organization
-- Document tag meanings for team reference
-
-### Status Management
-
-**Enabled Status:**
-- Keep devices "Enabled" for active data collection
-- Monitor connection status regularly
-- Investigate "Not Connected" status immediately
-- Review device logs for connectivity issues
-
-**Disabled Status:**
-- Use "Disabled" status for maintenance windows
-- Disable devices during configuration changes
-- Document reason for disabling in external systems
-- Re-enable after maintenance completion
-
-### Configuration Management
-
-**Push Devices:**
-- Verify port availability before configuration
-- Test network connectivity to device ports
-- Configure TLS for sensitive data streams
-- Monitor buffer usage under high load
-
-**Pull Devices (Agent-Based):**
-- Complete Agent installation before device creation
-- Verify Agent connection status in Agent Deployment tab
-- Monitor Agent History for connection issues
-- Update Agent definitions when log requirements change
-
-**Pull Devices (Cloud-Based):**
-- Validate Azure credentials before configuration
-- Test connection to cloud services
-- Monitor error logs for authentication issues
-- Verify appropriate permissions for cloud resources
-
-### Lifecycle Management
-
-**Creation:**
-- Assign to appropriate Director for workload distribution
-- Configure all required fields before creation
-- Test device immediately after creation
-- Verify data flow through associated routes
-
-**Maintenance:**
-- Review device detail tabs periodically
-- Keep device configurations synchronized
-- Monitor Agent History for patterns
-- Test configuration changes in non-production first
-
-**Deletion:**
-- Verify no active dependencies before deletion
-- Document reason for device removal
-- Archive device configurations for compliance
-- Update related documentation and diagrams
+Error notifications persist until manually dismissed. These include failures for enable, disable, delete, update operations, and Director requirement alerts for Push device creation. Review error details and take corrective action before dismissing.
