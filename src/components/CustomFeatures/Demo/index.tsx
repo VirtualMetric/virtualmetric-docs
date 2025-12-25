@@ -4,6 +4,7 @@ import demosConfig from '@site/demos.json';
 interface DemoProps {
   id: string;
   height?: string;
+  aspectRatio?: string;
   title?: string;
   mode?: 'inline' | 'fullpage';
   buttonText?: string;
@@ -11,10 +12,12 @@ interface DemoProps {
 
 const NAVATTIC_BASE_URL = 'https://capture.navattic.com/';
 const DEFAULT_HEIGHT = '600px';
+const DEFAULT_ASPECT_RATIO = '16/9';
 
 const Demo: React.FC<DemoProps> = ({
   id,
-  height = DEFAULT_HEIGHT,
+  height,
+  aspectRatio,
   title,
   mode = 'inline',
   buttonText = 'Launch Interactive Demo'
@@ -118,8 +121,14 @@ const Demo: React.FC<DemoProps> = ({
   }
 
   // Inline mode: embedded iframe (default)
+  // Use aspectRatio if provided, otherwise fall back to height (or default height)
+  const useAspectRatio = aspectRatio !== undefined;
+  const containerStyle: React.CSSProperties = useAspectRatio
+    ? { width: '100%', aspectRatio: aspectRatio || DEFAULT_ASPECT_RATIO }
+    : { width: '100%', height: height || DEFAULT_HEIGHT };
+
   return (
-    <div style={{ width: '100%', height }}>
+    <div style={containerStyle}>
       <iframe
         src={embedUrl}
         style={{ border: 'none', width: '100%', height: '100%' }}
