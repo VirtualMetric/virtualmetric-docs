@@ -73,14 +73,6 @@ const sidebars: SidebarsConfig = {
             "configuration/directors/deployment",
             "configuration/directors/management",
             "configuration/directors/troubleshooting",
-            {
-              type: "category",
-              label: "CLI",
-              items: [
-                "configuration/directors/cli/director",
-                "configuration/directors/cli/agent",
-              ]
-            }
           ]
         },
         {
@@ -453,7 +445,7 @@ const sidebars: SidebarsConfig = {
       link: {
         type: "generated-index",
         title: "Appendix",
-        description: "Reference information on various topics."
+        description: "Reference information on various topics.",
       },
       items: [
         "appendix/configuration-bnf",
@@ -462,7 +454,8 @@ const sidebars: SidebarsConfig = {
           label: "File Formats",
           link: {
             type: "generated-index",
-            description: "Storage file format specifications"
+            title: "File Formats",
+            description: "Storage file format specifications",
           },
           items: [
             "appendix/file-formats/avro",
@@ -475,7 +468,8 @@ const sidebars: SidebarsConfig = {
           label: "Field Formats",
           link: {
             type: "generated-index",
-            description: "Field format specifications"
+            title: "Field Formats",
+            description: "Field format specifications",
           },
           items: [
             "appendix/field-formats/asim",
@@ -492,7 +486,8 @@ const sidebars: SidebarsConfig = {
           label: "Protocols",
           link: {
             type: "generated-index",
-            description: "Protocol specifications"
+            title: "Protocols",
+            description: "Protocol specifications",
           },
           items: [
             "appendix/protocols/estreamer",
@@ -509,6 +504,19 @@ const sidebars: SidebarsConfig = {
           ],
         },
         "appendix/windows-event-ids",
+        {
+          type: "category",
+          label: "CLI",
+          link: {
+            type: "generated-index",
+            title: "CLI",
+            description: "Command-line interface reference",
+          },
+          items: [
+            "appendix/cli/director",
+            "appendix/cli/agent",
+          ]
+        },
       ],
     },
     "glossary"
