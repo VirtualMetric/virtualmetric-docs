@@ -442,11 +442,21 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Appendix",
+      link: {
+        type: "generated-index",
+        title: "Appendix",
+        description: "Reference information on various topics.",
+      },
       items: [
         "appendix/configuration-bnf",
         {
           type: "category",
           label: "File Formats",
+          link: {
+            type: "generated-index",
+            title: "File Formats",
+            description: "Storage file format specifications",
+          },
           items: [
             "appendix/file-formats/avro",
             "appendix/file-formats/parquet",
@@ -456,6 +466,11 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Field Formats",
+          link: {
+            type: "generated-index",
+            title: "Field Formats",
+            description: "Field format specifications",
+          },
           items: [
             "appendix/field-formats/asim",
             "appendix/field-formats/cef",
@@ -469,6 +484,11 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Protocols",
+          link: {
+            type: "generated-index",
+            title: "Protocols",
+            description: "Protocol specifications",
+          },
           items: [
             "appendix/protocols/estreamer",
             "appendix/protocols/ipfix",
@@ -487,6 +507,11 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "CLI",
+          link: {
+            type: "generated-index",
+            title: "CLI",
+            description: "Command-line interface reference",
+          },
           items: [
             "appendix/cli/director",
             "appendix/cli/agent",
@@ -495,7 +520,17 @@ const sidebars: SidebarsConfig = {
       ],
     },
     "glossary"
-  ],  
+  ],
+  releaseNotes: [
+    "release-notes/v1.6.3",
+    "release-notes/v1.6.2",
+    "release-notes/v1.6.1",
+    "release-notes/v1.6.0",
+    "release-notes/v1.5.1",
+    "release-notes/v1.5.0",
+    "release-notes/v1.4.0",
+    "release-notes/v1.3.0",
+  ],
 };
 
 export default sidebars;
