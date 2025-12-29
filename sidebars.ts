@@ -73,14 +73,6 @@ const sidebars: SidebarsConfig = {
             "configuration/directors/deployment",
             "configuration/directors/management",
             "configuration/directors/troubleshooting",
-            {
-              type: "category",
-              label: "CLI",
-              items: [
-                "configuration/directors/cli/director",
-                "configuration/directors/cli/agent",
-              ]
-            }
           ]
         },
         {
@@ -450,20 +442,11 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Appendix",
-      link: {
-        type: "generated-index",
-        title: "Appendix",
-        description: "Reference information on various topics."
-      },
       items: [
         "appendix/configuration-bnf",
         {
           type: "category",
           label: "File Formats",
-          link: {
-            type: "generated-index",
-            description: "Storage file format specifications"
-          },
           items: [
             "appendix/file-formats/avro",
             "appendix/file-formats/parquet",
@@ -473,10 +456,6 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Field Formats",
-          link: {
-            type: "generated-index",
-            description: "Field format specifications"
-          },
           items: [
             "appendix/field-formats/asim",
             "appendix/field-formats/cef",
@@ -490,10 +469,6 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Protocols",
-          link: {
-            type: "generated-index",
-            description: "Protocol specifications"
-          },
           items: [
             "appendix/protocols/estreamer",
             "appendix/protocols/ipfix",
@@ -509,6 +484,14 @@ const sidebars: SidebarsConfig = {
           ],
         },
         "appendix/windows-event-ids",
+        {
+          type: "category",
+          label: "CLI",
+          items: [
+            "appendix/cli/director",
+            "appendix/cli/agent",
+          ]
+        },
       ],
     },
     "glossary"
