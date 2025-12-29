@@ -520,7 +520,17 @@ const sidebars: SidebarsConfig = {
       ],
     },
     "glossary"
-  ],  
+  ],
+  releaseNotes: [
+    "release-notes/v1.6.3",
+    "release-notes/v1.6.2",
+    "release-notes/v1.6.1",
+    "release-notes/v1.6.0",
+    "release-notes/v1.5.1",
+    "release-notes/v1.5.0",
+    "release-notes/v1.4.0",
+    "release-notes/v1.3.0",
+  ],
 };
 
 export default sidebars;
