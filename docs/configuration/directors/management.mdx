@@ -72,13 +72,10 @@ The Director creation process guides you through a 3-step wizard with validation
    **Cluster:**
 
    :::info
-   Cluster installation type is coming soon and will provide high availability with load balancing capabilities.
+   To create a clustered deployment, first create Directors as standalone instances, then group them using the **Clusters** tab. See [Clusters](#clusters) section below.
    :::
 
-   - Multiple Director instances
-   - High availability
-   - Load balancing capabilities
-   - Enterprise-grade reliability
+   Clustered deployments provide high availability through multiple Director instances with automatic failover and load balancing.
 
 3. **Mode Selection**
 
@@ -383,3 +380,198 @@ Success messages auto-dismiss after 10 seconds. These include confirmations for 
 ### Errors
 
 Error notifications persist until manually dismissed. These include failures for enable, disable, delete operations, and configuration download errors. Review error details and take corrective action before dismissing.
+
+## Clusters
+
+Clusters group multiple Directors together for high availability. When one Director fails, the remaining Directors automatically take over its workload. Agents and Devices connect to the cluster as a whole, ensuring continuous operation as long as at least one Director remains healthy.
+
+### Access
+
+The Directors page displays two tabs: **Directors** and **Clusters**. Click the **Clusters** tab to manage cluster configurations. The Clusters tab requires CLUSTER_READ permission.
+
+### Overview
+
+The Clusters table displays all configured clusters with the following columns:
+
+| Column | Description |
+|:-------|:------------|
+| Name | Cluster identifier |
+| Type | Management type (Managed or Self-Managed) |
+| Status | Operational state (Enabled/Disabled) |
+| Directors | Count showing healthy vs total (e.g., "2 up 1 down") |
+| Actions | Menu for cluster operations |
+
+**Table Controls:**
+
+Filter clusters using **Search clusters** (by name) and **Status** dropdown (All, Enabled, Disabled). The <gui>Refresh</gui> button reloads table data. Click <gui>Create cluster</gui> to launch the creation wizard (requires CLUSTER_CREATE permission).
+
+### Create Cluster Wizard
+
+The cluster creation process guides you through a 3-step wizard.
+
+#### Step 1: Cluster Details
+
+**Basic Configuration:**
+
+1. **Cluster Name** - Unique identifier for the cluster
+2. **Port** - Communication port for cluster coordination (default: 8081)
+3. **Type** - Management approach:
+   - **Managed**: VirtualMetric manages cluster infrastructure
+   - **Self-Managed**: User controls cluster deployment and configuration
+
+**Director Selection:**
+
+Select Directors to include in the cluster. Requirements:
+- Minimum 3 Directors required
+- Must be an odd number (3, 5, 7...) for quorum
+- Directors must match cluster type (Managed or Self-Managed)
+- Only Directors with "Connected" status can be added
+
+For each Director, specify:
+- **Director** - Select from available Directors dropdown
+- **IP Address** - Auto-populated from Director configuration
+- **Port** - Communication port (auto-populated, editable)
+
+:::warning
+Directors already assigned to another cluster are not available for selection. Remove a Director from its current cluster before reassigning.
+:::
+
+#### Step 2: Cluster Configuration
+
+**TLS Settings:**
+
+Configure encrypted communication between cluster members:
+
+- **Enable TLS** - Toggle to enable/disable TLS encryption
+- **Certificate Name** - TLS certificate filename (required if TLS enabled)
+- **Key Name** - TLS private key filename (required if TLS enabled)
+
+#### Step 3: Access Management
+
+**Access Restriction:**
+
+Restrict which IP addresses can connect to the cluster:
+
+- **Enable Access Restriction** - Toggle to enable IP filtering
+- **Restriction Type**:
+  - **Single Block** - Single IP address
+  - **Range** - IP address range (start-end)
+  - **CIDR** - CIDR notation (e.g., 10.0.0.0/8)
+- **Sources** - List of allowed IP addresses/ranges
+
+**Access Tokens:**
+
+Create authentication tokens for Agents and Devices connecting to the cluster:
+
+- **Enable Access Tokens** - Toggle to require token authentication
+- **Token Name** - Identifier for the token
+- **Token Type** - Always "cluster" for cluster-level tokens
+- **Expiration**:
+  - 1 month
+  - 3 months
+  - 1 year
+  - Unlimited
+
+Click <gui>Add Cluster</gui> to complete cluster creation.
+
+### Detail View
+
+Clicking a cluster from the overview table opens the detailed management interface with four tabbed panels.
+
+#### Cluster Details Tab
+
+View cluster configuration and Director membership:
+
+**Cluster Information:**
+- **Name** - Cluster identifier
+- **Type** - Managed or Self-Managed
+- **Port** - Cluster communication port
+- **Status** - Enabled or Disabled
+
+**Directors Table:**
+
+Lists all Directors in the cluster with:
+- **Name** - Director identifier
+- **IP Address** - Director network address
+- **Port** - Director communication port
+- **Status** - Connection status (Connected/Not Connected)
+
+#### Cluster Configuration Tab
+
+View and edit TLS settings:
+
+- **TLS Status** - Enabled or Disabled
+- **Certificate Name** - Current certificate file
+- **Key Name** - Current key file
+
+Click <gui>Edit</gui> to modify TLS configuration.
+
+#### Access Management Tab
+
+View and edit access controls:
+
+**Access Restriction:**
+- Current restriction status and configured sources
+- Edit to add, remove, or modify IP restrictions
+
+**Access Tokens:**
+- List of configured tokens with expiration dates
+- Create new tokens or revoke existing tokens
+
+#### Cluster Activity Logs Tab
+
+Track cluster operations and lifecycle events:
+
+| Column | Description |
+|:-------|:------------|
+| User | Email of user who performed action |
+| User IP | IP address from which action was performed |
+| Object Type | Always "Cluster" for this view |
+| Object | Name of affected cluster |
+| Action | Operation performed |
+| Action Description | Detailed description |
+| Created At | Timestamp of action |
+
+**Action Types:**
+- CreatedCluster - New cluster created
+- UpdatedCluster - Cluster configuration modified
+- DeletedCluster - Cluster removed
+
+### Cluster Operations
+
+#### Enable / Disable
+
+To change cluster status:
+
+1. Navigate to cluster detail view or use Actions menu from overview
+2. Click **Actions** menu
+3. Select <gui>Enable Cluster</gui> or <gui>Disable Cluster</gui>
+4. Confirmation notification confirms status change
+
+Disabling a cluster also disables all member Directors. Re-enabling restores previous Director states.
+
+#### Download Config
+
+**For Self-Managed Clusters:**
+
+Download the cluster configuration file:
+
+1. Navigate to cluster detail view
+2. Click **Actions** menu
+3. Select <gui>Download Config</gui>
+4. Deploy downloaded configuration to each Director in the cluster
+
+#### Delete
+
+**Delete Cluster Process:**
+
+1. Navigate to cluster detail view or use Actions menu
+2. Click **Actions** menu
+3. Select <gui>Delete Cluster</gui>
+4. Confirm deletion in modal dialog
+
+:::warning
+Clusters with assigned Devices cannot be deleted. Reassign or remove all Devices from cluster Directors before deletion.
+:::
+
+Deleting a cluster also removes all Director associations. The Directors themselves are not deleted but return to standalone status.
