@@ -12,29 +12,29 @@ Agents provide local log collection with optional edge-based pre-processing. The
 
 ### Agent vs Agentless
 
-DataStream supports two deployment approaches for Windows and Linux endpoints:
+DataStream supports two deployment approaches for Windows and Linux endpoints. Both approaches install a collector agent on the endpoint; they differ in how the installation is initiated and how credentials are managed.
 
 | Aspect | Agent | Agentless |
 |-------:|:------|:----------|
-| Installation | Binary installed on endpoint | No local installation |
-| Connection | Agent connects TO Director/Cluster | Director connects TO endpoint |
-| Protocol | HTTP | WinRM (Windows) / SSH (Linux) |
+| Initiation | User runs script on endpoint | Director connects to endpoint remotely |
+| Installation | Script installs and starts collector | Director installs and starts collector |
+| Initial connection | Endpoint connects TO Director/Cluster | Director connects TO endpoint |
+| Protocol | HTTPS (outbound from endpoint) | WinRM (Windows) / SSH (Linux) |
+| Credential handling | Token-based (no credentials in UI) | User credentials stored on Director |
 | Pre-processing | Full pipeline support at edge | Full pipeline support at edge |
 | Buffering | Local store-and-forward | Local store-and-forward |
-| Network resilience | User has to re-establish connection after interruptions | Director restarts after interruptions |
-| Credential storage | Token on endpoint | Credentials on Director |
+| Network resilience | User re-establishes after interruptions | Director restarts after interruptions |
 
 **When to use Agent deployment:**
-- High-volume log collection requiring edge filtering
+- Credential-free operation (no endpoint credentials stored centrally)
 - Remote sites with intermittent connectivity
-- Compliance requirements for data masking at source
-- Distributed processing to reduce Director load
+- Environments where outbound-only connections are required
 
 **When to use Agentless deployment:**
-- Quick deployment without endpoint installation
-- Environments where agent installation is restricted
-- Temporary or ad-hoc monitoring scenarios
 - Centralized credential management requirements
+- Quick deployment without manual endpoint access
+- Environments where running scripts on endpoints is restricted
+- Temporary or ad-hoc monitoring scenarios
 
 ### Supported Platforms
 
@@ -107,10 +107,12 @@ After installation, the Agent service starts automatically and connects to the D
 
 ### Agentless Deployment
 
-Agentless deployment requires no installation on the endpoint. The Director connects remotely using:
+Agentless deployment allows the Director to install and start the collector agent remotely without manual script execution on the endpoint. The Director connects using the credentials provided in the UI:
 
 - **Windows**: WinRM (Windows Remote Management) on port 5985
 - **Linux**: SSH on port 22
+
+Once connected, the Director installs the collector service on the remote machine and starts it. The collector then operates identically to an Agent deployment, collecting logs locally and forwarding them to the Director.
 
 For agentless configuration details, see the [Windows](/configuration/devices/windows) and [Linux](/configuration/devices/linux) device documentation.
 
@@ -156,11 +158,7 @@ Pipelines assigned to Agents use the same syntax as Director pipelines, and all 
 
 ### Use Cases
 
-**Credential-free Connection** In the event that the user wants to avoid using credentials, the Director can connect to the remote machine using the credentials defined by the user and start an Agent.
-
 **High-Volume Log Filtering:** Filter non-essential logs at the collection point to reduce network bandwidth consumption. This distributes the processing load across Agents and improves Director scalability.
-
-**Edge-Based Compliance:** Mask sensitive data such as PII and credentials at the source, applying regulatory transformations before transmission. This ensures compliance before data leaves the endpoint and supports data sovereignty requirements.
 
 **Distributed Processing:** Process data locally in remote offices to minimize central Director processing load. This approach supports intermittent connectivity scenarios and optimizes infrastructure costs.
 
