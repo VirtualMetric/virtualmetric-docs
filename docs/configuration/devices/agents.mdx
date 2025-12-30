@@ -50,16 +50,30 @@ DataStream supports two deployment approaches for Windows and Linux endpoints:
 
 Agents operate as pull-type devices that collect logs locally and push them to the Director:
 
-```
-Endpoint                           Director/Cluster
-┌─────────────────┐               ┌─────────────────┐
-│  VirtualMetric  │───────────────│                 │
-│     Agent       │  encrypted    │    Director     │
-│                 │  connection   │                 │
-│  - Collect logs │───────────────│  - Receive data │
-│  - Pre-process  │               │  - Route/Target │
-│  - Buffer/retry │               │                 │
-└─────────────────┘               └─────────────────┘
+```mermaid
+graph RL
+    subgraph Endpoint
+        Agent([VirtualMetric Agent])
+        Collect[Collect logs]
+        Process[Pre-process]
+        Buffer[Buffer/retry]
+    end
+
+    subgraph Director/Cluster
+        Director([Director])
+        Receive[Receive data]
+        Route[Route/Target]
+    end
+
+    Agent -.-> |encrypted connection| Director
+
+    style Agent fill:#BCC0E7
+    style Director fill:#BCC0E7
+    style Collect fill:#E5E2FB
+    style Process fill:#E5E2FB
+    style Buffer fill:#E5E2FB
+    style Receive fill:#E5E2FB
+    style Route fill:#E5E2FB
 ```
 
 The Agent authenticates using a token issued by the Director or Cluster. Configuration changes made in the Director interface synchronize automatically to connected Agents.
@@ -74,24 +88,21 @@ Agent deployment installs the VirtualMetric Agent binary on the endpoint. The in
 2. **Run Installation Script**: Execute the provided PowerShell (Windows) or Bash (Linux) script on the endpoint
 3. **Verify Connection**: Confirm the Agent has connected successfully
 
-**Windows Installation:**
+The wizard provides platform-specific installation scripts (actual commands provided by wizard):
 
-The wizard provides a PowerShell script that downloads and installs the Agent:
-
-```powershell
-# Example installation command (actual command provided by wizard)
-Invoke-WebRequest -Uri "https://..." -OutFile agent-setup.exe
-./agent-setup.exe /silent /token="<token>" /director="<address>"
-```
-
-**Linux Installation:**
-
-The wizard provides a Bash script for Linux deployments:
-
-```bash
-# Example installation command (actual command provided by wizard)
-curl -sSL https://... | bash -s -- --token "<token>" --director "<address>"
-```
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    Invoke-WebRequest -Uri "https://..." -OutFile agent-setup.exe
+    ./agent-setup.exe /silent /token="<token>" /director="<address>"
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    curl -sSL https://... | bash -s -- --token "<token>" --director "<address>"
+    ```
+  </TabItem>
+</Tabs>
 
 After installation, the Agent service starts automatically and connects to the Director or Cluster.
 
