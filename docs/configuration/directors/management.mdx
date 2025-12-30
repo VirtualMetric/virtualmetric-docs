@@ -304,76 +304,11 @@ Directors with connected devices or agents cannot be deleted. The error modal li
 3. Reassign agents to different Director or delete
 4. Retry Director deletion after dependencies removed
 
-## Agent Pre-Processing Management
+## Agent Pre-Processing
 
-Directors can configure Agents to perform pipeline-based pre-processing of logs before transmission. This distributed processing model reduces Director workload and enables edge-based data transformation.
+Directors can configure Agents to perform pipeline-based pre-processing of logs before transmission. This distributed processing model reduces Director workload, decreases network bandwidth consumption, and enables edge-based data transformation such as compliance masking.
 
-### Architecture
-
-**Processing Flow with Agent Pre-Processing:**
-
-1. **Agent Collection** - Agent collects logs locally at endpoint
-2. **Agent Processing** - Agent executes configured pipeline transformations
-3. **Agent Transmission** - Agent sends pre-processed data to Director
-4. **Director Routing** - Director forwards data to targets (optional additional processing)
-
-**Processing Flow without Agent Pre-Processing:**
-
-1. **Agent Collection** - Agent collects logs locally at endpoint
-2. **Agent Transmission** - Agent sends raw data to Director
-3. **Director Processing** - Director executes pipeline transformations
-4. **Director Routing** - Director forwards processed data to targets
-
-### Configuration
-
-Agent pre-processing is configured through device settings in the Director interface:
-
-**Configuration Location:**
-- Navigate to **Home** > **Fleet Management** > **Devices**
-- Select the Agent device to configure
-- Assign pipeline to device configuration
-- Pipeline executes on Agent before data transmission
-
-**Pipeline Assignment:**
-- Same pipeline syntax as Director pipelines
-- All processor types available for Agent execution
-- Configuration managed centrally through Director
-- Changes synchronized automatically to Agents
-
-### Pre-Processing Use Cases
-
-**High-Volume Log Filtering:**
-- Filter non-essential logs at collection point
-- Reduce network bandwidth consumption
-- Distribute processing load across Agents
-- Improve Director scalability
-
-**Edge-Based Compliance:**
-- Mask sensitive data (PII, credentials) at source
-- Apply regulatory transformations before transmission
-- Ensure compliance before data leaves endpoint
-- Support data sovereignty requirements
-
-**Distributed Processing:**
-- Process data locally in remote offices
-- Minimize central Director processing load
-- Support intermittent connectivity scenarios
-- Optimize infrastructure costs
-
-### Pipeline Distribution
-
-Distribute processing between Agents and Directors based on operation type:
-
-| Operation Type | Execute On | Reason |
-|----------------|------------|--------|
-| Filtering, sampling, field removal | Agent | Reduces network bandwidth |
-| GeoIP lookups, threat intelligence | Director | Requires external resources |
-| Lightweight transformations | Agent | Edge processing efficiency |
-| Computationally intensive operations | Director | Better resource availability |
-
-:::tip
-Configure pipelines centrally through the Director interface. Changes synchronize automatically to Agents via hot configuration reload.
-:::
+For complete Agent documentation including deployment, management, pipeline assignment, and troubleshooting, see <Topic id="devices-agents">Devices: Agents</Topic>.
 
 ## Notifications
 
@@ -389,7 +324,7 @@ Error notifications persist until manually dismissed. These include failures for
 
 ## Clusters
 
-Clusters group multiple Directors together for high availability. When one Director fails, the remaining Directors automatically take over its workload. Agents and Devices connect to the cluster as a whole, ensuring continuous operation as long as at least one Director remains healthy.
+Clusters group multiple Directors together for high availability. When one Director fails, the remaining Directors automatically take over its workload. <Topic id="devices-agents">Agents</Topic> and Devices connect to the cluster as a whole, ensuring continuous operation as long as at least one Director remains healthy.
 
 :::warning[Permanent Assignment]
 Once a Director is added to a cluster, it cannot be individually modified, updated, or removed. All configuration changes must be made at the cluster level. The only way to release a Director from a cluster is to delete the entire cluster, after which the Director returns to standalone status.
