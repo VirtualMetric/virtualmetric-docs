@@ -49,52 +49,50 @@ Each Director row provides an **Actions menu** (⋮) with the following operatio
 
 The Director creation process guides you through a 3-step wizard with validation and connection verification.
 
-### Setup
+:::info
+Directors are always created as standalone instances. To create a clustered deployment for high availability, first create Directors using this wizard, then group them using the **Clusters** tab. See [Clusters](#clusters) section below.
+:::
 
-**Director Configuration:**
+### Step 1: Director Setup
 
-1. **Director Name**
-   - Enter unique identifier for the Director
-   - Minimum length: 3 characters
-   - Maximum length: 64 characters
-   - Used for identification across the platform
+**Director Name:**
 
-2. **Installation Type Selection**
+Enter a unique identifier for the Director (3-64 characters). This name is used for identification across the platform.
 
-   Choose Director architecture using radio tiles:
+**Mode Selection:**
 
-   **Standalone:**
-   - Single Director instance
-   - Simplified management
-   - Suitable for most deployments
-   - Quick setup process
+Select the management approach using radio tiles:
 
-   **Cluster:**
+- **Managed** - VirtualMetric manages Director infrastructure with automated updates, proactive monitoring, and reduced operational overhead
+- **Self-Managed** - User controls Director deployment with manual updates, custom security configurations, and full infrastructure control
 
-   :::info
-   To create a clustered deployment, first create Directors as standalone instances, then group them using the **Clusters** tab. See [Clusters](#clusters) section below.
-   :::
+### Step 2: Access Management
 
-   Clustered deployments provide high availability through multiple Director instances with automatic failover and load balancing.
+Configure optional access controls for the Director.
 
-3. **Mode Selection**
+**Access Tokens:**
 
-   Select management approach for the Director:
+- **Enable Access Tokens** - Toggle to require token authentication
+- **Token Name** - Identifier for the token
+- **Token Value** - Auto-generated when token is created (use copy button to copy)
+- **Expiration** - Token validity period (default: 3 months):
+  - 1 month
+  - 3 months
+  - 1 year
+  - Unlimited
 
-   **Managed:**
-   - VirtualMetric manages Director infrastructure
-   - Automated updates and maintenance
-   - Proactive monitoring and support
-   - Reduced operational overhead
+**Access Restriction:**
 
-   **Self-Managed:**
-   - User controls Director deployment
-   - Manual update management
-   - Custom security configurations
-   - Full infrastructure control
-   - Standard deployment option
+Restrict which IP addresses can connect to the Director:
 
-### Connect
+- **Enable Access Restriction** - Toggle to enable IP filtering
+- **Restriction Type**:
+  - **Single Block** - Single IP address
+  - **Range** - IP address range (start-end)
+  - **CIDR** - CIDR notation (e.g., 10.0.0.0/8)
+- **Sources** - List of allowed IP addresses/ranges
+
+### Step 3: Connect Director
 
 **Installation Command Display:**
 
@@ -134,31 +132,26 @@ After running the installation script, verify Director connectivity:
 ### Navigation
 
 **Progress Indicator:**
-- Visual step progress at top of wizard
-- Click steps to navigate (forward only after validation)
-- Current step highlighted
-- Completed steps marked with checkmark
-- Invalid steps marked with error indicator
+
+The wizard displays a 3-step progress indicator (Director Setup → Access Management → Connect Director). Click completed steps to navigate back. Invalid steps are marked with an error indicator.
 
 **Navigation Buttons:**
-- <gui>Cancel</gui>/<gui>Connect Later</gui> - Exit wizard (label changes on final step)
-- <gui>Create Director</gui> - Advance to next step with validation
-- <gui>Complete Setup</gui> - Finalize Director creation (final step)
+- <gui>Cancel</gui> - Exit wizard (changes to <gui>Connect Later</gui> on final step)
+- <gui>Next</gui> - Advance to next step with validation
+- <gui>Create Director</gui> - Submit Director configuration and proceed to connection (from Step 2)
+- <gui>Complete Setup</gui> - Finalize Director creation (final step, enabled after successful connection)
 
 ## Detail View
 
-Clicking a Director from the overview table opens the detailed management interface with three tabbed panels.
+Clicking a Director from the overview table opens the detailed management interface with four tabbed panels.
 
-### Details Tab
-
-**Director Information:**
+### Director Details Tab
 
 View and edit Director configuration through editable tiles:
 
 **General Information:**
 - **Director Name** - Editable unique identifier
 - **Mode** - Management type (Managed or Self-Managed)
-- **Installation Type** - Architecture (Standalone or Cluster)
 - **Status** - Current operational state
 - **Connection Status** - Real-time connectivity indicator
 
@@ -190,6 +183,19 @@ Access installation and reinstallation resources:
 - Use when Director needs redeployment
 - Maintains configuration and settings
 - Preserves Director identity and connections
+
+### Access Management Tab
+
+View and edit access controls for the Director.
+
+**Access Tokens:**
+- List of configured tokens with expiration dates
+- Create new tokens or revoke existing tokens
+- Copy token values to clipboard
+
+**Access Restriction:**
+- Current restriction status and configured sources
+- Edit to add, remove, or modify IP restrictions
 
 ### Activity Logs Tab
 
