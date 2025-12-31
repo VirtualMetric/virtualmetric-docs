@@ -13,25 +13,11 @@ A Director is a lightweight, containerized service that acts as a secure data pr
 
 ### Key Capabilities
 
-A Director offers the following capabilities:
+A Director provides comprehensive data processing capabilities, ingesting security data from multiple sources including syslog, APIs, files, and databases. It applies real-time transformation and normalization using YAML-defined pipelines, supports multiple security schemas (ASIM, OCSF, ECS, CIM, UDM), and routes processed data to various destinations such as SIEM platforms, data lakes, and security tools.
 
-**Data Processing Pipeline:**
-- Ingests security data from multiple sources (syslog, APIs, files, databases)
-- Applies real-time transformation and normalization using YAML-defined pipelines
-- Supports multiple security schemas (ASIM, OCSF, ECS, CIM, UDM)
-- Routes processed data to various destinations (SIEM platforms, data lakes, security tools)
+From a security and compliance perspective, Directors maintain data sovereignty by processing all data locally. They establish outbound-only HTTPS connections to cloud management services, provide comprehensive audit logging and activity tracking, and support enterprise security requirements and compliance frameworks.
 
-**Security and Compliance:**
-- Maintains data sovereignty by processing all data locally
-- Establishes outbound-only HTTPS connections to cloud management services
-- Provides comprehensive audit logging and activity tracking
-- Supports enterprise security requirements and compliance frameworks
-
-**Scalability and Reliability:**
-- Horizontal scaling through clustering capabilities
-- High availability configurations for mission-critical environments
-- Resource-efficient processing with minimal infrastructure requirements
-- Automatic failover and load balancing in clustered deployments
+Directors are designed for scalability and reliability, offering horizontal scaling through clustering capabilities and high availability configurations for mission-critical environments. They provide resource-efficient processing with minimal infrastructure requirements and support automatic failover and load balancing in clustered deployments.
 
 ## Platform Management Options
 
@@ -41,12 +27,7 @@ A Director offers the following capabilities:
 
 Self-Managed Directors provide complete control over the deployment and management of your data processing infrastructure. This option is ideal for organizations with specific security requirements or existing infrastructure management processes.
 
-**Characteristics:**
-- Full control over deployment environment and configuration
-- Direct management of updates, patches, and maintenance
-- Custom security controls and compliance configurations
-- Integration with existing infrastructure monitoring and management tools
-- Support for air-gapped or restricted network environments
+Self-Managed Directors give you full control over your deployment environment and configuration. You handle updates, patches, and maintenance directly, and can implement custom security controls and compliance configurations. This approach integrates with existing infrastructure monitoring and management tools, and supports air-gapped or restricted network environments.
 
 **Suitable For:**
 - Organizations with strict data governance requirements
@@ -58,12 +39,11 @@ Self-Managed Directors provide complete control over the deployment and manageme
 
 Managed Directors offer a fully-managed service where **VirtualMetric** handles the infrastructure management, monitoring, and maintenance of your Directors while still maintaining data sovereignty.
 
-**Characteristics:**
-- Automated deployment and configuration management
-- Proactive monitoring and maintenance by VirtualMetric
-- Automatic updates and security patches
-- 24/7 support and incident response
-- Performance optimization and capacity planning
+With Managed Directors, VirtualMetric handles automated deployment and configuration management, along with proactive monitoring and maintenance. You receive automatic updates and security patches, 24/7 support and incident response, and performance optimization with capacity planning.
+
+:::info[Enterprise Feature]
+Managed Directors are available as part of the Enterprise subscription.
+:::
 
 **Suitable For:**
 - Organizations seeking reduced operational overhead
@@ -77,19 +57,11 @@ Directors support different installation architectures to accommodate various op
 
 ### Standalone Installation
 
-**Standalone** is the default installation type, designed for straightforward deployments where a single Director instance handles all data processing needs.
+**Standalone** is the default installation type, designed for straightforward deployments where a single Director instance handles all data processing needs. This configuration offers simplified management, resource-efficient operation, and quick deployment and setup.
 
-**Features:**
-- Single Director instance per deployment
-- Simplified configuration and management
-- Resource-efficient for most use cases
-- Quick deployment and setup process
-
-**Limitations:**
-- No built-in high availability or load balancing
-- Single point of failure for data processing
-- Limited horizontal scaling capabilities
-- Manual backup and disaster recovery procedures
+:::note[Standalone Limitations]
+Standalone installations do not include built-in high availability or load balancing. A single Director instance represents a single point of failure, with limited horizontal scaling capabilities. Backup and disaster recovery procedures must be managed manually.
+:::
 
 **Recommended For:**
 - Small to medium-scale deployments
@@ -99,21 +71,13 @@ Directors support different installation architectures to accommodate various op
 
 ### Clustered Installation (Enterprise Feature)
 
-**Clustered** installations provide high availability and horizontal scaling capabilities through multiple Director instances working together.
+**Clusters** provide high availability by grouping multiple Directors together for automatic failover. When one Director in a cluster fails, the remaining Directors take over its workload, ensuring continuous telemetry processing. Agents and Devices connect to the cluster as a whole rather than to individual Directors, so operations continue uninterrupted as long as at least one Director remains healthy.
 
-**Features:**
-- Multiple Director instances with automatic load balancing
-- Built-in failover and redundancy mechanisms
-- Horizontal scaling based on processing demands
-- Distributed processing for improved performance
-- Shared state management across cluster nodes
+To create a cluster, you first deploy Directors as standalone instances, then group them through the **Clusters** tab in the Directors management interface. A cluster requires a minimum of 3 Directors, and the count must be an odd number (3, 5, 7...) to maintain quorum and prevent split-brain scenarios. Routes configured for a cluster are automatically replicated across all member Directors.
 
-**Benefits:**
-- Elimination of single points of failure
-- Improved processing capacity and throughput
-- Automatic recovery from node failures
-- Dynamic scaling based on data volume
-- Enhanced monitoring and observability
+:::info[Enterprise Feature]
+Clustered installations are available as part of the Enterprise subscription.
+:::
 
 **Recommended For:**
 - Mission-critical security data processing
@@ -127,34 +91,14 @@ Directors operate as secure intermediaries between your security data sources an
 
 ### Data Processing Architecture
 
-**Input Layer:**
-- Multiple simultaneous data source connections
-- Protocol-agnostic ingestion (Syslog, REST APIs, file monitoring)
-- Real-time streaming and batch processing capabilities
-- Built-in buffering and queuing for reliability
+The **Input Layer** handles multiple simultaneous data source connections through protocol-agnostic ingestion supporting Syslog, REST APIs, and file monitoring. It provides both real-time streaming and batch processing capabilities, with built-in buffering and queuing for reliability.
 
-**Processing Layer:**
-- YAML-defined transformation pipelines
-- Multi-schema normalization and enrichment
-- Real-time data validation and quality checks
-- Custom logic implementation through processors
+The **Processing Layer** executes YAML-defined transformation pipelines that perform multi-schema normalization and enrichment. This layer applies real-time data validation and quality checks, and enables custom logic implementation through processors.
 
-**Output Layer:**
-- Multi-destination routing and delivery
-- Format adaptation for different target systems
-- Delivery confirmation and retry mechanisms
-- Performance optimization for various endpoint types
+The **Output Layer** manages multi-destination routing and delivery, adapting formats for different target systems. It handles delivery confirmation and retry mechanisms, with performance optimization tailored for various endpoint types.
 
 ### Security and Connectivity Model
 
-**Outbound-Only Communication:**
-- Directors initiate all cloud platform connections
-- No inbound firewall rules required
-- Encrypted HTTPS communication for all cloud interactions
-- Certificate-based authentication and authorization
+Directors use an outbound-only communication model where they initiate all cloud platform connections. This design eliminates the need for inbound firewall rules. All cloud interactions use encrypted HTTPS communication with certificate-based authentication and authorization.
 
-**Data Sovereignty:**
-- All security data processing occurs locally
-- No sensitive data transmitted to cloud services
-- Configuration and metadata-only cloud synchronization
-- Complete audit trail for compliance and governance
+The architecture maintains strict data sovereignty: all security data processing occurs locally, and no sensitive data is transmitted to cloud services. Cloud synchronization is limited to configuration and metadata only. A complete audit trail supports compliance and governance requirements.

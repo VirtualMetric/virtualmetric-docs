@@ -1,0 +1,213 @@
+---
+sidebar_label: Agents
+---
+
+# Devices: Agents
+
+The **VirtualMetric Agent** is a lightweight service that collects telemetry from Windows and Linux endpoints and forwards it to a Director or Cluster for processing and routing.
+
+## Introduction
+
+Agents provide local log collection with optional edge-based pre-processing. They connect to Directors or Clusters using token-based authentication and support automatic configuration synchronization.
+
+### Agent vs Agentless
+
+DataStream supports two deployment approaches for Windows and Linux endpoints. Both approaches install a collector agent on the endpoint; they differ in how the installation is initiated and how credentials are managed.
+
+| Aspect | Agent | Agentless |
+|-------:|:------|:----------|
+| Initiation | User runs script on endpoint | Director connects to endpoint remotely |
+| Installation | Script installs and starts collector | Director installs and starts collector |
+| Initial connection | Endpoint connects TO Director/Cluster | Director connects TO endpoint |
+| Protocol | HTTPS (outbound from endpoint) | WinRM (Windows) / SSH (Linux) |
+| Credential handling | Token-based (no credentials in UI) | User credentials stored on Director |
+| Pre-processing | Full pipeline support at edge | Full pipeline support at edge |
+| Buffering | Local store-and-forward | Local store-and-forward |
+| Network resilience | User re-establishes after interruptions | Director restarts after interruptions |
+
+**When to use Agent deployment:**
+- Credential-free operation (no endpoint credentials stored centrally)
+- Remote sites with intermittent connectivity
+- Environments where outbound-only connections are required
+
+**When to use Agentless deployment:**
+- Centralized credential management requirements
+- Quick deployment without manual endpoint access
+- Environments where running scripts on endpoints is restricted
+- Temporary or ad-hoc monitoring scenarios
+
+### Supported Platforms
+
+| Platform | Agent | Agentless | Protocol |
+|:---------|:------|:----------|:---------|
+| Windows | Yes | Yes | WinRM |
+| Linux | Yes | Yes | SSH |
+
+### Architecture
+
+Agents operate as pull-type devices that collect logs locally and push them to the Director:
+
+```mermaid
+graph RL
+    subgraph Endpoint
+        Agent([VirtualMetric Agent])
+        Collect[Collect logs]
+        Process[Pre-process]
+        Buffer[Buffer/retry]
+    end
+
+    subgraph Director/Cluster
+        Director([Director])
+        Receive[Receive data]
+        Route[Route/Target]
+    end
+
+    Agent -.-> |encrypted connection| Director
+
+    style Agent fill:#BCC0E7
+    style Director fill:#BCC0E7
+    style Collect fill:#E5E2FB
+    style Process fill:#E5E2FB
+    style Buffer fill:#E5E2FB
+    style Receive fill:#E5E2FB
+    style Route fill:#E5E2FB
+```
+
+The Agent authenticates using a token issued by the Director or Cluster. Configuration changes made in the Director interface synchronize automatically to connected Agents.
+
+## Deployment
+
+### Agent Deployment
+
+Agent deployment installs the VirtualMetric Agent binary on the endpoint. The installation process:
+
+1. **Create Device**: Configure the device in the Director interface (see [Management](#management))
+2. **Run Installation Script**: Execute the provided PowerShell (Windows) or Bash (Linux) script on the endpoint
+3. **Verify Connection**: Confirm the Agent has connected successfully
+
+The wizard provides platform-specific installation scripts (actual commands provided by wizard):
+
+<Tabs>
+  <TabItem value="powershell" label="PowerShell" default>
+    ```powershell
+    $h="<config-token>"; iwr directorip/dl | iex
+    ```
+  </TabItem>
+  <TabItem value="bash" label="Bash">
+    ```bash
+    curl -sL directorip/dl | sudo h="<config-token>" director="directorip" bash
+    ```
+  </TabItem>
+</Tabs>
+
+After installation, the Agent service starts automatically and connects to the Director or Cluster.
+
+### Agentless Deployment
+
+Agentless deployment allows the Director to install and start the collector agent remotely without manual script execution on the endpoint. The Director connects using the credentials provided in the UI:
+
+- **Windows**: WinRM (Windows Remote Management) on port 5985
+- **Linux**: SSH on port 22
+
+Once connected, the Director installs the collector service on the remote machine and starts it. The collector then operates identically to an Agent deployment, collecting logs locally and forwarding them to the Director.
+
+For agentless configuration details, see the <Topic id="devices-windows">Windows</Topic> and <Topic id="devices-linux">Linux</Topic> device documentation.
+
+### Director vs Cluster Connection
+
+Agents can connect to either a standalone Director or a Cluster. For Cluster configuration and management, see <Topic id="directors-management-clusters">Directors: Clusters</Topic>.
+
+**Director Connection:** The Agent connects to a single Director instance. If the Director fails, the Agent buffers data locally until the connection is restored. This simpler configuration suits single-site deployments.
+
+**Cluster Connection:** The Agent connects to the Cluster as a whole rather than to individual Directors. Any healthy Director in the Cluster can receive Agent data, providing automatic failover if one Director becomes unavailable. This approach is recommended for production deployments requiring high availability.
+
+## Management
+
+Agent devices are managed through the **Devices** web interface at **Home** > **Fleet Management** > **Devices**. Select **Windows** or **Linux** from the device categories.
+
+For complete GUI documentation including the creation wizard, detail view tabs, data configuration options, and device operations, see <Topic id="devices-management">Devices: Management</Topic>.
+
+## Pre-Processing
+
+Agents can execute pipeline-based pre-processing before transmitting data to the Director. This distributed processing model reduces Director workload and network bandwidth.
+
+### Processing Flow
+
+**With Pre-Processing:**
+
+1. **Agent Collection** - Agent collects logs locally at endpoint
+2. **Agent Processing** - Agent executes configured pipeline transformations
+3. **Agent Transmission** - Agent sends pre-processed data to Director
+4. **Director Routing** - Director forwards data to targets
+
+**Without Pre-Processing:**
+
+1. **Agent Collection** - Agent collects logs locally at endpoint
+2. **Agent Transmission** - Agent sends raw data to Director
+3. **Director Processing** - Director executes pipeline transformations
+4. **Director Routing** - Director forwards processed data to targets
+
+### Pipeline Assignment
+
+Pipelines are assigned per log type in the <gui>Data Configuration</gui> tab. Navigate to the device detail view, open the <gui>Data Configuration</gui> tab, and click <gui>Manage</gui>. Select a pipeline for each log type and click <gui>Save Changes</gui>.
+
+Pipelines assigned to Agents use the same syntax as Director pipelines, and all processor types are available for Agent execution. Configuration is managed centrally through the Director interface, with changes synchronizing automatically to connected Agents.
+
+### Use Cases
+
+**High-Volume Log Filtering:** Filter non-essential logs at the collection point to reduce network bandwidth consumption. This distributes the processing load across Agents and improves Director scalability.
+
+**Distributed Processing:** Process data locally in remote offices to minimize central Director processing load. This approach supports intermittent connectivity scenarios and optimizes infrastructure costs.
+
+### Pipeline Distribution Guidelines
+
+Distribute processing between Agents and Directors based on operation type:
+
+| Operation Type | Execute On | Reason |
+|:---------------|:-----------|:-------|
+| Filtering, sampling, field removal | Agent | Reduces network bandwidth |
+| GeoIP lookups, threat intelligence | Director | Requires external resources |
+| Lightweight transformations | Agent | Edge processing efficiency |
+| Computationally intensive operations | Director | Better resource availability |
+
+:::tip
+Configure pipelines centrally through the Director interface. Changes synchronize automatically to Agents via hot configuration reload.
+:::
+
+## Troubleshooting
+
+### Connection Issues
+
+**Agent Not Connecting:**
+- Verify network connectivity between endpoint and Director
+- Check firewall rules allow outbound connections
+- Confirm the token has not expired
+- Verify Director/Cluster is running and accessible
+
+**Connection Drops:**
+- Agent buffers data locally during connectivity interruptions
+- Data transmits automatically when connection restores
+- Check network stability and latency
+
+**Authentication Failures:**
+- Verify token is valid and not expired
+- Confirm token is assigned to correct Director/Cluster
+- Regenerate token if necessary
+
+### Agentless Connection Issues
+
+**WinRM Connection Failed (Windows):**
+- Verify WinRM service is running on target
+- Check port 5985 is accessible
+- Confirm credentials have required permissions
+- For domain auth, verify domain trust relationships
+
+**SSH Connection Failed (Linux):**
+- Verify SSH service is running on target
+- Check port 22 is accessible
+- Confirm username/password or key authentication
+- Verify user has required permissions for log access
+
+### Advanced Troubleshooting
+
+For detailed Agent diagnostics and CLI operations, see the <Topic id="appendix-cli-agent">Agent CLI Reference</Topic>.

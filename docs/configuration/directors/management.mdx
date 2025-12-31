@@ -49,55 +49,50 @@ Each Director row provides an **Actions menu** (⋮) with the following operatio
 
 The Director creation process guides you through a 3-step wizard with validation and connection verification.
 
-### Setup
+:::info
+Directors are always created as standalone instances. To create a clustered deployment for high availability, first create Directors using this wizard, then group them using the **Clusters** tab. See [Clusters](#clusters) section below.
+:::
 
-**Director Configuration:**
+### Step 1: Director Setup
 
-1. **Director Name**
-   - Enter unique identifier for the Director
-   - Minimum length: 3 characters
-   - Maximum length: 64 characters
-   - Used for identification across the platform
+**Director Name:**
 
-2. **Installation Type Selection**
+Enter a unique identifier for the Director (3-64 characters). This name is used for identification across the platform.
 
-   Choose Director architecture using radio tiles:
+**Mode Selection:**
 
-   **Standalone:**
-   - Single Director instance
-   - Simplified management
-   - Suitable for most deployments
-   - Quick setup process
+Select the management approach using radio tiles:
 
-   **Cluster:**
+- **Managed** - VirtualMetric manages Director infrastructure with automated updates, proactive monitoring, and reduced operational overhead
+- **Self-Managed** - User controls Director deployment with manual updates, custom security configurations, and full infrastructure control
 
-   :::info
-   Cluster installation type is coming soon and will provide high availability with load balancing capabilities.
-   :::
+### Step 2: Access Management
 
-   - Multiple Director instances
-   - High availability
-   - Load balancing capabilities
-   - Enterprise-grade reliability
+Configure optional access controls for the Director.
 
-3. **Mode Selection**
+**Access Tokens:**
 
-   Select management approach for the Director:
+- **Enable Access Tokens** - Toggle to require token authentication
+- **Token Name** - Identifier for the token
+- **Token Value** - Auto-generated when token is created (use copy button to copy)
+- **Expiration** - Token validity period (default: 3 months):
+  - 1 month
+  - 3 months
+  - 1 year
+  - Unlimited
 
-   **Managed:**
-   - VirtualMetric manages Director infrastructure
-   - Automated updates and maintenance
-   - Proactive monitoring and support
-   - Reduced operational overhead
+**Access Restriction:**
 
-   **Self-Managed:**
-   - User controls Director deployment
-   - Manual update management
-   - Custom security configurations
-   - Full infrastructure control
-   - Standard deployment option
+Restrict which IP addresses can connect to the Director:
 
-### Connect
+- **Enable Access Restriction** - Toggle to enable IP filtering
+- **Restriction Type**:
+  - **Single Block** - Single IP address
+  - **Range** - IP address range (start-end)
+  - **CIDR** - CIDR notation (e.g., 10.0.0.0/8)
+- **Sources** - List of allowed IP addresses/ranges
+
+### Step 3: Connect Director
 
 **Installation Command Display:**
 
@@ -137,31 +132,26 @@ After running the installation script, verify Director connectivity:
 ### Navigation
 
 **Progress Indicator:**
-- Visual step progress at top of wizard
-- Click steps to navigate (forward only after validation)
-- Current step highlighted
-- Completed steps marked with checkmark
-- Invalid steps marked with error indicator
+
+The wizard displays a 3-step progress indicator (Director Setup → Access Management → Connect Director). Click completed steps to navigate back. Invalid steps are marked with an error indicator.
 
 **Navigation Buttons:**
-- <gui>Cancel</gui>/<gui>Connect Later</gui> - Exit wizard (label changes on final step)
-- <gui>Create Director</gui> - Advance to next step with validation
-- <gui>Complete Setup</gui> - Finalize Director creation (final step)
+- <gui>Cancel</gui> - Exit wizard (changes to <gui>Connect Later</gui> on final step)
+- <gui>Next</gui> - Advance to next step with validation
+- <gui>Create Director</gui> - Submit Director configuration and proceed to connection (from Step 2)
+- <gui>Complete Setup</gui> - Finalize Director creation (final step, enabled after successful connection)
 
 ## Detail View
 
-Clicking a Director from the overview table opens the detailed management interface with three tabbed panels.
+Clicking a Director from the overview table opens the detailed management interface with four tabbed panels.
 
-### Details Tab
-
-**Director Information:**
+### Director Details Tab
 
 View and edit Director configuration through editable tiles:
 
 **General Information:**
 - **Director Name** - Editable unique identifier
 - **Mode** - Management type (Managed or Self-Managed)
-- **Installation Type** - Architecture (Standalone or Cluster)
 - **Status** - Current operational state
 - **Connection Status** - Real-time connectivity indicator
 
@@ -193,6 +183,19 @@ Access installation and reinstallation resources:
 - Use when Director needs redeployment
 - Maintains configuration and settings
 - Preserves Director identity and connections
+
+### Access Management Tab
+
+View and edit access controls for the Director.
+
+**Access Tokens:**
+- List of configured tokens with expiration dates
+- Create new tokens or revoke existing tokens
+- Copy token values to clipboard
+
+**Access Restriction:**
+- Current restriction status and configured sources
+- Edit to add, remove, or modify IP restrictions
 
 ### Activity Logs Tab
 
@@ -301,76 +304,11 @@ Directors with connected devices or agents cannot be deleted. The error modal li
 3. Reassign agents to different Director or delete
 4. Retry Director deletion after dependencies removed
 
-## Agent Pre-Processing Management
+## Agent Pre-Processing
 
-Directors can configure Agents to perform pipeline-based pre-processing of logs before transmission. This distributed processing model reduces Director workload and enables edge-based data transformation.
+Directors can configure Agents to perform pipeline-based pre-processing of logs before transmission. This distributed processing model reduces Director workload, decreases network bandwidth consumption, and enables edge-based data transformation such as compliance masking.
 
-### Architecture
-
-**Processing Flow with Agent Pre-Processing:**
-
-1. **Agent Collection** - Agent collects logs locally at endpoint
-2. **Agent Processing** - Agent executes configured pipeline transformations
-3. **Agent Transmission** - Agent sends pre-processed data to Director
-4. **Director Routing** - Director forwards data to targets (optional additional processing)
-
-**Processing Flow without Agent Pre-Processing:**
-
-1. **Agent Collection** - Agent collects logs locally at endpoint
-2. **Agent Transmission** - Agent sends raw data to Director
-3. **Director Processing** - Director executes pipeline transformations
-4. **Director Routing** - Director forwards processed data to targets
-
-### Configuration
-
-Agent pre-processing is configured through device settings in the Director interface:
-
-**Configuration Location:**
-- Navigate to **Home** > **Fleet Management** > **Devices**
-- Select the Agent device to configure
-- Assign pipeline to device configuration
-- Pipeline executes on Agent before data transmission
-
-**Pipeline Assignment:**
-- Same pipeline syntax as Director pipelines
-- All processor types available for Agent execution
-- Configuration managed centrally through Director
-- Changes synchronized automatically to Agents
-
-### Pre-Processing Use Cases
-
-**High-Volume Log Filtering:**
-- Filter non-essential logs at collection point
-- Reduce network bandwidth consumption
-- Distribute processing load across Agents
-- Improve Director scalability
-
-**Edge-Based Compliance:**
-- Mask sensitive data (PII, credentials) at source
-- Apply regulatory transformations before transmission
-- Ensure compliance before data leaves endpoint
-- Support data sovereignty requirements
-
-**Distributed Processing:**
-- Process data locally in remote offices
-- Minimize central Director processing load
-- Support intermittent connectivity scenarios
-- Optimize infrastructure costs
-
-### Pipeline Distribution
-
-Distribute processing between Agents and Directors based on operation type:
-
-| Operation Type | Execute On | Reason |
-|----------------|------------|--------|
-| Filtering, sampling, field removal | Agent | Reduces network bandwidth |
-| GeoIP lookups, threat intelligence | Director | Requires external resources |
-| Lightweight transformations | Agent | Edge processing efficiency |
-| Computationally intensive operations | Director | Better resource availability |
-
-:::tip
-Configure pipelines centrally through the Director interface. Changes synchronize automatically to Agents via hot configuration reload.
-:::
+For complete Agent documentation including deployment, management, pipeline assignment, and troubleshooting, see <Topic id="devices-agents">Devices: Agents</Topic>.
 
 ## Notifications
 
@@ -383,3 +321,203 @@ Success messages auto-dismiss after 10 seconds. These include confirmations for 
 ### Errors
 
 Error notifications persist until manually dismissed. These include failures for enable, disable, delete operations, and configuration download errors. Review error details and take corrective action before dismissing.
+
+## Clusters
+
+Clusters group multiple Directors together for high availability. When one Director fails, the remaining Directors automatically take over its workload. <Topic id="devices-agents">Agents</Topic> and Devices connect to the cluster as a whole, ensuring continuous operation as long as at least one Director remains healthy.
+
+:::warning[Permanent Assignment]
+Once a Director is added to a cluster, it cannot be individually modified, updated, or removed. All configuration changes must be made at the cluster level. The only way to release a Director from a cluster is to delete the entire cluster, after which the Director returns to standalone status.
+:::
+
+### Access
+
+The Directors page displays two tabs: **Directors** and **Clusters**. Click the **Clusters** tab to manage cluster configurations. The Clusters tab requires CLUSTER_READ permission.
+
+### Overview
+
+The Clusters table displays all configured clusters with the following columns:
+
+| Column | Description |
+|:-------|:------------|
+| Name | Cluster identifier |
+| Type | Management type (Managed or Self-Managed) |
+| Status | Operational state (Enabled/Disabled) |
+| Directors | Count showing healthy vs total (e.g., "2 up 1 down") |
+| Actions | Menu for cluster operations |
+
+**Table Controls:**
+
+Filter clusters using **Search clusters** (by name) and **Status** dropdown (All, Enabled, Disabled). The <gui>Refresh</gui> button reloads table data. Click <gui>Create cluster</gui> to launch the creation wizard (requires CLUSTER_CREATE permission).
+
+### Create Cluster Wizard
+
+The cluster creation process guides you through a 3-step wizard.
+
+#### Step 1: Cluster Details
+
+**Basic Configuration:**
+
+1. **Cluster Name** - Unique identifier for the cluster
+2. **Port** - Communication port for cluster coordination (default: 8081)
+3. **Type** - Management approach:
+   - **Managed**: VirtualMetric manages cluster infrastructure
+   - **Self-Managed**: User controls cluster deployment and configuration
+
+**Director Selection:**
+
+Select Directors to include in the cluster. Requirements:
+- Minimum 3 Directors, maximum 15
+- Must be an odd number (3, 5, 7...) for quorum
+- Directors must match cluster type (Managed or Self-Managed)
+- Only Directors with "Connected" status can be added
+- Only Directors not previously configured can be added
+
+For each Director, specify:
+- **Director** - Select from available Directors dropdown
+- **IP Address** - Auto-populated from Director configuration
+- **Port** - Communication port (auto-populated, editable)
+
+:::note
+Directors already assigned to a cluster or previously configured are not available for selection.
+:::
+
+#### Step 2: Cluster Configuration
+
+**TLS Settings:**
+
+Configure encrypted communication between cluster members:
+
+- **Enable TLS** - Toggle to enable/disable TLS encryption
+- **Certificate** - TLS certificate content (required if TLS enabled)
+- **Private Key** - TLS private key content (required if TLS enabled)
+
+#### Step 3: Access Management
+
+**Access Restriction:**
+
+Restrict which IP addresses can connect to the cluster:
+
+- **Enable Access Restriction** - Toggle to enable IP filtering
+- **Restriction Type**:
+  - **Single Block** - Single IP address
+  - **Range** - IP address range (start-end)
+  - **CIDR** - CIDR notation (e.g., 10.0.0.0/8)
+- **Sources** - List of allowed IP addresses/ranges
+
+**Access Tokens:**
+
+Create authentication tokens for Agents and Devices connecting to the cluster:
+
+- **Enable Access Tokens** - Toggle to require token authentication
+- **Token Name** - Identifier for the token
+- **Token Value** - Auto-generated when token is created (use copy button to copy)
+- **Expiration** - Token validity period (default: 3 months):
+  - 1 month
+  - 3 months
+  - 1 year
+  - Unlimited
+
+Click <gui>Add Cluster</gui> to complete cluster creation.
+
+### Detail View
+
+Clicking a cluster from the overview table opens the detailed management interface with four tabbed panels.
+
+#### Cluster Details Tab
+
+View cluster configuration and Director membership:
+
+**Cluster Information:**
+- **Name** - Cluster identifier
+- **Type** - Managed or Self-Managed
+- **Port** - Cluster communication port
+- **Status** - Enabled or Disabled
+
+**Directors Table:**
+
+Lists all Directors in the cluster with:
+- **Name** - Director identifier
+- **IP Address** - Director network address
+- **Port** - Director communication port
+- **Status** - Connection status (Connected/Not Connected)
+
+#### Cluster Configuration Tab
+
+View and edit TLS settings:
+
+- **TLS Status** - Enabled or Disabled
+- **Certificate** - Current certificate content
+- **Private Key** - Current private key content
+
+Click <gui>Edit</gui> to modify TLS configuration.
+
+#### Access Management Tab
+
+View and edit access controls:
+
+**Access Restriction:**
+- Current restriction status and configured sources
+- Edit to add, remove, or modify IP restrictions
+
+**Access Tokens:**
+- List of configured tokens with expiration dates
+- Create new tokens or revoke existing tokens
+
+#### Cluster Activity Logs Tab
+
+Track cluster operations and lifecycle events:
+
+| Column | Description |
+|:-------|:------------|
+| User | Email of user who performed action |
+| User IP | IP address from which action was performed |
+| Object Type | Always "Cluster" for this view |
+| Object | Name of affected cluster |
+| Action | Operation performed |
+| Action Description | Detailed description |
+| Created At | Timestamp of action |
+
+**Action Types:**
+- CreatedCluster - New cluster created
+- UpdatedCluster - Cluster configuration modified
+- DeletedCluster - Cluster removed
+
+### Cluster Operations
+
+#### Enable / Disable
+
+To change cluster status:
+
+1. Navigate to cluster detail view or use Actions menu from overview
+2. Click **Actions** menu
+3. Select <gui>Enable Cluster</gui> or <gui>Disable Cluster</gui>
+4. Confirmation notification confirms status change
+
+Disabling a cluster also disables all member Directors. Re-enabling restores previous Director states.
+
+#### Download Config
+
+**For Self-Managed Clusters:**
+
+Download the cluster configuration file:
+
+1. Navigate to cluster detail view
+2. Click **Actions** menu
+3. Select <gui>Download Config</gui>
+4. Deploy downloaded configuration to each Director in the cluster
+
+#### Delete
+
+**Delete Cluster Process:**
+
+1. Navigate to cluster detail view or use Actions menu
+2. Click **Actions** menu
+3. Select <gui>Delete Cluster</gui>
+4. Confirm deletion in modal dialog
+
+:::warning
+Clusters with assigned Devices cannot be deleted. Reassign or remove all Devices from cluster Directors before deletion.
+:::
+
+Deleting a cluster also removes all Director associations. The Directors themselves are not deleted but return to standalone status.

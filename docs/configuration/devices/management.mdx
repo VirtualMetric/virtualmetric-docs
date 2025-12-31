@@ -162,9 +162,11 @@ Agent installation or agentless connection configuration (varies by deployment t
 **For Agentless Deployment:**
 - **IP Address** - Target server address
 - **Port** - WinRM or SSH connection port
-- **Authentication** - Username/password or Active Directory
-- **Username / Password** - Credentials for remote access
-- **Domain** - Windows domain for Active Directory authentication
+- **Timeout** - Connection timeout in seconds (default: 30)
+- **Username** - Authentication username
+- **Password** - Authentication password (or use SSH Key for Linux)
+- **SSH Key** - Private key content and optional passphrase (Linux only, replaces password)
+- **Domain** - Windows domain for Active Directory authentication (optional)
 - **Connection Verification** - Test remote connection before proceeding
 
 ### Review and Configure
@@ -267,18 +269,18 @@ Pull devices (Windows, Linux, Azure) have different tab structures based on depl
 - **Edit Mode** - Modify device settings
 - **Save/Cancel** - Commit or discard changes
 
-**Access Configuration Tab** (Agentless only):
-- **IP Address** - Target server address
-- **Port** - Connection port
-- **Authentication** - Username/password or Active Directory
-- **Domain** - Windows domain for authentication
+**Access Configuration Tab:**
+- **For Agent devices** - Token assignment; view current token or change to a different valid token
+- **For Agentless devices** - Remote connection credentials (IP Address, Port, Username, Password/SSH Key, Domain)
 - **Edit Mode** - Modify access settings
 
 **Agent Deployment Tab** (Agent-based only):
-- **Installation Command** - Platform-specific script
-- **Copy Button** - One-click copy to clipboard
-- **Connection Status** - Real-time Agent connection state
-- **Agent Information** - Version, last connected time
+- **Deployment Type** - Agent or Agentless indicator
+- **Token** - Authentication token in use
+- **Connection Status** - Connected or Not Connected
+- **Connection History** - Link to activity logs
+- **Installation Command** - Platform-specific script with copy button
+- **Re-Install Agent** - Click to reinstall; select token, copy new installation script, verify connection
 
 **Data Configuration Tab:**
 
@@ -539,6 +541,10 @@ If device has active dependencies, error modal displays:
 1. Note listed routes
 2. Edit routes to use different device or delete routes
 3. Retry device deletion after dependencies removed
+
+:::warning
+For Windows and Linux Agent devices, deleting the device does not uninstall the Agent from the endpoint. Use the Agent CLI to uninstall if needed.
+:::
 
 ## Edit Mode Workflow
 
