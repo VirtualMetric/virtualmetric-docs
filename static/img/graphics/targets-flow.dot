@@ -1,0 +1,69 @@
+digraph targetsFlow {
+   rankdir=LR
+   node [shape=box style=filled fillcolor="#f0f0f0" fontname="Calibri" fontsize=8]
+   edge [color="#666666"]
+
+   // Left: Pipeline output
+   subgraph cluster_pipeline {
+      label="Pipeline"
+      style="rounded,filled"
+      fillcolor="#e8f5e9"
+      fontname="Calibri"
+      fontsize=8
+      output [label="Output" shape=box fillcolor="#c8e6c9"]
+   }
+
+   // AWS - closest (0 o'clock)
+   subgraph cluster_aws {
+      label="AWS"
+      style="rounded,filled"
+      fillcolor="#fff8e1"
+      fontname="Calibri"
+      fontsize=7
+      s3 [label="S3" shape=folder fillcolor="#ffe0b2"]
+      cloudwatch [label="CloudWatch" shape=box fillcolor="#ffe0b2"]
+   }
+
+   // Azure - medium distance (2 o'clock)
+   subgraph cluster_azure {
+      label="Azure"
+      style="rounded,filled"
+      fillcolor="#e3f2fd"
+      fontname="Calibri"
+      fontsize=7
+      blob [label="Blob" shape=folder fillcolor="#bbdefb"]
+      sentinel [label="Sentinel" shape=box fillcolor="#bbdefb"]
+   }
+
+   // Analytics - further (4 o'clock)
+   subgraph cluster_analytics {
+      label="Analytics"
+      style="rounded,filled"
+      fillcolor="#fce4ec"
+      fontname="Calibri"
+      fontsize=7
+      splunk [label="Splunk" shape=cylinder fillcolor="#f8bbd0"]
+      elastic [label="Elastic" shape=cylinder fillcolor="#f8bbd0"]
+   }
+
+   // Messaging - furthest (6 o'clock)
+   subgraph cluster_mq {
+      label="Messaging"
+      style="rounded,filled"
+      fillcolor="#f3e5f5"
+      fontname="Calibri"
+      fontsize=7
+      kafka [label="Kafka" shape=box fillcolor="#e1bee7"]
+      file [label="File" shape=note fillcolor="#e1bee7"]
+   }
+
+   // Connections with varying minlen for arc effect
+   output -> s3 [minlen=1]
+   output -> cloudwatch [minlen=1]
+   output -> blob [minlen=2]
+   output -> sentinel [minlen=2]
+   output -> splunk [minlen=3]
+   output -> elastic [minlen=3]
+   output -> kafka [minlen=4]
+   output -> file [minlen=4]
+}
