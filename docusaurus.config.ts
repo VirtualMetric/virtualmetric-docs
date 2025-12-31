@@ -69,25 +69,7 @@ const config: Config = {
         googleTagManager: {
           containerId: 'VirtualMetric',
         },
-        blog: {
-          showReadingTime: true,
-          routeBasePath: 'release-notes',
-          blogTitle: 'Release Notes',
-          blogDescription: 'All release notes in one place',
-          blogSidebarTitle: 'All Releases',
-          blogSidebarCount: 'ALL',
-          feedOptions: {
-            type: ["rss", "atom"],
-            xslt: true,
-          },
-          onInlineTags: "warn",
-          onInlineAuthors: "warn",
-          onUntruncatedBlogPosts: "ignore",
-          exclude: [
-            '**/CLAUDE.md',
-            '**/BACKLOG.md',
-          ],
-        },
+        blog: false,
         theme: {
           customCss: "./src/css/custom.css",
         },
@@ -157,9 +139,10 @@ const config: Config = {
         //   label: "Tutorials",
         // },
         {
-          to: "/release-notes",
+          type: "docSidebar",
+          sidebarId: "releaseNotes",
+          position: "left",
           label: "Release Notes",
-          position: "left"
         },
         {
           to: "https://community.virtualmetric.com/",

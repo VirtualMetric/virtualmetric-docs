@@ -73,14 +73,6 @@ const sidebars: SidebarsConfig = {
             "configuration/directors/deployment",
             "configuration/directors/management",
             "configuration/directors/troubleshooting",
-            {
-              type: "category",
-              label: "CLI",
-              items: [
-                "configuration/directors/cli/director",
-                "configuration/directors/cli/agent",
-              ]
-            }
           ]
         },
         {
@@ -88,6 +80,7 @@ const sidebars: SidebarsConfig = {
           label: "Devices",
           items: [
             "configuration/devices/overview",
+            "configuration/devices/agents",
             "configuration/devices/management",
             "configuration/devices/azure-blob-storage",
             "configuration/devices/azure-monitor",
@@ -453,7 +446,7 @@ const sidebars: SidebarsConfig = {
       link: {
         type: "generated-index",
         title: "Appendix",
-        description: "Reference information on various topics."
+        description: "Reference information on various topics.",
       },
       items: [
         "appendix/configuration-bnf",
@@ -462,7 +455,8 @@ const sidebars: SidebarsConfig = {
           label: "File Formats",
           link: {
             type: "generated-index",
-            description: "Storage file format specifications"
+            title: "File Formats",
+            description: "Storage file format specifications",
           },
           items: [
             "appendix/file-formats/avro",
@@ -475,7 +469,8 @@ const sidebars: SidebarsConfig = {
           label: "Field Formats",
           link: {
             type: "generated-index",
-            description: "Field format specifications"
+            title: "Field Formats",
+            description: "Field format specifications",
           },
           items: [
             "appendix/field-formats/asim",
@@ -492,7 +487,8 @@ const sidebars: SidebarsConfig = {
           label: "Protocols",
           link: {
             type: "generated-index",
-            description: "Protocol specifications"
+            title: "Protocols",
+            description: "Protocol specifications",
           },
           items: [
             "appendix/protocols/estreamer",
@@ -509,10 +505,33 @@ const sidebars: SidebarsConfig = {
           ],
         },
         "appendix/windows-event-ids",
+        {
+          type: "category",
+          label: "CLI",
+          link: {
+            type: "generated-index",
+            title: "CLI",
+            description: "Command-line interface reference",
+          },
+          items: [
+            "appendix/cli/director",
+            "appendix/cli/agent",
+          ]
+        },
       ],
     },
     "glossary"
-  ],  
+  ],
+  releaseNotes: [
+    "release-notes/v1.6.3",
+    "release-notes/v1.6.2",
+    "release-notes/v1.6.1",
+    "release-notes/v1.6.0",
+    "release-notes/v1.5.1",
+    "release-notes/v1.5.0",
+    "release-notes/v1.4.0",
+    "release-notes/v1.3.0",
+  ],
 };
 
 export default sidebars;
