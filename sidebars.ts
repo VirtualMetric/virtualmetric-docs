@@ -80,6 +80,7 @@ const sidebars: SidebarsConfig = {
           label: "Devices",
           items: [
             "configuration/devices/overview",
+            "configuration/devices/agents",
             "configuration/devices/management",
             "configuration/devices/azure-blob-storage",
             "configuration/devices/azure-monitor",

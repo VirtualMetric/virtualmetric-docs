@@ -71,9 +71,9 @@ Standalone installations do not include built-in high availability or load balan
 
 ### Clustered Installation (Enterprise Feature)
 
-**Clustered** installations provide high availability and horizontal scaling capabilities through multiple Director instances working together. A cluster supports automatic load balancing, built-in failover and redundancy mechanisms, and horizontal scaling based on processing demands. Directors in a cluster share state management across nodes and distribute processing for improved performance.
+**Clusters** provide high availability by grouping multiple Directors together for automatic failover. When one Director in a cluster fails, the remaining Directors take over its workload, ensuring continuous telemetry processing. Agents and Devices connect to the cluster as a whole rather than to individual Directors, so operations continue uninterrupted as long as at least one Director remains healthy.
 
-Clustering eliminates single points of failure, improves processing capacity and throughput, and enables automatic recovery from node failures. Clusters scale dynamically based on data volume and provide enhanced monitoring and observability across all nodes.
+To create a cluster, you first deploy Directors as standalone instances, then group them through the **Clusters** tab in the Directors management interface. A cluster requires a minimum of 3 Directors, and the count must be an odd number (3, 5, 7...) to maintain quorum and prevent split-brain scenarios. Routes configured for a cluster are automatically replicated across all member Directors.
 
 :::info[Enterprise Feature]
 Clustered installations are available as part of the Enterprise subscription.
