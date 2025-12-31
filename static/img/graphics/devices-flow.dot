@@ -1,0 +1,52 @@
+digraph devicesFlow {
+   rankdir=LR
+   node [shape=box style=filled fillcolor="#f0f0f0" fontname="Calibri" fontsize=8]
+
+   // Left: Generators (data sources)
+   subgraph cluster_generators {
+      label="Generators"
+      style="rounded,filled"
+      fillcolor="#e3f2fd"
+      fontname="Calibri"
+      fontsize=8
+      firewall [label="Firewall" shape=box fillcolor="#bbdefb"]
+      server [label="Server" shape=box fillcolor="#bbdefb"]
+      cloudapp [label="Cloud App" shape=box fillcolor="#bbdefb"]
+      database [label="Database" shape=cylinder fillcolor="#bbdefb"]
+   }
+
+   // Middle: Devices
+   subgraph cluster_devices {
+      label="Devices"
+      style="rounded,filled"
+      fillcolor="#e8f5e9"
+      fontname="Calibri"
+      fontsize=8
+      syslog [label="Syslog" shape=box fillcolor="#c8e6c9"]
+      http [label="HTTP" shape=box fillcolor="#c8e6c9"]
+      kafka [label="Kafka" shape=box fillcolor="#c8e6c9"]
+      snmp [label="SNMP" shape=box fillcolor="#c8e6c9"]
+   }
+
+   // Right: Pipeline handoff
+   subgraph cluster_pipeline {
+      label="Pipeline"
+      style="rounded,filled"
+      fillcolor="#fff3e0"
+      fontname="Calibri"
+      fontsize=8
+      process [label="Process" shape=box fillcolor="#ffe0b2"]
+   }
+
+   // Connections from generators to devices
+   firewall -> syslog
+   server -> http
+   cloudapp -> http
+   database -> kafka
+
+   // Connections from devices to pipeline
+   syslog -> process
+   http -> process
+   kafka -> process
+   snmp -> process
+}
