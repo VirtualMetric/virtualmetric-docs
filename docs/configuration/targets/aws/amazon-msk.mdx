@@ -11,7 +11,7 @@ Creates a target that writes log messages to AWS Managed Streaming for Apache Ka
 ```yaml {1,3}
 - name: <string>
   description: <string>
-  type: awsmsk
+  type: amazonmsk
   pipelines: <pipeline[]>
   status: <boolean>
   properties:
@@ -63,7 +63,7 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|Y|-|MSK broker bootstrap server address (e.g., `b-1.mycluster.abc123.kafka.us-east-1.awsaws.com`)|
+|`address`|Y|-|MSK broker bootstrap server address (e.g., `b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com`)|
 |`port`|N|`9092`|MSK broker port (9092 for plaintext, 9094 for SASL/SCRAM, 9098 for IAM)|
 |`client_id`|N|-|Client identifier for connection tracking|
 |`topic`|Y|-|Kafka topic name for message delivery|
@@ -163,7 +163,7 @@ Amazon MSK supports multiple authentication methods:
 
 MSK cluster bootstrap servers are available in the Amazon MSK Console. The address format is typically:
 ```
-b-1.clustername.xxxxxx.kafka.region.awsaws.com
+b-1.clustername.xxxxxx.kafka.region.amazonaws.com
 ```
 
 For multi-broker clusters, you can use any broker from the bootstrap server list.
@@ -209,7 +209,7 @@ targets:
   - name: basic_msk
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9092
       topic: "application-logs"
       algorithm: "none"
@@ -224,7 +224,7 @@ targets:
   - name: msk_sasl
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9094
       topic: "authenticated-logs"
       algorithm: "scram-sha-512"
@@ -243,7 +243,7 @@ targets:
   - name: msk_scram256
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9094
       topic: "secure-logs"
       algorithm: "scram-sha-256"
@@ -263,7 +263,7 @@ targets:
   - name: msk_iam
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9098
       topic: "iam-logs"
       algorithm: "none"
@@ -284,7 +284,7 @@ targets:
   - name: compressed_msk
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9094
       topic: "compressed-logs"
       algorithm: "scram-sha-256"
@@ -304,7 +304,7 @@ targets:
   - name: high_throughput_msk
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9094
       topic: "high-volume-logs"
       algorithm: "scram-sha-512"
@@ -329,7 +329,7 @@ targets:
     pipelines:
       - checkpoint
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9094
       topic: "critical-logs"
       algorithm: "scram-sha-512"
@@ -353,7 +353,7 @@ targets:
   - name: normalized_msk
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9094
       topic: "normalized-logs"
       algorithm: "scram-sha-256"
@@ -374,7 +374,7 @@ targets:
   - name: msk_serverless
     type: awsmsk
     properties:
-      address: "boot-abc123.c1.kafka-serverless.us-east-1.awsaws.com"
+      address: "boot-abc123.c1.kafka-serverless.us-east-1.amazonaws.com"
       port: 9098
       topic: "serverless-logs"
       algorithm: "none"
@@ -392,7 +392,7 @@ targets:
   - name: msk_tracked
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9094
       topic: "tracked-logs"
       client_id: "datastream-producer-01"
@@ -413,7 +413,7 @@ targets:
   - name: scheduled_msk
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9094
       topic: "scheduled-logs"
       algorithm: "scram-sha-512"
@@ -435,7 +435,7 @@ targets:
   - name: auto_topic_msk
     type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
       port: 9094
       topic: "dynamic-logs"
       algorithm: "scram-sha-256"
