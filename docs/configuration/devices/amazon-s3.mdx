@@ -1,17 +1,17 @@
 ---
-description: AWS S3 device for processing files from S3 buckets triggered by SQS notifications
+description: Amazon S3 device for processing files from S3 buckets triggered by SQS notifications
 sidebar_custom_props:
   customCategory: "Devices"
   customIcon: "☁️"
 ---
 
-# AWS S3
+# Amazon S3
 
 <span className="theme-doc-version-badge badge badge--secondary">Pull</span>
 
 ## Synopsis
 
-AWS S3 device processes files from Amazon S3 buckets using SQS event notifications. This pull-type device consumes S3 event messages from an SQS queue, downloads referenced objects from S3, and processes them through DataStream pipelines. The device supports multiple file formats including JSON, JSONL, Parquet, and compressed archives.
+Amazon S3 device processes files from Amazon S3 buckets using SQS event notifications. This pull-type device consumes S3 event messages from an SQS queue, downloads referenced objects from S3, and processes them through DataStream pipelines. The device supports multiple file formats including JSON, JSONL, Parquet, and compressed archives.
 
 ## Schema
 
@@ -53,16 +53,16 @@ AWS S3 device processes files from Amazon S3 buckets using SQS event notificatio
 |`pipelines`|N|-|Array of preprocessing pipeline references|
 |`status`|N|`true`|Boolean flag to enable/disable the device|
 
-### AWS Connection
+### Amazon Connection
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`region`|Y|-|AWS region where S3 bucket and SQS queue are located|
+|`region`|Y|-|Amazon region where S3 bucket and SQS queue are located|
 |`queue_url`|Y|-|SQS queue URL that receives S3 event notifications|
-|`access_key_id`|N|-|AWS access key ID for authentication|
-|`secret_access_key`|N|-|AWS secret access key for authentication|
-|`session_token`|N|-|AWS session token for temporary credentials|
-|`role_arn`|N|-|AWS IAM role ARN to assume for cross-account access|
+|`access_key_id`|N|-|Amazon access key ID for authentication|
+|`secret_access_key`|N|-|Amazon secret access key for authentication|
+|`session_token`|N|-|Amazon session token for temporary credentials|
+|`role_arn`|N|-|Amazon IAM role ARN to assume for cross-account access|
 
 ### File Processing
 
@@ -95,7 +95,7 @@ Avoid hardcoding `access_key_id` and `secret_access_key` in plain text. Prefer I
 
 ## Details
 
-The AWS S3 device operates as an event-driven pull-type data source that processes S3 objects based on SQS notifications. The device continuously polls an SQS queue for S3 event messages, downloads the referenced objects, and processes their contents through the telemetry pipeline.
+The Amazon S3 device operates as an event-driven pull-type data source that processes S3 objects based on SQS notifications. The device continuously polls an SQS queue for S3 event messages, downloads the referenced objects, and processes their contents through the telemetry pipeline.
 
 **Event Processing Flow**: The device receives S3 event notifications from SQS containing bucket name and object key information. For each ObjectCreated event (Put, Post, Copy, CompleteMultipartUpload), the device downloads the S3 object and processes it according to its file type. After successful processing, the SQS message is deleted to prevent reprocessing.
 
@@ -113,7 +113,7 @@ The AWS S3 device operates as an event-driven pull-type data source that process
 
 <ExampleGrid>
   <CommentCol>
-    Configuring AWS S3 device using IAM role for authentication (recommended for EC2/ECS deployments)...
+    Configuring Amazon S3 device using IAM role for authentication (recommended for EC2/ECS deployments)...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -148,7 +148,7 @@ The AWS S3 device operates as an event-driven pull-type data source that process
 
 <ExampleGrid>
   <CommentCol>
-    Using static AWS access keys for authentication with file name filtering...
+    Using static Amazon access keys for authentication with file name filtering...
   </CommentCol>
   <CodeCol>
     ```yaml
@@ -182,7 +182,7 @@ The AWS S3 device operates as an event-driven pull-type data source that process
 
 <ExampleGrid>
   <CommentCol>
-    Assuming an IAM role in a different AWS account for cross-account S3 access...
+    Assuming an IAM role in a different Amazon account for cross-account S3 access...
   </CommentCol>
   <CodeCol>
     ```yaml

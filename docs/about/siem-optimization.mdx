@@ -86,7 +86,7 @@ graph LR
     Optimized --> Schema([Multi-Schema Transform])
     
     Schema --> ASIM[ASIM - Microsoft Sentinel]
-    Schema --> OCSF[OCSF - AWS Security Lake]
+    Schema --> OCSF[OCSF - Amazon Security Lake]
     Schema --> ECS[ECS - Elasticsearch]
     Schema --> CIM[CIM - Splunk]
     Schema --> UDM[UDM - Google SecOps]
@@ -311,7 +311,7 @@ Note that aggregation introduces latency equal to the aggregation window, making
 
 **DataStream** provides a sophisticated correlation ID system that enables cost-effective long-term storage while maintaining the ability to retrieve complete original logs when needed. The system appends a unique correlation ID to each event before optimization, creating a permanent link between the optimized data in active SIEM platforms and complete raw data in archival storage.
 
-This architecture allows organizations to send full, unoptimized logs to low-cost storage tiers like Azure Blob Storage, AWS S3, Azure Data Explorer, Google BigQuery, or Microsoft Sentinel data lake, while sending optimized, field-reduced logs to expensive active SIEM platforms. Security analysts work with optimized data for day-to-day operations but can retrieve complete original logs for forensic investigations using the correlation ID.
+This architecture allows organizations to send full, unoptimized logs to low-cost storage tiers like Azure Blob Storage, Amazon S3, Azure Data Explorer, Google BigQuery, or Microsoft Sentinel data lake, while sending optimized, field-reduced logs to expensive active SIEM platforms. Security analysts work with optimized data for day-to-day operations but can retrieve complete original logs for forensic investigations using the correlation ID.
 
 ```mermaid
 graph TD
@@ -322,7 +322,7 @@ graph TD
     Split -->|Full Raw Data| Archive[Archival Storage]
     Split -->|Optimized Data| SIEM[Active SIEM]
     
-    Archive --> Blob[Azure Blob / AWS S3]
+    Archive --> Blob[Azure Blob / Amazon S3]
     Archive --> Lake[Sentinel Data Lake]
     Archive --> ADX[Azure Data Explorer]
     Archive --> BQ[Google BigQuery]

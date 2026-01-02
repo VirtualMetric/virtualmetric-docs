@@ -5,7 +5,7 @@ pagination_next: null
 
 # OCSF
 
-The Open Cybersecurity Schema Framework (OCSF) is an open standard for security event data that provides a vendor-agnostic way to normalize security logs across different sources. OCSF provides standardization for security-focused log data, enabling seamless integration with AWS Security Lake and other security analytics platforms.
+The Open Cybersecurity Schema Framework (OCSF) is an open standard for security event data that provides a vendor-agnostic way to normalize security logs across different sources. OCSF provides standardization for security-focused log data, enabling seamless integration with Amazon Security Lake and other security analytics platforms.
 
 OCSF organizes security events into classes, each representing a specific type of security activity. When using `field_format: "ocsf"`, VirtualMetric automatically transforms your security data into OCSF-compliant format based on the event type.
 
@@ -103,26 +103,26 @@ targets:
       field_format: "ocsf"
 ```
 
-When using the VirtualMetric AWS Security Lake Pack, OCSF normalization is handled automatically through the `aws_lake` pipeline. The pack intelligently routes events to the appropriate OCSF schema class based on the source data type and vendor.
+When using the VirtualMetric Amazon Security Lake Pack, OCSF normalization is handled automatically through the `aws_lake` pipeline. The pack intelligently routes events to the appropriate OCSF schema class based on the source data type and vendor.
 
-## Integration with AWS Security Lake
+## Integration with Amazon Security Lake
 
-OCSF is the native schema format for AWS Security Lake. When sending data to AWS Security Lake, you must:
+OCSF is the native schema format for Amazon Security Lake. When sending data to Amazon Security Lake, you must:
 
 1. Enable OCSF field formatting (handled automatically by the `aws_lake` pipeline)
 2. Specify the appropriate OCSF schema identifier for each bucket
 3. Ensure data is in Parquet format (handled automatically by the `awssecuritylake` target)
 
-## VirtualMetric AWS Security Lake Pack
+## VirtualMetric Amazon Security Lake Pack
 
-The VirtualMetric AWS Security Lake Pack provides comprehensive OCSF normalization for diverse security data sources:
+The VirtualMetric Amazon Security Lake Pack provides comprehensive OCSF normalization for diverse security data sources:
 
 - **Syslog messages** (native, CEF, LEEF formats) are automatically converted to OCSF
 - **Windows Security Events** are transformed from ECS through ASIM to OCSF
 - **Firewall logs** from major vendors (Fortinet, Palo Alto Networks, Check Point, Cisco ASA, SonicWall, WatchGuard, Cisco Meraki) are normalized to OCSF
 - **Windows DNS logs** are converted to OCSF DNS Activity format
 
-The pack handles multi-stage transformations, preserving vendor-specific context while ensuring OCSF compliance for AWS Security Lake ingestion.
+The pack handles multi-stage transformations, preserving vendor-specific context while ensuring OCSF compliance for Amazon Security Lake ingestion.
 
 ## Example Configuration
 

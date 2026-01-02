@@ -1,10 +1,10 @@
 # Amazon OpenSearch
 
-<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Search & Analytics</span>
+<span className="theme-doc-version-badge badge badge--secondary">Amazon</span><span className="theme-doc-version-badge badge badge--secondary">Search & Analytics</span>
 
 ## Synopsis
 
-Creates an Amazon OpenSearch target that sends data using the Bulk API with AWS IAM authentication. Supports multiple endpoints, field normalization, customizable batch sizing, and automatic load balancing across OpenSearch nodes.
+Creates an Amazon OpenSearch target that sends data using the Bulk API with Amazon IAM authentication. Supports multiple endpoints, field normalization, customizable batch sizing, and automatic load balancing across OpenSearch nodes.
 
 ## Schema
 
@@ -75,15 +75,15 @@ The following are the fields used to define the target:
 |Field|Required|Default|Description|
 |---|---|---|---|
 |`endpoint`|Y|-|OpenSearch domain URL (automatically appends `/_bulk` if not present)|
-|`use_iam`|N|`true`|Use AWS IAM authentication (recommended)|
-|`region`|Y*|-|AWS region for IAM authentication|
-|`key`|N*|-|AWS access key ID|
-|`secret`|N*|-|AWS secret access key|
-|`session`|N|-|AWS session token for temporary credentials|
+|`use_iam`|N|`true`|Use Amazon IAM authentication (recommended)|
+|`region`|Y*|-|Amazon region for IAM authentication|
+|`key`|N*|-|Amazon access key ID|
+|`secret`|N*|-|Amazon secret access key|
+|`session`|N|-|Amazon session token for temporary credentials|
 |`username`|N|-|Basic auth username (alternative to IAM)|
 |`password`|N|-|Basic auth password (alternative to IAM)|
 
-\* = Required when `use_iam` is `true`. If `key` and `secret` are not provided, the target will use the default AWS credential chain (environment variables, IAM role, etc.).
+\* = Required when `use_iam` is `true`. If `key` and `secret` are not provided, the target will use the default Amazon credential chain (environment variables, IAM role, etc.).
 
 ### Scheduler
 
@@ -101,7 +101,7 @@ The following are the fields used to define the target:
 
 ## Details
 
-The target supports AWS IAM authentication using Signature V4, multiple endpoints, compression, and ingest pipelines. Data is batched for efficient delivery and can be automatically routed to different indices.
+The target supports Amazon IAM authentication using Signature V4, multiple endpoints, compression, and ingest pipelines. Data is batched for efficient delivery and can be automatically routed to different indices.
 
 URLs are automatically appended with `/_bulk` if the suffix is not present. Events are batched until either the batch size or payload size limit is reached.
 
@@ -117,14 +117,14 @@ Long timeout values may lead to connection pooling issues and increased resource
 Setting `max_payload_size_kb` too high might cause memory pressure and can exceed OpenSearch's `http.max_content_length` setting (default 100MB).
 :::
 
-### AWS IAM Authentication
+### Amazon IAM Authentication
 
 Amazon OpenSearch Service supports two authentication methods:
 
 **IAM Authentication** (recommended)
-- Uses AWS Signature V4 to sign HTTP requests
+- Uses Amazon Signature V4 to sign HTTP requests
 - No passwords stored in configuration
-- Integrates with AWS IAM policies and roles
+- Integrates with Amazon IAM policies and roles
 - Supports temporary credentials from STS
 - Default authentication method for this target
 
@@ -133,11 +133,11 @@ Amazon OpenSearch Service supports two authentication methods:
 - Requires fine-grained access control enabled on the domain
 - Less secure than IAM authentication
 
-When `use_iam` is `true`, the target signs all HTTP requests with AWS Signature V4. The signing process uses the service name `es` as required by Amazon OpenSearch Service.
+When `use_iam` is `true`, the target signs all HTTP requests with Amazon Signature V4. The signing process uses the service name `es` as required by Amazon OpenSearch Service.
 
-### AWS Credential Chain
+### Amazon Credential Chain
 
-If `key` and `secret` are not provided in the endpoint configuration, the target uses the AWS SDK default credential chain:
+If `key` and `secret` are not provided in the endpoint configuration, the target uses the Amazon SDK default credential chain:
 
 1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
 2. Shared credentials file (`~/.aws/credentials`)
@@ -145,7 +145,7 @@ If `key` and `secret` are not provided in the endpoint configuration, the target
 4. IAM role for ECS tasks
 5. IAM role for Lambda functions
 
-This allows seamless integration when running on AWS infrastructure without hardcoding credentials.
+This allows seamless integration when running on Amazon infrastructure without hardcoding credentials.
 
 ### Load Balancing and Failover
 
@@ -495,7 +495,7 @@ The default `filter_path` provides detailed error information while minimizing r
 ### IAM Authentication Errors
 
 If you encounter IAM authentication errors:
-- Verify AWS credentials are valid and not expired
+- Verify Amazon credentials are valid and not expired
 - Check IAM policy allows `es:ESHttpPost` and `es:ESHttpPut` actions
 - Ensure the region matches your OpenSearch domain region
 - For temporary credentials, verify the session token is included
@@ -532,7 +532,7 @@ If some endpoints fail but delivery succeeds, check logs for partial failure err
 
 If all endpoints fail:
 - Verify network connectivity to OpenSearch domains
-- Check OpenSearch cluster health in AWS Console
+- Check OpenSearch cluster health in Amazon Console
 - Ensure security groups allow traffic from your source
 - Review OpenSearch domain logs for errors
 - Verify IAM permissions for the credentials being used
