@@ -1,0 +1,363 @@
+---
+description: AWS Security Lake device for consuming OCSF-formatted Parquet files from Amazon Security Lake via SQS notifications
+sidebar_custom_props:
+  customCategory: "Devices"
+  customIcon: "☁️"
+---
+
+# AWS Security Lake
+
+## Synopsis
+
+AWS Security Lake device consumes OCSF (Open Cybersecurity Schema Framework) formatted Parquet files from Amazon Security Lake. The device monitors an SQS queue for S3 event notifications, downloads Parquet files from the Security Lake S3 bucket, validates OCSF schema compliance, and processes security events through DataStream pipelines.
+
+## Schema
+
+```yaml {1,2,4}
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: awssecuritylake
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    region: <string>
+    queue_url: <string>
+    access_key_id: <string>
+    secret_access_key: <string>
+    session_token: <string>
+    role_arn: <string>
+    external_id: <string>
+    role_session_timeout: <numeric>
+    timeout: <numeric>
+    validate_ocsf: <boolean>
+    file_name_filter: <string>
+    sqs_max_messages: <numeric>
+    sqs_visibility_timeout: <numeric>
+    sqs_wait_time_seconds: <numeric>
+```
+
+## Configuration
+
+### Device
+
+|Field|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`id`|numeric|Y|-|Unique numeric identifier|
+|`name`|string|Y|-|Device name|
+|`description`|string|N|-|Optional description of the device's purpose|
+|`type`|string|Y|-|Device type identifier (must be `awssecuritylake`)|
+|`tags`|string[]|N|-|Array of labels for categorization|
+|`pipelines`|pipeline[]|N|-|Array of preprocessing pipeline references|
+|`status`|boolean|N|`true`|Boolean flag to enable/disable the device|
+
+### Connection
+
+|Field|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`region`|string|Y|-|AWS region where Security Lake and SQS queue reside|
+|`queue_url`|string|Y|-|SQS queue URL for S3 event notifications|
+|`access_key_id`|string|Y*|-|AWS access key ID for authentication|
+|`secret_access_key`|string|Y*|-|AWS secret access key for authentication|
+|`session_token`|string|N|-|AWS session token for temporary credentials|
+|`role_arn`|string|N|-|ARN of IAM role to assume for cross-account access|
+|`external_id`|string|N|-|External ID for IAM role assumption|
+|`role_session_timeout`|numeric|N|`3600`|Role session timeout in seconds|
+
+\* = Conditionally required (see authentication methods below)
+
+:::note Authentication Methods
+Choose either static credentials OR IAM role assumption:
+- **Static Credentials**: Requires `access_key_id` and `secret_access_key`
+- **IAM Role**: Requires `role_arn` with optional `external_id` for cross-account access
+- **Session Token**: Optional for temporary credentials with both methods
+:::
+
+:::caution Secrets Management
+Avoid hardcoding `secret_access_key` in plain text. Prefer environment variables, AWS Secrets Manager, or IAM roles for production deployments. Follow AWS least-privilege security principles.
+:::
+
+### Processing
+
+|Field|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`timeout`|numeric|N|`10`|Interval in seconds between SQS queue polling cycles (1-10)|
+|`validate_ocsf`|boolean|N|`true`|Validate OCSF schema compliance for Parquet records|
+|`file_name_filter`|string|N|`".*"`|Regular expression to filter S3 object keys for processing|
+
+### SQS Configuration
+
+|Field|Type|Required|Default|Description|
+|---|---|---|---|---|
+|`sqs_max_messages`|numeric|N|`10`|Maximum messages per SQS receive call (1-10)|
+|`sqs_visibility_timeout`|numeric|N|`300`|Message visibility timeout in seconds (0-43200)|
+|`sqs_wait_time_seconds`|numeric|N|`20`|Long polling wait time in seconds (0-20)|
+
+:::note SQS Constraints
+AWS enforces strict SQS parameter limits. Values outside allowed ranges are automatically clamped to boundaries.
+:::
+
+## Details
+
+The AWS Security Lake device implements a pull-type consumer pattern that integrates with Amazon Security Lake's S3-backed architecture. Security Lake stores normalized security data in OCSF format as Parquet files, and publishes S3 ObjectCreated events to an SQS queue. The device polls this queue, downloads referenced Parquet files, and ingests OCSF events into DataStream.
+
+**OCSF Schema Validation**: When enabled, the device validates each Parquet record against OCSF schema requirements. Invalid records generate warnings but do not halt file processing. Disable validation for performance-critical scenarios or when processing pre-validated data.
+
+**File Name Filtering**: The regex filter applies to S3 object keys, enabling selective processing based on event class, source, or time range. For example, use `.*eventclass=1001.*` to process only Network Activity events. Filter mismatches are logged at debug level and do not consume SQS message retry attempts.
+
+**Error Handling and Retries**: The device implements intelligent retry logic. Transient errors (network failures, temporary S3 unavailability) leave messages in the SQS queue for automatic retry. Permanent errors (unsupported file format, OCSF validation failure) delete messages immediately to prevent infinite retry loops. Successfully processed messages are deleted after complete file processing.
+
+**SQS Long Polling**: The default 20-second wait time enables efficient long polling, reducing empty responses and API costs. Adjust based on event arrival patterns - higher values reduce polling overhead but increase processing latency.
+
+**Cross-Account Access**: When consuming Security Lake data from a different AWS account, use IAM role assumption with `role_arn` and `external_id`. The device automatically handles temporary credential rotation based on `role_session_timeout`.
+
+**Performance Characteristics**: Parquet columnar storage enables efficient processing of large Security Lake exports. A single file may contain thousands of OCSF events. Processing errors exceeding 10 records per file trigger automatic file abandonment to prevent resource exhaustion.
+
+**Supported Event Types**: The device processes all S3 ObjectCreated event types (Put, Post, Copy, CompleteMultipartUpload) and validates Parquet file extensions (.parquet, .parq, .pq). Non-Parquet files are rejected with unsupported format errors.
+
+## Examples
+
+### Basic Static Credentials
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring AWS Security Lake device with static IAM credentials for same-account access...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 1
+      name: security-lake-basic
+      type: awssecuritylake
+      properties:
+        region: "us-east-1"
+        queue_url: "https://sqs.us-east-1.amazonaws.com/123456789012/security-lake-notifications"
+        access_key_id: "AKIAIOSFODNN7EXAMPLE"
+        secret_access_key: "${AWS_SECRET_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Device polls SQS queue every 10 seconds, downloads Parquet files, and extracts OCSF events...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metadata": {
+        "version": "1.1.0",
+        "product": {
+          "vendor_name": "AWS",
+          "name": "Security Lake"
+        }
+      },
+      "class_uid": 1001,
+      "category_uid": 1,
+      "severity_id": 1,
+      "time": 1642253400000,
+      "source_file": "securitylake/region=us-east-1/accountId=123456789012/eventDay=20240115/eventclass_1001.parquet"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Cross-Account IAM Role
+
+<ExampleGrid>
+  <CommentCol>
+    Using IAM role assumption for cross-account Security Lake access with external ID...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 2
+      name: cross-account-lake
+      type: awssecuritylake
+      properties:
+        region: "us-west-2"
+        queue_url: "https://sqs.us-west-2.amazonaws.com/987654321098/external-lake-queue"
+        access_key_id: "AKIAIOSFODNN7EXAMPLE"
+        secret_access_key: "${AWS_SECRET_KEY}"
+        role_arn: "arn:aws:iam::987654321098:role/SecurityLakeConsumerRole"
+        external_id: "unique-external-id-12345"
+        role_session_timeout: 7200
+    ```
+  </CodeCol>
+  <CommentCol>
+    Device assumes cross-account role with 2-hour session timeout for secure multi-account access...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metadata": {
+        "version": "1.1.0"
+      },
+      "class_uid": 2001,
+      "category_uid": 2,
+      "severity_id": 2,
+      "activity_id": 1,
+      "assumed_role": "arn:aws:iam::987654321098:role/SecurityLakeConsumerRole",
+      "source_account": "987654321098"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Filtered Event Class Processing
+
+<ExampleGrid>
+  <CommentCol>
+    Processing only specific OCSF event classes using file name regex filtering...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 3
+      name: network-events-only
+      type: awssecuritylake
+      properties:
+        region: "eu-west-1"
+        queue_url: "https://sqs.eu-west-1.amazonaws.com/123456789012/lake-network-events"
+        access_key_id: "AKIAIOSFODNN7EXAMPLE"
+        secret_access_key: "${AWS_SECRET_KEY}"
+        file_name_filter: ".*eventclass_(1001|1002|1003).*\\.parquet$"
+        validate_ocsf: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    Regex filter limits processing to Network Activity (1001), HTTP Activity (1002), and DNS Activity (1003) event classes...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "class_uid": 1002,
+      "class_name": "HTTP Activity",
+      "category_uid": 4,
+      "http_request": {
+        "url": {
+          "hostname": "example.com"
+        },
+        "http_method": "GET"
+      },
+      "matched_filter": "eventclass_1002"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume Optimized
+
+<ExampleGrid>
+  <CommentCol>
+    Optimizing SQS settings for high-volume Security Lake ingestion with fast polling...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 4
+      name: high-volume-lake
+      type: awssecuritylake
+      properties:
+        region: "us-east-1"
+        queue_url: "https://sqs.us-east-1.amazonaws.com/123456789012/high-volume-lake"
+        access_key_id: "AKIAIOSFODNN7EXAMPLE"
+        secret_access_key: "${AWS_SECRET_KEY}"
+        timeout: 5
+        sqs_max_messages: 10
+        sqs_visibility_timeout: 600
+        sqs_wait_time_seconds: 20
+        validate_ocsf: false
+    ```
+  </CodeCol>
+  <CommentCol>
+    Fast polling with maximum batch size and extended visibility timeout for high-throughput processing...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "batch_info": {
+        "messages_received": 10,
+        "poll_interval": 5,
+        "validation_disabled": true
+      },
+      "class_uid": 3001,
+      "severity_id": 1,
+      "processing_optimized": true
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Pipeline Integration
+
+<ExampleGrid>
+  <CommentCol>
+    Preprocessing Security Lake OCSF events with custom pipeline before routing to targets...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 5
+      name: lake-with-pipeline
+      type: awssecuritylake
+      tags:
+        - "ocsf"
+        - "security_lake"
+      pipelines:
+        - ocsf-enrichment
+        - threat-intelligence
+      properties:
+        region: "us-east-1"
+        queue_url: "https://sqs.us-east-1.amazonaws.com/123456789012/lake-pipeline"
+        access_key_id: "AKIAIOSFODNN7EXAMPLE"
+        secret_access_key: "${AWS_SECRET_KEY}"
+    ```
+  </CodeCol>
+  <CommentCol>
+    OCSF events are enriched and threat-analyzed before forwarding to SIEM targets...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "class_uid": 2001,
+      "severity_id": 3,
+      "enriched_data": {
+        "threat_score": 85,
+        "geo_location": "US",
+        "pipeline_processed": true
+      },
+      "original_source": "AWS Security Lake"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Validation Disabled Performance
+
+<ExampleGrid>
+  <CommentCol>
+    Disabling OCSF validation for maximum performance when processing pre-validated data...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - id: 6
+      name: fast-lake-processor
+      type: awssecuritylake
+      properties:
+        region: "ap-southeast-1"
+        queue_url: "https://sqs.ap-southeast-1.amazonaws.com/123456789012/fast-processing"
+        access_key_id: "AKIAIOSFODNN7EXAMPLE"
+        secret_access_key: "${AWS_SECRET_KEY}"
+        validate_ocsf: false
+        timeout: 3
+    ```
+  </CodeCol>
+  <CommentCol>
+    Skipping OCSF validation reduces processing overhead for trusted Security Lake sources...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "class_uid": 4001,
+      "severity_id": 2,
+      "validation_skipped": true,
+      "processing_latency_ms": 15,
+      "performance_mode": "high_throughput"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>

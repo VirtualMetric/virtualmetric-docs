@@ -1,0 +1,281 @@
+---
+description: Proofpoint Targeted Attack Protection log stream consumer
+sidebar_custom_props:
+  customCategory: "Devices"
+  customIcon: "🛡️"
+---
+
+# Proofpoint
+
+<span className="theme-doc-version-badge badge badge--secondary">Pull</span>
+
+## Synopsis
+
+Creates a WebSocket consumer that connects to Proofpoint's Targeted Attack Protection (TAP) log stream service and receives security event data. Supports both message and maillog data types with secure token authentication.
+
+## Schema
+
+```yaml {1,2,4,6-8}
+- id: <numeric>
+  name: <string>
+  description: <string>
+  type: proofpoint
+  tags: <string[]>
+  pipelines: <pipeline[]>
+  status: <boolean>
+  properties:
+    endpoint: <string>
+    cluster: <string>
+    token: <string>
+    type: <string>
+    secure: <boolean>
+    workers: <numeric>
+    reuse: <boolean>
+```
+
+## Configuration
+
+The following fields are used to define the device:
+
+### Device
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`id`|Y||Unique numeric identifier|
+|`name`|Y||Device name|
+|`description`|N|-|Optional description|
+|`type`|Y||Must be `proofpoint`|
+|`tags`|N|-|Array of labels for categorization|
+|`pipelines`|N|-|Array of preprocessing pipeline references|
+|`status`|N|`true`|Enable/disable the device|
+
+### Connection
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`endpoint`|Y|`"wss://logstream.proofpoint.com:443/v1/stream"`|Proofpoint WebSocket endpoint URL|
+|`cluster`|Y||Proofpoint cluster identifier|
+|`token`|Y||Authentication token for Proofpoint API|
+|`type`|Y|`"message"`|Data type to consume (`message` or `maillog`)|
+|`secure`|N|`false`|Enable token encryption in configuration|
+
+### Performance
+
+|Field|Required|Default|Description|
+|---|---|---|---|
+|`workers`|N|`1`|Number of worker processes|
+|`reuse`|N|`true`|Enable multi-worker mode|
+
+## Details
+
+### WebSocket Connection
+
+The device establishes a persistent WebSocket connection to Proofpoint's TAP log stream service. The connection URL includes query parameters for cluster ID and data type. Bearer token authentication is used in the Authorization header.
+
+### Data Types
+
+Proofpoint supports two log data types:
+
+- **message**: Security event messages including threats detected, clicks permitted/blocked, and message disposition
+- **maillog**: Mail flow logs including message routing and delivery information
+
+### Token Security
+
+When `secure` is set to `true`, the token is encrypted in the YAML configuration using the service shared key. The token is decrypted at runtime before authentication. This prevents token exposure in configuration files.
+
+### Performance Tuning
+
+The `reuse` field enables multi-worker mode for processing messages concurrently. When enabled, the specified number of `workers` processes consume data in parallel, improving throughput for high-volume log streams.
+
+### Connection Management
+
+The device handles WebSocket connection lifecycle including automatic reconnection on failure. Query parameters are encoded in the connection URL including cluster ID (`cid`) and data type (`type`).
+
+## Examples
+
+The following are commonly used configuration types.
+
+### Basic Configuration
+
+The minimum required configuration creates the consumer:
+
+<ExampleGrid>
+  <CommentCol>
+    Creating a basic Proofpoint consumer for security messages...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 1
+        name: proofpoint-tap
+        type: proofpoint
+        properties:
+          cluster: "your-cluster-id"
+          token: "your-api-token"
+          type: "message"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Device receives Proofpoint threat events in real-time...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "GUID": "abc123",
+      "threatType": "url",
+      "classification": "malware",
+      "threatUrl": "http://malicious.example.com"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### Secure Token Storage
+
+Token encryption prevents credential exposure:
+
+<ExampleGrid>
+  <CommentCol>
+    Configuring encrypted token storage...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 2
+        name: proofpoint-secure
+        type: proofpoint
+        properties:
+          cluster: "your-cluster-id"
+          token: "encrypted-token-string"
+          type: "message"
+          secure: true
+    ```
+  </CodeCol>
+  <CommentCol>
+    Token is decrypted at runtime using service shared key...
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+The token must be encrypted using the service shared key before setting `secure: true`.
+:::
+
+### Maillog Collection
+
+Mail flow logs can be consumed:
+
+<ExampleGrid>
+  <CommentCol>
+    Collecting mail routing and delivery logs...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 3
+        name: proofpoint-maillog
+        type: proofpoint
+        properties:
+          cluster: "your-cluster-id"
+          token: "your-api-token"
+          type: "maillog"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Device receives mail flow events including routing decisions...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "ts": "2025-01-02T10:30:00Z",
+      "sender": "user@example.com",
+      "recipient": "dest@company.com",
+      "action": "delivered"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### High-Volume Processing
+
+Performance can be optimized for high message rates:
+
+<ExampleGrid>
+  <CommentCol>
+    Enabling multi-worker processing for throughput...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 4
+        name: proofpoint-highvolume
+        type: proofpoint
+        properties:
+          cluster: "your-cluster-id"
+          token: "your-api-token"
+          type: "message"
+          reuse: true
+          workers: 4
+    ```
+  </CodeCol>
+  <CommentCol>
+    Four worker processes consume messages in parallel...
+  </CommentCol>
+</ExampleGrid>
+
+### Custom Endpoint
+
+Alternative Proofpoint endpoints can be configured:
+
+<ExampleGrid>
+  <CommentCol>
+    Connecting to a regional or custom endpoint...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 5
+        name: proofpoint-custom
+        type: proofpoint
+        properties:
+          endpoint: "wss://logstream-eu.proofpoint.com:443/v1/stream"
+          cluster: "eu-cluster-id"
+          token: "your-api-token"
+          type: "message"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Device connects to the specified regional endpoint...
+  </CommentCol>
+</ExampleGrid>
+
+### Pipeline Processing
+
+Threat events can be preprocessed:
+
+<ExampleGrid>
+  <CommentCol>
+    Applying custom processing to threat events...
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    devices:
+      - id: 6
+        name: proofpoint-pipeline
+        type: proofpoint
+        pipelines:
+          - threat_enrichment
+          - geo_lookup
+        properties:
+          cluster: "your-cluster-id"
+          token: "your-api-token"
+          type: "message"
+    ```
+  </CodeCol>
+  <CommentCol>
+    Pipelines enrich threat data before routing to targets...
+  </CommentCol>
+</ExampleGrid>
+
+:::note
+Pipelines are processed sequentially and can modify or drop events before ingestion.
+:::
