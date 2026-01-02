@@ -1,17 +1,17 @@
 # Amazon MSK
 
-<span className="theme-doc-version-badge badge badge--secondary">Amazon</span><span className="theme-doc-version-badge badge badge--secondary">Message Queue</span>
+<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Message Queue</span>
 
 ## Synopsis
 
-Creates a target that writes log messages to Amazon Managed Streaming for Apache Kafka (MSK) topics with support for batching, compression, and Amazon authentication methods. The target handles message delivery efficiently with configurable batch limits based on size or event count. Amazon MSK is a fully managed Apache Kafka service on Amazon.
+Creates a target that writes log messages to AWS Managed Streaming for Apache Kafka (MSK) topics with support for batching, compression, and AWS authentication methods. The target handles message delivery efficiently with configurable batch limits based on size or event count. Amazon MSK is a fully managed Apache Kafka service on AWS.
 
 ## Schema
 
 ```yaml {1,3}
 - name: <string>
   description: <string>
-  type: amazonmsk
+  type: awsmsk
   pipelines: <pipeline[]>
   status: <boolean>
   properties:
@@ -55,7 +55,7 @@ The following fields are used to define the target:
 |---|---|---|---|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `amazonmsk`|
+|`type`|Y||Must be `awsmsk`|
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
@@ -63,7 +63,7 @@ The following fields are used to define the target:
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`address`|Y|-|MSK broker bootstrap server address (e.g., `b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com`)|
+|`address`|Y|-|MSK broker bootstrap server address (e.g., `b-1.mycluster.abc123.kafka.us-east-1.awsaws.com`)|
 |`port`|N|`9092`|MSK broker port (9092 for plaintext, 9094 for SASL/SCRAM, 9098 for IAM)|
 |`client_id`|N|-|Client identifier for connection tracking|
 |`topic`|Y|-|Kafka topic name for message delivery|
@@ -79,7 +79,7 @@ The following fields are used to define the target:
 \* = Conditionally required when using SASL authentication.
 
 :::note
-For IAM authentication, use Amazon IAM roles and policies. IAM authentication is configured at the Amazon MSK cluster level and does not require username/password in the target configuration.
+For IAM authentication, use AWS IAM roles and policies. IAM authentication is configured at the Amazon MSK cluster level and does not require username/password in the target configuration.
 :::
 
 ### Producer Settings
@@ -134,7 +134,7 @@ Batches are sent when either `max_bytes` or `max_events` limit is reached, which
 
 ## Details
 
-Amazon MSK is a fully managed Apache Kafka service on Amazon. This target type allows you to connect to MSK clusters using the standard Kafka protocol.
+Amazon MSK is a fully managed Apache Kafka service on AWS. This target type allows you to connect to MSK clusters using the standard Kafka protocol.
 
 ### Authentication Methods
 
@@ -147,23 +147,23 @@ Amazon MSK supports multiple authentication methods:
 - Not recommended for production
 
 **SASL/SCRAM Authentication**
-- Username/password authentication stored in Amazon Secrets Manager
+- Username/password authentication stored in AWS Secrets Manager
 - Port: 9094
 - Supported algorithms: `scram-sha-256`, `scram-sha-512`
 - TLS encryption recommended
 
 **IAM Authentication**
-- Uses Amazon IAM roles and policies for authentication
+- Uses AWS IAM roles and policies for authentication
 - Port: 9098
-- Configured at the Amazon level, not in target configuration
-- Requires Amazon credentials configured on the DataStream host
+- Configured at the AWS level, not in target configuration
+- Requires AWS credentials configured on the DataStream host
 - TLS encryption required
 
 ### Connection Requirements
 
 MSK cluster bootstrap servers are available in the Amazon MSK Console. The address format is typically:
 ```
-b-1.clustername.xxxxxx.kafka.region.amazonaws.com
+b-1.clustername.xxxxxx.kafka.region.awsaws.com
 ```
 
 For multi-broker clusters, you can use any broker from the bootstrap server list.
@@ -207,9 +207,9 @@ The minimum configuration for an MSK target without authentication:
 ```yaml
 targets:
   - name: basic_msk
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9092
       topic: "application-logs"
       algorithm: "none"
@@ -222,9 +222,9 @@ Configuration using SASL/SCRAM-SHA-512 authentication:
 ```yaml
 targets:
   - name: msk_sasl
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9094
       topic: "authenticated-logs"
       algorithm: "scram-sha-512"
@@ -241,9 +241,9 @@ Configuration using SASL/SCRAM-SHA-256 authentication:
 ```yaml
 targets:
   - name: msk_scram256
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9094
       topic: "secure-logs"
       algorithm: "scram-sha-256"
@@ -261,9 +261,9 @@ Configuration for MSK with IAM authentication:
 ```yaml
 targets:
   - name: msk_iam
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9098
       topic: "iam-logs"
       algorithm: "none"
@@ -272,7 +272,7 @@ targets:
 ```
 
 :::note
-For IAM authentication, configure Amazon credentials on the DataStream host using environment variables, IAM role, or Amazon credentials file. The IAM policy must grant appropriate Kafka permissions.
+For IAM authentication, configure AWS credentials on the DataStream host using environment variables, IAM role, or AWS credentials file. The IAM policy must grant appropriate Kafka permissions.
 :::
 
 ### With Compression
@@ -282,9 +282,9 @@ Configuration with zstd compression:
 ```yaml
 targets:
   - name: compressed_msk
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9094
       topic: "compressed-logs"
       algorithm: "scram-sha-256"
@@ -302,9 +302,9 @@ Configuration optimized for maximum throughput:
 ```yaml
 targets:
   - name: high_throughput_msk
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9094
       topic: "high-volume-logs"
       algorithm: "scram-sha-512"
@@ -325,11 +325,11 @@ Configuration optimized for maximum durability:
 ```yaml
 targets:
   - name: reliable_msk
-    type: amazonmsk
+    type: awsmsk
     pipelines:
       - checkpoint
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9094
       topic: "critical-logs"
       algorithm: "scram-sha-512"
@@ -351,9 +351,9 @@ Using field normalization for standard format:
 ```yaml
 targets:
   - name: normalized_msk
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9094
       topic: "normalized-logs"
       algorithm: "scram-sha-256"
@@ -372,9 +372,9 @@ Configuration for MSK Serverless clusters:
 ```yaml
 targets:
   - name: msk_serverless
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "boot-abc123.c1.kafka-serverless.us-east-1.amazonaws.com"
+      address: "boot-abc123.c1.kafka-serverless.us-east-1.awsaws.com"
       port: 9098
       topic: "serverless-logs"
       algorithm: "none"
@@ -390,9 +390,9 @@ Configuration with client ID for tracking:
 ```yaml
 targets:
   - name: msk_tracked
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9094
       topic: "tracked-logs"
       client_id: "datastream-producer-01"
@@ -411,9 +411,9 @@ Configuration with scheduled batch delivery:
 ```yaml
 targets:
   - name: scheduled_msk
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9094
       topic: "scheduled-logs"
       algorithm: "scram-sha-512"
@@ -433,9 +433,9 @@ Configuration with automatic topic creation enabled:
 ```yaml
 targets:
   - name: auto_topic_msk
-    type: amazonmsk
+    type: awsmsk
     properties:
-      address: "b-1.mycluster.abc123.kafka.us-east-1.amazonaws.com"
+      address: "b-1.mycluster.abc123.kafka.us-east-1.awsaws.com"
       port: 9094
       topic: "dynamic-logs"
       algorithm: "scram-sha-256"

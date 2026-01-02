@@ -56,11 +56,11 @@ Amazon Security Lake device consumes OCSF (Open Cybersecurity Schema Framework) 
 
 |Field|Type|Required|Default|Description|
 |---|---|---|---|---|
-|`region`|string|Y|-|Amazon region where Security Lake and SQS queue reside|
+|`region`|string|Y|-|AWS region where Security Lake and SQS queue reside|
 |`queue_url`|string|Y|-|SQS queue URL for S3 event notifications|
-|`access_key_id`|string|Y*|-|Amazon access key ID for authentication|
-|`secret_access_key`|string|Y*|-|Amazon secret access key for authentication|
-|`session_token`|string|N|-|Amazon session token for temporary credentials|
+|`access_key_id`|string|Y*|-|AWS access key ID for authentication|
+|`secret_access_key`|string|Y*|-|AWS secret access key for authentication|
+|`session_token`|string|N|-|AWS session token for temporary credentials|
 |`role_arn`|string|N|-|ARN of IAM role to assume for cross-account access|
 |`external_id`|string|N|-|External ID for IAM role assumption|
 |`role_session_timeout`|numeric|N|`3600`|Role session timeout in seconds|
@@ -75,7 +75,7 @@ Choose either static credentials OR IAM role assumption:
 :::
 
 :::caution Secrets Management
-Avoid hardcoding `secret_access_key` in plain text. Prefer environment variables, Amazon Secrets Manager, or IAM roles for production deployments. Follow Amazon least-privilege security principles.
+Avoid hardcoding `secret_access_key` in plain text. Prefer environment variables, AWS Secrets Manager, or IAM roles for production deployments. Follow AWS least-privilege security principles.
 :::
 
 ### Processing
@@ -95,7 +95,7 @@ Avoid hardcoding `secret_access_key` in plain text. Prefer environment variables
 |`sqs_wait_time_seconds`|numeric|N|`20`|Long polling wait time in seconds (0-20)|
 
 :::note SQS Constraints
-Amazon enforces strict SQS parameter limits. Values outside allowed ranges are automatically clamped to boundaries.
+AWS enforces strict SQS parameter limits. Values outside allowed ranges are automatically clamped to boundaries.
 :::
 
 ## Details
@@ -110,7 +110,7 @@ The Amazon Security Lake device implements a pull-type consumer pattern that int
 
 **SQS Long Polling**: The default 20-second wait time enables efficient long polling, reducing empty responses and API costs. Adjust based on event arrival patterns - higher values reduce polling overhead but increase processing latency.
 
-**Cross-Account Access**: When consuming Security Lake data from a different Amazon account, use IAM role assumption with `role_arn` and `external_id`. The device automatically handles temporary credential rotation based on `role_session_timeout`.
+**Cross-Account Access**: When consuming Security Lake data from a different AWS account, use IAM role assumption with `role_arn` and `external_id`. The device automatically handles temporary credential rotation based on `role_session_timeout`.
 
 **Performance Characteristics**: Parquet columnar storage enables efficient processing of large Security Lake exports. A single file may contain thousands of OCSF events. Processing errors exceeding 10 records per file trigger automatic file abandonment to prevent resource exhaustion.
 
@@ -131,7 +131,7 @@ The Amazon Security Lake device implements a pull-type consumer pattern that int
       type: awssecuritylake
       properties:
         region: "us-east-1"
-        queue_url: "https://sqs.us-east-1.amazonaws.com/123456789012/security-lake-notifications"
+        queue_url: "https://sqs.us-east-1.awsaws.com/123456789012/security-lake-notifications"
         access_key_id: "AKIAIOSFODNN7EXAMPLE"
         secret_access_key: "${AWS_SECRET_KEY}"
     ```
@@ -172,7 +172,7 @@ The Amazon Security Lake device implements a pull-type consumer pattern that int
       type: awssecuritylake
       properties:
         region: "us-west-2"
-        queue_url: "https://sqs.us-west-2.amazonaws.com/987654321098/external-lake-queue"
+        queue_url: "https://sqs.us-west-2.awsaws.com/987654321098/external-lake-queue"
         access_key_id: "AKIAIOSFODNN7EXAMPLE"
         secret_access_key: "${AWS_SECRET_KEY}"
         role_arn: "arn:aws:iam::987654321098:role/SecurityLakeConsumerRole"
@@ -213,7 +213,7 @@ The Amazon Security Lake device implements a pull-type consumer pattern that int
       type: awssecuritylake
       properties:
         region: "eu-west-1"
-        queue_url: "https://sqs.eu-west-1.amazonaws.com/123456789012/lake-network-events"
+        queue_url: "https://sqs.eu-west-1.awsaws.com/123456789012/lake-network-events"
         access_key_id: "AKIAIOSFODNN7EXAMPLE"
         secret_access_key: "${AWS_SECRET_KEY}"
         file_name_filter: ".*eventclass_(1001|1002|1003).*\\.parquet$"
@@ -254,7 +254,7 @@ The Amazon Security Lake device implements a pull-type consumer pattern that int
       type: awssecuritylake
       properties:
         region: "us-east-1"
-        queue_url: "https://sqs.us-east-1.amazonaws.com/123456789012/high-volume-lake"
+        queue_url: "https://sqs.us-east-1.awsaws.com/123456789012/high-volume-lake"
         access_key_id: "AKIAIOSFODNN7EXAMPLE"
         secret_access_key: "${AWS_SECRET_KEY}"
         timeout: 5
@@ -302,7 +302,7 @@ The Amazon Security Lake device implements a pull-type consumer pattern that int
         - threat-intelligence
       properties:
         region: "us-east-1"
-        queue_url: "https://sqs.us-east-1.amazonaws.com/123456789012/lake-pipeline"
+        queue_url: "https://sqs.us-east-1.awsaws.com/123456789012/lake-pipeline"
         access_key_id: "AKIAIOSFODNN7EXAMPLE"
         secret_access_key: "${AWS_SECRET_KEY}"
     ```
@@ -339,7 +339,7 @@ The Amazon Security Lake device implements a pull-type consumer pattern that int
       type: awssecuritylake
       properties:
         region: "ap-southeast-1"
-        queue_url: "https://sqs.ap-southeast-1.amazonaws.com/123456789012/fast-processing"
+        queue_url: "https://sqs.ap-southeast-1.awsaws.com/123456789012/fast-processing"
         access_key_id: "AKIAIOSFODNN7EXAMPLE"
         secret_access_key: "${AWS_SECRET_KEY}"
         validate_ocsf: false

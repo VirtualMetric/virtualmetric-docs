@@ -1,17 +1,17 @@
 # Amazon SNS
 
-<span className="theme-doc-version-badge badge badge--secondary">Amazon</span><span className="theme-doc-version-badge badge badge--secondary">Message Queue</span>
+<span className="theme-doc-version-badge badge badge--secondary">Amazon AWS</span><span className="theme-doc-version-badge badge badge--secondary">Message Queue</span>
 
 ## Synopsis
 
-Creates a target that writes log messages to Amazon Simple Notification Service (SNS) with support for batching and Amazon authentication. The target handles message delivery efficiently with configurable batch limits. Amazon SNS is a fully managed pub/sub messaging service that enables message delivery to multiple subscribers including SQS queues, Lambda functions, HTTP endpoints, email, and mobile push notifications.
+Creates a target that writes log messages to AWS Simple Notification Service (SNS) with support for batching and AWS authentication. The target handles message delivery efficiently with configurable batch limits. Amazon SNS is a fully managed pub/sub messaging service that enables message delivery to multiple subscribers including SQS queues, Lambda functions, HTTP endpoints, email, and mobile push notifications.
 
 ## Schema
 
 ```yaml {1,3}
 - name: <string>
   description: <string>
-  type: amazonsns
+  type: awssns
   pipelines: <pipeline[]>
   status: <boolean>
   properties:
@@ -40,21 +40,21 @@ The following fields are used to define the target:
 |---|---|---|---|
 |`name`|Y||Target name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `amazonsns`|
+|`type`|Y||Must be `awssns`|
 |`pipelines`|N|-|Optional post-processor pipelines|
 |`status`|N|`true`|Enable/disable the target|
 
-### Amazon Credentials
+### AWS Credentials
 
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`key`|N*|-|Amazon access key ID for authentication|
-|`secret`|N*|-|Amazon secret access key for authentication|
+|`key`|N*|-|AWS access key ID for authentication|
+|`secret`|N*|-|AWS secret access key for authentication|
 |`session`|N|-|Optional session token for temporary credentials|
-|`region`|Y|-|Amazon region (e.g., `us-east-1`, `eu-west-1`)|
+|`region`|Y|-|AWS region (e.g., `us-east-1`, `eu-west-1`)|
 |`endpoint`|N|-|Custom SNS endpoint URL (for testing or local development)|
 
-\* = Conditionally required. Amazon credentials (`key` and `secret`) are required unless using IAM role-based authentication on Amazon infrastructure.
+\* = Conditionally required. AWS credentials (`key` and `secret`) are required unless using IAM role-based authentication on AWS infrastructure.
 
 ### Topic Configuration
 
@@ -90,7 +90,7 @@ Amazon SNS is a fully managed pub/sub messaging service that enables message fan
 
 ### Authentication Methods
 
-Supports static credentials (access key and secret key) with optional session tokens for temporary credentials. When deployed on Amazon infrastructure, can leverage IAM role-based authentication without explicit credentials.
+Supports static credentials (access key and secret key) with optional session tokens for temporary credentials. When deployed on AWS infrastructure, can leverage IAM role-based authentication without explicit credentials.
 
 ### Topic Types
 
@@ -113,7 +113,7 @@ Amazon SNS supports two types of topics:
 
 SNS topics can deliver messages to multiple subscription types:
 - Amazon SQS queues
-- Amazon Lambda functions
+- AWS Lambda functions
 - HTTP/HTTPS endpoints
 - Email addresses
 - SMS text messages
@@ -141,20 +141,20 @@ SNS attempts to deliver messages to all subscribed endpoints. Delivery behavior 
 
 ### Encryption
 
-SNS supports server-side encryption using Amazon KMS. Messages are encrypted in transit and at rest. All connections to SNS use HTTPS endpoints.
+SNS supports server-side encryption using AWS KMS. Messages are encrypted in transit and at rest. All connections to SNS use HTTPS endpoints.
 
 ### Message Filtering
 
 Subscribers can use filter policies to receive only a subset of messages published to a topic. This reduces unnecessary message processing and costs.
 
-### Integration with Amazon Services
+### Integration with AWS Services
 
-SNS integrates with other Amazon services:
+SNS integrates with other AWS services:
 - Amazon SQS for reliable queuing
-- Amazon Lambda for serverless processing
+- AWS Lambda for serverless processing
 - Amazon CloudWatch for monitoring and alarms
-- Amazon Step Functions for workflow orchestration
-- Amazon EventBridge for event routing
+- AWS Step Functions for workflow orchestration
+- AWS EventBridge for event routing
 
 ## Examples
 
@@ -165,7 +165,7 @@ The minimum configuration for an SNS target:
 ```yaml
 targets:
   - name: basic_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "AKIAIOSFODNN7EXAMPLE"
       secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -180,7 +180,7 @@ Configuration with custom message subject:
 ```yaml
 targets:
   - name: custom_subject_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "AKIAIOSFODNN7EXAMPLE"
       secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -196,7 +196,7 @@ Configuration using IAM role authentication (no explicit credentials):
 ```yaml
 targets:
   - name: iam_sns
-    type: amazonsns
+    type: awssns
     properties:
       region: "us-east-1"
       topic: "arn:aws:sns:us-east-1:123456789012:application-logs"
@@ -213,7 +213,7 @@ Configuration for FIFO topic:
 ```yaml
 targets:
   - name: fifo_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "AKIAIOSFODNN7EXAMPLE"
       secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -228,7 +228,7 @@ Configuration optimized for high-volume data:
 ```yaml
 targets:
   - name: high_volume_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "AKIAIOSFODNN7EXAMPLE"
       secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -245,7 +245,7 @@ Configuration using temporary session credentials:
 ```yaml
 targets:
   - name: temp_creds_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "ASIATEMP1234567890AB"
       secret: "tempSecretKeyExample1234567890"
@@ -261,7 +261,7 @@ Using field normalization for standard format:
 ```yaml
 targets:
   - name: normalized_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "AKIAIOSFODNN7EXAMPLE"
       secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -277,7 +277,7 @@ Configuration with checkpoint pipeline for reliability:
 ```yaml
 targets:
   - name: reliable_sns
-    type: amazonsns
+    type: awssns
     pipelines:
       - checkpoint
     properties:
@@ -295,7 +295,7 @@ Configuration for SNS topic in different region:
 ```yaml
 targets:
   - name: eu_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "AKIAIOSFODNN7EXAMPLE"
       secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -310,7 +310,7 @@ Configuration with scheduled batch delivery:
 ```yaml
 targets:
   - name: scheduled_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "AKIAIOSFODNN7EXAMPLE"
       secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -327,7 +327,7 @@ Configuration with debugging enabled:
 ```yaml
 targets:
   - name: debug_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "AKIAIOSFODNN7EXAMPLE"
       secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -345,7 +345,7 @@ Configuration with custom endpoint for local testing (e.g., LocalStack):
 ```yaml
 targets:
   - name: local_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "test"
       secret: "test"
@@ -361,7 +361,7 @@ Configuration for fanout pattern (SNS topic with multiple SQS queue subscription
 ```yaml
 targets:
   - name: fanout_sns
-    type: amazonsns
+    type: awssns
     properties:
       key: "AKIAIOSFODNN7EXAMPLE"
       secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -371,7 +371,7 @@ targets:
 ```
 
 :::note
-Configure SNS topic subscriptions (SQS, Lambda, HTTP, Email, etc.) separately in the Amazon Console or via infrastructure as code.
+Configure SNS topic subscriptions (SQS, Lambda, HTTP, Email, etc.) separately in the AWS Console or via infrastructure as code.
 :::
 
 ### Production Configuration
@@ -381,7 +381,7 @@ Configuration for production with optimal settings:
 ```yaml
 targets:
   - name: production_sns
-    type: amazonsns
+    type: awssns
     pipelines:
       - checkpoint
     properties:
