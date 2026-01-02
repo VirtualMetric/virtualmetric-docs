@@ -129,7 +129,7 @@ const sidebars: SidebarsConfig = {
             },
             {
               type: "category",
-              label: "AWS",
+              label: "Amazon Web Services (AWS)",
               items: [
                 "configuration/targets/aws/amazon-security-lake",
                 "configuration/targets/aws/amazon-s3",
