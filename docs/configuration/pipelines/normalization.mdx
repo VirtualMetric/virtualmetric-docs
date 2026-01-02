@@ -13,6 +13,8 @@ The processor supports several widely-used log formats:
 |Elastic Common Schema (ECS)|Dot notation with lowercase|`@timestamp`|Hierarchical structure|`source.ip`, `network.direction`|
 |Splunk Common Information Model (CIM)|Underscore with lowercase|`_time`|Flat structure|`src_ip`, `network_direction`|
 |Advanced Security Information Model (ASIM)|PascalCase|`TimeGenerated`|Explicit names|`SourceIp`, `NetworkDirection`|
+|Google SecOps Unified Data Model (UDM)|Nested structure|`metadata.event_timestamp`|Entity-based hierarchy|`principal.ip`, `target.ip`|
+|Open Cybersecurity Schema Framework (OCSF)|Nested structure|`time`|Class-based hierarchy|`src_endpoint.ip`, `dst_endpoint.ip`|
 
 ### Security-specific
 
@@ -30,11 +32,15 @@ Source formats can be automatically detected using certain characteristic fields
 |--:|:--|:--|
 |Timestamp|`@timestamp`|ECS|
 ||`_time`|CIM|
-||`TimeGenerated`|ASIM/CSL
+||`TimeGenerated`|ASIM/CSL|
+||`metadata.event_timestamp`|UDM|
+||`time`|OCSF|
 |Security|`rt`|CEF|
 ||`devTime`|LEEF|
 |CSL detection|`TimeGenerated` + `LogSeverity`|CSL|
 ||`TimeGenerated` only|ASIM|
+|UDM detection|`metadata.event_type`|UDM|
+|OCSF detection|`class_uid`|OCSF|
 
 ## Conversion
 
@@ -60,6 +66,12 @@ Each format follows specific naming conventions:
 
   <TermCol>**CSL**</TermCol>
   <DefCol>`SourceIP`, `EventSeverity`</DefCol>
+
+  <TermCol>**UDM**</TermCol>
+  <DefCol>`principal.ip`, `security_result.severity`</DefCol>
+
+  <TermCol>**OCSF**</TermCol>
+  <DefCol>`src_endpoint.ip`, `severity_id`</DefCol>
 </TermTable>
 
 :::caution
@@ -71,14 +83,16 @@ Complex format conversions may impact performance.
 There are identifiable common network fields based on context across various formats:
 
 <table>
-  <tr><th></th><th colspan="3">Context</th></tr>
+  <tr><th></th><th colSpan={3}>Context</th></tr>
   <tr><td><b>Format</b></td><td>Source IP</td><td>Destination IP</td><td>Direction</td></tr>
   <tr><td style={{textAlign: "right"}}>`ecs`</td><td>`source.ip`</td><td>`destination.ip`</td><td>`network.direction`</td></tr>
-  <tr><td style={{textAlign: "right"}}>`cim`</td><td>`src_ip`</td><td>`dest_ip`</td><td>`network_direction`</td></tr>
-  <tr><td style={{textAlign: "right"}}>`asim`</td><td>`SourceIp`</td><td>`DstIp`</td><td>`NetworkDirection`</td></tr>
+  <tr><td style={{textAlign: "right"}}>`cim`</td><td>`src`</td><td>`dest`</td><td>`direction`</td></tr>
+  <tr><td style={{textAlign: "right"}}>`asim`</td><td>`SrcIp`</td><td>`DstIp`</td><td>`NetworkDirection`</td></tr>
   <tr><td style={{textAlign: "right"}}>`cef`</td><td>`src`</td><td>`dst`</td><td>`networkDirection`</td></tr>
   <tr><td style={{textAlign: "right"}}>`leef`</td><td>`srcAddr`</td><td>`dstAddr`</td><td>`netDir`</td></tr>
   <tr><td style={{textAlign: "right"}}>`csl`</td><td>`SourceIp`</td><td>`DestinationIp`</td><td>`NetworkDirection`</td></tr>
+  <tr><td style={{textAlign: "right"}}>`udm`</td><td>`principal.ip`</td><td>`target.ip`</td><td>`network.direction`</td></tr>
+  <tr><td style={{textAlign: "right"}}>`ocsf`</td><td>`src_endpoint.ip`</td><td>`dst_endpoint.ip`</td><td>`direction_id`</td></tr>
 </table>
 
 ## Configuration
@@ -113,13 +127,37 @@ normalize:
   target_format: cim
 ```
 
+### UDM Conversion
+
+Convert ECS to Google SecOps UDM format:
+
+```yaml
+normalize:
+  source_format: ecs
+  target_format: udm
+```
+
+### OCSF Conversion
+
+Convert to Amazon Security Lake OCSF format:
+
+```yaml
+normalize:
+  source_format: ecs
+  target_format: ocsf
+```
+
 ## Preprocessing
 
-Fields are standardized with `normalize` for conversion between the ECS, CIM, ASIM, CEF, LEEF and CSL formats (see the [Log Formats](#log-formats) and [Conversion](#conversion) sections above). Values are formatted for uniform casing with `uppercase` and `lowercase` processors when required by the target format's naming conventions.
+Fields are standardized with `normalize` for conversion between the ECS, CIM, ASIM, CEF, LEEF, CSL, OCSF, and UDM formats (see the [Log Formats](#log-formats) and [Conversion](#conversion) sections above). Values are formatted for uniform casing with `uppercase` and `lowercase` processors when required by the target format's naming conventions.
 
 ## Postprocessing
 
-Fields are optimized for storage and queries using format conversion with the `normalize` processor (see the [Conversion](#conversion) and [Field Mapping](#field-mapping) sections above). For Microsoft Sentinel integration, data is prepared by converting to the ASIM format with `normalize` (see [Log Formats](#log-formats) table).
+Fields are optimized for storage and queries using format conversion with the `normalize` processor (see the [Conversion](#conversion) and [Field Mapping](#field-mapping) sections above). For Microsoft Sentinel integration, data is prepared by converting to the ASIM format with `normalize`. For Google SecOps, convert to UDM format. For Amazon Security Lake, convert to OCSF format (see [Log Formats](#log-formats) table).
+
+:::note Schema Enforcement
+When converting to UDM or OCSF, schema enforcement rules are applied by default. These rules normalize timestamps, validate event types, and ensure field values conform to the target schema specification.
+:::
 
 :::warning
 Complex format conversions may impact processing performance and delivery latency.
