@@ -2,77 +2,61 @@ digraph pipelinesFlow {
    rankdir=LR
    node [shape=box style=filled fillcolor="#f0f0f0" fontname="Calibri" fontsize=8]
 
-   // Left: Input
-   subgraph cluster_input {
-      label="Input"
-      style="rounded,filled"
-      fillcolor="#e3f2fd"
-      fontname="Calibri"
-      fontsize=8
-      event_in [label="Event" shape=box fillcolor="#bbdefb"]
-   }
+   // Invisible input/output nodes for arrows
+   event_in [label="" shape=point width=0.1]
+   event_out [label="" shape=point width=0.1]
 
-   // Middle: Pipeline with processor categories
+   // Pipeline with processor categories
    subgraph cluster_pipeline {
       label="Pipeline"
       style="rounded,filled"
-      fillcolor="#e8f5e9"
+      fillcolor="#f1f8e9"
       fontname="Calibri"
       fontsize=8
 
-      // Parse processors
+      // Parse processors - pastel blue tones
       subgraph cluster_parse {
          label="Parse"
          style="rounded,filled"
-         fillcolor="#dcedc8"
+         fillcolor="#e3f2fd"
          fontname="Calibri"
          fontsize=7
-         json [label="JSON" shape=box fillcolor="#c8e6c9"]
-         cef [label="CEF" shape=box fillcolor="#c8e6c9"]
+         json [label="JSON" shape=box fillcolor="#bbdefb"]
+         cef [label="CEF" shape=box fillcolor="#90caf9"]
       }
 
-      // Transform processors
+      // Transform processors - pastel green tones
       subgraph cluster_transform {
          label="Transform"
          style="rounded,filled"
-         fillcolor="#dcedc8"
+         fillcolor="#e8f5e9"
          fontname="Calibri"
          fontsize=7
          rename [label="Rename" shape=box fillcolor="#c8e6c9"]
-         set [label="Set" shape=box fillcolor="#c8e6c9"]
+         set [label="Set" shape=box fillcolor="#a5d6a7"]
       }
 
-      // Enrich processors
+      // Enrich processors - pastel purple tones
       subgraph cluster_enrich {
          label="Enrich"
          style="rounded,filled"
-         fillcolor="#dcedc8"
+         fillcolor="#f3e5f5"
          fontname="Calibri"
          fontsize=7
-         geoip [label="GeoIP" shape=box fillcolor="#c8e6c9"]
-         lookup [label="Lookup" shape=box fillcolor="#c8e6c9"]
+         geoip [label="GeoIP" shape=box fillcolor="#e1bee7"]
+         lookup [label="Lookup" shape=box fillcolor="#ce93d8"]
       }
 
-      // Filter processors
+      // Filter processors - pastel orange tones
       subgraph cluster_filter {
          label="Filter"
          style="rounded,filled"
-         fillcolor="#dcedc8"
+         fillcolor="#fff8e1"
          fontname="Calibri"
          fontsize=7
-         drop [label="Drop" shape=box fillcolor="#c8e6c9"]
-         sample [label="Sample" shape=box fillcolor="#c8e6c9"]
+         drop [label="Drop" shape=box fillcolor="#ffe0b2"]
+         sample [label="Sample" shape=box fillcolor="#ffcc80"]
       }
-   }
-
-   // Right: Output
-   subgraph cluster_output {
-      label="Output"
-      style="rounded,filled"
-      fillcolor="#fff3e0"
-      fontname="Calibri"
-      fontsize=8
-      event_out [label="Event" shape=box fillcolor="#ffe0b2"]
    }
 
    // Flow connections

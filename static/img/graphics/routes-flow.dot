@@ -1,0 +1,66 @@
+digraph routesFlow {
+   rankdir=LR
+   node [shape=box style=filled fillcolor="#f0f0f0" fontname="Calibri" fontsize=8]
+   edge [color="#666666"]
+
+   // Left: Devices (sources) - pastel blue
+   subgraph cluster_devices {
+      label="Devices"
+      style="rounded,filled"
+      fillcolor="#e3f2fd"
+      fontname="Calibri"
+      fontsize=8
+      syslog [label="Syslog" shape=box fillcolor="#bbdefb"]
+      http [label="HTTP" shape=box fillcolor="#90caf9"]
+      kafka [label="Kafka" shape=box fillcolor="#64b5f6"]
+   }
+
+   // Middle: Route (orchestration) - pastel orange
+   subgraph cluster_route {
+      label="Route"
+      style="rounded,filled"
+      fillcolor="#fff8e1"
+      fontname="Calibri"
+      fontsize=8
+
+      filter [label="Filter" shape=diamond fillcolor="#ffe0b2"]
+
+      // Pipelines - pastel green
+      subgraph cluster_pipelines {
+         label="Pipelines"
+         style="rounded,filled"
+         fillcolor="#e8f5e9"
+         fontname="Calibri"
+         fontsize=7
+         normalize [label="Normalize" shape=box fillcolor="#c8e6c9"]
+         enrich [label="Enrich" shape=box fillcolor="#a5d6a7"]
+      }
+   }
+
+   // Right: Targets (destinations) - pastel purple
+   subgraph cluster_targets {
+      label="Targets"
+      style="rounded,filled"
+      fillcolor="#f3e5f5"
+      fontname="Calibri"
+      fontsize=8
+      sentinel [label="Sentinel" shape=box fillcolor="#e1bee7"]
+      storage [label="Storage" shape=folder fillcolor="#d1c4e9"]
+      elastic [label="Elastic" shape=cylinder fillcolor="#ce93d8"]
+   }
+
+   // Connections: devices to filter
+   syslog -> filter
+   http -> filter
+   kafka -> filter
+
+   // Connections: filter to pipelines
+   filter -> normalize
+   filter -> enrich
+
+   // Connections: pipelines to targets
+   normalize -> sentinel
+   normalize -> storage
+   enrich -> sentinel
+   enrich -> elastic
+}
