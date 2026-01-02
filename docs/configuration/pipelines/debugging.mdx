@@ -1,0 +1,96 @@
+---
+sidebar_label: Debugging
+---
+
+# Pipeline Debugging
+
+The Pipeline Debugger provides an interactive testing environment for validating pipeline processing logic before deployment. It enables you to execute pipelines with test data and observe how each processor transforms the data through the processing chain.
+
+## Accessing the Debugger
+
+Navigate to <gui>Configuration</gui> > <gui>Pipelines</gui>, select a pipeline, and click <gui>Debug</gui> in the pipeline detail view. The debugger opens in a new view with the pipeline visualization and testing controls.
+
+## Dataset Providers
+
+The debugger supports three methods for providing test data:
+
+| Provider | Description |
+|---------:|:------------|
+| **Existing Dataset** | Select from previously saved datasets in your organization |
+| **Upload File** | Upload a log file containing test data |
+| **Manual Logs** | Enter log data directly in the input editor |
+
+### Existing Dataset
+
+Use saved datasets for consistent, repeatable testing across pipeline iterations. Datasets are organization-level resources that can be shared across team members.
+
+### Upload File
+
+Upload log files in supported formats for one-time testing. The file content is loaded into the input editor where you can modify it before execution.
+
+### Manual Logs
+
+Enter log data directly in JSON format. This method is useful for:
+
+- Testing specific edge cases
+- Debugging individual log entries
+- Quick validation of processor behavior
+
+## Environment Variables
+
+The debugger allows configuration of environment variables that affect pipeline execution context:
+
+| Variable | Description |
+|---------:|:------------|
+| `devicetype` | Simulates the source device type for device-specific processing logic |
+| `definitionid` | Sets the pipeline definition identifier |
+| `request` | Configures request-level context variables |
+
+Configure these variables to match production conditions when testing pipelines that contain conditional logic based on device type or other context values.
+
+## Pipeline Visualization
+
+The debugger displays the pipeline structure as an interactive node graph:
+
+- **Pipeline nodes**: Represent the main pipeline and any referenced child pipelines
+- **Processor nodes**: Show individual processors in the execution chain
+- **Connection lines**: Indicate data flow between processors
+
+### Navigating Child Pipelines
+
+When a pipeline references child pipelines, click on a pipeline node to navigate into its structure. A breadcrumb trail at the top of the view tracks your navigation path and allows you to return to parent pipelines.
+
+## Execution and Results
+
+### Running the Pipeline
+
+Click <gui>Run</gui> to execute the pipeline with the current input data. The debugger processes the data through all configured processors and displays results for each step.
+
+### Node Status Indicators
+
+After execution, each node displays a status indicator:
+
+| Status | Description |
+|-------:|:------------|
+| **Completed** | Processor executed successfully |
+| **Failed** | Processor encountered an error |
+| **Skipped** | Processor was skipped due to conditional logic |
+| **Continue** | Processing continued to the next processor |
+| **Dropped** | Event was dropped by the processor |
+| **Return** | Processing returned early from the pipeline |
+
+### Viewing Results
+
+The output panel displays the transformed data after pipeline execution. Click a processor node to view its specific output. Enable diff mode to highlight changes between input and output, or inspect the active configuration for any processor in the chain.
+
+## Workflow
+
+1. Select or enter test data using one of the dataset providers
+2. Configure environment variables if needed for conditional processing
+3. Click <gui>Run</gui> to execute the pipeline
+4. Review node status indicators to identify processing results
+5. Click individual nodes to inspect their output
+6. Use diff mode to compare transformations
+7. Iterate on pipeline configuration based on test results
+
+---
