@@ -85,7 +85,7 @@ const sidebars: SidebarsConfig = {
             "configuration/devices/amazon-s3",
             "configuration/devices/amazon-security-lake",
             "configuration/devices/azure-blob-storage",
-            "configuration/devices/azure-monitor",
+            "configuration/devices/azure-logs",
             "configuration/devices/estreamer",
             "configuration/devices/event-hubs",
             "configuration/devices/http",

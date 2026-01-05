@@ -1,18 +1,18 @@
-# Azure Monitor
+# Azure Logs
 
 <span className="theme-doc-version-badge badge badge--secondary">Microsoft Azure</span><span className="theme-doc-version-badge badge badge--secondary">Pull</span>
 
 ## Synopsis
 
-Creates an Azure Monitor client that collects logs from specified Log Analytics workspaces. Supports multiple log streams with configurable batch sizes and collection frequencies.
+Creates an Azure Logs client that queries Log Analytics workspaces using Kusto Query Language (KQL). Collects log data from specified tables with configurable batch sizes and collection frequencies.
 
 ## Schema
 
-```yaml {1,2,4}
+```yaml {1,2,4,9-13}
 - id: <numeric>
   name: <string>
   description: <string>
-  type: azmon
+  type: azlogs
   tags: <string[]>
   pipelines: <pipeline[]>
   status: <boolean>
@@ -36,7 +36,7 @@ The following fields are used to define the device.
 |`id`|Y||Unique identifier|
 |`name`|Y||Device name|
 |`description`|N|-|Optional description|
-|`type`|Y||Must be `azmon`|
+|`type`|Y||Must be `azlogs`|
 |`tags`|N|-|Optional tags|
 |`pipelines`|N|-|Optional pre-processor pipelines|
 |`status`|N|`true`|Enable/disable the device|
@@ -74,8 +74,8 @@ The minimum required configuration:
     ```yaml
     devices:
       - id: 1
-        name: basic_azmon
-        type: azmon
+        name: basic_azlogs
+        type: azlogs
         properties:
           tenant_id: "00000000-0000-0000-0000-000000000000"
           client_id: "11111111-1111-1111-1111-111111111111"
@@ -99,8 +99,8 @@ The collecter can consume multiple log types with pre-processing:
     ```yaml
     devices:
       - id: 2
-        name: multi_stream_azmon
-        type: azmon
+        name: multi_stream_azlogs
+        type: azlogs
         pipelines:
           - security_events
         properties:
@@ -133,8 +133,8 @@ Performance can be enhanced for high log volumes:
     ```yaml
     devices:
       - id: 3
-        name: high_volume_azmon
-        type: azmon
+        name: high_volume_azlogs
+        type: azlogs
         properties:
           tenant_id: "00000000-0000-0000-0000-000000000000"
           client_id: "11111111-1111-1111-1111-111111111111"
