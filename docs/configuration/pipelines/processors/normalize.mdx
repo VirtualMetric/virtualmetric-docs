@@ -11,7 +11,7 @@ sidebar_custom_props:
 
 ## Synopsis
 
-Converts log field names between different normalization formats (ECS, CIM, ASIM, CEF, LEEF, CSL).
+Converts log field names between different normalization formats (ECS, CIM, ASIM, CEF, LEEF, CSL, OCSF, UDM).
 
 ## Schema
 
@@ -19,6 +19,10 @@ Converts log field names between different normalization formats (ECS, CIM, ASIM
 - normalize:
     source_format: <string>
     target_format: <string>
+    field: <ident>
+    ignore_unmapped_fields: <boolean>
+    ignore_rules: <boolean>
+    use_json_parser: <boolean>
     description: <text>
     if: <script>
     ignore_failure: <boolean>
@@ -29,12 +33,14 @@ Converts log field names between different normalization formats (ECS, CIM, ASIM
 
 ## Configuration
 
-The following fields are used to define the processor:
-
 |Field|Required|Default|Description|
 |---|---|---|---|
-|`source_format`|N|auto-detect|Source format (`ecs`, `cim`, `asim`, `cef`, `leef`, `csl`)|
+|`source_format`|N|auto-detect|Source format (`ecs`, `cim`, `asim`, `cef`, `leef`, `csl`, `ocsf`, `udm`)|
 |`target_format`|Y|-|Target format to convert to|
+|`field`|N|-|Nested field containing the data to normalize|
+|`ignore_unmapped_fields`|N|`false`|Skip fields without mappings in the target format|
+|`ignore_rules`|N|`false`|Skip schema enforcement rules for the target format|
+|`use_json_parser`|N|`false`|Parse the source field as JSON before normalization|
 |`description`|N|-|Documentation note|
 |`if`|N|-|Conditional expression|
 |`ignore_failure`|N|`false`|Skip processing errors|
@@ -44,31 +50,46 @@ The following fields are used to define the processor:
 
 ## Details
 
-The processor automatically detects source formats when not specified and handles field name transformations while preserving values.
+The processor automatically detects source formats when not specified and handles field name transformations while preserving values. Format detection is case-insensitive.
 
-:::note
-Format detection is case-insensitive - i.e. "ECS", "ecs", and "Ecs" are equivalent.
-:::
+### Supported Formats
 
-The processor automatically detects the source format based on characteristic fields. Some commonly used field mappings:
+| Format | Description |
+|-------:|:------------|
+| `ecs` | Elastic Common Schema |
+| `cim` | Splunk Common Information Model |
+| `asim` | Microsoft Sentinel ASIM |
+| `cef` | Common Event Format |
+| `leef` | Log Event Extended Format |
+| `csl` | Common Schema Log |
+| `ocsf` | Open Cybersecurity Schema Framework |
+| `udm` | Google SecOps Unified Data Model |
+
+### Schema Enforcement
+
+When converting to UDM or OCSF, the processor applies schema enforcement rules by default. These rules normalize timestamps to microseconds, validate event types, normalize security actions, and ensure field values conform to the target schema specification. Set `ignore_rules: true` to skip enforcement.
+
+### Field Mappings
+
+The processor automatically detects the source format based on characteristic fields. Common mappings between formats:
 
 <table>
-  <tr><th></th><th>ECS</th><th>CIM</th><th>ASIM</th></tr>
+  <tr><th></th><th>ECS</th><th>CIM</th><th>ASIM</th><th>UDM</th></tr>
 
   <tr><td rowSpan={"4"}>**Network**</td></tr>
-  <tr><td>`source.ip`</td><td>`src`</td><td>`SrcIp`</td></tr>
-  <tr><td>`destination.ip`</td><td>`dest`</td><td>`DstIp`</td></tr>
-  <tr><td>`network.direction`</td><td>`direction`</td><td>`NetworkDirection`</td></tr>
+  <tr><td>`source.ip`</td><td>`src`</td><td>`SrcIp`</td><td>`principal.ip`</td></tr>
+  <tr><td>`destination.ip`</td><td>`dest`</td><td>`DstIp`</td><td>`target.ip`</td></tr>
+  <tr><td>`network.direction`</td><td>`direction`</td><td>`NetworkDirection`</td><td>`network.direction`</td></tr>
 
   <tr><td rowSpan={"4"}>**Event**</td></tr>
-  <tr><td>`@timestamp`</td><td>`_time`</td><td>`TimeGenerated`</td></tr>
-  <tr><td>`event.type`</td><td>`action`</td><td>`EventType`</td></tr>
-  <tr><td>`event.category`</td><td>`category`</td><td>`EventCategory`</td></tr>
+  <tr><td>`@timestamp`</td><td>`_time`</td><td>`TimeGenerated`</td><td>`metadata.event_timestamp`</td></tr>
+  <tr><td>`event.action`</td><td>`action`</td><td>`EventType`</td><td>`metadata.product_event_type`</td></tr>
+  <tr><td>`event.severity`</td><td>`severity`</td><td>`EventSeverity`</td><td>`security_result.severity`</td></tr>
 
   <tr><td rowSpan={"4"}>**User**</td></tr>
-  <tr><td>`user.name`</td><td>`user`</td><td>`ActorUsername`</td></tr>
-  <tr><td>`user.id`</td><td>`user_id`</td><td>`ActorUserId`</td></tr>
-  <tr><td>`user.domain`</td><td>`user_domain`</td><td>`ActorUserDomain`</td></tr>
+  <tr><td>`source.user.name`</td><td>`user`</td><td>`ActorUsername`</td><td>`principal.user.userid`</td></tr>
+  <tr><td>`source.user.id`</td><td>`user_id`</td><td>`ActorUserId`</td><td>`principal.user.windows_sid`</td></tr>
+  <tr><td>`source.user.email`</td><td>`user_email`</td><td>`ActorUserEmail`</td><td>`principal.user.email_addresses`</td></tr>
 </table>
 
 See **Appendix** sections <Topic id="appendix-cim">**CIM**</Topic> and <Topic id="appendix-ecs">**ECS**</Topic> for details.
@@ -228,6 +249,65 @@ Field mapping is non-reversible if the targeted format doesn't have equivalent f
         "invalid": true
       },
       "error": "Conversion failed"
+    }
+    ```
+  </CodeCol>
+</ExampleGrid>
+
+### ECS to UDM
+
+<ExampleGrid>
+  <CommentCol>
+    ECS network event fields...
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "@timestamp": "2024-01-15T10:30:00.000Z",
+      "source": {
+        "ip": "192.168.1.100",
+        "port": 54321,
+        "user": { "name": "jdoe" }
+      },
+      "destination": {
+        "ip": "10.0.0.50",
+        "port": 443
+      },
+      "event": {
+        "action": "connection",
+        "severity": "low"
+      }
+    }
+    ```
+    ```yaml
+    - normalize:
+        source_format: ecs
+        target_format: udm
+    ```
+  </CodeCol>
+  <CommentCol>
+    are mapped to Google SecOps UDM fields:
+  </CommentCol>
+  <CodeCol>
+    ```json
+    {
+      "metadata": {
+        "event_timestamp": 1705315800000000,
+        "event_type": "NETWORK_CONNECTION"
+      },
+      "principal": {
+        "ip": "192.168.1.100",
+        "port": 54321,
+        "user": { "userid": "jdoe" }
+      },
+      "target": {
+        "ip": "10.0.0.50",
+        "port": 443
+      },
+      "security_result": {
+        "severity": "LOW",
+        "action": "UNKNOWN_ACTION"
+      }
     }
     ```
   </CodeCol>
