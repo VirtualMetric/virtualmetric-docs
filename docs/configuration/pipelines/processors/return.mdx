@@ -141,12 +141,12 @@ The processor executes any `on_success` handlers before exiting, allowing for cl
 
 <ExampleGrid>
   <CommentCol>
-    Exiting a nested pipeline early...
+    A nested pipeline called via the pipeline processor...
   </CommentCol>
   <CodeCol>
     ```yaml
-    - pipeline:
-        name: "enrichment-pipeline"
+    pipelines:
+      - name: enrichment-pipeline
         processors:
           - enrich:
               field: ip_address
@@ -156,13 +156,22 @@ The processor executes any `on_success` handlers before exiting, allowing for cl
               description: "Skip international enrichment for US"
           - international_enrichment:
               field: geo_data
+    ```
+  </CodeCol>
+  <CommentCol>
+    is invoked from the parent pipeline:
+  </CommentCol>
+  <CodeCol>
+    ```yaml
+    - pipeline:
+        name: '{{ IngestPipeline "enrichment-pipeline" }}'
     - set:
         field: enrichment_complete
         value: true
     ```
   </CodeCol>
   <CommentCol>
-    exits nested pipeline for US events:
+    Return exits the nested pipeline for US events, continuing in the parent:
   </CommentCol>
   <CodeCol>
     ```json
